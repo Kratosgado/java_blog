@@ -8,12 +8,11 @@
   <name>blog</name>
   <url>http://maven.apache.org</url>
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
+   <dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-controls</artifactId>
+    <version>21</version>
+  </dependency>
   </dependencies>
 <properties>
     <maven.compiler.source>21</maven.compiler.source>
@@ -43,6 +42,15 @@
                     <!-- </arguments> -->
                 </configuration>
             </plugin>
+
+          <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.8</version>
+        <configuration>
+            <mainClass>com.kratosgado.blog.App</mainClass>
+        </configuration>
+    </plugin>
         </plugins>
     </build>
 
