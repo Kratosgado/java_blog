@@ -13,6 +13,11 @@
     <artifactId>javafx-controls</artifactId>
     <version>21</version>
   </dependency>
+<dependency>
+    <groupId>io.github.palexdev</groupId>
+    <artifactId>materialfx</artifactId>
+    <version>11.17.0</version>
+</dependency>
   </dependencies>
 <properties>
     <maven.compiler.source>21</maven.compiler.source>
@@ -37,10 +42,7 @@
                 <configuration>
                     <mainClass>com.kratosgado.blog.App</mainClass>
           <release>21</release>
-                    <!-- <arguments> -->
-                    <!--     <argument>argument1</argument> -->
-                    <!-- </arguments> -->
-                </configuration>
+                         </configuration>
             </plugin>
 
           <plugin>
