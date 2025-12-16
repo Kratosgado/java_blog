@@ -13,12 +13,30 @@
     <artifactId>javafx-controls</artifactId>
     <version>21</version>
   </dependency>
+   <dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-fxml</artifactId>
+        <version>21</version> <!-- Match your JavaFX version if using FXML -->
+    </dependency>
 <dependency>
     <groupId>io.github.palexdev</groupId>
     <artifactId>materialfx</artifactId>
     <version>11.17.0</version>
 </dependency>
+ <dependency>
+        <groupId>io.github.palexdev</groupId>
+        <artifactId>virtualizedfx</artifactId>
+        <version>11.9.2</version> <!-- Use the latest version -->
+    </dependency>
+
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.42</version> <!-- Check Maven Central for the latest version -->
+    <scope>provided</scope>
+</dependency>
   </dependencies>
+
 <properties>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
@@ -31,6 +49,13 @@
             <artifactId>maven-compiler-plugin</artifactId>
             <version>3.13.0</version> <!-- Use a recent version -->
             <configuration>
+          <annotationProcessorPaths>
+					<path>
+						<groupId>org.projectlombok</groupId>
+						<artifactId>lombok</artifactId>
+						<version>1.18.42</version>
+					</path>
+				</annotationProcessorPaths>
                 <release>21</release> <!-- Alternatively, use this for Java 9+ -->
             </configuration>
         </plugin>
