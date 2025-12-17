@@ -21,7 +21,7 @@ public class UserDAO {
       String sql = "CREATE TABLE IF NOT EXISTS users (" +
           "id SERIAL PRIMARY KEY," +
           "username VARCHAR(50) NOT NULL," +
-          "password VARCHAR(50) NOT NULL," +
+          "password VARCHAR NOT NULL," +
           "email VARCHAR(50) UNIQUE NOT NULL," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
@@ -38,7 +38,7 @@ public class UserDAO {
       stmt.setString(1, user.getUsername());
       stmt.setString(2, user.getPassword());
       stmt.setString(3, user.getEmail());
-      stmt.executeUpdate(sql);
+      stmt.executeUpdate();
       return true;
     } catch (Exception e) {
       e.printStackTrace();
@@ -51,7 +51,7 @@ public class UserDAO {
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
-      ResultSet rs = stmt.executeQuery(sql);
+      ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return Optional
             .of(new User(rs.getInt("id"), rs.getString("username"), rs.getString("password"), rs.getString("email")));
@@ -68,7 +68,7 @@ public class UserDAO {
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setString(1, email);
-      ResultSet rs = stmt.executeQuery(sql);
+      ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return Optional
             .of(new User(rs.getInt("id"), rs.getString("username"), rs.getString("password"), rs.getString("email")));

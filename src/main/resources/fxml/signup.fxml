@@ -24,7 +24,7 @@
             <MFXPasswordField fx:id="confirmPasswordField" floatingText="Confirm Password" prefWidth="320"/>
         </VBox>
         
-        <Label fx:id="errorLabel" wrapText="true" maxWidth="320" style="-fx-font-size: 12px;"/>
+        <Label fx:id="infoLabel" wrapText="true" maxWidth="320" style="-fx-font-size: 12px;"/>
         
         <MFXButton fx:id="signUpButton" text="Sign Up" prefWidth="320" 
                    style="-fx-background-color: #1976D2; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5;"/>

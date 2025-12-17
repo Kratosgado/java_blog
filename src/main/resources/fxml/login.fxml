@@ -18,11 +18,11 @@
         <Label text="Login" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
         
         <VBox spacing="15" style="-fx-alignment: center;">
-            <MFXTextField fx:id="usernameField" floatingText="Username" prefWidth="320"/>
+            <MFXTextField fx:id="emailField" floatingText="Email" prefWidth="320"/>
             <MFXPasswordField fx:id="passwordField" floatingText="Password" prefWidth="320"/>
         </VBox>
         
-        <Label fx:id="errorLabel" wrapText="true" maxWidth="320" style="-fx-font-size: 12px;"/>
+        <Label fx:id="infoLabel" wrapText="true" maxWidth="320" style="-fx-font-size: 12px;"/>
         
         <MFXButton fx:id="loginButton" text="Login" prefWidth="320" 
                    style="-fx-background-color: #1976D2; -fx-text-fill: white; -fx-font-size: 14px; -fx-background-radius: 5;"/>

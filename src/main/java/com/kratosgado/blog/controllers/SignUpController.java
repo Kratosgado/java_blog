@@ -26,7 +26,7 @@ public class SignUpController {
   @FXML
   private MFXButton loginLink;
   @FXML
-  private Label errorLabel;
+  private Label infoLabel;
 
   private final AuthService authService;
 
@@ -36,14 +36,14 @@ public class SignUpController {
 
   @FXML
   private void initialize() {
-    errorLabel.setVisible(false);
+    infoLabel.setVisible(false);
 
     signUpButton.setOnAction(e -> handleSignUp());
     loginLink.setOnAction(e -> switchToLogin());
   }
 
   private void handleSignUp() {
-    errorLabel.setVisible(false);
+    infoLabel.setVisible(false);
 
     String username = usernameField.getText();
     String email = emailField.getText();
@@ -57,9 +57,9 @@ public class SignUpController {
 
     try {
       if (authService.register(username, email, password)) {
-        errorLabel.setStyle("-fx-text-fill: #4CAF50;");
-        errorLabel.setText("Registration successful! Redirecting to login...");
-        errorLabel.setVisible(true);
+        infoLabel.setStyle("-fx-text-fill: #4CAF50;");
+        infoLabel.setText("Registration successful! Redirecting to login...");
+        infoLabel.setVisible(true);
 
         // Delay before switching to login
         new Thread(() -> {
@@ -88,8 +88,8 @@ public class SignUpController {
   }
 
   private void showError(String message) {
-    errorLabel.setStyle("-fx-text-fill: #f44336;");
-    errorLabel.setText(message);
-    errorLabel.setVisible(true);
+    infoLabel.setStyle("-fx-text-fill: #f44336;");
+    infoLabel.setText(message);
+    infoLabel.setVisible(true);
   }
 }
