@@ -7,13 +7,9 @@ import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXNotificationCenter;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
-import io.github.palexdev.materialfx.controls.MFXPopup;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 
 public class LoginController {
@@ -56,6 +52,7 @@ public class LoginController {
       infoLabel.setVisible(true);
       Navigator.getInstance().goTo(Routes.USER_PROFILE);
     } catch (Exception ex) {
+      ex.printStackTrace();
       showError(ex.getMessage());
     }
   }
@@ -70,8 +67,8 @@ public class LoginController {
 
   private void showError(String message) {
 
-    // infoLabel.setStyle("-fx-text-fill: #f44336;");
-    // infoLabel.setText(message);
-    // infoLabel.setVisible(true);
+    infoLabel.setStyle("-fx-text-fill: #f44336;");
+    infoLabel.setText(message);
+    infoLabel.setVisible(true);
   }
 }
