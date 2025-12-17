@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 
 public class LoginController {
   @FXML
-  private MFXTextField usernameField;
+  private MFXTextField emailField;
   @FXML
   private MFXPasswordField passwordField;
   @FXML
@@ -22,7 +22,7 @@ public class LoginController {
   @FXML
   private MFXButton signUpLink;
   @FXML
-  private Label errorLabel;
+  private Label infoLabel;
 
   private final AuthService authService;
 
@@ -32,27 +32,27 @@ public class LoginController {
 
   @FXML
   private void initialize() {
-    errorLabel.setVisible(false);
+    infoLabel.setVisible(false);
 
     loginButton.setOnAction(e -> handleLogin());
     signUpLink.setOnAction(e -> switchToSignUp());
   }
 
   private void handleLogin() {
-    errorLabel.setVisible(false);
+    infoLabel.setVisible(false);
 
-    String username = usernameField.getText();
+    String email = emailField.getText();
     String password = passwordField.getText();
 
     try {
-      if (authService.login(username, password)) {
-        errorLabel.setStyle("-fx-text-fill: #4CAF50;");
-        errorLabel.setText("Login successful!");
-        errorLabel.setVisible(true);
+      if (authService.login(email, password)) {
+        infoLabel.setStyle("-fx-text-fill: #4CAF50;");
+        infoLabel.setText("Login successful!");
+        infoLabel.setVisible(true);
         // Navigate to main application
-        System.out.println("Login successful for user: " + username);
+        System.out.println("Login successful for user: " + email);
       } else {
-        showError("Invalid username or password");
+        showError("Invalid email or password");
       }
     } catch (IllegalArgumentException ex) {
       showError(ex.getMessage());
@@ -71,8 +71,8 @@ public class LoginController {
   }
 
   private void showError(String message) {
-    errorLabel.setStyle("-fx-text-fill: #f44336;");
-    errorLabel.setText(message);
-    errorLabel.setVisible(true);
+    infoLabel.setStyle("-fx-text-fill: #f44336;");
+    infoLabel.setText(message);
+    infoLabel.setVisible(true);
   }
 }
