@@ -35,6 +35,12 @@
     <version>1.18.42</version> <!-- Check Maven Central for the latest version -->
     <scope>provided</scope>
 </dependency>
+
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.8</version> <!-- Use the latest version -->
+</dependency>
   </dependencies>
 
 <properties>
