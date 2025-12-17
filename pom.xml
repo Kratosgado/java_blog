@@ -35,6 +35,11 @@
     <version>1.18.42</version> <!-- Check Maven Central for the latest version -->
     <scope>provided</scope>
 </dependency>
+<dependency>
+    <groupId>com.google.code.gson</groupId>
+    <artifactId>gson</artifactId>
+    <version>2.13.2</version>
+</dependency>
 
 <dependency>
     <groupId>org.postgresql</groupId>

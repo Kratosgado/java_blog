@@ -2,6 +2,7 @@ package com.kratosgado.blog;
 
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.context.AuthContext;
 
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
@@ -26,7 +27,11 @@ public class App extends Application {
 
     Navigator navigator = Navigator.getInstance();
     navigator.setStage(primaryStage);
-    navigator.goTo(Routes.LOGIN);
+    if (AuthContext.getInstance().getCurrentUser() == null) {
+      navigator.goTo(Routes.LOGIN);
+    } else {
+      navigator.goTo(Routes.USER_PROFILE);
+    }
   }
 
   public static void main(String[] args) {
