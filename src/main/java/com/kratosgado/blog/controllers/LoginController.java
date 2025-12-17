@@ -1,12 +1,19 @@
 package com.kratosgado.blog.controllers;
 
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
+import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.context.AuthContext;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.controls.MFXNotificationCenter;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
+import io.github.palexdev.materialfx.controls.MFXPopup;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 
 public class LoginController {
@@ -42,16 +49,13 @@ public class LoginController {
     String password = passwordField.getText();
 
     try {
-      if (authService.login(email, password)) {
-        infoLabel.setStyle("-fx-text-fill: #4CAF50;");
-        infoLabel.setText("Login successful!");
-        infoLabel.setVisible(true);
-        // Navigate to main application
-        System.out.println("Login successful for user: " + email);
-      } else {
-        showError("Invalid email or password");
-      }
-    } catch (IllegalArgumentException ex) {
+      User user = authService.login(email, password);
+      AuthContext.getInstance().setCurrentUser(user);
+      infoLabel.setStyle("-fx-text-fill: #4CAF50;");
+      infoLabel.setText("Login successful!");
+      infoLabel.setVisible(true);
+      Navigator.getInstance().goTo(Routes.USER_PROFILE);
+    } catch (Exception ex) {
       showError(ex.getMessage());
     }
   }
@@ -65,8 +69,9 @@ public class LoginController {
   }
 
   private void showError(String message) {
-    infoLabel.setStyle("-fx-text-fill: #f44336;");
-    infoLabel.setText(message);
-    infoLabel.setVisible(true);
+
+    // infoLabel.setStyle("-fx-text-fill: #f44336;");
+    // infoLabel.setText(message);
+    // infoLabel.setVisible(true);
   }
 }

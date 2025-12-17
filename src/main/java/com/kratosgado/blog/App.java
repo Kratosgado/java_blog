@@ -1,6 +1,7 @@
 package com.kratosgado.blog;
 
 import com.kratosgado.blog.utils.Navigator;
+import com.kratosgado.blog.utils.Routes;
 
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
@@ -25,7 +26,7 @@ public class App extends Application {
 
     Navigator navigator = Navigator.getInstance();
     navigator.setStage(primaryStage);
-    navigator.pushFXML("signup");
+    navigator.goTo(Routes.LOGIN);
   }
 
   public static void main(String[] args) {

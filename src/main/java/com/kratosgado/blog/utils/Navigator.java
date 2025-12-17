@@ -96,7 +96,7 @@ public class Navigator {
     }
   }
 
-  public void pushFXML(String fxml) {
+  public void goTo(String fxml) {
     final Screen screen = new Screen(fxml, loadScene(fxml));
     screens.push(screen);
     this.showCurrentScreen();
