@@ -22,4 +22,8 @@ public class BlogExceptions {
   public static InternalException internal() {
     return new InternalException();
   }
+
+  public static UnAuthorizedException unauthorized(String message) {
+    return new UnAuthorizedException(message);
+  }
 }

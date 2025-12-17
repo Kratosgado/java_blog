@@ -3,7 +3,6 @@ package com.kratosgado.blog.services;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
 
 import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.models.User;
@@ -33,15 +32,15 @@ public class AuthService {
     return userDAO.createUser(new User(username, hashedPassword, email));
   }
 
-  public boolean login(String email, String password) {
+  public User login(String email, String password) {
     if (email == null || email.trim().isEmpty())
       throw BlogExceptions.badRequest("Email cannot be empty");
     if (password == null || password.trim().isEmpty())
       throw BlogExceptions.badRequest("Password cannot be empty");
-    Optional<User> user = userDAO.getUserByEmail(email);
-    if (user.isEmpty())
-      throw BlogExceptions.notFound("User not found");
-    return user.get().getPassword().equals(hashPassword(password));
+    User user = userDAO.getUserByEmail(email).orElseThrow(() -> BlogExceptions.notFound("User not found"));
+    if (!user.getPassword().equals(hashPassword(password)))
+      throw BlogExceptions.unauthorized("Invalid email or password");
+    return user;
   }
 
   private String hashPassword(String password) {
