@@ -1,16 +1,13 @@
 package com.kratosgado.blog.controllers;
 
 import com.kratosgado.blog.services.AuthService;
+import com.kratosgado.blog.utils.Navigator;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.stage.Stage;
 
 public class LoginController {
   @FXML
@@ -61,10 +58,7 @@ public class LoginController {
 
   private void switchToSignUp() {
     try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/signup.fxml"));
-      Parent root = loader.load();
-      Stage stage = (Stage) loginButton.getScene().getWindow();
-      stage.setScene(new Scene(root));
+      Navigator.getInstance().pushReplacement("signup");
     } catch (Exception e) {
       e.printStackTrace();
     }

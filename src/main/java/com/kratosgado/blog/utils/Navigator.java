@@ -11,12 +11,14 @@ import javafx.stage.Stage;
 
 public class Navigator {
 
+  private static Navigator instance;
+
   private Stage stage;
   private final Deque<Screen> screens;
   private static final int WIDTH = 640;
   private static final int HEIGHT = 480;
 
-  public static class Screen {
+  private static class Screen {
     private final String name;
     private final Scene scene;
 
@@ -34,8 +36,23 @@ public class Navigator {
     }
   }
 
+  public Navigator() {
+    this.screens = new ArrayDeque<>();
+  }
+
   public Navigator(Stage stage) {
     this.screens = new ArrayDeque<>();
+  }
+
+  public static Navigator getInstance() {
+    if (instance == null) {
+      instance = new Navigator();
+    }
+    return instance;
+  }
+
+  public void setStage(Stage stage) {
+    this.stage = stage;
   }
 
   private Screen getCurrentScreen() {
@@ -61,30 +78,28 @@ public class Navigator {
   }
 
   public void pushReplacement(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-    try {
-      final Scene scene = fxmlLoader.load();
-      final Screen screen = new Screen(fxml, scene);
-      screens.pop();
-      screens.push(screen);
-      this.showCurrentScreen();
-    } catch (Exception e) {
-
-      System.err.println(e.getLocalizedMessage());
-    }
+    final Screen screen = new Screen(fxml, loadScene(fxml));
+    screens.pop();
+    screens.push(screen);
+    this.showCurrentScreen();
 
   }
 
-  public void pushFXML(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
+  private Scene loadScene(String fxml) {
+    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
+
     try {
-      final Scene scene = fxmlLoader.load();
-      final Screen screen = new Screen(fxml, scene);
-      screens.push(screen);
-      this.showCurrentScreen();
+      return fxmlLoader.load();
     } catch (Exception e) {
       System.err.println(e.getLocalizedMessage());
+      return null;
     }
+  }
+
+  public void pushFXML(String fxml) {
+    final Screen screen = new Screen(fxml, loadScene(fxml));
+    screens.push(screen);
+    this.showCurrentScreen();
   }
 
   public Stage getStage() {
@@ -92,20 +107,13 @@ public class Navigator {
   }
 
   public void changeStage(String fxml) {
-    final FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-    try {
-      final Scene scene = fxmlLoader.load();
-      final Screen screen = new Screen(fxml, scene);
-      this.screens.clear();
-      this.screens.push(screen);
-      Stage newStage = new Stage();
-      newStage.setWidth(WIDTH);
-      newStage.setHeight(HEIGHT);
-      this.stage = newStage;
-      this.showCurrentScreen();
-    } catch (Exception e) {
-      System.err.println(e.getLocalizedMessage());
-    }
-
+    final Screen screen = new Screen(fxml, loadScene(fxml));
+    this.screens.clear();
+    this.screens.push(screen);
+    Stage newStage = new Stage();
+    newStage.setWidth(WIDTH);
+    newStage.setHeight(HEIGHT);
+    this.stage = newStage;
+    this.showCurrentScreen();
   }
 }
