@@ -1,13 +1,12 @@
 package com.kratosgado.blog;
 
+import com.kratosgado.blog.utils.Navigator;
+
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 // import io.github.palexdev.materialfx.theming.Themes;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
@@ -15,6 +14,7 @@ import javafx.stage.Stage;
  *
  */
 public class App extends Application {
+
   @Override
   public void start(Stage primaryStage) throws Exception {
 
@@ -23,11 +23,9 @@ public class App extends Application {
         .setDeploy(true)
         .setResolveAssets(true).build().setGlobal();
 
-    Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
-    Scene scene = new Scene(root, 600, 500);
-    primaryStage.setTitle("Blog");
-    primaryStage.setScene(scene);
-    primaryStage.show();
+    Navigator navigator = Navigator.getInstance();
+    navigator.setStage(primaryStage);
+    navigator.pushFXML("signup");
   }
 
   public static void main(String[] args) {
