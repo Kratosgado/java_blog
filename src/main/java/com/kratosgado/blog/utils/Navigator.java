@@ -7,6 +7,7 @@ import com.kratosgado.blog.App;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Navigator {
@@ -86,6 +87,17 @@ public class Navigator {
   }
 
   private Scene loadScene(String fxml) {
+    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
+
+    try {
+      return fxmlLoader.load();
+    } catch (Exception e) {
+      System.err.println(e.getLocalizedMessage());
+      return null;
+    }
+  }
+
+  public Pane getSubScene(String fxml) {
     FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
 
     try {
