@@ -21,7 +21,7 @@
             
             <Label fx:id="userLabel" text="Welcome, User" style="-fx-font-size: 14px; -fx-text-fill: #333;"/>
             
-            <MFXButton fx:id="logoutButton" text="Logout" 
+            <MFXButton fx:id="logoutBtn" text="Logout" 
                        style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 20;"/>
         </HBox>
     </top>
