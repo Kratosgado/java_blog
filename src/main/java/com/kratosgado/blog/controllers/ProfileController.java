@@ -1,10 +1,9 @@
 
 package com.kratosgado.blog.controllers;
 
+import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.UserService;
-import com.kratosgado.blog.dao.UserDAO;
-import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
