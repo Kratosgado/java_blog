@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.Scene?>
+
+<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kratosgado.blog.controllers.ProfileController">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+
+    <VBox spacing="25" style="-fx-padding: 20;">
+        
+        <Label text="My Profile" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+        
+        <!-- Profile Card -->
+        <VBox spacing="25" style="-fx-background-color: white; -fx-padding: 35; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            
+            <!-- Avatar and Basic Info -->
+            <HBox spacing="25" alignment="CENTER_LEFT">
+                <Circle fx:id="avatarCircle" radius="60" fill="#667eea" stroke="#e0e0e0" strokeWidth="3"/>
+                
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <Label fx:id="usernameLabel" text="Username" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                    <Label fx:id="emailLabel" text="email@example.com" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
+                    <Label fx:id="joinDateLabel" text="Member since: January 2025" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
+                </VBox>
+                
+                <MFXButton fx:id="changeAvatarBtn" text="Change Photo" 
+                           style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 20;"/>
+            </HBox>
+            
+            <Separator/>
+            
+            <!-- Edit Profile Form -->
+            <VBox spacing="20">
+                <Label text="Profile Information" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                
+                <GridPane hgap="20" vgap="20">
+                    <VBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="0">
+                        <Label text="Display Name" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                        <MFXTextField fx:id="displayNameField" prefWidth="300"/>
+                    </VBox>
+                    
+                    <VBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                        <Label text="Email" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                        <MFXTextField fx:id="emailField" prefWidth="300"/>
+                    </VBox>
+                    
+                    <VBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                        <Label text="Bio" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                        <TextArea fx:id="bioArea" promptText="Tell us about yourself..." 
+                                 prefHeight="100" wrapText="true"/>
+                    </VBox>
+                    
+                    <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="0">
+                        <Label text="Website" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                        <MFXTextField fx:id="websiteField" promptText="https://" prefWidth="300"/>
+                    </VBox>
+                    
+                    <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                        <Label text="Location" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                        <MFXTextField fx:id="locationField" prefWidth="300"/>
+                    </VBox>
+                </GridPane>
+            </VBox>
+            
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <MFXButton fx:id="cancelBtn" text="Cancel" 
+                           style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 25;"/>
+                <MFXButton fx:id="saveProfileBtn" text="Save Changes" 
+                           style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 25; -fx-font-weight: bold;"/>
+            </HBox>
+            
+            <Label fx:id="messageLabel" wrapText="true" style="-fx-font-size: 13px;"/>
+        </VBox>
+        
+        <!-- Change Password Section -->
+        <VBox spacing="20" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="Change Password" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            
+            <VBox spacing="15">
+                <VBox spacing="5">
+                    <Label text="Current Password" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                    <MFXPasswordField fx:id="currentPasswordField" prefWidth="350"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="New Password" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                    <MFXPasswordField fx:id="newPasswordField" prefWidth="350"/>
+                </VBox>
+                
+                <VBox spacing="5">
+                    <Label text="Confirm New Password" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
+                    <MFXPasswordField fx:id="confirmNewPasswordField" prefWidth="350"/>
+                </VBox>
+            </VBox>
+            
+            <HBox alignment="CENTER_LEFT">
+                <MFXButton fx:id="changePasswordBtn" text="Update Password" 
+                           style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 25;"/>
+            </HBox>
+            
+            <Label fx:id="passwordMessageLabel" wrapText="true" style="-fx-font-size: 13px;"/>
+        </VBox>
+    </VBox>
+</ScrollPane>
+</Scene>

@@ -10,4 +10,8 @@ public class InternalException extends RuntimeException {
     super("Internal Operation Failed");
   }
 
+  public InternalException(Throwable cause) {
+    super(cause);
+  }
+
 }

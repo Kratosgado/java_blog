@@ -26,13 +26,13 @@
  <dependency>
         <groupId>io.github.palexdev</groupId>
         <artifactId>virtualizedfx</artifactId>
-        <version>11.9.2</version> <!-- Use the latest version -->
+        <version>11.9.2</version>
     </dependency>
 
 <dependency>
     <groupId>org.projectlombok</groupId>
     <artifactId>lombok</artifactId>
-    <version>1.18.42</version> <!-- Check Maven Central for the latest version -->
+    <version>1.18.42</version>
     <scope>provided</scope>
 </dependency>
 <dependency>
@@ -44,8 +44,14 @@
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
-    <version>42.7.8</version> <!-- Use the latest version -->
+    <version>42.7.8</version>
 </dependency>
+<!-- For Hot reloading -->
+<!-- <dependency> -->
+<!--     <groupId>io.github.palexdev</groupId> -->
+<!--     <artifactId>hotswapfx</artifactId>  -->
+<!--     <version>24.2.0</version> -->
+<!-- </dependency> -->
   </dependencies>
 
 <properties>
