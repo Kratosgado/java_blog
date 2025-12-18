@@ -7,14 +7,9 @@ import com.kratosgado.blog.utils.context.AuthContext;
 import io.github.palexdev.materialfx.theming.JavaFXThemes;
 import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
 import io.github.palexdev.materialfx.theming.UserAgentBuilder;
-// import io.github.palexdev.materialfx.theming.Themes;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-/**
- * Hello world!
- *
- */
 public class App extends Application {
 
   @Override

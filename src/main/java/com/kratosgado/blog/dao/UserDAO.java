@@ -46,6 +46,20 @@ public class UserDAO {
     }
   }
 
+  public boolean setUserPassword(int id, String password) {
+    String sql = "UPDATE users SET password = ? WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setString(1, password);
+      stmt.setInt(2, id);
+      stmt.executeUpdate();
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+  }
+
   public Optional<User> getUserById(int id) {
     String sql = "SELECT * FROM users WHERE id = ?";
     try (Connection conn = DatabaseConfig.getConnection();

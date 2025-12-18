@@ -7,8 +7,7 @@
 <?import javafx.scene.text.*?>
 <?import javafx.scene.Scene?>
 
-<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-           fx:controller="com.kratosgado.blog.controllers.LoginController" >
+<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kratosgado.blog.controllers.LoginController" >
   <StackPane style="-fx-background-color: #f5f5f5;">
     <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="400" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
         <padding>
