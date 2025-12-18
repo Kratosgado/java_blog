@@ -25,7 +25,7 @@ public class App extends Application {
     if (AuthContext.getInstance().getCurrentUser() == null) {
       navigator.goTo(Routes.LOGIN);
     } else {
-      navigator.goTo(Routes.USER_PROFILE);
+      navigator.goTo(Routes.DASHBOARD);
     }
   }
 
