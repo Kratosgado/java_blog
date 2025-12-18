@@ -27,6 +27,11 @@ public class AuthContext {
     saveUser();
   }
 
+  public void logout() {
+    currentUser = null;
+    userPrefs.remove("user");
+  }
+
   private void saveUser() {
     Gson gson = new Gson();
     String json = gson.toJson(currentUser);

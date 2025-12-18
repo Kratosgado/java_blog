@@ -27,14 +27,14 @@ public class Navigator {
       this.name = name;
       this.scene = scene;
     }
-
-    public String getName() {
-      return name;
-    }
-
-    public Scene getScene() {
-      return scene;
-    }
+    //
+    // public String getName() {
+    // return name;
+    // }
+    //
+    // public Scene getScene() {
+    // return scene;
+    // }
   }
 
   public Navigator() {
@@ -86,7 +86,7 @@ public class Navigator {
 
   }
 
-  private Scene loadScene(String fxml) {
+  private <T> T loadScene(String fxml) {
     FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
 
     try {
@@ -98,14 +98,7 @@ public class Navigator {
   }
 
   public Pane getSubScene(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
-
-    try {
-      return fxmlLoader.load();
-    } catch (Exception e) {
-      System.err.println(e.getLocalizedMessage());
-      return null;
-    }
+    return loadScene(fxml);
   }
 
   public void goTo(String fxml) {
