@@ -6,10 +6,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 
-<Scene  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.DashboardHomeController">
       
-<VBox spacing="20" style="-fx-background-color: transparent;">
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.kratosgado.blog.controllers.DashboardHomeController" spacing="20" style="-fx-background-color: transparent;">
     
     <Label text="Dashboard Overview" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
     
@@ -57,4 +56,3 @@
         </ScrollPane>
     </VBox>
 </VBox>
-</Scene>
