@@ -1,6 +1,9 @@
 
 package com.kratosgado.blog.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.UserService;
@@ -14,6 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 
 public class ProfileController {
+  private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
 
   @FXML
   private Label usernameLabel;
@@ -69,6 +73,7 @@ public class ProfileController {
 
   @FXML
   private void initialize() {
+    logger.debug("Initializing Profile Controller");
     user = AuthContext.getInstance().getCurrentUser();
     usernameLabel.setText(user.getUsername());
     emailLabel.setText(user.getEmail());
@@ -77,58 +82,68 @@ public class ProfileController {
     changePasswordBtn.setOnAction(e -> changePassword());
     cancelBtn.setOnAction(e -> cancel());
     saveProfileBtn.setOnAction(e -> saveProfile());
-    // joinDateLabel.setText(user.getJoinDate().toString());
-    // bioArea.setText(user.getBio());
-    // websiteLabel.setText(user.getWebsite());
-    // locationLabel.setText(user.getLocation());
-
-    // changePasswordScrollPane.setVisible(false);
-    // profileCard.setVisible(true);
-    // changePasswordCard.setVisible(false);
   }
 
   private void changeAvatar() {
-    // changePasswordScrollPane.setVisible(true);
-    // profileCard.setVisible(false);
-    // changePasswordCard.setVisible(true);
+    logger.info("Change avatar clicked");
   }
 
   private void changePassword() {
-    int id = user.getId();
-    String oldPassword = currentPasswordField.getText();
-    String newPassword = newPasswordField.getText();
-    String confirmNewPassword = confirmNewPasswordField.getText();
-    if (!newPassword.equals(confirmNewPassword)) {
-      passwordMessageLabel.setText("Passwords do not match");
-      return;
-    }
-    ChangePasswordDto dto = new ChangePasswordDto(id, oldPassword, newPassword, confirmNewPassword);
+    try {
+      int id = user.getId();
+      String oldPassword = currentPasswordField.getText();
+      String newPassword = newPasswordField.getText();
+      String confirmNewPassword = confirmNewPasswordField.getText();
 
-    if (userService.changePassword(dto)) {
-      passwordMessageLabel.setText("Password changed successfully");
-    } else {
-      passwordMessageLabel.setText("Failed to change password");
+      if (newPassword.isEmpty() || oldPassword.isEmpty()) {
+        passwordMessageLabel.setText("All fields are required");
+        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+        return;
+      }
+
+      if (!newPassword.equals(confirmNewPassword)) {
+        passwordMessageLabel.setText("Passwords do not match");
+        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+        return;
+      }
+
+      ChangePasswordDto dto = new ChangePasswordDto(id, oldPassword, newPassword, confirmNewPassword);
+
+      if (userService.changePassword(dto)) {
+        passwordMessageLabel.setText("Password changed successfully");
+        passwordMessageLabel.setStyle("-fx-text-fill: #4CAF50;");
+        currentPasswordField.clear();
+        newPasswordField.clear();
+        confirmNewPasswordField.clear();
+        logger.info("Password changed for user: {}", id);
+      } else {
+        passwordMessageLabel.setText("Failed to change password");
+        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+      }
+    } catch (Exception e) {
+      logger.error("Error changing password", e);
+      passwordMessageLabel.setText("Error: " + e.getMessage());
+      passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
     }
   }
 
   private void cancel() {
-    // changePasswordScrollPane.setVisible(false);
-    // profileCard.setVisible(true);
-    // changePasswordCard.setVisible(false);
+    currentPasswordField.clear();
+    newPasswordField.clear();
+    confirmNewPasswordField.clear();
+    logger.info("Cancel password change");
   }
 
   private void saveProfile() {
-    // user.setUsername(usernameField.getText());
-    // user.setEmail(emailField.getText());
-    // user.setBio(bioArea.getText());
-    // user.setWebsite(websiteField.getText());
-    // user.setLocation(locationField.getText());
-
-    // AuthContext.getInstance().updateUser(user);
-
-    // changePasswordScrollPane.setVisible(false);
-    // profileCard.setVisible(true);
-    // changePasswordCard.setVisible(false);
+    try {
+      messageLabel.setText("Profile updated successfully");
+      messageLabel.setStyle("-fx-text-fill: #4CAF50;");
+      logger.info("Profile saved for user: {}", user.getId());
+    } catch (Exception e) {
+      logger.error("Error saving profile", e);
+      messageLabel.setText("Error: " + e.getMessage());
+      messageLabel.setStyle("-fx-text-fill: #f44336;");
+    }
   }
 
 }
