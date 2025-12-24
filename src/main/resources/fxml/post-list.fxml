@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.palexdev.materialfx.controls.*?>
@@ -7,10 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 
-<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.PostsListController">
-      
-<VBox spacing="20" style="-fx-background-color: transparent;">
+<VBox  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.kratosgado.blog.controllers.PostsListController" spacing="20" style="-fx-background-color: transparent;">
     
     <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="15">
@@ -58,4 +55,3 @@
         </HBox>
     </VBox>
 </VBox>
-</Scene>
