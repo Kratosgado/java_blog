@@ -6,10 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 
-<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.CommentsManagementController">
-      
-<VBox spacing="20" style="-fx-background-color: transparent;">
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.kratosgado.blog.controllers.CommentsManagementController" spacing="20" style="-fx-background-color: transparent;">
     
     <HBox alignment="CENTER_LEFT" spacing="15">
         <Label text="Comments Management" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
@@ -53,4 +51,3 @@
         </TableView>
     </VBox>
 </VBox>
-</Scene>
