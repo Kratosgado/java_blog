@@ -6,13 +6,17 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.User;
 
 public class UserDAO {
+  private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
+
   public UserDAO() {
     initDatabase();
-
   }
 
   private void initDatabase() {
@@ -25,9 +29,9 @@ public class UserDAO {
           "email VARCHAR(50) UNIQUE NOT NULL," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
-
+      logger.debug("Users table initialized successfully");
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to initialize users table", e);
     }
   }
 
@@ -39,9 +43,10 @@ public class UserDAO {
       stmt.setString(2, user.getPassword());
       stmt.setString(3, user.getEmail());
       stmt.executeUpdate();
+      logger.info("User created successfully: {}", user.getEmail());
       return true;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to create user: {}", user.getEmail(), e);
       return false;
     }
   }
@@ -53,9 +58,10 @@ public class UserDAO {
       stmt.setString(1, password);
       stmt.setInt(2, id);
       stmt.executeUpdate();
+      logger.info("Password updated for user id: {}", id);
       return true;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to update password for user id: {}", id, e);
       return false;
     }
   }
@@ -72,7 +78,7 @@ public class UserDAO {
       }
       return Optional.empty();
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to fetch user by id: {}", id, e);
       return Optional.empty();
     }
   }
@@ -89,13 +95,12 @@ public class UserDAO {
       }
       return Optional.empty();
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to fetch user by email: {}", email, e);
       return Optional.empty();
     }
   }
 
   public boolean userEmailExists(String email) {
-    // TODO: Refactor this method
     return getUserByEmail(email).isPresent();
   }
 
