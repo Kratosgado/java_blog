@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Scene?>
+
+<ScrollPane  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.kratosgado.blog.controllers.SettingsController" fitToWidth="true" style="-fx-background-color: transparent;">
+    
+    <VBox spacing="25" style="-fx-padding: 20;">
+        
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Label text="Settings" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+        
+        <!-- Notification Settings -->
+        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="Notifications" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            
+            <VBox spacing="10" style="-fx-padding: 10;">
+                <HBox spacing="15" alignment="CENTER_LEFT">
+                    <CheckBox fx:id="emailNotificationsCheckbox"/>
+                    <Label text="Email Notifications" style="-fx-font-size: 14px; -fx-text-fill: #333;"/>
+                    <Label text="Receive email notifications about activities" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
+                </HBox>
+                
+                <HBox spacing="15" alignment="CENTER_LEFT">
+                    <CheckBox fx:id="commentNotificationsCheckbox"/>
+                    <Label text="Comment Notifications" style="-fx-font-size: 14px; -fx-text-fill: #333;"/>
+                    <Label text="Get notified when someone comments on your posts" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
+                </HBox>
+                
+                <HBox spacing="15" alignment="CENTER_LEFT">
+                    <CheckBox fx:id="publishNotificationsCheckbox"/>
+                    <Label text="Publish Notifications" style="-fx-font-size: 14px; -fx-text-fill: #333;"/>
+                    <Label text="Notify followers when you publish new posts" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+        
+        <!-- Appearance Settings -->
+        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="Appearance" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            
+            <VBox spacing="10">
+                <Label text="Theme" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                <MFXComboBox fx:id="themeComboBox" floatingText="Select theme" prefWidth="250"/>
+            </VBox>
+            
+            <VBox spacing="10">
+                <Label text="Language" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+                <MFXComboBox fx:id="languageComboBox" floatingText="Select language" prefWidth="250"/>
+            </VBox>
+        </VBox>
+        
+        <!-- Message Label -->
+        <Label fx:id="messageLabel" wrapText="true" style="-fx-font-size: 13px;"/>
+        
+        <!-- Action Buttons -->
+        <HBox spacing="15" alignment="CENTER_RIGHT">
+            <MFXButton fx:id="resetSettingsBtn" text="Reset to Default" 
+                       style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 8; -fx-padding: 10 25;"/>
+            <MFXButton fx:id="saveSettingsBtn" text="💾 Save Settings" 
+                       style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 25; -fx-font-weight: bold;"/>
+        </HBox>
+    </VBox>
+    
+</ScrollPane>
