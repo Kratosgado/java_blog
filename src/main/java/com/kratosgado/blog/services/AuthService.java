@@ -1,8 +1,8 @@
 
 package com.kratosgado.blog.services;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.models.User;
@@ -10,6 +10,7 @@ import com.kratosgado.blog.utils.ValidationUtils;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 
 public class AuthService {
+  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
   private final UserDAO userDAO;
 
   public AuthService() {
@@ -38,7 +39,7 @@ public class AuthService {
     if (password == null || password.trim().isEmpty())
       throw BlogExceptions.badRequest("Password cannot be empty");
     User user = userDAO.getUserByEmail(email).orElseThrow(() -> BlogExceptions.notFound("User not found"));
-    if (!user.getPassword().equals(ValidationUtils.hashPassword(password)))
+    if (!ValidationUtils.verifyPassword(password, user.getPassword()))
       throw BlogExceptions.unauthorized("Invalid email or password");
     return user;
   }

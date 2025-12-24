@@ -1,13 +1,15 @@
 
 package com.kratosgado.blog.utils;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.exceptions.InternalException;
 
 public class ValidationUtils {
+  private static final Logger logger = LoggerFactory.getLogger(ValidationUtils.class);
 
   public static boolean isValidEmail(String email) {
     return email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
@@ -19,19 +21,19 @@ public class ValidationUtils {
 
   public static String hashPassword(String password) throws InternalException {
     try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hash = digest.digest(password.getBytes());
-      StringBuilder hexString = new StringBuilder();
-      for (byte b : hash) {
-        String hex = Integer.toHexString(0xff & b);
-        if (hex.length() == 1)
-          hexString.append('0');
-        hexString.append(hex);
-      }
-      return hexString.toString();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      return BCrypt.withDefaults().hashToString(12, password.toCharArray());
+    } catch (Exception e) {
+      logger.error("Password hashing failed", e);
       throw BlogExceptions.internal();
+    }
+  }
+
+  public static boolean verifyPassword(String password, String hash) {
+    try {
+      return BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
+    } catch (Exception e) {
+      logger.error("Password verification failed", e);
+      return false;
     }
   }
 

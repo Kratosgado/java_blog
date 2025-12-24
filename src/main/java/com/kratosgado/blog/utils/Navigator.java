@@ -3,6 +3,9 @@ package com.kratosgado.blog.utils;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kratosgado.blog.App;
 
 import javafx.fxml.FXMLLoader;
@@ -11,7 +14,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Navigator {
-
+  private static final Logger logger = LoggerFactory.getLogger(Navigator.class);
   private static Navigator instance;
 
   private Stage stage;
@@ -27,14 +30,6 @@ public class Navigator {
       this.name = name;
       this.scene = scene;
     }
-    //
-    // public String getName() {
-    // return name;
-    // }
-    //
-    // public Scene getScene() {
-    // return scene;
-    // }
   }
 
   public Navigator() {
@@ -70,11 +65,13 @@ public class Navigator {
   public void pushScreen(String name, Scene scene) {
     final Screen screen = new Screen(name, scene);
     screens.push(screen);
+    logger.debug("Screen pushed: {}", name);
     this.showCurrentScreen();
   }
 
   public void popScreen() {
-    screens.pop();
+    Screen popped = screens.pop();
+    logger.debug("Screen popped: {}", popped.name);
     this.showCurrentScreen();
   }
 
@@ -82,8 +79,8 @@ public class Navigator {
     final Screen screen = new Screen(fxml, loadScene(fxml));
     screens.pop();
     screens.push(screen);
+    logger.debug("Screen replaced: {}", fxml);
     this.showCurrentScreen();
-
   }
 
   private <T> T loadScene(String fxml) {
@@ -92,7 +89,7 @@ public class Navigator {
     try {
       return fxmlLoader.load();
     } catch (Exception e) {
-      System.err.println(e.getLocalizedMessage());
+      logger.error("Failed to load FXML: {}", fxml, e);
       return null;
     }
   }
@@ -104,6 +101,7 @@ public class Navigator {
   public void goTo(String fxml) {
     final Screen screen = new Screen(fxml, loadScene(fxml));
     screens.push(screen);
+    logger.debug("Navigating to: {}", fxml);
     this.showCurrentScreen();
   }
 
@@ -119,6 +117,7 @@ public class Navigator {
     newStage.setWidth(WIDTH);
     newStage.setHeight(HEIGHT);
     this.stage = newStage;
+    logger.debug("Stage changed to: {}", fxml);
     this.showCurrentScreen();
   }
 }

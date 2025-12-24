@@ -1,5 +1,8 @@
 package com.kratosgado.blog.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
@@ -7,10 +10,14 @@ import com.kratosgado.blog.utils.Routes;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
 import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.util.Duration;
 
 public class SignUpController {
+  private static final Logger logger = LoggerFactory.getLogger(SignUpController.class);
+
   @FXML
   private MFXTextField usernameField;
   @FXML
@@ -58,18 +65,14 @@ public class SignUpController {
         infoLabel.setStyle("-fx-text-fill: #4CAF50;");
         infoLabel.setText("Registration successful! Redirecting to login...");
         infoLabel.setVisible(true);
+        logger.info("User registered successfully: {}", email);
 
-        // Delay before switching to login
-        new Thread(() -> {
-          try {
-            Thread.sleep(1500);
-            javafx.application.Platform.runLater(this::switchToLogin);
-          } catch (InterruptedException ex) {
-            ex.printStackTrace();
-          }
-        }).start();
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(event -> switchToLogin());
+        pause.play();
       }
     } catch (IllegalArgumentException ex) {
+      logger.error("Registration failed for email: {}", email, ex);
       showError(ex.getMessage());
     }
   }
@@ -78,7 +81,7 @@ public class SignUpController {
     try {
       Navigator.getInstance().pushReplacement(Routes.LOGIN);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to navigate to login", e);
     }
   }
 

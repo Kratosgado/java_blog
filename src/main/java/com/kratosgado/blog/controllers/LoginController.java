@@ -1,5 +1,8 @@
 package com.kratosgado.blog.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
@@ -13,6 +16,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 public class LoginController {
+  private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+
   @FXML
   private MFXTextField emailField;
   @FXML
@@ -50,23 +55,23 @@ public class LoginController {
       infoLabel.setStyle("-fx-text-fill: #4CAF50;");
       infoLabel.setText("Login successful!");
       infoLabel.setVisible(true);
+      logger.info("User logged in successfully: {}", email);
       Navigator.getInstance().goTo(Routes.USER_PROFILE);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Login failed for email: {}", email, ex);
       showError(ex.getMessage());
     }
   }
 
   private void switchToSignUp() {
     try {
-      Navigator.getInstance().pushReplacement("signup");
+      Navigator.getInstance().pushReplacement(Routes.SIGNUP);
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("Failed to navigate to signup", e);
     }
   }
 
   private void showError(String message) {
-
     infoLabel.setStyle("-fx-text-fill: #f44336;");
     infoLabel.setText(message);
     infoLabel.setVisible(true);
