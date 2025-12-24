@@ -6,7 +6,7 @@ module com.kratosgado.blog {
   requires static lombok;
   requires java.prefs;
   requires com.google.gson;
-  // requires lombok;
+  requires io.github.cdimascio.dotenv.java;
 
   opens com.kratosgado.blog.controllers to javafx.fxml;
   opens com.kratosgado.blog.dao to java.sql;
