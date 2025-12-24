@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.App;
 
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -94,7 +95,7 @@ public class Navigator {
     }
   }
 
-  public Pane getSubScene(String fxml) {
+  public Parent getSubScene(String fxml) {
     return loadScene(fxml);
   }
 
