@@ -7,15 +7,12 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.Scene?>
 
-<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.AnalyticsController">
-      
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kratosgado.blog.controllers.AnalyticsController" fitToWidth="true" style="-fx-background-color: transparent;">
    
     <VBox spacing="25" style="-fx-padding: 20;">
         
         <HBox alignment="CENTER_LEFT" spacing="15">
-            <Label text="Analytics & Performance" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
+            <Label text="Analytics And Performance" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
             <Region HBox.hgrow="ALWAYS"/>
             <MFXComboBox fx:id="timeRangeCombo" floatingText="Time Range" prefWidth="150"/>
             <MFXButton fx:id="exportReportBtn" text="📊 Export Report" 
@@ -107,4 +104,3 @@
         </VBox>
     </VBox>
 </ScrollPane>
-</Scene>
