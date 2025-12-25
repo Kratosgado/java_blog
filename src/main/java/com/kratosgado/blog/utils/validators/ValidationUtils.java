@@ -1,12 +1,13 @@
 
-package com.kratosgado.blog.utils;
+package com.kratosgado.blog.utils.validators;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.exceptions.InternalException;
+
+import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class ValidationUtils {
   private static final Logger logger = LoggerFactory.getLogger(ValidationUtils.class);
@@ -15,6 +16,7 @@ public class ValidationUtils {
     return email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
   }
 
+  // TODO: implement string password
   public static boolean isValidPassword(String password) {
     return password.length() >= 8;
   }
@@ -36,5 +38,4 @@ public class ValidationUtils {
       return false;
     }
   }
-
 }

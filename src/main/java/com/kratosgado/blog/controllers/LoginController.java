@@ -3,6 +3,7 @@ package com.kratosgado.blog.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dtos.request.LoginDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
@@ -48,15 +49,16 @@ public class LoginController {
 
     String email = emailField.getText();
     String password = passwordField.getText();
+    logger.info("Login attempt for email: {}", email);
 
     try {
-      User user = authService.login(email, password);
+      User user = authService.login(new LoginDto(email, password));
       AuthContext.getInstance().setCurrentUser(user);
       infoLabel.setStyle("-fx-text-fill: #4CAF50;");
       infoLabel.setText("Login successful!");
       infoLabel.setVisible(true);
       logger.info("User logged in successfully: {}", email);
-      Navigator.getInstance().goTo(Routes.USER_PROFILE);
+      Navigator.getInstance().goTo(Routes.DASHBOARD);
     } catch (Exception ex) {
       logger.error("Login failed for email: {}", email, ex);
       showError(ex.getMessage());

@@ -3,6 +3,7 @@ package com.kratosgado.blog.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dtos.request.SignUpDto;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
@@ -55,13 +56,8 @@ public class SignUpController {
     String password = passwordField.getText();
     String confirmPassword = confirmPasswordField.getText();
 
-    if (!password.equals(confirmPassword)) {
-      showError("Passwords do not match");
-      return;
-    }
-
     try {
-      if (authService.register(username, email, password)) {
+      if (authService.register(new SignUpDto(username, email, password, confirmPassword))) {
         infoLabel.setStyle("-fx-text-fill: #4CAF50;");
         infoLabel.setText("Registration successful! Redirecting to login...");
         infoLabel.setVisible(true);

@@ -26,4 +26,5 @@ public class BlogExceptions {
   public static UnAuthorizedException unauthorized(String message) {
     return new UnAuthorizedException(message);
   }
+
 }
