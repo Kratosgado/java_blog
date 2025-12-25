@@ -6,8 +6,8 @@ import java.util.Optional;
 import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
-import com.kratosgado.blog.utils.ValidationUtils;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.validators.ValidationUtils;
 
 public class UserService {
 
