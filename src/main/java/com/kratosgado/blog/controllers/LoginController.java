@@ -9,6 +9,7 @@ import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
+import com.kratosgado.blog.utils.notifications.Toast;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
@@ -54,14 +55,12 @@ public class LoginController {
     try {
       User user = authService.login(new LoginDto(email, password));
       AuthContext.getInstance().setCurrentUser(user);
-      infoLabel.setStyle("-fx-text-fill: #4CAF50;");
-      infoLabel.setText("Login successful!");
-      infoLabel.setVisible(true);
+      Toast.success("Login successful! Welcome back.");
       logger.info("User logged in successfully: {}", email);
-      Navigator.getInstance().goTo(Routes.DASHBOARD);
+      Navigator.getInstance().goTo(Routes.HOME);
     } catch (Exception ex) {
       logger.error("Login failed for email: {}", email, ex);
-      showError(ex.getMessage());
+      Toast.error(ex.getMessage());
     }
   }
 

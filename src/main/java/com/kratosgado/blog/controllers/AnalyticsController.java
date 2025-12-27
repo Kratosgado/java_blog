@@ -3,6 +3,10 @@ package com.kratosgado.blog.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.services.CommentService;
+import com.kratosgado.blog.services.PostService;
+import com.kratosgado.blog.utils.context.AuthContext;
+
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
 import javafx.fxml.FXML;
@@ -53,6 +57,14 @@ public class AnalyticsController {
   @FXML
   private VBox analyticsContainer;
 
+  private final PostService postService;
+  private final CommentService commentService;
+
+  public AnalyticsController() {
+    this.postService = new PostService();
+    this.commentService = new CommentService();
+  }
+
   @FXML
   private void initialize() {
     logger.debug("Initializing Analytics Controller");
@@ -78,14 +90,31 @@ public class AnalyticsController {
   }
 
   private void updateMetrics() {
-    totalViewsLabel.setText("0");
-    viewsChangeLabel.setText("+0% from last period");
-    totalCommentsLabel.setText("0");
-    commentsChangeLabel.setText("+0% from last period");
-    totalPostsLabel.setText("0");
-    postsChangeLabel.setText("+0% from last period");
-    avgEngagementLabel.setText("0%");
-    engagementChangeLabel.setText("+0% from last period");
+    try {
+      int currentUserId = AuthContext.getInstance().getCurrentUser().getId();
+      var posts = postService.getPostsByUserId(currentUserId);
+
+      long totalViews = postService.getTotalViews(currentUserId);
+      totalViewsLabel.setText(String.valueOf(totalViews));
+      viewsChangeLabel.setText("+0% from last period");
+
+      int totalComments = 0;
+      for (var post : posts) {
+        totalComments += commentService.getCommentCountForPost(post.getId());
+      }
+      totalCommentsLabel.setText(String.valueOf(totalComments));
+      commentsChangeLabel.setText("+0% from last period");
+
+      totalPostsLabel.setText(String.valueOf(posts.size()));
+      postsChangeLabel.setText("+0% from last period");
+
+      double engagement = posts.isEmpty() ? 0 : (double) totalComments / posts.size();
+      avgEngagementLabel.setText(String.format("%.1f%%", engagement));
+      engagementChangeLabel.setText("+0% from last period");
+
+    } catch (Exception e) {
+      logger.error("Failed to update metrics", e);
+    }
   }
 
   private void exportReport() {
