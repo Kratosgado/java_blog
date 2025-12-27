@@ -6,52 +6,59 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 
-<VBox  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.PostsListController" spacing="20" style="-fx-background-color: transparent;">
-    
-    <!-- Header -->
-    <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label text="My Blog Posts" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        
-        <MFXComboBox fx:id="sortComboBox" floatingText="Sort By" prefWidth="150"/>
-        <MFXComboBox fx:id="filterComboBox" floatingText="Filter By Status" prefWidth="150"/>
-        <MFXButton fx:id="createNewPostBtn" text="+ New Post" 
-                   style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-weight: bold;"/>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.PostsListController" spacing="20"
+  style="-fx-background-color: transparent;">
+
+  <!-- Header -->
+  <HBox alignment="CENTER_LEFT" spacing="15">
+    <Label text="My Blog Posts"
+      style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+    <Region HBox.hgrow="ALWAYS" />
+
+    <MFXComboBox fx:id="sortComboBox" floatingText="Sort By" prefWidth="150" />
+    <MFXComboBox fx:id="filterComboBox" floatingText="Filter By Status" prefWidth="150" />
+    <MFXButton fx:id="createNewPostBtn" text="+ New Post"
+      style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-weight: bold;" />
+  </HBox>
+
+  <!-- Search and Filters -->
+  <HBox spacing="15" alignment="CENTER_LEFT"
+    style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+    <MFXTextField fx:id="searchField" floatingText="Search posts by title, content, or tags..."
+      prefWidth="400" />
+    <MFXButton fx:id="searchBtn" text="🔍 Search"
+      style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+    <MFXButton fx:id="clearBtn" text="Clear"
+      style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 20;" />
+  </HBox>
+
+  <!-- Posts Table -->
+  <VBox spacing="0" VBox.vgrow="ALWAYS"
+    style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+    <padding>
+      <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <TableView fx:id="postsTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+      <columns>
+        <TableColumn fx:id="titleColumn" text="Title" prefWidth="300" />
+        <TableColumn fx:id="authorColumn" text="Author" prefWidth="150" />
+        <TableColumn fx:id="dateColumn" text="Date Published" prefWidth="150" />
+        <TableColumn fx:id="viewsColumn" text="Views" prefWidth="100" />
+        <TableColumn fx:id="commentsColumn" text="Comments" prefWidth="100" />
+        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100" />
+        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150" />
+      </columns>
+    </TableView>
+
+    <!-- Pagination -->
+    <HBox alignment="CENTER" spacing="10" style="-fx-padding: 15 0 0 0;">
+      <MFXButton fx:id="prevPageBtn" text="← Previous"
+        style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 16;" />
+      <Label fx:id="pageLabel" text="Page 1 of 10" style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+      <MFXButton fx:id="nextPageBtn" text="Next →"
+        style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 16;" />
     </HBox>
-    
-    <!-- Search and Filters -->
-    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
-        <MFXTextField fx:id="searchField" floatingText="Search posts by title, content, or tags..." prefWidth="400"/>
-        <MFXButton fx:id="searchBtn" text="🔍 Search" 
-                   style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-        <MFXButton fx:id="clearBtn" text="Clear" 
-                   style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-    </HBox>
-    
-    <!-- Posts Table -->
-    <VBox spacing="0" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
-        
-        <TableView fx:id="postsTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
-            <columns>
-                <TableColumn fx:id="titleColumn" text="Title" prefWidth="300"/>
-                <TableColumn fx:id="authorColumn" text="Author" prefWidth="150"/>
-                <TableColumn fx:id="dateColumn" text="Date Published" prefWidth="150"/>
-                <TableColumn fx:id="viewsColumn" text="Views" prefWidth="100"/>
-                <TableColumn fx:id="commentsColumn" text="Comments" prefWidth="100"/>
-                <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
-            </columns>
-        </TableView>
-        
-        <!-- Pagination -->
-        <HBox alignment="CENTER" spacing="10" style="-fx-padding: 15 0 0 0;">
-            <MFXButton fx:id="prevPageBtn" text="← Previous" style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 16;"/>
-            <Label fx:id="pageLabel" text="Page 1 of 10" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-            <MFXButton fx:id="nextPageBtn" text="Next →" style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 16;"/>
-        </HBox>
-    </VBox>
+  </VBox>
 </VBox>

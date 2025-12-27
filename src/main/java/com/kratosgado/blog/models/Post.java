@@ -2,6 +2,8 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 
+import com.kratosgado.blog.dtos.request.CreatePostDto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,11 +23,12 @@ public class Post {
   private int views;
   private String featuredImage;
 
-  public Post(int userId, String title, String content, String excerpt, String status) {
-    this.userId = userId;
-    this.title = title;
-    this.content = content;
-    this.excerpt = excerpt;
-    this.status = status;
+  public Post(CreatePostDto dto) {
+    userId = dto.userId();
+    title = dto.title();
+    content = dto.content();
+    excerpt = dto.excerpt();
+    status = dto.status();
+    featuredImage = dto.featuredImage();
   }
 }

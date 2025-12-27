@@ -7,75 +7,83 @@
 <?import javafx.scene.Scene?>
 <?import javafx.scene.Scene?>
 
-<Scene  xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.kratosgado.blog.controllers.PostDetailController">
-            
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
-    
+<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.PostDetailController">
+
+  <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+
     <VBox spacing="20" style="-fx-padding: 20;">
-        
-        <!-- Back Button -->
-        <MFXButton fx:id="backBtn" text="← Back to Posts" 
-                   style="-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 14px;"/>
-        
-        <!-- Post Content Card -->
-        <VBox spacing="20" style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-            
-            <!-- Post Header -->
-            <VBox spacing="15">
-                <Label fx:id="postTitleLabel" text="Post Title" 
-                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #333;" wrapText="true"/>
-                
-                <HBox spacing="20" alignment="CENTER_LEFT">
-                    <Label fx:id="authorLabel" text="By Author" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-                    <Separator orientation="VERTICAL" prefHeight="20"/>
-                    <Label fx:id="dateLabel" text="Published Date" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-                    <Separator orientation="VERTICAL" prefHeight="20"/>
-                    <Label fx:id="viewsLabel" text="👁️ 0 views" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-                </HBox>
-                
-                <!-- Tags -->
-                <FlowPane fx:id="tagsFlowPane" hgap="10" vgap="10"/>
-            </VBox>
-            
-            <Separator/>
-            
-            <!-- Post Content -->
-            <Label fx:id="postContentLabel" wrapText="true" 
-                   style="-fx-font-size: 16px; -fx-text-fill: #333; -fx-line-spacing: 1.6;"/>
-            
-            <Separator/>
-            
-            <!-- Post Actions -->
-            <HBox spacing="15" alignment="CENTER_LEFT">
-                <MFXButton fx:id="editPostBtn" text="✏️ Edit Post" 
-                           style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-                <MFXButton fx:id="deletePostBtn" text="🗑️ Delete Post" 
-                           style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-            </HBox>
+
+      <!-- Back Button -->
+      <MFXButton fx:id="backBtn" text="← Back to Posts"
+        style="-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 14px;" />
+
+      <!-- Post Content Card -->
+      <VBox spacing="20"
+        style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+        <!-- Post Header -->
+        <VBox spacing="15">
+          <Label fx:id="postTitleLabel" text="Post Title"
+            style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #333;" wrapText="true" />
+
+          <HBox spacing="20" alignment="CENTER_LEFT">
+            <Label fx:id="authorLabel" text="By Author"
+              style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+            <Separator orientation="VERTICAL" prefHeight="20" />
+            <Label fx:id="dateLabel" text="Published Date"
+              style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+            <Separator orientation="VERTICAL" prefHeight="20" />
+            <Label fx:id="viewsLabel" text="👁️ 0 views"
+              style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+          </HBox>
+
+          <!-- Tags -->
+          <FlowPane fx:id="tagsFlowPane" hgap="10" vgap="10" />
         </VBox>
-        
-        <!-- Comments Section -->
-        <VBox spacing="20" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-            
-            <Label text="Comments" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-            
-            <!-- Add Comment Form -->
-            <VBox spacing="15" style="-fx-background-color: #f5f7fa; -fx-padding: 20; -fx-background-radius: 8;">
-                <Label text="Add a Comment" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-                <TextArea fx:id="commentTextArea" promptText="Share your thoughts..." 
-                         prefHeight="100" wrapText="true"
-                         style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;"/>
-                <HBox alignment="CENTER_RIGHT">
-                    <MFXButton fx:id="postCommentBtn" text="💬 Post Comment" 
-                               style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-                </HBox>
-            </VBox>
-            
-            <!-- Comments List -->
-            <VBox fx:id="commentsContainer" spacing="15" style="-fx-padding: 10 0;"/>
-            
+
+        <Separator />
+
+        <!-- Post Content -->
+        <Label fx:id="postContentLabel" wrapText="true"
+          style="-fx-font-size: 16px; -fx-text-fill: #333; -fx-line-spacing: 1.6;" />
+
+        <Separator />
+
+        <!-- Post Actions -->
+        <HBox spacing="15" alignment="CENTER_LEFT">
+          <MFXButton fx:id="editPostBtn" text="✏️ Edit Post"
+            style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+          <MFXButton fx:id="deletePostBtn" text="🗑️ Delete Post"
+            style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+        </HBox>
+      </VBox>
+
+      <!-- Comments Section -->
+      <VBox spacing="20"
+        style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+        <Label text="Comments"
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+
+        <!-- Add Comment Form -->
+        <VBox spacing="15"
+          style="-fx-background-color: #f5f7fa; -fx-padding: 20; -fx-background-radius: 8;">
+          <Label text="Add a Comment"
+            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+          <TextArea fx:id="commentTextArea" promptText="Share your thoughts..."
+            prefHeight="100" wrapText="true"
+            style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+          <HBox alignment="CENTER_RIGHT">
+            <MFXButton fx:id="postCommentBtn" text="💬 Post Comment"
+              style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+          </HBox>
         </VBox>
+
+        <!-- Comments List -->
+        <VBox fx:id="commentsContainer" spacing="15" style="-fx-padding: 10 0;" />
+
+      </VBox>
     </VBox>
-</ScrollPane>
+  </ScrollPane>
 </Scene>
