@@ -7,6 +7,7 @@ import com.kratosgado.blog.dtos.request.SignUpDto;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.notifications.Toast;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
@@ -58,9 +59,7 @@ public class SignUpController {
 
     try {
       if (authService.register(new SignUpDto(username, email, password, confirmPassword))) {
-        infoLabel.setStyle("-fx-text-fill: #4CAF50;");
-        infoLabel.setText("Registration successful! Redirecting to login...");
-        infoLabel.setVisible(true);
+        Toast.success("Registration successful! Redirecting to login...");
         logger.info("User registered successfully: {}", email);
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
@@ -69,7 +68,7 @@ public class SignUpController {
       }
     } catch (IllegalArgumentException ex) {
       logger.error("Registration failed for email: {}", email, ex);
-      showError(ex.getMessage());
+      Toast.error(ex.getMessage());
     }
   }
 
