@@ -7,100 +7,134 @@
 <?import javafx.scene.chart.*?>
 <?import javafx.scene.Scene?>
 
-<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kratosgado.blog.controllers.AnalyticsController" fitToWidth="true" style="-fx-background-color: transparent;">
-   
-    <VBox spacing="25" style="-fx-padding: 20;">
-        
-        <HBox alignment="CENTER_LEFT" spacing="15">
-            <Label text="Analytics And Performance" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <MFXComboBox fx:id="timeRangeCombo" floatingText="Time Range" prefWidth="150"/>
-            <MFXButton fx:id="exportReportBtn" text="📊 Export Report" 
-                       style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-        </HBox>
-        
-        <!-- Key Metrics -->
-        <HBox spacing="20">
-            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-                <Label text="Total Views" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
-                <Label fx:id="totalViewsLabel" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
-                <Label fx:id="viewsChangeLabel" text="+0% from last period" style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;"/>
-            </VBox>
-            
-            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-                <Label text="Engagement Rate" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
-                <Label fx:id="engagementLabel" text="0%" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
-                <Label fx:id="engagementChangeLabel" text="+0% from last period" style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;"/>
-            </VBox>
-            
-            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-                <Label text="Avg. Read Time" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
-                <Label fx:id="avgReadTimeLabel" text="0 min" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
-                <Label fx:id="readTimeChangeLabel" text="+0% from last period" style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;"/>
-            </VBox>
-        </HBox>
-        
-        <!-- Views Chart -->
-        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-            <Label text="Views Over Time" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-            <LineChart fx:id="viewsChart" prefHeight="300" legendVisible="false">
-                <xAxis>
-                    <CategoryAxis label="Date"/>
-                </xAxis>
-                <yAxis>
-                    <NumberAxis label="Views"/>
-                </yAxis>
-            </LineChart>
-        </VBox>
-        
-        <!-- Two Column Layout -->
-        <HBox spacing="20" alignment="TOP_LEFT">
-            
-            <!-- Top Posts -->
-            <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-                <Label text="Top Performing Posts" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-                <TableView fx:id="topPostsTable" prefHeight="300">
-                    <columns>
-                        <TableColumn fx:id="topPostTitleColumn" text="Post Title" prefWidth="250"/>
-                        <TableColumn fx:id="topPostViewsColumn" text="Views" prefWidth="80"/>
-                        <TableColumn fx:id="topPostCommentsColumn" text="Comments" prefWidth="80"/>
-                    </columns>
-                </TableView>
-            </VBox>
-            
-            <!-- Tag Performance -->
-            <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-                <Label text="Tag Performance" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-                <PieChart fx:id="tagPerformanceChart" prefHeight="300" legendVisible="true"/>
-            </VBox>
-        </HBox>
-        
-        <!-- Performance Metrics -->
-        <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-            <Label text="Database Performance Metrics" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-            
-            <GridPane hgap="30" vgap="15">
-                <Label text="Query Type" style="-fx-font-weight: bold; -fx-text-fill: #666;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <Label text="Before Optimization" style="-fx-font-weight: bold; -fx-text-fill: #666;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                <Label text="After Optimization" style="-fx-font-weight: bold; -fx-text-fill: #666;" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                <Label text="Improvement" style="-fx-font-weight: bold; -fx-text-fill: #666;" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
-                
-                <Label fx:id="searchQueryLabel" text="Post Search" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <Label fx:id="searchBeforeLabel" text="0 ms" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                <Label fx:id="searchAfterLabel" text="0 ms" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-                <Label fx:id="searchImprovementLabel" text="0%" GridPane.rowIndex="1" GridPane.columnIndex="3" style="-fx-text-fill: #4CAF50;"/>
-                
-                <Label fx:id="listQueryLabel" text="Post Listing" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <Label fx:id="listBeforeLabel" text="0 ms" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                <Label fx:id="listAfterLabel" text="0 ms" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-                <Label fx:id="listImprovementLabel" text="0%" GridPane.rowIndex="2" GridPane.columnIndex="3" style="-fx-text-fill: #4CAF50;"/>
-            </GridPane>
-            
-            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
-                <MFXButton fx:id="runBenchmarkBtn" text="🚀 Run Performance Test" 
-                           style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;"/>
-                <Label fx:id="benchmarkStatusLabel" text="" style="-fx-font-size: 13px; -fx-text-fill: #666;"/>
-            </HBox>
-        </VBox>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.AnalyticsController" fitToWidth="true"
+  style="-fx-background-color: transparent;">
+
+  <VBox spacing="25" style="-fx-padding: 20;">
+
+    <HBox alignment="CENTER_LEFT" spacing="15">
+      <Label text="Analytics And Performance"
+        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <MFXComboBox fx:id="timeRangeCombo" floatingText="Time Range" prefWidth="150" />
+      <MFXButton fx:id="exportReportBtn" text="📊 Export Report"
+        style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+    </HBox>
+
+    <!-- Key Metrics -->
+    <HBox spacing="20">
+      <VBox spacing="10"
+        style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+        HBox.hgrow="ALWAYS">
+        <Label text="Total Views" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+        <Label fx:id="totalViewsLabel" text="0"
+          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #667eea;" />
+        <Label fx:id="viewsChangeLabel" text="+0% from last period"
+          style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;" />
+      </VBox>
+
+      <VBox spacing="10"
+        style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+        HBox.hgrow="ALWAYS">
+        <Label text="Engagement Rate" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+        <Label fx:id="engagementLabel" text="0%"
+          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" />
+        <Label fx:id="engagementChangeLabel" text="+0% from last period"
+          style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;" />
+      </VBox>
+
+      <VBox spacing="10"
+        style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+        HBox.hgrow="ALWAYS">
+        <Label text="Avg. Read Time" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+        <Label fx:id="avgReadTimeLabel" text="0 min"
+          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #FF9800;" />
+        <Label fx:id="readTimeChangeLabel" text="+0% from last period"
+          style="-fx-font-size: 11px; -fx-text-fill: #4CAF50;" />
+      </VBox>
+    </HBox>
+
+    <!-- Views Chart -->
+    <VBox spacing="15"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+      <Label text="Views Over Time"
+        style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+      <LineChart fx:id="viewsChart" prefHeight="300" legendVisible="false">
+        <xAxis>
+          <CategoryAxis label="Date" />
+        </xAxis>
+        <yAxis>
+          <NumberAxis label="Views" />
+        </yAxis>
+      </LineChart>
     </VBox>
+
+    <!-- Two Column Layout -->
+    <HBox spacing="20" alignment="TOP_LEFT">
+
+      <!-- Top Posts -->
+      <VBox spacing="15"
+        style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+        HBox.hgrow="ALWAYS">
+        <Label text="Top Performing Posts"
+          style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <TableView fx:id="topPostsTable" prefHeight="300">
+          <columns>
+            <TableColumn fx:id="topPostTitleColumn" text="Post Title" prefWidth="250" />
+            <TableColumn fx:id="topPostViewsColumn" text="Views" prefWidth="80" />
+            <TableColumn fx:id="topPostCommentsColumn" text="Comments" prefWidth="80" />
+          </columns>
+        </TableView>
+      </VBox>
+
+      <!-- Tag Performance -->
+      <VBox spacing="15"
+        style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+        HBox.hgrow="ALWAYS">
+        <Label text="Tag Performance"
+          style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <PieChart fx:id="tagPerformanceChart" prefHeight="300" legendVisible="true" />
+      </VBox>
+    </HBox>
+
+    <!-- Performance Metrics -->
+    <VBox spacing="15"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+      <Label text="Database Performance Metrics"
+        style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+
+      <GridPane hgap="30" vgap="15">
+        <Label text="Query Type" style="-fx-font-weight: bold; -fx-text-fill: #666;"
+          GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <Label text="Before Optimization" style="-fx-font-weight: bold; -fx-text-fill: #666;"
+          GridPane.rowIndex="0" GridPane.columnIndex="1" />
+        <Label text="After Optimization" style="-fx-font-weight: bold; -fx-text-fill: #666;"
+          GridPane.rowIndex="0" GridPane.columnIndex="2" />
+        <Label text="Improvement" style="-fx-font-weight: bold; -fx-text-fill: #666;"
+          GridPane.rowIndex="0" GridPane.columnIndex="3" />
+
+        <Label fx:id="searchQueryLabel" text="Post Search" GridPane.rowIndex="1"
+          GridPane.columnIndex="0" />
+        <Label fx:id="searchBeforeLabel" text="0 ms" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+        <Label fx:id="searchAfterLabel" text="0 ms" GridPane.rowIndex="1" GridPane.columnIndex="2" />
+        <Label fx:id="searchImprovementLabel" text="0%" GridPane.rowIndex="1"
+          GridPane.columnIndex="3" style="-fx-text-fill: #4CAF50;" />
+
+        <Label fx:id="listQueryLabel" text="Post Listing" GridPane.rowIndex="2"
+          GridPane.columnIndex="0" />
+        <Label fx:id="listBeforeLabel" text="0 ms" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+        <Label fx:id="listAfterLabel" text="0 ms" GridPane.rowIndex="2" GridPane.columnIndex="2" />
+        <Label fx:id="listImprovementLabel" text="0%" GridPane.rowIndex="2" GridPane.columnIndex="3"
+          style="-fx-text-fill: #4CAF50;" />
+      </GridPane>
+
+      <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
+        <MFXButton fx:id="runBenchmarkBtn" text="🚀 Run Performance Test"
+          style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+        <Label fx:id="benchmarkStatusLabel" text=""
+          style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+      </HBox>
+    </VBox>
+  </VBox>
 </ScrollPane>

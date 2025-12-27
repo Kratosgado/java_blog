@@ -6,53 +6,71 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.Scene?>
 
-      
+
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.DashboardHomeController" spacing="20" style="-fx-background-color: transparent;">
-    
-    <Label text="Dashboard Overview" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-    
-    <!-- Statistics Cards -->
-    <HBox spacing="20" alignment="CENTER_LEFT">
-        <!-- Total Posts Card -->
-        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Total Posts" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-            <Label fx:id="totalPostsLabel" text="0" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
-            <Label text="📝 Published articles" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
-        </VBox>
-        
-        <!-- Total Comments Card -->
-        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Total Comments" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-            <Label fx:id="totalCommentsLabel" text="0" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
-            <Label text="💬 User interactions" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
-        </VBox>
-        
-        <!-- Total Views Card -->
-        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Total Views" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-            <Label fx:id="totalViewsLabel" text="0" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
-            <Label text="👁️ Post impressions" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
-        </VBox>
-        
-        <!-- Active Tags Card -->
-        <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Active Tags" style="-fx-font-size: 14px; -fx-text-fill: #666;"/>
-            <Label fx:id="totalTagsLabel" text="0" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;"/>
-            <Label text="🏷️ Categories used" style="-fx-font-size: 12px; -fx-text-fill: #999;"/>
-        </VBox>
-    </HBox>
-    
-    <!-- Recent Posts Section -->
-    <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label text="Recent Posts" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <MFXButton text="View All" style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;"/>
-        </HBox>
-        
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent;">
-            <VBox fx:id="recentPostsContainer" spacing="10" style="-fx-background-color: transparent;"/>
-        </ScrollPane>
+  fx:controller="com.kratosgado.blog.controllers.DashboardHomeController" spacing="20"
+  style="-fx-background-color: transparent;">
+
+  <Label text="Dashboard Overview"
+    style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+
+  <!-- Statistics Cards -->
+  <HBox spacing="20" alignment="CENTER_LEFT">
+    <!-- Total Posts Card -->
+    <VBox spacing="10"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Total Posts" style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+      <Label fx:id="totalPostsLabel" text="0"
+        style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #667eea;" />
+      <Label text="📝 Published articles" style="-fx-font-size: 12px; -fx-text-fill: #999;" />
     </VBox>
+
+    <!-- Total Comments Card -->
+    <VBox spacing="10"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Total Comments" style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+      <Label fx:id="totalCommentsLabel" text="0"
+        style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" />
+      <Label text="💬 User interactions" style="-fx-font-size: 12px; -fx-text-fill: #999;" />
+    </VBox>
+
+    <!-- Total Views Card -->
+    <VBox spacing="10"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Total Views" style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+      <Label fx:id="totalViewsLabel" text="0"
+        style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #FF9800;" />
+      <Label text="👁️ Post impressions" style="-fx-font-size: 12px; -fx-text-fill: #999;" />
+    </VBox>
+
+    <!-- Active Tags Card -->
+    <VBox spacing="10"
+      style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Active Tags" style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+      <Label fx:id="totalTagsLabel" text="0"
+        style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #9C27B0;" />
+      <Label text="🏷️ Categories used" style="-fx-font-size: 12px; -fx-text-fill: #999;" />
+    </VBox>
+  </HBox>
+
+  <!-- Recent Posts Section -->
+  <VBox spacing="15"
+    style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+    <HBox alignment="CENTER_LEFT" spacing="10">
+      <Label text="Recent Posts"
+        style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <MFXButton text="View All" onAction="#viewAllPosts"
+        style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;" />
+    </HBox>
+
+    <ScrollPane fitToWidth="true"
+      style="-fx-background-color: transparent; -fx-border-color: transparent;">
+      <VBox fx:id="recentPostsContainer" spacing="10" style="-fx-background-color: transparent;" />
+    </ScrollPane>
+  </VBox>
 </VBox>
