@@ -1,6 +1,7 @@
 module com.kratosgado.blog {
   requires javafx.controls;
   requires javafx.fxml;
+  requires javafx.base;
   requires MaterialFX;
   requires java.sql;
   requires static lombok;
@@ -12,7 +13,7 @@ module com.kratosgado.blog {
 
   opens com.kratosgado.blog.controllers to javafx.fxml;
   opens com.kratosgado.blog.dao to java.sql;
-  opens com.kratosgado.blog.models to com.google.gson;
+  opens com.kratosgado.blog.models to com.google.gson, javafx.base;
 
   exports com.kratosgado.blog;
 }

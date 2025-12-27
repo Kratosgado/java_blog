@@ -9,6 +9,9 @@ public class Routes {
   public static final String DASHBOARD = "dashboard";
   public static final String DASHBOARD_HOME = "dashboard-home";
   public static final String POSTS = "post-list";
+  public static final String POST_DETAIL = "post-detail";
+  public static final String HOME = "home";
+  public static final String POST_VIEW = "post-view";
   public static final String CREATE_POST = "create-post";
   public static final String COMMENTS = "comments-management";
   public static final String TAGS = "tags-management";
