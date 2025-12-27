@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.web.WebView?>
+
+<Scene xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.PostViewController">
+
+  <ScrollPane fitToWidth="true" style="-fx-background-color: #f5f7fa;">
+
+    <VBox spacing="20" style="-fx-padding: 20;">
+
+      <!-- Navigation Bar -->
+      <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: white; -fx-padding: 15 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <MFXButton fx:id="backBtn" text="← Back"
+          style="-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 14px; -fx-font-weight: bold;" />
+        <Separator orientation="VERTICAL" prefHeight="30" />
+        <Label fx:id="categoryLabel" text="Technology"
+          style="-fx-font-size: 12px; -fx-text-fill: #666; -fx-background-color: #e3f2fd; -fx-padding: 4 8; -fx-background-radius: 4;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <MFXButton fx:id="shareBtn" text="🔗 Share"
+          style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;" />
+        <MFXButton fx:id="bookmarkBtn" text="🔖 Save"
+          style="-fx-background-color: #ff9800; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;" />
+      </HBox>
+
+      <!-- Main Content Area -->
+      <HBox spacing="20" VBox.vgrow="ALWAYS">
+        
+        <!-- Post Content -->
+        <VBox spacing="25" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-padding: 40; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+
+          <!-- Post Header -->
+          <VBox spacing="15">
+            <Label fx:id="postTitleLabel" text="Loading Post..."
+              style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-line-spacing: 1.2;" wrapText="true" />
+
+            <!-- Author Info -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+              <ImageView fx:id="authorAvatar" fitWidth="48" fitHeight="48" preserveRatio="true"
+                style="-fx-background-radius: 24; -fx-border-radius: 24; -fx-border-color: #e0e0e0; -fx-border-width: 2;" />
+              
+              <VBox spacing="3">
+                <Label fx:id="authorLabel" text="Author Name"
+                  style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                  <Label fx:id="dateLabel" text="Published Date"
+                    style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+                  <Separator orientation="VERTICAL" prefHeight="15" />
+                  <Label fx:id="readTimeLabel" text="5 min read"
+                    style="-fx-font-size: 13px; -fx-text-fill: #666;" />
+                </HBox>
+              </VBox>
+              
+              <Region HBox.hgrow="ALWAYS" />
+              
+              <MFXButton fx:id="followAuthorBtn" text="Follow"
+                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;" />
+            </HBox>
+
+            <!-- Tags -->
+            <FlowPane fx:id="tagsFlowPane" hgap="8" vgap="8" />
+          </VBox>
+
+          <Separator style="-fx-opacity: 0.3;" />
+
+          <!-- Featured Image -->
+          <ImageView fx:id="featuredImage" fitWidth="800" fitHeight="400" preserveRatio="true"
+            style="-fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 5, 0, 0, 2);" />
+
+          <!-- Post Content -->
+          <WebView fx:id="postContentWebView" prefHeight="400"
+            style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+
+          <!-- Post Engagement Bar -->
+          <HBox spacing="20" alignment="CENTER" style="-fx-background-color: #f8f9fa; -fx-padding: 20; -fx-background-radius: 8;">
+            <MFXButton fx:id="likeBtn" text="👍 42"
+              style="-fx-background-color: transparent; -fx-text-fill: #666; -fx-border-color: #dee2e6; -fx-border-width: 1; -fx-background-radius: 5; -fx-padding: 8 16;" />
+            <MFXButton fx:id="dislikeBtn" text="👎 2"
+              style="-fx-background-color: transparent; -fx-text-fill: #666; -fx-border-color: #dee2e6; -fx-border-width: 1; -fx-background-radius: 5; -fx-padding: 8 16;" />
+            <MFXButton fx:id="commentBtn" text="💬 15 Comments"
+              style="-fx-background-color: transparent; -fx-text-fill: #666; -fx-border-color: #dee2e6; -fx-border-width: 1; -fx-background-radius: 5; -fx-padding: 8 16;" />
+            
+            <Region HBox.hgrow="ALWAYS" />
+            
+            <Label fx:id="viewsLabel" text="👁️ 1,234 views"
+              style="-fx-font-size: 14px; -fx-text-fill: #666;" />
+          </HBox>
+
+          <!-- Author Actions -->
+          <HBox spacing="15" alignment="CENTER_LEFT" fx:id="authorActionsContainer">
+            <MFXButton fx:id="editPostBtn" text="✏️ Edit"
+              style="-fx-background-color: #2196f3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+            <MFXButton fx:id="deletePostBtn" text="🗑️ Delete"
+              style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+            <MFXButton fx:id="publishBtn" text="📢 Publish"
+              style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
+          </HBox>
+        </VBox>
+
+        <!-- Sidebar -->
+        <VBox spacing="20" prefWidth="300">
+          
+          <!-- Table of Contents -->
+          <VBox fx:id="tableOfContentsContainer" spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="📋 Table of Contents"
+              style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <VBox fx:id="tocContainer" spacing="8" />
+          </VBox>
+
+          <!-- Related Posts -->
+          <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="🔗 Related Posts"
+              style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            <VBox fx:id="relatedPostsContainer" spacing="12" />
+          </VBox>
+
+          <!-- Author Bio -->
+          <VBox spacing="15" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <Label text="👤 About the Author"
+              style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+            
+            <HBox spacing="12" alignment="CENTER_LEFT">
+              <ImageView fx:id="sidebarAuthorAvatar" fitWidth="40" fitHeight="40" preserveRatio="true"
+                style="-fx-background-radius: 20;" />
+              <VBox spacing="2">
+                <Label fx:id="sidebarAuthorLabel" text="Author Name"
+                  style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <Label fx:id="sidebarAuthorStats" text="42 posts • 1.2k followers"
+                  style="-fx-font-size: 12px; -fx-text-fill: #666;" />
+              </VBox>
+            </HBox>
+            
+            <Label fx:id="authorBioLabel" text="Author bio will appear here..."
+              style="-fx-font-size: 13px; -fx-text-fill: #666; -fx-line-spacing: 1.4;" wrapText="true" />
+          </VBox>
+        </VBox>
+      </HBox>
+
+      <!-- Comments Section -->
+      <VBox spacing="20" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+        <HBox alignment="CENTER_LEFT" spacing="15">
+          <Label text="💬 Comments"
+            style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+          <Label fx:id="commentsCountLabel" text="(15)"
+            style="-fx-font-size: 16px; -fx-text-fill: #666;" />
+          <Region HBox.hgrow="ALWAYS" />
+          <MFXComboBox fx:id="commentSortComboBox" floatingText="Sort" prefWidth="120" />
+        </HBox>
+
+        <!-- Add Comment Form -->
+        <VBox spacing="15"
+          style="-fx-background-color: #f8f9fa; -fx-padding: 20; -fx-background-radius: 8;">
+          <Label text="Join the discussion"
+            style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+          <TextArea fx:id="commentTextArea" promptText="Share your thoughts about this post..."
+            prefHeight="100" wrapText="true"
+            style="-fx-background-color: white; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px;" />
+          <HBox alignment="CENTER_LEFT" spacing="10">
+            <MFXCheckBox fx:id="notifyRepliesCheck" text="Notify me of replies" />
+            <Region HBox.hgrow="ALWAYS" />
+            <MFXButton fx:id="cancelCommentBtn" text="Cancel"
+              style="-fx-background-color: #e0e0e0; -fx-text-fill: #666; -fx-background-radius: 5; -fx-padding: 8 20;" />
+            <MFXButton fx:id="postCommentBtn" text="💬 Post Comment"
+              style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 20; -fx-font-weight: bold;" />
+          </HBox>
+        </VBox>
+
+        <!-- Comments List -->
+        <VBox fx:id="commentsContainer" spacing="15" style="-fx-padding: 10 0;" />
+      </VBox>
+
+    </VBox>
+  </ScrollPane>
+</Scene>
