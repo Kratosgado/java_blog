@@ -22,7 +22,7 @@ public class Validator {
     for (RecordComponent field : record.getClass().getRecordComponents()) {
       try {
         Object value = field.getAccessor().invoke(record);
-        logger.info("Validating field: {} {}", field.getName(), value);
+        // logger.info("Validating field: {} {}", field.getName(), value);
 
         if (field.isAnnotationPresent(NotNull.class))
           validateNotNull(field, value);

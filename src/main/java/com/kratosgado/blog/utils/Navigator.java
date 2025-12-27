@@ -6,12 +6,9 @@ import java.util.Deque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.App;
-
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Navigator {
@@ -77,15 +74,15 @@ public class Navigator {
   }
 
   public void pushReplacement(String fxml) {
-    final Screen screen = new Screen(fxml, loadScene(fxml));
+    final Screen screen = new Screen(fxml, loadView(fxml));
     screens.pop();
     screens.push(screen);
     logger.debug("Screen replaced: {}", fxml);
     this.showCurrentScreen();
   }
 
-  private <T> T loadScene(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/fxml/" + fxml + ".fxml"));
+  private <T> T loadView(String fxml) {
+    FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
 
     try {
       return fxmlLoader.load();
@@ -96,11 +93,12 @@ public class Navigator {
   }
 
   public Parent getSubScene(String fxml) {
-    return loadScene(fxml);
+    return loadView(fxml);
   }
 
   public void goTo(String fxml) {
-    final Screen screen = new Screen(fxml, loadScene(fxml));
+    Scene scene = new Scene(loadView(fxml));
+    final Screen screen = new Screen(fxml, scene);
     screens.push(screen);
     logger.debug("Navigating to: {}", fxml);
     this.showCurrentScreen();
@@ -111,7 +109,7 @@ public class Navigator {
   }
 
   public void changeStage(String fxml) {
-    final Screen screen = new Screen(fxml, loadScene(fxml));
+    final Screen screen = new Screen(fxml, loadView(fxml));
     this.screens.clear();
     this.screens.push(screen);
     Stage newStage = new Stage();
