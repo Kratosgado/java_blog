@@ -7,47 +7,59 @@
 <?import javafx.scene.Scene?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.kratosgado.blog.controllers.CommentsManagementController" spacing="20" style="-fx-background-color: transparent;">
-    
-    <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label text="Comments Management" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <MFXComboBox fx:id="statusFilterCombo" floatingText="Filter by Status" prefWidth="180"/>
-    </HBox>
-    
-    <!-- Stats Cards -->
-    <HBox spacing="20">
-        <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Total Comments" style="-fx-font-size: 12px; -fx-text-fill: #666;"/>
-            <Label fx:id="totalCommentsLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #667eea;"/>
-        </VBox>
-        
-        <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Pending Review" style="-fx-font-size: 12px; -fx-text-fill: #666;"/>
-            <Label fx:id="pendingCommentsLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
-        </VBox>
-        
-        <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
-            <Label text="Approved" style="-fx-font-size: 12px; -fx-text-fill: #666;"/>
-            <Label fx:id="approvedCommentsLabel" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
-        </VBox>
-    </HBox>
-    
-    <!-- Comments Table -->
-    <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
-        
-        <TableView fx:id="commentsTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="commentColumn" text="Comment" prefWidth="300"/>
-                <TableColumn fx:id="authorColumn" text="Author" prefWidth="150"/>
-                <TableColumn fx:id="postColumn" text="Post" prefWidth="200"/>
-                <TableColumn fx:id="dateColumn" text="Date" prefWidth="150"/>
-                <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200"/>
-            </columns>
-        </TableView>
+  fx:controller="com.kratosgado.blog.controllers.CommentsManagementController" spacing="20"
+  style="-fx-background-color: transparent;">
+
+  <HBox alignment="CENTER_LEFT" spacing="15">
+    <Label text="Comments Management"
+      style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+    <Region HBox.hgrow="ALWAYS" />
+    <MFXComboBox fx:id="statusFilterCombo" floatingText="Filter by Status" prefWidth="180" />
+  </HBox>
+
+  <!-- Stats Cards -->
+  <HBox spacing="20">
+    <VBox spacing="8"
+      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Total Comments" style="-fx-font-size: 12px; -fx-text-fill: #666;" />
+      <Label fx:id="totalCommentsLabel" text="0"
+        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #667eea;" />
     </VBox>
+
+    <VBox spacing="8"
+      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Pending Review" style="-fx-font-size: 12px; -fx-text-fill: #666;" />
+      <Label fx:id="pendingCommentsLabel" text="0"
+        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #FF9800;" />
+    </VBox>
+
+    <VBox spacing="8"
+      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
+      HBox.hgrow="ALWAYS">
+      <Label text="Approved" style="-fx-font-size: 12px; -fx-text-fill: #666;" />
+      <Label fx:id="approvedCommentsLabel" text="0"
+        style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" />
+    </VBox>
+  </HBox>
+
+  <!-- Comments Table -->
+  <VBox VBox.vgrow="ALWAYS"
+    style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+    <padding>
+      <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <TableView fx:id="commentsTable" VBox.vgrow="ALWAYS">
+      <columns>
+        <TableColumn fx:id="commentColumn" text="Comment" prefWidth="300" />
+        <TableColumn fx:id="authorColumn" text="Author" prefWidth="150" />
+        <TableColumn fx:id="postColumn" text="Post" prefWidth="200" />
+        <TableColumn fx:id="dateColumn" text="Date" prefWidth="150" />
+        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100" />
+        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200" />
+      </columns>
+    </TableView>
+  </VBox>
 </VBox>

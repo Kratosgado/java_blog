@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.ProgressIndicator?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.HomeController"
+  style="-fx-background-color: #f5f7fa;">
+
+  <!-- Top Navigation Bar -->
+  <top>
+    <HBox alignment="CENTER_LEFT" spacing="20"
+      style="-fx-background-color: white; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+      <Label text="📝 Blog"
+        style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #667eea;" />
+
+      <Region HBox.hgrow="ALWAYS" />
+
+      <MFXTextField fx:id="searchField" floatingText="Search posts..." prefWidth="300" />
+      <MFXComboBox fx:id="categoryComboBox" floatingText="Category" prefWidth="150" />
+      <MFXComboBox fx:id="sortComboBox" floatingText="Sort By" prefWidth="150" />
+
+      <HBox fx:id="authSection" spacing="10" alignment="CENTER_RIGHT">
+        <MFXButton fx:id="loginBtn" text="Sign In"
+          style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 20;" />
+
+        <MFXButton fx:id="signupBtn" text="Sign Up"
+          style="-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 20;" />
+      </HBox>
+
+      <HBox fx:id="userSection" spacing="10" alignment="CENTER_RIGHT" visible="false"
+        managed="false">
+        <Label fx:id="userLabel" text="Welcome, User"
+          style="-fx-font-size: 14px; -fx-text-fill: #333;" />
+
+        <MFXButton fx:id="userMenuBtn" text="👤"
+          style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8; -fx-cursor: hand;" />
+      </HBox>
+    </HBox>
+  </top>
+
+  <!-- Main Content Area -->
+  <center>
+    <StackPane style="-fx-background-color: transparent;">
+      <!-- Loading Overlay -->
+      <HBox fx:id="loadingContainer" alignment="CENTER"
+        style="-fx-background-color: rgba(255,255,255,0.9); -fx-padding: 50;" visible="false"
+        managed="false">
+        <ProgressIndicator prefWidth="40" prefHeight="40" style="-fx-progress-color: #667eea;" />
+        <Label text="Loading..."
+          style="-fx-font-size: 16px; -fx-text-fill: #666; -fx-padding: 10 0 0 10;" />
+      </HBox>
+
+      <!-- Main Content -->
+      <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+        <VBox spacing="20" style="-fx-padding: 20;">
+
+          <!-- Featured Posts Slider -->
+          <VBox spacing="15" style="-fx-padding: 0 20 20 20;">
+            <Label text="🌟 Featured Posts"
+              style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+
+            <ScrollPane fx:id="featuredScrollPane" fitToWidth="true" hbarPolicy="NEVER"
+              style="-fx-background-color: transparent; -fx-padding: 10;">
+              <HBox fx:id="featuredPostsContainer" spacing="20" alignment="CENTER_LEFT" />
+            </ScrollPane>
+          </VBox>
+
+          <!-- Main Content Area -->
+          <HBox spacing="20" VBox.vgrow="ALWAYS" style="-fx-padding: 0 20 20 20;">
+
+            <!-- Blog Posts Feed -->
+            <VBox spacing="20" HBox.hgrow="ALWAYS">
+              <HBox alignment="CENTER_LEFT" spacing="15">
+                <Label fx:id="postsCountLabel" text="Latest Posts"
+                  style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <MFXToggleButton fx:id="gridViewBtn" text="⊞"
+                  style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 12;" />
+                <MFXToggleButton fx:id="listViewBtn" text="☰"
+                  style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 12;" />
+              </HBox>
+
+              <!-- Posts Container -->
+              <ScrollPane fx:id="postsScrollPane" fitToWidth="true" hbarPolicy="NEVER"
+                vbarPolicy="ALWAYS"
+                style="-fx-background-color: transparent;">
+                <VBox fx:id="postsContainer" spacing="15" />
+              </ScrollPane>
+
+              <!-- Load More Button -->
+              <HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
+                <MFXButton fx:id="loadMoreBtn" text="Load More Posts"
+                  style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 12 24; -fx-font-weight: bold;" />
+              </HBox>
+            </VBox>
+
+            <!-- Sidebar -->
+            <VBox spacing="20" prefWidth="300">
+
+              <!-- Categories Widget -->
+              <VBox spacing="15"
+                style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="📂 Categories"
+                  style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <VBox fx:id="categoriesContainer" spacing="8" />
+              </VBox>
+
+              <!-- Popular Tags -->
+              <VBox spacing="15"
+                style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="🏷️ Popular Tags"
+                  style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <FlowPane fx:id="popularTagsContainer" hgap="8" vgap="8" />
+              </VBox>
+
+              <!-- Recent Activity -->
+              <VBox spacing="15"
+                style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+                <Label text="🔥 Trending Now"
+                  style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+                <VBox fx:id="trendingContainer" spacing="10" />
+              </VBox>
+            </VBox>
+          </HBox>
+        </VBox>
+      </ScrollPane>
+    </StackPane>
+  </center>
+</BorderPane>
