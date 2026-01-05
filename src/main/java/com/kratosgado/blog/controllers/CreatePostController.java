@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +22,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 
 public class CreatePostController {
   private static final Logger logger = LoggerFactory.getLogger(CreatePostController.class);
@@ -127,7 +130,7 @@ public class CreatePostController {
           messageLabel.setText("Post published successfully!");
           messageLabel.setStyle("-fx-text-fill: #4CAF50;");
           clearForm();
-          Navigator.getInstance().goTo(Routes.POSTS);
+          DashboardController.instance().getPostsButton().fire();
         }
       } catch (Exception ex) {
         logger.error("Failed to publish post", ex);
@@ -189,7 +192,15 @@ public class CreatePostController {
   }
 
   private void uploadImage() {
-    logger.info("Uploading image");
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Select Image File");
+    fileChooser.getExtensionFilters().addAll(
+        new FileChooser.ExtensionFilter("Image Files", ".jpeg", "*.png", "*.jpg", "*.gif"),
+        new FileChooser.ExtensionFilter("All Files", "*.*"));
+    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+    if (selectedFile != null) {
+      imageUrlField.setText(selectedFile.toURI().toString());
+    }
   }
 
   private boolean validateForm() {
