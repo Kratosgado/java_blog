@@ -74,7 +74,7 @@ public class Navigator {
   }
 
   public void pushReplacement(String fxml) {
-    final Screen screen = new Screen(fxml, loadView(fxml));
+    final Screen screen = new Screen(fxml, new Scene(loadView(fxml)));
     screens.pop();
     screens.push(screen);
     logger.debug("Screen replaced: {}", fxml);

@@ -15,8 +15,8 @@ public class DatabaseConfig {
   private static Dotenv dotenv = Dotenv.load();
 
   private static final String DB_URL = dotenv.get("DB_URL");
-  private static final String USER = dotenv.get("USER");
-  private static final String PASSWORD = dotenv.get("PASS");
+  private static final String USER = dotenv.get("DB_USER");
+  private static final String PASSWORD = dotenv.get("DB_PASS");
 
   public static Connection getConnection() throws SQLException {
     logger.debug("Attempting database connection to: {}", DB_URL);
