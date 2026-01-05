@@ -1,7 +1,5 @@
 package com.kratosgado.blog.controllers;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,6 +11,7 @@ import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -129,18 +128,18 @@ public class HomeController {
   private void setupAuthentication() {
     // Check if user is logged in and show appropriate section
     boolean isLoggedIn = AuthContext.getInstance().getCurrentUser() != null;
-    
+
     authSection.setVisible(!isLoggedIn);
     authSection.setManaged(!isLoggedIn);
-    
+
     userSection.setVisible(isLoggedIn);
     userSection.setManaged(isLoggedIn);
-    
+
     if (isLoggedIn) {
       userLabel.setText("Welcome, " + AuthContext.getInstance().getCurrentUser().getUsername());
       setupUserMenu();
     }
-    
+
     // Setup button actions
     loginBtn.setOnAction(e -> navigateToLogin());
     signupBtn.setOnAction(e -> navigateToSignup());
@@ -310,7 +309,7 @@ public class HomeController {
     ImageView imageView = new ImageView();
     try {
       // Use placeholder image
-      imageView.setImage(new Image("file:src/main/resources/images/featured-post-placeholder.jpg"));
+      imageView.setImage(new Image("file:src/main/resources/images/java_blog_logo.jpg"));
       imageView.setFitWidth(270);
       imageView.setFitHeight(150);
       imageView.setPreserveRatio(true);
@@ -323,7 +322,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label metaLabel = new Label("By Author • " + formatDate(post.getCreatedAt()));
+    Label metaLabel = new Label("By Author • " + UiUtils.formatDate(post.getCreatedAt()));
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(imageView, titleLabel, metaLabel);
@@ -341,7 +340,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(new Image("file:src/main/resources/images/post-placeholder.jpg"));
+      imageView.setImage(new Image("file:src/main/resources/images/java_blog_logo.jpg"));
       imageView.setFitWidth(260);
       imageView.setFitHeight(140);
       imageView.setPreserveRatio(true);
@@ -362,7 +361,7 @@ public class HomeController {
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
     Label authorLabel = new Label("Author");
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
-    Label dateLabel = new Label(formatDate(post.getCreatedAt()));
+    Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     metaBox.getChildren().addAll(authorLabel, dateLabel);
 
@@ -404,7 +403,7 @@ public class HomeController {
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
     Label authorLabel = new Label("By Author");
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
-    Label dateLabel = new Label(formatDate(post.getCreatedAt()));
+    Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label viewsLabel = new Label("👁️ " + post.getViews() + " views");
     viewsLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
@@ -485,11 +484,6 @@ public class HomeController {
     return content.substring(0, maxLength) + "...";
   }
 
-  private String formatDate(LocalDateTime date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    return date.format(formatter);
-  }
-
   private void showLoading(boolean show) {
     loadingContainer.setVisible(show);
     loadingContainer.setManaged(show);
@@ -524,21 +518,18 @@ public class HomeController {
 
   private void setupUserMenu() {
     ContextMenu userMenu = new ContextMenu();
-    
-    // Admin menu item
+
     MenuItem adminItem = new MenuItem("⚙️ Admin");
     adminItem.setOnAction(e -> navigateToAdmin());
-    
-    // Profile menu item
+
     MenuItem profileItem = new MenuItem("👤 Profile");
     profileItem.setOnAction(e -> navigateToProfile());
-    
-    // Logout menu item
+
     MenuItem logoutItem = new MenuItem("🚪 Logout");
     logoutItem.setOnAction(e -> logout());
-    
+
     userMenu.getItems().addAll(adminItem, profileItem, logoutItem);
-    
+
     userMenuBtn.setOnMouseClicked(e -> {
       userMenu.show(userMenuBtn, e.getScreenX(), e.getScreenY());
     });

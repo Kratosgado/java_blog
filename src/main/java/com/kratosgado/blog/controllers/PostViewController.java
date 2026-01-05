@@ -10,6 +10,8 @@ import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.context.AuthContext;
+import com.kratosgado.blog.utils.interfaces.Initializable;
+import com.kratosgado.blog.utils.notifications.Toast;
 
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
@@ -24,8 +26,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.FlowPane;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
-public class PostViewController {
+public class PostViewController implements Initializable {
   private static final Logger logger = LoggerFactory.getLogger(PostViewController.class);
 
   @FXML
@@ -132,6 +135,19 @@ public class PostViewController {
   private final TagService tagService;
   private Post currentPost;
 
+  @Override
+  public <T> void initData(T data) {
+    int postId = (int) data;
+    final Optional<Post> post = postService.getPostById(postId);
+    if (post.isEmpty()) {
+      logger.error("Failed to load post: {}", postId);
+      Toast.error("Failed to load post");
+      Navigator.getInstance().popScreen();
+      return;
+    }
+    currentPost = post.get();
+  }
+
   public PostViewController() {
     this.postService = new PostService();
     this.commentService = new CommentService();
@@ -194,31 +210,33 @@ public class PostViewController {
       currentPost.setId(1);
       currentPost.setUserId(1);
       currentPost.setTitle("Building a Modern Java Blog Application with JavaFX and MaterialFX");
-      currentPost.setContent("In this comprehensive guide, we'll explore how to build a modern blog application using JavaFX and MaterialFX. This project showcases the power of combining traditional Java desktop development with modern UI design principles.\n\n" +
-        "Technology Stack\n" +
-        "Our blog application leverages several cutting-edge technologies:\n" +
-        "- JavaFX 21 - The latest version of Java's UI toolkit\n" +
-        "- MaterialFX - Material Design components for JavaFX\n" +
-        "- PostgreSQL - Robust database backend\n" +
-        "- Lombok - Reducing boilerplate code\n\n" +
-        "Key Features\n" +
-        "The application includes several advanced features that make it stand out:\n" +
-        "1. Responsive Design - The UI adapts to different screen sizes\n" +
-        "2. Rich Content Support - Posts can contain formatted text and images\n" +
-        "3. Interactive Components - Users can like, comment, and share posts\n\n" +
-        "Architecture Overview\n" +
-        "The application follows a clean architecture pattern with clear separation of concerns:\n" +
-        "- Controllers handle user interactions\n" +
-        "- Services contain business logic\n" +
-        "- DAOs handle database interactions\n\n" +
-        "Conclusion\n" +
-        "This blog application demonstrates how modern Java desktop applications can be both functional and visually appealing.");
+      currentPost.setContent(
+          "In this comprehensive guide, we'll explore how to build a modern blog application using JavaFX and MaterialFX. This project showcases the power of combining traditional Java desktop development with modern UI design principles.\n\n"
+              +
+              "Technology Stack\n" +
+              "Our blog application leverages several cutting-edge technologies:\n" +
+              "- JavaFX 21 - The latest version of Java's UI toolkit\n" +
+              "- MaterialFX - Material Design components for JavaFX\n" +
+              "- PostgreSQL - Robust database backend\n" +
+              "- Lombok - Reducing boilerplate code\n\n" +
+              "Key Features\n" +
+              "The application includes several advanced features that make it stand out:\n" +
+              "1. Responsive Design - The UI adapts to different screen sizes\n" +
+              "2. Rich Content Support - Posts can contain formatted text and images\n" +
+              "3. Interactive Components - Users can like, comment, and share posts\n\n" +
+              "Architecture Overview\n" +
+              "The application follows a clean architecture pattern with clear separation of concerns:\n" +
+              "- Controllers handle user interactions\n" +
+              "- Services contain business logic\n" +
+              "- DAOs handle database interactions\n\n" +
+              "Conclusion\n" +
+              "This blog application demonstrates how modern Java desktop applications can be both functional and visually appealing.");
       currentPost.setExcerpt("Building a modern Java blog application with JavaFX, MaterialFX, and PostgreSQL.");
       currentPost.setStatus("published");
       currentPost.setCreatedAt(java.time.LocalDateTime.now().minusDays(2));
       currentPost.setUpdatedAt(java.time.LocalDateTime.now());
       currentPost.setViews(1234);
-      currentPost.setFeaturedImage("featured-image.jpg");
+      currentPost.setFeaturedImage("java_blog_logo.jpg");
 
       displayPost(currentPost);
       loadComments();
@@ -232,22 +250,22 @@ public class PostViewController {
 
   private void displayPost(Post post) {
     postTitleLabel.setText(post.getTitle());
-    
+
     // Set author info
     authorLabel.setText("John Doe");
     dateLabel.setText(formatDate(post.getCreatedAt()));
     readTimeLabel.setText("5 min read");
-    
+
     // Set view count
     viewsLabel.setText("👁️ " + post.getViews() + " views");
-    
+
     // Load featured image
     loadFeaturedImage();
-    
+
     // Load content in Label
     contentLabel.setText(post.getContent());
     contentLabel.setWrapText(true);
-    
+
     // Update comment count
     updateCommentCount();
   }
@@ -259,7 +277,7 @@ public class PostViewController {
     } catch (Exception e) {
       logger.debug("Featured image not found, using placeholder");
       try {
-        Image placeholder = new Image("file:src/main/resources/images/post-placeholder.jpg");
+        Image placeholder = new Image("file:src/main/resources/images/java_blog_logo.jpg");
         featuredImage.setImage(placeholder);
       } catch (Exception ex) {
         logger.debug("Placeholder image not found");
@@ -270,13 +288,13 @@ public class PostViewController {
   private void loadComments() {
     try {
       commentsContainer.getChildren().clear();
-      
+
       // Load demo comments
       for (int i = 1; i <= 5; i++) {
         VBox commentBox = createDemoComment(i);
         commentsContainer.getChildren().add(commentBox);
       }
-      
+
       updateCommentCount();
     } catch (Exception e) {
       logger.error("Failed to load comments", e);
@@ -309,16 +327,17 @@ public class PostViewController {
 
     headerBox.getChildren().addAll(avatar, authorInfo);
 
-    Label commentContent = new Label("This is a great post! I really enjoyed reading about the technology stack used in this application. The explanations are clear and examples are helpful.");
+    Label commentContent = new Label(
+        "This is a great post! I really enjoyed reading about the technology stack used in this application. The explanations are clear and examples are helpful.");
     commentContent.setWrapText(true);
     commentContent.setStyle("-fx-font-size: 14px; -fx-line-spacing: 1.4;");
 
     HBox actionsBox = new HBox(15);
     actionsBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    
+
     MFXButton likeBtn = new MFXButton("👍 " + (commentNumber * 3));
     likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px;");
-    
+
     MFXButton replyBtn = new MFXButton("Reply");
     replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px;");
 
@@ -331,12 +350,13 @@ public class PostViewController {
   private void loadTags() {
     try {
       tagsFlowPane.getChildren().clear();
-      
+
       // Load demo tags
-      String[] demoTags = {"Java", "JavaFX", "MaterialFX", "PostgreSQL", "Tutorial", "UI Design"};
+      String[] demoTags = { "Java", "JavaFX", "MaterialFX", "PostgreSQL", "Tutorial", "UI Design" };
       for (String tagName : demoTags) {
         Label tagLabel = new Label("#" + tagName);
-        tagLabel.setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;");
+        tagLabel.setStyle(
+            "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;");
         tagLabel.setOnMouseClicked(e -> filterByTag(tagName));
         tagsFlowPane.getChildren().add(tagLabel);
       }
@@ -348,14 +368,14 @@ public class PostViewController {
   private void loadRelatedPosts() {
     try {
       relatedPostsContainer.getChildren().clear();
-      
+
       // Load demo related posts
       String[] relatedTitles = {
-        "Getting Started with JavaFX 21",
-        "Material Design Principles in Desktop Apps",
-        "Database Integration Best Practices"
+          "Getting Started with JavaFX 21",
+          "Material Design Principles in Desktop Apps",
+          "Database Integration Best Practices"
       };
-      
+
       for (String title : relatedTitles) {
         VBox relatedPostCard = createRelatedPostCard(title);
         relatedPostsContainer.getChildren().add(relatedPostCard);
@@ -382,9 +402,9 @@ public class PostViewController {
   }
 
   private void updateAuthorActionsVisibility() {
-    boolean isAuthor = AuthContext.getInstance().getCurrentUser() != null && 
-                       currentPost.getUserId() == AuthContext.getInstance().getCurrentUser().getId();
-    
+    boolean isAuthor = AuthContext.getInstance().getCurrentUser() != null &&
+        currentPost.getUserId() == AuthContext.getInstance().getCurrentUser().getId();
+
     authorActionsContainer.setVisible(isAuthor);
     authorActionsContainer.setManaged(isAuthor);
   }
@@ -423,7 +443,8 @@ public class PostViewController {
   private void followAuthor() {
     logger.info("Following author");
     followAuthorBtn.setText("Following");
-    followAuthorBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+    followAuthorBtn
+        .setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
   }
 
   private void editPost() {
@@ -437,7 +458,8 @@ public class PostViewController {
   private void publishPost() {
     logger.info("Publishing post: {}", currentPost.getId());
     publishBtn.setText("Published");
-    publishBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+    publishBtn
+        .setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
   }
 
   private void submitComment() {
@@ -494,4 +516,5 @@ public class PostViewController {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
     return date.format(formatter);
   }
+
 }

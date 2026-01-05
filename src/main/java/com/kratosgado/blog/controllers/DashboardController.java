@@ -21,6 +21,9 @@ public class DashboardController {
   private static DashboardController instance;
 
   @FXML
+  private Label titleLabel;
+
+  @FXML
   private MFXButton logoutBtn;
 
   @FXML
@@ -72,6 +75,9 @@ public class DashboardController {
   private void initialize() {
     String username = AuthContext.getInstance().getCurrentUser().getUsername();
     userLabel.setText("Welcome, " + username);
+
+    titleLabel.setOnMouseClicked(e -> Navigator.getInstance().goTo(Routes.HOME));
+    titleLabel.setCursor(javafx.scene.Cursor.HAND);
 
     logoutBtn.setOnAction(e -> logout());
     dashboardBtn.setOnAction(e -> loadContent(Routes.DASHBOARD_HOME, dashboardBtn));

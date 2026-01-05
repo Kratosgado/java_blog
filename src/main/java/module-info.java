@@ -10,6 +10,7 @@ module com.kratosgado.blog {
   requires io.github.cdimascio.dotenv.java;
   requires org.slf4j;
   requires bcrypt;
+  requires javafx.graphics;
 
   opens com.kratosgado.blog.controllers to javafx.fxml;
   opens com.kratosgado.blog.dao to java.sql;

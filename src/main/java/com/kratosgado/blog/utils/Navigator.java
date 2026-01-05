@@ -6,6 +6,8 @@ import java.util.Deque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.utils.interfaces.Initializable;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -85,11 +87,26 @@ public class Navigator {
     this.showCurrentScreen();
   }
 
-  private <T> T loadView(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
+  public <T> void pushReplacement(String fxml, T data) {
+    final AppScreen screen = new AppScreen(fxml, new Scene(loadView(fxml, data)));
+    screens.pop();
+    screens.push(screen);
+    logger.debug("Screen replaced: {}", fxml);
+    this.showCurrentScreen();
+  }
 
+  private Parent loadView(String fxml) {
+    return loadView(fxml, null);
+  }
+
+  private <T> Parent loadView(String fxml, T data) {
+    FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
     try {
-      return fxmlLoader.load();
+      final Parent root = fxmlLoader.load();
+      if (data != null) {
+        ((Initializable) fxmlLoader.getController()).initData(data);
+      }
+      return root;
     } catch (Exception e) {
       logger.error("Failed to load FXML: {}", fxml, e);
       return null;
@@ -113,7 +130,7 @@ public class Navigator {
   }
 
   public void changeStage(String fxml) {
-    final AppScreen screen = new AppScreen(fxml, loadView(fxml));
+    final AppScreen screen = new AppScreen(fxml, new Scene(loadView(fxml)));
     this.screens.clear();
     this.screens.push(screen);
     Stage newStage = new Stage();
