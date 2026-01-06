@@ -80,11 +80,7 @@ public class Navigator {
   }
 
   public void pushReplacement(String fxml) {
-    final AppScreen screen = new AppScreen(fxml, new Scene(loadView(fxml)));
-    screens.pop();
-    screens.push(screen);
-    logger.debug("Screen replaced: {}", fxml);
-    this.showCurrentScreen();
+    pushReplacement(fxml, null);
   }
 
   public <T> void pushReplacement(String fxml, T data) {
@@ -118,7 +114,11 @@ public class Navigator {
   }
 
   public void goTo(String fxml) {
-    Scene scene = new Scene(loadView(fxml));
+    goTo(fxml, null);
+  }
+
+  public void goTo(String fxml, Object data) {
+    Scene scene = new Scene(loadView(fxml, data));
     final AppScreen screen = new AppScreen(fxml, scene);
     screens.push(screen);
     logger.debug("Navigating to: {}", fxml);

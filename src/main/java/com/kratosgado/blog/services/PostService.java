@@ -10,7 +10,7 @@ import com.kratosgado.blog.dao.PostDAO;
 import com.kratosgado.blog.dtos.request.CreatePostDto;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
-import com.kratosgado.blog.utils.validators.Validator;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 public class PostService {
   private static final Logger logger = LoggerFactory.getLogger(PostService.class);
@@ -21,7 +21,7 @@ public class PostService {
   }
 
   public boolean createPost(CreatePostDto dto) {
-    Validator.validate(dto);
+    ValidatorEngine.validate(dto);
     return postDAO.createPost(new Post(dto));
   }
 

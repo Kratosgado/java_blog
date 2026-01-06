@@ -474,7 +474,7 @@ public class HomeController {
 
   private void openPost(Post post) {
     logger.info("Opening post: {}", post.getId());
-    Navigator.getInstance().goTo(Routes.POST_VIEW);
+    Navigator.getInstance().goTo(Routes.POST_VIEW, post.getId());
   }
 
   private String getExcerpt(String content, int maxLength) {

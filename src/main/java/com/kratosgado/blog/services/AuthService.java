@@ -10,7 +10,7 @@ import com.kratosgado.blog.dtos.request.SignUpDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.validators.ValidationUtils;
-import com.kratosgado.blog.utils.validators.Validator;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 public class AuthService {
   private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
@@ -21,7 +21,7 @@ public class AuthService {
   }
 
   public boolean register(SignUpDto dto) {
-    Validator.validate(dto);
+    ValidatorEngine.validate(dto);
     if (!dto.password().equals(dto.confirmPassword()))
       throw BlogExceptions.badRequest("Passwords do not match");
     if (userDAO.userEmailExists(dto.email()))
@@ -32,7 +32,7 @@ public class AuthService {
   }
 
   public User login(LoginDto dto) {
-    Validator.validate(dto);
+    ValidatorEngine.validate(dto);
     User user = userDAO.getUserByEmail(dto.email()).orElseThrow(() -> BlogExceptions.notFound("User not found"));
     if (!ValidationUtils.verifyPassword(dto.password(), user.getPassword()))
       throw BlogExceptions.unauthorized("Invalid email or password");

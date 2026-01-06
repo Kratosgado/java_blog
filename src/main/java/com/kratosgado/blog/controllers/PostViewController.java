@@ -136,7 +136,7 @@ public class PostViewController implements Initializable {
   private Post currentPost;
 
   @Override
-  public <T> void initData(T data) {
+  public void initData(Object data) {
     logger.debug("Initializing Post View Controller with data: {}", data);
     loadPostContent((int) data);
   }
