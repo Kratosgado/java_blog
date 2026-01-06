@@ -13,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class TagDAO {
+public class TagDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(TagDAO.class);
 
   public TagDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS tags (" +

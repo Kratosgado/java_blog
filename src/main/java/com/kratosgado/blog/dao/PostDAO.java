@@ -13,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class PostDAO {
+public class PostDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(PostDAO.class);
 
   public PostDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS posts (" +

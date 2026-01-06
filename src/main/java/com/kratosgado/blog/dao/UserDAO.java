@@ -11,15 +11,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class UserDAO {
+public class UserDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
 
   public UserDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS users (" +

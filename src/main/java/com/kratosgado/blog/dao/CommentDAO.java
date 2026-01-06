@@ -13,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class CommentDAO {
+public class CommentDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(CommentDAO.class);
 
   public CommentDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS comments (" +
@@ -174,8 +176,7 @@ public class CommentDAO {
     Comment comment = new Comment(
         rs.getInt("post_id"),
         rs.getInt("user_id"),
-        rs.getString("content")
-    );
+        rs.getString("content"));
     comment.setId(rs.getInt("id"));
     comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
     comment.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
