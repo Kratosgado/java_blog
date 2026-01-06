@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -8,7 +7,8 @@
 
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.CreatePostController" fitToWidth="true"
-  style="-fx-background-color: transparent;">
+  style="-fx-background-color: transparent;"
+  stylesheets="@../css/enhanced-theme.css">
 
   <VBox spacing="25" style="-fx-padding: 20;">
     <!-- Header -->
@@ -16,10 +16,8 @@
       <Label fx:id="headerLabel" text="Create New Post"
         style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
       <Region HBox.hgrow="ALWAYS" />
-      <MFXButton fx:id="saveAsDraftBtn" text="💾 Save as Draft"
-        style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 20;" />
-      <MFXButton fx:id="publishBtn" text="🚀 Publish"
-        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 20; -fx-font-weight: bold;" />
+      <Button fx:id="saveAsDraftBtn" text="💾 Save as Draft" styleClass="secondary-button" />
+      <Button fx:id="publishBtn" text="🚀 Publish" styleClass="success-button" />
     </HBox>
 
     <!-- Form Content -->
@@ -28,71 +26,59 @@
 
       <!-- Title -->
       <VBox spacing="8">
-        <Label text="Post Title *"
-          style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
-        <MFXTextField fx:id="titleField" promptText="Enter an engaging title for your post"
-          prefWidth="700" />
+        <Label text="Post Title *" styleClass="field-label-required" />
+        <TextField fx:id="titleField" promptText="Enter an engaging title for your post"
+          prefWidth="700" styleClass="modern-text-field" />
       </VBox>
 
       <!-- Content -->
       <VBox spacing="8" VBox.vgrow="ALWAYS">
-        <Label text="Content *"
-          style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <Label text="Content *" styleClass="field-label-required" />
         <TextArea fx:id="contentArea" promptText="Write your blog post content here..."
-          prefHeight="400" wrapText="true"
-          style="-fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;" />
-        <Label fx:id="wordCountLabel" text="0 words"
-          style="-fx-font-size: 12px; -fx-text-fill: #999;" />
+          prefHeight="400" wrapText="true" styleClass="modern-text-area" />
+        <Label fx:id="wordCountLabel" text="0 words" styleClass="word-count-label" />
       </VBox>
 
       <!-- Tags -->
       <VBox spacing="8">
-        <Label text="Tags" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <Label text="Tags" styleClass="field-label" />
         <HBox spacing="10" alignment="CENTER_LEFT">
-          <MFXTextField fx:id="tagInputField" promptText="Add tags (press Enter)" prefWidth="500" />
-          <MFXButton fx:id="addTagBtn" text="+ Add Tag"
-            style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;" />
+          <TextField fx:id="tagInputField" promptText="Add tags (press Enter)" prefWidth="500" styleClass="modern-text-field" />
+          <Button fx:id="addTagBtn" text="+ Add Tag" styleClass="primary-button" />
         </HBox>
         <FlowPane fx:id="tagsFlowPane" hgap="10" vgap="10" style="-fx-padding: 10 0;" />
       </VBox>
 
       <!-- Category -->
       <VBox spacing="8">
-        <Label text="Category"
-          style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
-        <MFXComboBox fx:id="categoryComboBox" floatingText="Select a category" prefWidth="300" />
+        <Label text="Category" styleClass="field-label" />
+        <ComboBox fx:id="categoryComboBox" prefWidth="300" styleClass="modern-combo-box" />
       </VBox>
 
       <!-- Excerpt -->
       <VBox spacing="8">
-        <Label text="Excerpt (Optional)"
-          style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <Label text="Excerpt (Optional)" styleClass="field-label" />
         <TextArea fx:id="excerptArea" promptText="Write a brief summary (shown in post previews)"
-          prefHeight="100" wrapText="true"
-          style="-fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;" />
+          prefHeight="100" wrapText="true" styleClass="modern-text-area" />
       </VBox>
 
       <!-- Featured Image -->
       <VBox spacing="8">
-        <Label text="Featured Image (Optional)"
-          style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
+        <Label text="Featured Image (Optional)" styleClass="field-label" />
         <HBox spacing="10" alignment="CENTER_LEFT">
-          <MFXTextField fx:id="imageUrlField" promptText="Enter image URL" prefWidth="500" />
-          <MFXButton fx:id="uploadImageBtn" text="📁 Browse"
-            style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 16;" />
+          <TextField fx:id="imageUrlField" promptText="Enter image URL" prefWidth="500" styleClass="modern-text-field" />
+          <Button fx:id="uploadImageBtn" text="📁 Browse" styleClass="secondary-button" />
         </HBox>
       </VBox>
 
       <!-- Error/Success Message -->
-      <Label fx:id="messageLabel" wrapText="true" style="-fx-font-size: 13px;" />
+      <Label fx:id="messageLabel" wrapText="true" styleClass="info-text" />
     </VBox>
 
     <!-- Action Buttons -->
     <HBox spacing="15" alignment="CENTER_RIGHT">
-      <MFXButton fx:id="cancelBtn" text="Cancel"
-        style="-fx-background-color: transparent; -fx-text-fill: #666; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 10 25;" />
-      <MFXButton fx:id="previewBtn" text="👁️ Preview"
-        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 25;" />
+      <Button fx:id="cancelBtn" text="Cancel" styleClass="outline-button" />
+      <Button fx:id="previewBtn" text="👁️ Preview" styleClass="info-button" />
     </HBox>
   </VBox>
 </ScrollPane>

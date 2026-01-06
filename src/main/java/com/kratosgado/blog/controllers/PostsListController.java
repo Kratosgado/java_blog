@@ -7,9 +7,9 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -22,22 +22,22 @@ public class PostsListController {
   private static final Logger logger = LoggerFactory.getLogger(PostsListController.class);
 
   @FXML
-  private MFXTextField searchField;
+  private TextField searchField;
 
   @FXML
-  private MFXComboBox<String> sortComboBox;
+  private ComboBox<String> sortComboBox;
 
   @FXML
-  private MFXComboBox<String> filterComboBox;
+  private ComboBox<String> filterComboBox;
 
   @FXML
-  private MFXButton createNewPostBtn;
+  private Button createNewPostBtn;
 
   @FXML
-  private MFXButton searchBtn;
+  private Button searchBtn;
 
   @FXML
-  private MFXButton clearBtn;
+  private Button clearBtn;
 
   @FXML
   private TableView<Post> postsTable;
@@ -46,10 +46,10 @@ public class PostsListController {
   private Label pageLabel;
 
   @FXML
-  private MFXButton prevPageBtn;
+  private Button prevPageBtn;
 
   @FXML
-  private MFXButton nextPageBtn;
+  private Button nextPageBtn;
 
   private final PostService postService;
   private int currentPage = 1;
@@ -101,11 +101,15 @@ public class PostsListController {
     createdCol.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
     createdCol.setPrefWidth(150);
 
+    TableColumn<Post, String> authorCol = new TableColumn<>("Author");
+    authorCol.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+    authorCol.setPrefWidth(120);
+
     TableColumn<Post, Integer> viewsCol = new TableColumn<>("Views");
     viewsCol.setCellValueFactory(new PropertyValueFactory<>("views"));
     viewsCol.setPrefWidth(80);
 
-    postsTable.getColumns().addAll(titleCol, statusCol, createdCol, viewsCol);
+    postsTable.getColumns().addAll(titleCol, authorCol, statusCol, createdCol, viewsCol);
   }
 
   private void loadPosts() {

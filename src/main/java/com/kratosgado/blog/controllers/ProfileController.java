@@ -9,9 +9,9 @@ import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.UserService;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXPasswordField;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -32,34 +32,34 @@ public class ProfileController {
   private TextArea bioArea;
 
   @FXML
-  private MFXTextField websiteField;
+  private TextField websiteField;
 
   @FXML
-  private MFXTextField locationField;
+  private TextField locationField;
 
   @FXML
-  private MFXButton changeAvatarBtn;
+  private Button changeAvatarBtn;
 
   @FXML
-  private MFXButton changePasswordBtn;
+  private Button changePasswordBtn;
 
   @FXML
-  private MFXButton cancelBtn;
+  private Button cancelBtn;
 
   @FXML
-  private MFXButton saveProfileBtn;
+  private Button saveProfileBtn;
 
   @FXML
   private Label messageLabel;
 
   @FXML
-  private MFXPasswordField currentPasswordField;
+  private PasswordField currentPasswordField;
 
   @FXML
-  private MFXPasswordField newPasswordField;
+  private PasswordField newPasswordField;
 
   @FXML
-  private MFXPasswordField confirmNewPasswordField;
+  private PasswordField confirmNewPasswordField;
 
   @FXML
   private Label passwordMessageLabel;

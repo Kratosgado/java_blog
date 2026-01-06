@@ -7,8 +7,8 @@ import com.kratosgado.blog.dtos.request.CreateTagDto;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.TagService;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -26,19 +26,19 @@ public class TagsManagementController {
   private Label formTitleLabel;
 
   @FXML
-  private MFXTextField tagNameField;
+  private TextField tagNameField;
 
   @FXML
-  private MFXTextField tagSlugField;
+  private TextField tagSlugField;
 
   @FXML
   private TextArea tagDescriptionArea;
 
   @FXML
-  private MFXButton saveTagBtn;
+  private Button saveTagBtn;
 
   @FXML
-  private MFXButton cancelFormBtn;
+  private Button cancelFormBtn;
 
   @FXML
   private VBox tagsListContainer;
@@ -96,12 +96,12 @@ public class TagsManagementController {
     HBox spacer = new HBox();
     HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-    MFXButton editBtn = new MFXButton("Edit");
+    Button editBtn = new Button("Edit");
     editBtn
         .setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
     editBtn.setOnAction(e -> editTag(tag));
 
-    MFXButton deleteBtn = new MFXButton("Delete");
+    Button deleteBtn = new Button("Delete");
     deleteBtn
         .setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
     deleteBtn.setOnAction(e -> deleteTag(tag.getId()));

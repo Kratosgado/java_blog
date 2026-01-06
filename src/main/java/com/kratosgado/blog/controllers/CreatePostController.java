@@ -13,9 +13,9 @@ import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -31,7 +31,7 @@ public class CreatePostController {
   private Label headerLabel;
 
   @FXML
-  private MFXTextField titleField;
+  private TextField titleField;
 
   @FXML
   private TextArea contentArea;
@@ -40,40 +40,40 @@ public class CreatePostController {
   private Label wordCountLabel;
 
   @FXML
-  private MFXTextField tagInputField;
+  private TextField tagInputField;
 
   @FXML
-  private MFXButton addTagBtn;
+  private Button addTagBtn;
 
   @FXML
   private FlowPane tagsFlowPane;
 
   @FXML
-  private MFXComboBox<String> categoryComboBox;
+  private ComboBox<String> categoryComboBox;
 
   @FXML
   private TextArea excerptArea;
 
   @FXML
-  private MFXTextField imageUrlField;
+  private TextField imageUrlField;
 
   @FXML
-  private MFXButton uploadImageBtn;
+  private Button uploadImageBtn;
 
   @FXML
   private Label messageLabel;
 
   @FXML
-  private MFXButton saveAsDraftBtn;
+  private Button saveAsDraftBtn;
 
   @FXML
-  private MFXButton publishBtn;
+  private Button publishBtn;
 
   @FXML
-  private MFXButton cancelBtn;
+  private Button cancelBtn;
 
   @FXML
-  private MFXButton previewBtn;
+  private Button previewBtn;
 
   private final PostService postService;
   private final TagService tagService;
@@ -181,7 +181,7 @@ public class CreatePostController {
       Label tagLabel = new Label(tag + " ✕");
       tagLabel.setStyle("-fx-text-fill: white;");
 
-      MFXButton removeBtn = new MFXButton();
+      Button removeBtn = new Button();
       removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
       removeBtn.setOnAction(e -> tagsFlowPane.getChildren().remove(tagChip));
 

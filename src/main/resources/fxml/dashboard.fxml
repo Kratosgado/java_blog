@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -9,7 +8,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.DashboardController"
-  style="-fx-background-color: #f5f7fa;">
+  style="-fx-background-color: #f5f7fa;"
+  stylesheets="@../css/enhanced-theme.css">
 
   <!-- Top Navigation Bar -->
   <top>
@@ -20,13 +20,14 @@
 
       <Region HBox.hgrow="ALWAYS" />
 
-      <MFXTextField fx:id="searchField" floatingText="Search posts..." prefWidth="300" />
+      <VBox spacing="5">
+        <Label text="Search posts..." styleClass="field-label" />
+        <TextField fx:id="searchField" prefWidth="300" styleClass="modern-text-field" />
+      </VBox>
 
-      <Label fx:id="userLabel" text="Welcome, User"
-        style="-fx-font-size: 14px; -fx-text-fill: #333;" />
+      <Label fx:id="userLabel" text="Welcome, User" styleClass="subtitle-text" />
 
-      <MFXButton fx:id="logoutBtn" text="Logout"
-        style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 20;" />
+      <Button fx:id="logoutBtn" text="Logout" styleClass="danger-button" />
     </HBox>
   </top>
 
@@ -36,35 +37,26 @@
       <Label text="NAVIGATION"
         style="-fx-font-size: 11px; -fx-text-fill: #999; -fx-font-weight: bold; -fx-padding: 10 0 10 10;" />
 
-      <MFXButton fx:id="dashboardBtn" text="📊 Dashboard" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="dashboardBtn" text="📊 Dashboard" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button-active" />
 
-      <MFXButton fx:id="postsBtn" text="📝 My Posts" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="postsBtn" text="📝 My Posts" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
-      <MFXButton fx:id="createPostBtn" text="➕ Create Post" prefWidth="180"
-        alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="createPostBtn" text="➕ Create Post" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
-      <MFXButton fx:id="commentsBtn" text="💬 Comments" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="commentsBtn" text="💬 Comments" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
-      <MFXButton fx:id="tagsBtn" text="🏷️ Tags" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="tagsBtn" text="🏷️ Tags" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
-      <MFXButton fx:id="analyticsBtn" text="📈 Analytics" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="analyticsBtn" text="📈 Analytics" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
       <Separator style="-fx-padding: 10 0;" />
 
       <Label text="SETTINGS"
         style="-fx-font-size: 11px; -fx-text-fill: #999; -fx-font-weight: bold; -fx-padding: 10 0 10 10;" />
 
-      <MFXButton fx:id="profileBtn" text="👤 Profile" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="profileBtn" text="👤 Profile" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
 
-      <MFXButton fx:id="settingsBtn" text="⚙️ Settings" prefWidth="180" alignment="CENTER_LEFT"
-        style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;" />
+      <Button fx:id="settingsBtn" text="⚙️ Settings" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
     </VBox>
   </left>
 

@@ -88,7 +88,7 @@ public class CommentDAO extends DAO {
   }
 
   public Optional<Comment> getCommentById(int id) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
@@ -105,7 +105,7 @@ public class CommentDAO extends DAO {
   }
 
   public List<Comment> getCommentsByPostId(int postId) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -123,7 +123,7 @@ public class CommentDAO extends DAO {
   }
 
   public List<Comment> getCommentsByUserId(int userId) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.user_id = ? ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -141,7 +141,7 @@ public class CommentDAO extends DAO {
   }
 
   public List<Comment> getAllComments() {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -173,14 +173,15 @@ public class CommentDAO extends DAO {
   }
 
   private Comment mapResultSetToComment(ResultSet rs) throws Exception {
-    Comment comment = new Comment(
-        rs.getInt("post_id"),
-        rs.getInt("user_id"),
-        rs.getString("content"));
+    Comment comment = new Comment();
     comment.setId(rs.getInt("id"));
+    comment.setPostId(rs.getInt("post_id"));
+    comment.setUserId(rs.getInt("user_id"));
+    comment.setContent(rs.getString("content"));
     comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
     comment.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
     comment.setAuthorName(rs.getString("author_name"));
+    comment.setAuthorAvatarUrl(rs.getString("author_avatar_url"));
     return comment;
   }
 }

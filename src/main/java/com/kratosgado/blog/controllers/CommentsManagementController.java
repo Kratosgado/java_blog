@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.services.CommentService;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -39,6 +40,7 @@ public class CommentsManagementController {
   }
 
   private void loadComments() {
+    ComboBox<String> statusFilterCombo = new ComboBox<>();
     try {
       commentsContainer.getChildren().clear();
       var comments = commentService.getAllComments();
@@ -57,7 +59,8 @@ public class CommentsManagementController {
   private HBox createCommentItem(Comment comment) {
     HBox container = new HBox(15);
     container.setAlignment(Pos.CENTER_LEFT);
-    container.setStyle("-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
+    container.setStyle(
+        "-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
 
     VBox commentInfo = new VBox(8);
     Label authorLabel = new Label("By: " + comment.getAuthorName());
@@ -73,8 +76,9 @@ public class CommentsManagementController {
     HBox spacer = new HBox();
     HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-    MFXButton deleteBtn = new MFXButton("Delete");
-    deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
+    Button deleteBtn = new Button("Delete");
+    deleteBtn
+        .setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
     deleteBtn.setOnAction(e -> deleteComment(comment.getId()));
 
     container.getChildren().addAll(commentInfo, spacer, deleteBtn);

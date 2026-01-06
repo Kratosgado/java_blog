@@ -5,16 +5,19 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
+import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.interfaces.Initializable;
-import com.kratosgado.blog.utils.notifications.Toast;
+import com.kratosgado.blog.utils.notifications.ToastNotification;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -32,16 +35,16 @@ public class PostViewController implements Initializable {
   private static final Logger logger = LoggerFactory.getLogger(PostViewController.class);
 
   @FXML
-  private MFXButton backBtn;
+  private Button backBtn;
 
   @FXML
   private Label categoryLabel;
 
   @FXML
-  private MFXButton shareBtn;
+  private Button shareBtn;
 
   @FXML
-  private MFXButton bookmarkBtn;
+  private Button bookmarkBtn;
 
   @FXML
   private Label postTitleLabel;
@@ -59,7 +62,7 @@ public class PostViewController implements Initializable {
   private Label readTimeLabel;
 
   @FXML
-  private MFXButton followAuthorBtn;
+  private Button followAuthorBtn;
 
   @FXML
   private FlowPane tagsFlowPane;
@@ -71,13 +74,13 @@ public class PostViewController implements Initializable {
   private Label contentLabel;
 
   @FXML
-  private MFXButton likeBtn;
+  private Button likeBtn;
 
   @FXML
-  private MFXButton dislikeBtn;
+  private Button dislikeBtn;
 
   @FXML
-  private MFXButton commentBtn;
+  private Button commentBtn;
 
   @FXML
   private Label viewsLabel;
@@ -86,13 +89,13 @@ public class PostViewController implements Initializable {
   private HBox authorActionsContainer;
 
   @FXML
-  private MFXButton editPostBtn;
+  private Button editPostBtn;
 
   @FXML
-  private MFXButton deletePostBtn;
+  private Button deletePostBtn;
 
   @FXML
-  private MFXButton publishBtn;
+  private Button publishBtn;
 
   @FXML
   private VBox relatedPostsContainer;
@@ -113,7 +116,7 @@ public class PostViewController implements Initializable {
   private Label commentsCountLabel;
 
   @FXML
-  private MFXComboBox<String> commentSortComboBox;
+  private ComboBox<String> commentSortComboBox;
 
   @FXML
   private TextArea commentTextArea;
@@ -122,10 +125,10 @@ public class PostViewController implements Initializable {
   private CheckBox notifyRepliesCheck;
 
   @FXML
-  private MFXButton cancelCommentBtn;
+  private Button cancelCommentBtn;
 
   @FXML
-  private MFXButton postCommentBtn;
+  private Button postCommentBtn;
 
   @FXML
   private VBox commentsContainer;
@@ -198,7 +201,7 @@ public class PostViewController implements Initializable {
       System.out.println("post loaded");
       if (post.isEmpty()) {
         logger.error("Failed to load post: {}", id);
-        Toast.error("Failed to load post");
+        ToastNotification.error("Failed to load post");
         Navigator.getInstance().popScreen();
         return;
       }
@@ -217,11 +220,23 @@ public class PostViewController implements Initializable {
   private void displayPost(Post post) {
     postTitleLabel.setText(post.getTitle());
 
-    authorLabel.setText("John Doe");
+    authorLabel.setText(post.getAuthorName());
     dateLabel.setText(formatDate(post.getCreatedAt()));
     readTimeLabel.setText("5 min read");
 
     viewsLabel.setText("👁️ " + post.getViews() + " views");
+    
+    // Update author avatar with fallback
+    if (post.getAuthorAvatarUrl() != null && !post.getAuthorAvatarUrl().trim().isEmpty()) {
+      authorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
+    } else {
+      authorAvatar.setImage(ImageUtils.loadDefaultAvatar());
+    }
+    
+    // Update sidebar author information
+    sidebarAuthorLabel.setText(post.getAuthorName());
+    sidebarAuthorStats.setText("• " + postService.getTotalViews(post.getUserId()) + " total views");
+    
     loadFeaturedImage();
 
     contentLabel.setText(post.getContent());
@@ -269,14 +284,10 @@ public class PostViewController implements Initializable {
     headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
     ImageView avatar = new ImageView();
-    try {
-      avatar.setImage(new Image("file:src/main/resources/images/user-avatar-placeholder.jpg"));
-      avatar.setFitWidth(40);
-      avatar.setFitHeight(40);
-      avatar.setStyle("-fx-background-radius: 20;");
-    } catch (Exception e) {
-      logger.debug("Comment avatar not found");
-    }
+    avatar.setImage(ImageUtils.loadDefaultAvatar());
+    avatar.setFitWidth(40);
+    avatar.setFitHeight(40);
+    avatar.setStyle("-fx-background-radius: 20;");
 
     VBox authorInfo = new VBox(2);
     Label authorName = new Label("Commenter " + commentNumber);
@@ -295,10 +306,10 @@ public class PostViewController implements Initializable {
     HBox actionsBox = new HBox(15);
     actionsBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-    MFXButton likeBtn = new MFXButton("👍 " + (commentNumber * 3));
+    Button likeBtn = new Button("👍 " + (commentNumber * 3));
     likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px;");
 
-    MFXButton replyBtn = new MFXButton("Reply");
+    Button replyBtn = new Button("Reply");
     replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px;");
 
     actionsBox.getChildren().addAll(likeBtn, replyBtn);

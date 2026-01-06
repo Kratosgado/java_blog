@@ -14,10 +14,6 @@ import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
-import io.github.palexdev.materialfx.controls.MFXTextField;
-import io.github.palexdev.materialfx.controls.MFXToggleButton;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.application.Platform;
@@ -25,6 +21,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -35,13 +35,13 @@ public class HomeController {
   private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
   @FXML
-  private MFXTextField searchField;
+  private TextField searchField;
 
   @FXML
-  private MFXComboBox<String> categoryComboBox;
+  private ComboBox<String> categoryComboBox;
 
   @FXML
-  private MFXComboBox<String> sortComboBox;
+  private ComboBox<String> sortComboBox;
 
   @FXML
   private ScrollPane featuredScrollPane;
@@ -53,10 +53,10 @@ public class HomeController {
   private Label postsCountLabel;
 
   @FXML
-  private MFXToggleButton gridViewBtn;
+  private ToggleButton gridViewBtn;
 
   @FXML
-  private MFXToggleButton listViewBtn;
+  private ToggleButton listViewBtn;
 
   @FXML
   private ScrollPane postsScrollPane;
@@ -65,7 +65,7 @@ public class HomeController {
   private VBox postsContainer;
 
   @FXML
-  private MFXButton loadMoreBtn;
+  private Button loadMoreBtn;
 
   @FXML
   private VBox categoriesContainer;
@@ -86,13 +86,13 @@ public class HomeController {
   private HBox userSection;
 
   @FXML
-  private MFXButton loginBtn;
+  private Button loginBtn;
 
   @FXML
-  private MFXButton signupBtn;
+  private Button signupBtn;
 
   @FXML
-  private MFXButton userMenuBtn;
+  private Button userMenuBtn;
 
   @FXML
   private Label userLabel;
@@ -272,7 +272,7 @@ public class HomeController {
       int popularCount = Math.min(10, tags.size());
       for (int i = 0; i < popularCount; i++) {
         Tag tag = tags.get(i);
-        MFXButton tagButton = new MFXButton("#" + tag.getName());
+        Button tagButton = new Button("#" + tag.getName());
         tagButton.setStyle(
             "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12;");
         tagButton.setOnAction(e -> filterByTag(tag));
@@ -322,7 +322,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label metaLabel = new Label("By Author • " + UiUtils.formatDate(post.getCreatedAt()));
+    Label metaLabel = new Label("By " + post.getAuthorName() + " • " + UiUtils.formatDate(post.getCreatedAt()));
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(imageView, titleLabel, metaLabel);
@@ -359,7 +359,7 @@ public class HomeController {
 
     HBox metaBox = new HBox(15);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label("Author");
+    Label authorLabel = new Label(post.getAuthorName());
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
@@ -401,7 +401,7 @@ public class HomeController {
 
     HBox metaBox = new HBox(20);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label("By Author");
+    Label authorLabel = new Label("By " + post.getAuthorName());
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");

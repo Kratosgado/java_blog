@@ -10,7 +10,7 @@ import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.Toast;
+import com.kratosgado.blog.utils.notifications.ToastNotification;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -77,7 +77,7 @@ public class DashboardHomeController {
       logger.info("Dashboard data loaded successfully");
     } catch (Exception e) {
       logger.error("Failed to load dashboard data", e);
-      Toast.error("Failed to load dashboard data");
+      ToastNotification.error("Failed to load dashboard data");
     }
   }
 
@@ -127,7 +127,7 @@ public class DashboardHomeController {
       DashboardController.instance().getPostsButton().fire();
     } catch (Exception e) {
       logger.error("Failed to navigate to posts", e);
-      Toast.error("Failed to navigate to posts");
+      ToastNotification.error("Failed to navigate to posts");
     }
   }
 }

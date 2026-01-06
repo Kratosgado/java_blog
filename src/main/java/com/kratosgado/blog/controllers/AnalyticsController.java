@@ -7,8 +7,8 @@ import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
@@ -19,10 +19,10 @@ public class AnalyticsController {
   private static final Logger logger = LoggerFactory.getLogger(AnalyticsController.class);
 
   @FXML
-  private MFXComboBox<String> timeRangeCombo;
+  private ComboBox<String> timeRangeCombo;
 
   @FXML
-  private MFXButton exportReportBtn;
+  private Button exportReportBtn;
 
   @FXML
   private Label totalViewsLabel;

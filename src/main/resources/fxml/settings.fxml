@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -57,13 +56,13 @@
 
       <VBox spacing="10">
         <Label text="Theme" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
-        <MFXComboBox fx:id="themeComboBox" floatingText="Select theme" prefWidth="250" />
+        <ComboBox fx:id="themeComboBox" promptText="Select theme" prefWidth="250" />
       </VBox>
 
       <VBox spacing="10">
         <Label text="Language"
           style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;" />
-        <MFXComboBox fx:id="languageComboBox" floatingText="Select language" prefWidth="250" />
+        <ComboBox fx:id="languageComboBox" promptText="Select language" prefWidth="250" />
       </VBox>
     </VBox>
 
@@ -72,9 +71,9 @@
 
     <!-- Action Buttons -->
     <HBox spacing="15" alignment="CENTER_RIGHT">
-      <MFXButton fx:id="resetSettingsBtn" text="Reset to Default"
+      <Button fx:id="resetSettingsBtn" text="Reset to Default"
         style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 8; -fx-padding: 10 25;" />
-      <MFXButton fx:id="saveSettingsBtn" text="💾 Save Settings"
+      <Button fx:id="saveSettingsBtn" text="💾 Save Settings"
         style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 10 25; -fx-font-weight: bold;" />
     </HBox>
   </VBox>

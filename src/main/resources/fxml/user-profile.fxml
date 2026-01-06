@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -33,7 +32,7 @@
             style="-fx-font-size: 12px; -fx-text-fill: #999;" />
         </VBox>
 
-        <MFXButton fx:id="changeAvatarBtn" text="Change Photo"
+        <Button fx:id="changeAvatarBtn" text="Change Photo"
           style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 20;" />
       </HBox>
 
@@ -47,12 +46,12 @@
         <GridPane hgap="20" vgap="20">
           <VBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="0">
             <Label text="Display Name" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-            <MFXTextField fx:id="displayNameField" prefWidth="300" />
+            <TextField fx:id="displayNameField" prefWidth="300" />
           </VBox>
 
           <VBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
             <Label text="Email" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-            <MFXTextField fx:id="emailField" prefWidth="300" />
+            <TextField fx:id="emailField" prefWidth="300" />
           </VBox>
 
           <VBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.columnSpan="2">
@@ -63,20 +62,20 @@
 
           <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="0">
             <Label text="Website" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-            <MFXTextField fx:id="websiteField" promptText="https://" prefWidth="300" />
+            <TextField fx:id="websiteField" promptText="https://" prefWidth="300" />
           </VBox>
 
           <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
             <Label text="Location" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-            <MFXTextField fx:id="locationField" prefWidth="300" />
+            <TextField fx:id="locationField" prefWidth="300" />
           </VBox>
         </GridPane>
       </VBox>
 
       <HBox spacing="10" alignment="CENTER_RIGHT">
-        <MFXButton fx:id="cancelBtn" text="Cancel"
+        <Button fx:id="cancelBtn" text="Cancel"
           style="-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 10 25;" />
-        <MFXButton fx:id="saveProfileBtn" text="Save Changes"
+        <Button fx:id="saveProfileBtn" text="Save Changes"
           style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 25; -fx-font-weight: bold;" />
       </HBox>
 
@@ -92,22 +91,22 @@
       <VBox spacing="15">
         <VBox spacing="5">
           <Label text="Current Password" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-          <MFXPasswordField fx:id="currentPasswordField" prefWidth="350" />
+          <PasswordField fx:id="currentPasswordField" prefWidth="350" />
         </VBox>
 
         <VBox spacing="5">
           <Label text="New Password" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-          <MFXPasswordField fx:id="newPasswordField" prefWidth="350" />
+          <PasswordField fx:id="newPasswordField" prefWidth="350" />
         </VBox>
 
         <VBox spacing="5">
           <Label text="Confirm New Password" style="-fx-font-size: 13px; -fx-text-fill: #666;" />
-          <MFXPasswordField fx:id="confirmNewPasswordField" prefWidth="350" />
+          <PasswordField fx:id="confirmNewPasswordField" prefWidth="350" />
         </VBox>
       </VBox>
 
       <HBox alignment="CENTER_LEFT">
-        <MFXButton fx:id="changePasswordBtn" text="Update Password"
+        <Button fx:id="changePasswordBtn" text="Update Password"
           style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 25;" />
       </HBox>
 

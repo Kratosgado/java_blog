@@ -7,10 +7,10 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.Toast;
+import com.kratosgado.blog.utils.notifications.ToastNotification;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
@@ -24,40 +24,40 @@ public class DashboardController {
   private Label titleLabel;
 
   @FXML
-  private MFXButton logoutBtn;
+  private Button logoutBtn;
 
   @FXML
   private StackPane contentArea;
 
   @FXML
-  private MFXTextField searchField;
+  private TextField searchField;
 
   @FXML
   private Label userLabel;
 
   @FXML
-  private MFXButton dashboardBtn;
+  private Button dashboardBtn;
 
   @FXML
-  private MFXButton postsBtn;
+  private Button postsBtn;
 
   @FXML
-  private MFXButton createPostBtn;
+  private Button createPostBtn;
 
   @FXML
-  private MFXButton commentsBtn;
+  private Button commentsBtn;
 
   @FXML
-  private MFXButton tagsBtn;
+  private Button tagsBtn;
 
   @FXML
-  private MFXButton analyticsBtn;
+  private Button analyticsBtn;
 
   @FXML
-  private MFXButton profileBtn;
+  private Button profileBtn;
 
   @FXML
-  private MFXButton settingsBtn;
+  private Button settingsBtn;
 
   public DashboardController() {
     instance = this;
@@ -67,7 +67,7 @@ public class DashboardController {
     return instance;
   }
 
-  public MFXButton getPostsButton() {
+  public Button getPostsButton() {
     return postsBtn;
   }
 
@@ -92,7 +92,7 @@ public class DashboardController {
     loadContent(Routes.DASHBOARD_HOME, dashboardBtn);
   }
 
-  public void loadContent(String route, MFXButton button) {
+  public void loadContent(String route, Button button) {
     try {
       contentArea.getChildren().clear();
       Parent content = Navigator.getInstance().getSubScene(route);
@@ -101,16 +101,16 @@ public class DashboardController {
         updateActiveButton(button);
         logger.debug("Loaded content: {}", route);
       } else {
-        Toast.error("Failed to load " + route);
+ToastNotification.error("Failed to load " + route);
       }
     } catch (Exception e) {
       logger.error("Failed to load content: {}", route, e);
-      Toast.error("Failed to load " + route);
+      ToastNotification.error("Failed to load " + route);
     }
   }
 
-  private void updateActiveButton(MFXButton activeButton) {
-    for (MFXButton btn : new MFXButton[] { dashboardBtn, postsBtn, createPostBtn, commentsBtn, tagsBtn, analyticsBtn,
+  private void updateActiveButton(Button activeButton) {
+    for (Button btn : new Button[] { dashboardBtn, postsBtn, createPostBtn, commentsBtn, tagsBtn, analyticsBtn,
         profileBtn, settingsBtn }) {
       btn.setStyle(
           "-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;");
@@ -120,7 +120,7 @@ public class DashboardController {
   }
 
   private void logout() {
-    Toast.info("Logging out...");
+    ToastNotification.info("Logging out...");
     AuthContext.getInstance().logout();
     Navigator.getInstance().goTo(Routes.LOGIN);
   }

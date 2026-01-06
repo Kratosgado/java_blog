@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -64,7 +63,7 @@
       <Label text="Recent Posts"
         style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;" />
       <Region HBox.hgrow="ALWAYS" />
-      <MFXButton text="View All" onAction="#viewAllPosts"
+      <Button text="View All" onAction="#viewAllPosts"
         style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;" />
     </HBox>
 

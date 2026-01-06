@@ -9,25 +9,25 @@ import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.Toast;
+import com.kratosgado.blog.utils.notifications.ToastNotification;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXPasswordField;
-import io.github.palexdev.materialfx.controls.MFXTextField;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
 
 public class LoginController {
   private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
   @FXML
-  private MFXTextField emailField;
+  private TextField emailField;
   @FXML
-  private MFXPasswordField passwordField;
+  private PasswordField passwordField;
   @FXML
-  private MFXButton loginButton;
+  private Button loginButton;
   @FXML
-  private MFXButton signUpLink;
+  private Button signUpLink;
   @FXML
   private Label infoLabel;
 
@@ -55,12 +55,12 @@ public class LoginController {
     try {
       User user = authService.login(new LoginDto(email, password));
       AuthContext.getInstance().setCurrentUser(user);
-      Toast.success("Login successful! Welcome back.");
+      ToastNotification.success("Login successful! Welcome back.");
       logger.info("User logged in successfully: {}", email);
       Navigator.getInstance().goTo(Routes.HOME);
     } catch (Exception ex) {
       logger.error("Login failed for email: {}", email, ex);
-      Toast.error(ex.getMessage());
+      ToastNotification.error(ex.getMessage());
     }
   }
 
