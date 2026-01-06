@@ -62,14 +62,32 @@
           prefHeight="100" wrapText="true" styleClass="modern-text-area" />
       </VBox>
 
-      <!-- Featured Image -->
-      <VBox spacing="8">
-        <Label text="Featured Image (Optional)" styleClass="field-label" />
-        <HBox spacing="10" alignment="CENTER_LEFT">
-          <TextField fx:id="imageUrlField" promptText="Enter image URL" prefWidth="500" styleClass="modern-text-field" />
-          <Button fx:id="uploadImageBtn" text="📁 Browse" styleClass="secondary-button" />
-        </HBox>
-      </VBox>
+       <!-- Featured Image -->
+       <VBox spacing="8">
+         <Label text="Featured Image (Optional)" styleClass="field-label" />
+         <HBox spacing="10" alignment="CENTER_LEFT">
+           <TextField fx:id="imageUrlField" promptText="Enter image URL" prefWidth="500" styleClass="modern-text-field" />
+           <Button fx:id="uploadImageBtn" text="📁 Browse" styleClass="secondary-button" />
+         </HBox>
+       </VBox>
+
+       <!-- Cover Image -->
+       <VBox spacing="8">
+         <Label text="Cover Image (Optional)" styleClass="field-label" />
+         <HBox spacing="10" alignment="CENTER_LEFT">
+           <TextField fx:id="coverImageField" promptText="Enter cover image URL" prefWidth="500" styleClass="modern-text-field" />
+           <Button fx:id="uploadCoverImageBtn" text="📁 Browse" styleClass="secondary-button" />
+         </HBox>
+       </VBox>
+
+       <!-- Icon -->
+       <VBox spacing="8">
+         <Label text="Post Icon (Optional)" styleClass="field-label" />
+         <HBox spacing="10" alignment="CENTER_LEFT">
+           <TextField fx:id="iconField" promptText="Enter icon URL or path" prefWidth="500" styleClass="modern-text-field" />
+           <Button fx:id="uploadIconBtn" text="📁 Browse" styleClass="secondary-button" />
+         </HBox>
+       </VBox>
 
       <!-- Error/Success Message -->
       <Label fx:id="messageLabel" wrapText="true" styleClass="info-text" />

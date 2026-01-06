@@ -61,6 +61,18 @@ public class CreatePostController {
   private Button uploadImageBtn;
 
   @FXML
+  private TextField coverImageField;
+
+  @FXML
+  private Button uploadCoverImageBtn;
+
+  @FXML
+  private TextField iconField;
+
+  @FXML
+  private Button uploadIconBtn;
+
+  @FXML
   private Label messageLabel;
 
   @FXML
@@ -99,6 +111,8 @@ public class CreatePostController {
     previewBtn.setOnAction(e -> preview());
     addTagBtn.setOnAction(e -> addTag());
     uploadImageBtn.setOnAction(e -> uploadImage());
+    uploadCoverImageBtn.setOnAction(e -> uploadCoverImage());
+    uploadIconBtn.setOnAction(e -> uploadIcon());
 
     categoryComboBox.getItems().addAll("Technology", "Lifestyle", "Business", "Travel", "Other");
     currentPost = new Post();
@@ -116,7 +130,9 @@ public class CreatePostController {
     String content = contentArea.getText();
     String excerpt = excerptArea.getText();
     String featuredImage = imageUrlField.getText();
-    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage);
+    String coverImage = coverImageField.getText();
+    String icon = iconField.getText();
+    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage, coverImage, icon);
 
   }
 
@@ -191,7 +207,7 @@ public class CreatePostController {
     }
   }
 
-  private void uploadImage() {
+   private void uploadImage() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.setTitle("Select Image File");
     fileChooser.getExtensionFilters().addAll(
@@ -200,6 +216,32 @@ public class CreatePostController {
     File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
     if (selectedFile != null) {
       imageUrlField.setText(selectedFile.toURI().toString());
+    }
+  }
+
+  private void uploadCoverImage() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Select Cover Image");
+    fileChooser.getExtensionFilters().addAll(
+        new FileChooser.ExtensionFilter("Image Files", "*.jpeg", "*.png", "*.jpg", "*.gif"),
+        new FileChooser.ExtensionFilter("All Files", "*.*"));
+    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+    if (selectedFile != null) {
+      coverImageField.setText(selectedFile.toURI().toString());
+      logger.debug("Cover image selected: {}", selectedFile.getName());
+    }
+  }
+
+  private void uploadIcon() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Select Icon");
+    fileChooser.getExtensionFilters().addAll(
+        new FileChooser.ExtensionFilter("Image Files", "*.jpeg", "*.png", "*.jpg", "*.gif", "*.svg"),
+        new FileChooser.ExtensionFilter("All Files", "*.*"));
+    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+    if (selectedFile != null) {
+      iconField.setText(selectedFile.toURI().toString());
+      logger.debug("Icon selected: {}", selectedFile.getName());
     }
   }
 
