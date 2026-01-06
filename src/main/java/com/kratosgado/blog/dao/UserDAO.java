@@ -29,6 +29,7 @@ public class UserDAO extends DAO {
           "username VARCHAR(50) NOT NULL," +
           "password VARCHAR NOT NULL," +
           "email VARCHAR(50) UNIQUE NOT NULL," +
+          "avatar_url VARCHAR(500)," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
       logger.debug("Users table initialized successfully");
@@ -38,12 +39,13 @@ public class UserDAO extends DAO {
   }
 
   public boolean createUser(User user) {
-    String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
+    String sql = "INSERT INTO users (username, password, email, avatar_url) VALUES (?, ?, ?, ?)";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setString(1, user.getUsername());
       stmt.setString(2, user.getPassword());
       stmt.setString(3, user.getEmail());
+      stmt.setString(4, user.getAvatarUrl());
       stmt.executeUpdate();
       logger.info("User created successfully: {}", user.getEmail());
       return true;
@@ -76,7 +78,12 @@ public class UserDAO extends DAO {
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return Optional
-            .of(new User(rs.getInt("id"), rs.getString("username"), rs.getString("password"), rs.getString("email")));
+            .of(new User(
+                rs.getInt("id"), 
+                rs.getString("username"), 
+                rs.getString("password"), 
+                rs.getString("email"),
+                rs.getString("avatar_url")));
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -93,7 +100,12 @@ public class UserDAO extends DAO {
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return Optional
-            .of(new User(rs.getInt("id"), rs.getString("username"), rs.getString("password"), rs.getString("email")));
+            .of(new User(
+                rs.getInt("id"), 
+                rs.getString("username"), 
+                rs.getString("password"), 
+                rs.getString("email"),
+                rs.getString("avatar_url")));
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -104,6 +116,21 @@ public class UserDAO extends DAO {
 
   public boolean userEmailExists(String email) {
     return getUserByEmail(email).isPresent();
+  }
+
+  public boolean updateUserAvatar(int userId, String avatarUrl) {
+    String sql = "UPDATE users SET avatar_url = ? WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setString(1, avatarUrl);
+      stmt.setInt(2, userId);
+      stmt.executeUpdate();
+      logger.info("Avatar updated for user id: {}", userId);
+      return true;
+    } catch (Exception e) {
+      logger.error("Failed to update avatar for user id: {}", userId, e);
+      return false;
+    }
   }
 
 }

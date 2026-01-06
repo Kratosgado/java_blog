@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -17,8 +16,8 @@
       <Label text="Analytics And Performance"
         style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
       <Region HBox.hgrow="ALWAYS" />
-      <MFXComboBox fx:id="timeRangeCombo" floatingText="Time Range" prefWidth="150" />
-      <MFXButton fx:id="exportReportBtn" text="📊 Export Report"
+      <ComboBox fx:id="timeRangeCombo" promptText="Time Range" prefWidth="150" />
+      <Button fx:id="exportReportBtn" text="📊 Export Report"
         style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
     </HBox>
 
@@ -130,7 +129,7 @@
       </GridPane>
 
       <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 15 0 0 0;">
-        <MFXButton fx:id="runBenchmarkBtn" text="🚀 Run Performance Test"
+        <Button fx:id="runBenchmarkBtn" text="🚀 Run Performance Test"
           style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;" />
         <Label fx:id="benchmarkStatusLabel" text=""
           style="-fx-font-size: 13px; -fx-text-fill: #666;" />

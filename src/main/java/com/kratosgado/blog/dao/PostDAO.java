@@ -98,7 +98,8 @@ public class PostDAO extends DAO {
   }
 
   public Optional<Post> getPostById(int id) {
-    String sql = "SELECT * FROM posts WHERE id = ?";
+    String sql = "SELECT p.*, u.username as author_name, u.avatar_url as author_avatar_url FROM posts p " +
+        "LEFT JOIN users u ON p.user_id = u.id WHERE p.id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
@@ -114,7 +115,8 @@ public class PostDAO extends DAO {
   }
 
   public List<Post> getPostsByUserId(int userId) {
-    String sql = "SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC";
+    String sql = "SELECT p.*, u.username as author_name, u.avatar_url as author_avatar_url FROM posts p " +
+        "LEFT JOIN users u ON p.user_id = u.id WHERE p.user_id = ? ORDER BY p.created_at DESC";
     List<Post> posts = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
@@ -131,7 +133,8 @@ public class PostDAO extends DAO {
   }
 
   public List<Post> getPostsByStatus(String status) {
-    String sql = "SELECT * FROM posts WHERE status = ? ORDER BY created_at DESC";
+    String sql = "SELECT p.*, u.username as author_name, u.avatar_url as author_avatar_url FROM posts p " +
+        "LEFT JOIN users u ON p.user_id = u.id WHERE p.status = ? ORDER BY p.created_at DESC";
     List<Post> posts = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
@@ -148,7 +151,8 @@ public class PostDAO extends DAO {
   }
 
   public List<Post> getAllPosts() {
-    String sql = "SELECT * FROM posts ORDER BY created_at DESC";
+    String sql = "SELECT p.*, u.username as author_name, u.avatar_url as author_avatar_url FROM posts p " +
+        "LEFT JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC";
     List<Post> posts = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
@@ -178,16 +182,19 @@ public class PostDAO extends DAO {
   }
 
   private Post mapResultSetToPost(ResultSet rs) throws Exception {
-    return new Post(
-        rs.getInt("id"),
-        rs.getInt("user_id"),
-        rs.getString("title"),
-        rs.getString("content"),
-        rs.getString("excerpt"),
-        rs.getString("status"),
-        rs.getTimestamp("created_at").toLocalDateTime(),
-        rs.getTimestamp("updated_at").toLocalDateTime(),
-        rs.getInt("views"),
-        rs.getString("featured_image"));
+    Post post = new Post();
+    post.setId(rs.getInt("id"));
+    post.setUserId(rs.getInt("user_id"));
+    post.setTitle(rs.getString("title"));
+    post.setContent(rs.getString("content"));
+    post.setExcerpt(rs.getString("excerpt"));
+    post.setStatus(rs.getString("status"));
+    post.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+    post.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
+    post.setViews(rs.getInt("views"));
+    post.setFeaturedImage(rs.getString("featured_image"));
+    post.setAuthorName(rs.getString("author_name"));
+    post.setAuthorAvatarUrl(rs.getString("author_avatar_url"));
+    return post;
   }
 }

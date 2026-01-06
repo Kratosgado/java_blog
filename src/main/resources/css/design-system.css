@@ -1,0 +1,114 @@
+/* Modern CSS Design System */
+.root {
+    /* Color Palette - Modern & Clean */
+    -fx-primary-color: #6366f1;
+    -fx-primary-hover: #4f46e5;
+    -fx-primary-light: #818cf8;
+    -fx-primary-dark: #4338ca;
+    
+    -fx-secondary-color: #10b981;
+    -fx-secondary-hover: #059669;
+    -fx-secondary-light: #34d399;
+    
+    -fx-accent-color: #f59e0b;
+    -fx-accent-hover: #d97706;
+    
+    -fx-danger-color: #ef4444;
+    -fx-danger-hover: #dc2626;
+    -fx-warning-color: #f59e0b;
+    -fx-success-color: #10b981;
+    -fx-info-color: #3b82f6;
+    
+    /* Neutral Colors */
+    -fx-background-primary: #ffffff;
+    -fx-background-secondary: #f9fafb;
+    -fx-background-tertiary: #f3f4f6;
+    -fx-surface-color: #ffffff;
+    -fx-surface-hover: #f8fafc;
+    
+    -fx-text-primary: #111827;
+    -fx-text-secondary: #6b7280;
+    -fx-text-tertiary: #9ca3af;
+    -fx-text-inverse: #ffffff;
+    -fx-text-disabled: #d1d5db;
+    
+    -fx-border-color: #e5e7eb;
+    -fx-border-hover: #d1d5db;
+    -fx-border-focus: #6366f1;
+    
+    /* Typography */
+    -fx-font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica', sans-serif;
+    -fx-font-size: 16px;
+    
+    /* Spacing */
+    -fx-spacing-xs: 4px;
+    -fx-spacing-sm: 8px;
+    -fx-spacing-md: 16px;
+    -fx-spacing-lg: 24px;
+    -fx-spacing-xl: 32px;
+    -fx-spacing-2xl: 48px;
+    
+    /* Border Radius */
+    -fx-radius-sm: 4px;
+    -fx-radius-md: 6px;
+    -fx-radius-lg: 8px;
+    -fx-radius-xl: 12px;
+    -fx-radius-2xl: 16px;
+}
+
+/* Global Styles */
+* {
+    -fx-background-color: -background-primary;
+    -fx-font-family: -font-family-primary;
+    -fx-font-size: -font-size-base;
+    -fx-text-fill: -text-primary;
+}
+
+/* Scrollbar Styling */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-padding: 0;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: -background-tertiary;
+    -fx-background-radius: -radius-md;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -text-tertiary;
+    -fx-background-radius: -radius-md;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -text-secondary;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-color: transparent;
+    -fx-border-radius: 0;
+    -fx-padding: 0;
+}
+
+.scroll-bar:horizontal .track {
+    -fx-background-color: -background-tertiary;
+    -fx-background-radius: -radius-md;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: -text-tertiary;
+    -fx-background-radius: -radius-md;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: -text-secondary;
+}
