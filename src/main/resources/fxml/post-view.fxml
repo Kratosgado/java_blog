@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.web.WebView?>
 
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.PostViewController" fitToWidth="true"
@@ -76,7 +75,7 @@
           style="-fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 5, 0, 0, 2);" />
 
         <!-- Post Content -->
-        <WebView fx:id="postContentWebView" prefHeight="400"
+        <Label fx:id="contentLabel" prefHeight="400"
           style="-fx-background-color: transparent; -fx-border-color: transparent;" />
 
         <!-- Post Engagement Bar -->
@@ -169,7 +168,7 @@
           prefHeight="100" wrapText="true"
           style="-fx-background-color: white; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8; -fx-font-size: 14px;" />
         <HBox alignment="CENTER_LEFT" spacing="10">
-          <MFXCheckBox fx:id="notifyRepliesCheck" text="Notify me of replies" />
+          <CheckBox fx:id="notifyRepliesCheck" text="Notify me of replies" />
           <Region HBox.hgrow="ALWAYS" />
           <MFXButton fx:id="cancelCommentBtn" text="Cancel"
             style="-fx-background-color: #e0e0e0; -fx-text-fill: #666; -fx-background-radius: 5; -fx-padding: 8 20;" />

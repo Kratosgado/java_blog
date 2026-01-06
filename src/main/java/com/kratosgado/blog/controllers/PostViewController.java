@@ -137,15 +137,8 @@ public class PostViewController implements Initializable {
 
   @Override
   public <T> void initData(T data) {
-    int postId = (int) data;
-    final Optional<Post> post = postService.getPostById(postId);
-    if (post.isEmpty()) {
-      logger.error("Failed to load post: {}", postId);
-      Toast.error("Failed to load post");
-      Navigator.getInstance().popScreen();
-      return;
-    }
-    currentPost = post.get();
+    logger.debug("Initializing Post View Controller with data: {}", data);
+    loadPostContent((int) data);
   }
 
   public PostViewController() {
@@ -157,8 +150,8 @@ public class PostViewController implements Initializable {
   @FXML
   private void initialize() {
     logger.debug("Initializing Post View Controller");
+    logger.debug("Initializing Post View Controller");
     setupUI();
-    loadPostContent();
   }
 
   private void setupUI() {
@@ -199,44 +192,17 @@ public class PostViewController implements Initializable {
     loadRelatedPosts();
   }
 
-  private void loadPostContent() {
-    loadDemoPost();
-  }
-
-  private void loadDemoPost() {
+  private void loadPostContent(int id) {
     try {
-      // Create demo post data using Lombok-generated constructor
-      currentPost = new Post();
-      currentPost.setId(1);
-      currentPost.setUserId(1);
-      currentPost.setTitle("Building a Modern Java Blog Application with JavaFX and MaterialFX");
-      currentPost.setContent(
-          "In this comprehensive guide, we'll explore how to build a modern blog application using JavaFX and MaterialFX. This project showcases the power of combining traditional Java desktop development with modern UI design principles.\n\n"
-              +
-              "Technology Stack\n" +
-              "Our blog application leverages several cutting-edge technologies:\n" +
-              "- JavaFX 21 - The latest version of Java's UI toolkit\n" +
-              "- MaterialFX - Material Design components for JavaFX\n" +
-              "- PostgreSQL - Robust database backend\n" +
-              "- Lombok - Reducing boilerplate code\n\n" +
-              "Key Features\n" +
-              "The application includes several advanced features that make it stand out:\n" +
-              "1. Responsive Design - The UI adapts to different screen sizes\n" +
-              "2. Rich Content Support - Posts can contain formatted text and images\n" +
-              "3. Interactive Components - Users can like, comment, and share posts\n\n" +
-              "Architecture Overview\n" +
-              "The application follows a clean architecture pattern with clear separation of concerns:\n" +
-              "- Controllers handle user interactions\n" +
-              "- Services contain business logic\n" +
-              "- DAOs handle database interactions\n\n" +
-              "Conclusion\n" +
-              "This blog application demonstrates how modern Java desktop applications can be both functional and visually appealing.");
-      currentPost.setExcerpt("Building a modern Java blog application with JavaFX, MaterialFX, and PostgreSQL.");
-      currentPost.setStatus("published");
-      currentPost.setCreatedAt(java.time.LocalDateTime.now().minusDays(2));
-      currentPost.setUpdatedAt(java.time.LocalDateTime.now());
-      currentPost.setViews(1234);
-      currentPost.setFeaturedImage("java_blog_logo.jpg");
+      final Optional<Post> post = postService.getPostById(id);
+      System.out.println("post loaded");
+      if (post.isEmpty()) {
+        logger.error("Failed to load post: {}", id);
+        Toast.error("Failed to load post");
+        Navigator.getInstance().popScreen();
+        return;
+      }
+      currentPost = post.get();
 
       displayPost(currentPost);
       loadComments();
@@ -251,22 +217,16 @@ public class PostViewController implements Initializable {
   private void displayPost(Post post) {
     postTitleLabel.setText(post.getTitle());
 
-    // Set author info
     authorLabel.setText("John Doe");
     dateLabel.setText(formatDate(post.getCreatedAt()));
     readTimeLabel.setText("5 min read");
 
-    // Set view count
     viewsLabel.setText("👁️ " + post.getViews() + " views");
-
-    // Load featured image
     loadFeaturedImage();
 
-    // Load content in Label
     contentLabel.setText(post.getContent());
     contentLabel.setWrapText(true);
 
-    // Update comment count
     updateCommentCount();
   }
 
