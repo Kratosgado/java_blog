@@ -3,66 +3,72 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.Scene?>
-
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.DashboardController"
   style="-fx-background-color: #f5f7fa;"
-  stylesheets="@../css/enhanced-theme.css">
+  stylesheets="@../css/modern-ui.css">
 
   <!-- Top Navigation Bar -->
   <top>
-    <HBox alignment="CENTER_LEFT" spacing="20"
-      style="-fx-background-color: white; -fx-padding: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
-      <Label text="✍ Blogging Platform" fx:id="titleLabel"
-        style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #667eea;" />
-
+    <HBox alignment="CENTER_LEFT" spacing="20" styleClass="nav-bar" style="-fx-padding: 20 40;">
+      <Label fx:id="titleLabel" text="✍️ Blog Hub" styleClass="nav-title" 
+        style="-fx-cursor: hand;" />
       <Region HBox.hgrow="ALWAYS" />
-
-      <VBox spacing="5">
-        <Label text="Search posts..." styleClass="field-label" />
-        <TextField fx:id="searchField" prefWidth="300" styleClass="modern-text-field" />
-      </VBox>
-
-      <Label fx:id="userLabel" text="Welcome, User" styleClass="subtitle-text" />
-
+      
+      <TextField fx:id="searchField" promptText="🔍 Search..." 
+        prefWidth="300" styleClass="modern-text-field" />
+      
+      <Label fx:id="userLabel" styleClass="subtitle-text" 
+        style="-fx-font-size: 14px; -fx-font-weight: 600;" />
+      
       <Button fx:id="logoutBtn" text="Logout" styleClass="danger-button" />
     </HBox>
   </top>
 
   <!-- Left Sidebar Navigation -->
   <left>
-    <VBox spacing="5" style="-fx-background-color: white; -fx-padding: 20; -fx-pref-width: 220;">
-      <Label text="NAVIGATION"
-        style="-fx-font-size: 11px; -fx-text-fill: #999; -fx-font-weight: bold; -fx-padding: 10 0 10 10;" />
-
-      <Button fx:id="dashboardBtn" text="📊 Dashboard" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button-active" />
-
-      <Button fx:id="postsBtn" text="📝 My Posts" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Button fx:id="createPostBtn" text="➕ Create Post" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Button fx:id="commentsBtn" text="💬 Comments" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Button fx:id="tagsBtn" text="🏷️ Tags" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Button fx:id="analyticsBtn" text="📈 Analytics" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Separator style="-fx-padding: 10 0;" />
-
-      <Label text="SETTINGS"
-        style="-fx-font-size: 11px; -fx-text-fill: #999; -fx-font-weight: bold; -fx-padding: 10 0 10 10;" />
-
-      <Button fx:id="profileBtn" text="👤 Profile" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
-
-      <Button fx:id="settingsBtn" text="⚙️ Settings" prefWidth="180" alignment="CENTER_LEFT" styleClass="nav-button" />
+    <VBox spacing="8" style="-fx-background-color: white; -fx-padding: 24 16; -fx-pref-width: 240; 
+      -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 2, 0);">
+      
+      <Label text="DASHBOARD" 
+        style="-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-padding: 12 8;" />
+      
+      <Button fx:id="dashboardBtn" text="📊 Overview" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" 
+        style="-fx-background-color: #6366f1; -fx-text-fill: white;" />
+      
+      <Button fx:id="postsBtn" text="📝 My Posts" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Button fx:id="createPostBtn" text="➕ Create Post" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Button fx:id="commentsBtn" text="💬 Comments" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Button fx:id="tagsBtn" text="🏷️ Tags" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Button fx:id="analyticsBtn" text="📈 Analytics" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Separator style="-fx-padding: 12 0;" />
+      
+      <Label text="ACCOUNT" 
+        style="-fx-font-size: 11px; -fx-text-fill: #9ca3af; -fx-font-weight: bold; -fx-padding: 12 8;" />
+      
+      <Button fx:id="profileBtn" text="👤 Profile" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
+      
+      <Button fx:id="settingsBtn" text="⚙️ Settings" prefWidth="200" 
+        alignment="CENTER_LEFT" styleClass="nav-button" />
     </VBox>
   </left>
 
   <!-- Center Content Area -->
   <center>
-    <StackPane fx:id="contentArea" style="-fx-padding: 20;">
+    <StackPane fx:id="contentArea" style="-fx-padding: 30;">
       <!-- Dynamic content loaded here -->
     </StackPane>
   </center>

@@ -3,56 +3,82 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.Scene?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-  fx:controller="com.kratosgado.blog.controllers.TagsManagementController" spacing="20"
-  style="-fx-background-color: transparent;"
-  stylesheets="@../css/enhanced-theme.css">
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.TagsManagementController"
+  fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;"
+  stylesheets="@../css/modern-ui.css">
 
-  <HBox alignment="CENTER_LEFT" spacing="15">
-    <Label text="Tags Management" styleClass="page-title" />
-    <Region HBox.hgrow="ALWAYS" />
-    <Button fx:id="createTagBtn" text="+ Create Tag" onAction="#showCreateForm"
-      styleClass="primary-button" />
-  </HBox>
+  <VBox spacing="30" style="-fx-background-color: transparent;">
 
-  <!-- Create/Edit Tag Form -->
-  <VBox fx:id="tagFormContainer" spacing="15"
-    style="-fx-background-color: white; -fx-padding: 25; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-    managed="false" visible="false">
-    <Label fx:id="formTitleLabel" text="Create New Tag" styleClass="form-title" />
-
-    <HBox spacing="15" alignment="CENTER_LEFT">
-      <VBox spacing="5" HBox.hgrow="ALWAYS">
-        <Label text="Tag Name *" styleClass="field-label-required" />
-        <TextField fx:id="tagNameField" promptText="Enter tag name" prefWidth="250"
-          styleClass="modern-text-field" />
-      </VBox>
-
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
       <VBox spacing="5">
-        <Label text="Color" styleClass="field-label" />
-        <ColorPicker fx:id="tagColorPicker" prefWidth="150" styleClass="modern-color-picker" />
+        <Label text="Tags Management"
+          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        <Label text="Organize your content with tags"
+          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
       </VBox>
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="createTagBtn" text="➕ Create Tag" onAction="#showCreateForm"
+        styleClass="primary-button-large" />
     </HBox>
 
-    <VBox spacing="5">
-      <Label text="Description" styleClass="field-label" />
-      <TextArea fx:id="tagDescriptionArea" promptText="Optional description" prefHeight="80"
-        wrapText="true" styleClass="modern-text-area" />
+    <!-- Create/Edit Form -->
+    <VBox fx:id="tagFormContainer" spacing="20" styleClass="card"
+      style="-fx-padding: 30; -fx-background-radius: 16;" managed="false" visible="false">
+
+      <Label fx:id="formTitleLabel" text="Create New Tag"
+        style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+
+      <GridPane hgap="20" vgap="20">
+        <columnConstraints>
+          <ColumnConstraints percentWidth="70" />
+          <ColumnConstraints percentWidth="30" />
+        </columnConstraints>
+
+        <!-- Tag Name -->
+        <VBox spacing="10" GridPane.columnIndex="0">
+          <Label text="Tag Name *" styleClass="field-label" />
+          <TextField fx:id="tagNameField" promptText="Enter tag name"
+            styleClass="modern-text-field" />
+        </VBox>
+
+        <!-- Color Picker -->
+        <VBox spacing="10" GridPane.columnIndex="1">
+          <Label text="Color" styleClass="field-label" />
+          <ColorPicker fx:id="tagColorPicker" maxWidth="Infinity"
+            style="-fx-background-color: white; -fx-border-color: #e5e7eb; 
+                   -fx-border-width: 2px; -fx-border-radius: 8px;" />
+        </VBox>
+      </GridPane>
+
+      <!-- Description -->
+      <VBox spacing="10">
+        <Label text="Description (Optional)" styleClass="field-label" />
+        <TextArea fx:id="tagDescriptionArea" promptText="Enter tag description..."
+          prefHeight="100" wrapText="true"
+          style="-fx-background-color: #ffffff; -fx-border-color: #e5e7eb; 
+                 -fx-border-width: 2px; -fx-border-radius: 8px; 
+                 -fx-background-radius: 8px; -fx-padding: 12; -fx-font-size: 14px;" />
+      </VBox>
+
+      <!-- Actions -->
+      <HBox spacing="12" alignment="CENTER_RIGHT">
+        <Button fx:id="cancelFormBtn" text="Cancel" styleClass="outline" />
+        <Button fx:id="saveTagBtn" text="Save Tag" styleClass="success-button" />
+      </HBox>
     </VBox>
 
-    <HBox spacing="10" alignment="CENTER_RIGHT">
-      <Button fx:id="cancelFormBtn" text="Cancel" styleClass="secondary-button" />
-      <Button fx:id="saveTagBtn" text="Save Tag" styleClass="success-button" />
-    </HBox>
+    <!-- Tags Grid -->
+    <VBox spacing="20" VBox.vgrow="ALWAYS" styleClass="card"
+      style="-fx-padding: 30; -fx-background-radius: 16;">
+      <Label text="All Tags"
+        style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+      <ScrollPane fitToWidth="true" prefHeight="500"
+        style="-fx-background: transparent; -fx-background-color: transparent;">
+        <FlowPane fx:id="tagsFlowPane" hgap="15" vgap="15" />
+      </ScrollPane>
+    </VBox>
   </VBox>
-
-  <!-- Tags Grid -->
-  <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
-    <VBox spacing="15">
-      <Label text="All Tags" styleClass="section-title" />
-      <FlowPane fx:id="tagsFlowPane" hgap="15" vgap="15" style="-fx-background-color: transparent;" />
-    </VBox>
-  </ScrollPane>
-</VBox>
+</ScrollPane>

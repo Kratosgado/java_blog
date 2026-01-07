@@ -3,65 +3,77 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.Scene?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-  fx:controller="com.kratosgado.blog.controllers.PostsListController" spacing="20"
-  style="-fx-background-color: transparent;"
-  stylesheets="@../css/enhanced-theme.css">
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.PostsListController"
+  fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;"
+  stylesheets="@../css/modern-ui.css">
 
-  <!-- Header -->
-  <HBox alignment="CENTER_LEFT" spacing="15">
-    <Label text="My Blog Posts"
-      style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #333;" />
-    <Region HBox.hgrow="ALWAYS" />
+  <VBox spacing="25" style="-fx-background-color: transparent;">
 
-    <VBox spacing="5">
-      <Label text="Sort By" styleClass="field-label" />
-      <ComboBox fx:id="sortComboBox" prefWidth="150" styleClass="modern-combo-box" />
-    </VBox>
-    <VBox spacing="5">
-      <Label text="Filter By Status" styleClass="field-label" />
-      <ComboBox fx:id="filterComboBox" prefWidth="150" styleClass="modern-combo-box" />
-    </VBox>
-    <Button fx:id="createNewPostBtn" text="+ New Post" styleClass="primary-button" />
-  </HBox>
-
-  <!-- Search and Filters -->
-  <HBox spacing="15" alignment="CENTER_LEFT"
-    style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
-    <VBox spacing="5">
-      <Label text="Search posts by title, content, or tags..." styleClass="field-label" />
-      <TextField fx:id="searchField" prefWidth="400" styleClass="modern-text-field" />
-    </VBox>
-    <Button fx:id="searchBtn" text="🔍 Search" styleClass="primary-button" />
-    <Button fx:id="clearBtn" text="Clear" styleClass="secondary-button" />
-  </HBox>
-
-  <!-- Posts Table -->
-  <VBox spacing="0" VBox.vgrow="ALWAYS"
-    style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
-    <padding>
-      <Insets top="20" right="20" bottom="20" left="20" />
-    </padding>
-
-    <TableView fx:id="postsTable" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
-      <columns>
-        <TableColumn fx:id="titleColumn" text="Title" prefWidth="300" />
-        <TableColumn fx:id="authorColumn" text="Author" prefWidth="150" />
-        <TableColumn fx:id="dateColumn" text="Date Published" prefWidth="150" />
-        <TableColumn fx:id="viewsColumn" text="Views" prefWidth="100" />
-        <TableColumn fx:id="commentsColumn" text="Comments" prefWidth="100" />
-        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100" />
-        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150" />
-      </columns>
-    </TableView>
-
-    <!-- Pagination -->
-    <HBox alignment="CENTER" spacing="10" style="-fx-padding: 15 0 0 0;">
-      <Button fx:id="prevPageBtn" text="← Previous" styleClass="secondary-button" />
-      <Label fx:id="pageLabel" text="Page 1 of 10" styleClass="pagination-label" />
-      <Button fx:id="nextPageBtn" text="Next →" styleClass="secondary-button" />
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+      <VBox spacing="5">
+        <Label text="My Blog Posts"
+          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        <Label text="Manage and organize your content"
+          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+      </VBox>
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="createNewPostBtn" text="➕ New Post" styleClass="primary-button-large" />
     </HBox>
+
+    <!-- Filters & Search -->
+    <HBox spacing="20" styleClass="card" style="-fx-padding: 24; -fx-background-radius: 16;">
+      <VBox spacing="8" HBox.hgrow="ALWAYS">
+        <Label text="Search" styleClass="field-label" />
+        <TextField fx:id="searchField" promptText="Search by title, content, or tags..."
+          styleClass="modern-text-field" />
+      </VBox>
+
+      <VBox spacing="8">
+        <Label text="Status" styleClass="field-label" />
+        <ComboBox fx:id="filterComboBox" prefWidth="150" styleClass="modern-combo-box" />
+      </VBox>
+
+      <VBox spacing="8">
+        <Label text="Sort By" styleClass="field-label" />
+        <ComboBox fx:id="sortComboBox" prefWidth="150" styleClass="modern-combo-box" />
+      </VBox>
+
+      <VBox spacing="8" alignment="BOTTOM_CENTER">
+        <HBox spacing="10">
+          <Button fx:id="searchBtn" text="🔍 Search" styleClass="primary-button" />
+          <Button fx:id="clearBtn" text="Clear" styleClass="outline" />
+        </HBox>
+      </VBox>
+    </HBox>
+
+    <!-- Posts Table -->
+    <VBox spacing="0" VBox.vgrow="ALWAYS" styleClass="card"
+      style="-fx-padding: 24; -fx-background-radius: 16;">
+
+      <TableView fx:id="postsTable" VBox.vgrow="ALWAYS"
+        style="-fx-background-color: transparent; -fx-background-radius: 8;">
+        <columns>
+          <TableColumn fx:id="titleColumn" text="Title" prefWidth="300" />
+          <TableColumn fx:id="authorColumn" text="Author" prefWidth="140" />
+          <TableColumn fx:id="dateColumn" text="Published" prefWidth="140" />
+          <TableColumn fx:id="viewsColumn" text="👁️ Views" prefWidth="100" />
+          <TableColumn fx:id="commentsColumn" text="💬 Comments" prefWidth="120" />
+          <TableColumn fx:id="statusColumn" text="Status" prefWidth="110" />
+          <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="160" />
+        </columns>
+      </TableView>
+
+      <!-- Pagination -->
+      <Separator style="-fx-padding: 15 0;" />
+      <HBox alignment="CENTER" spacing="15">
+        <Button fx:id="prevPageBtn" text="← Previous" styleClass="outline" />
+        <Label fx:id="pageLabel" text="Page 1 of 1"
+          style="-fx-font-size: 14px; -fx-text-fill: #6b7280;" />
+        <Button fx:id="nextPageBtn" text="Next →" styleClass="outline" />
+      </HBox>
+    </VBox>
   </VBox>
-</VBox>
+</ScrollPane>
