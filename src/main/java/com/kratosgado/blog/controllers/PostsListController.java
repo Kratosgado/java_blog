@@ -129,8 +129,7 @@ public class PostsListController {
       int endIndex = Math.min(startIndex + pageSize, sortedPosts.size());
 
       ObservableList<Post> pageData = FXCollections.observableArrayList(
-          sortedPosts.subList(startIndex, endIndex)
-      );
+          sortedPosts.subList(startIndex, endIndex));
       postsTable.setItems(pageData);
 
       logger.info("Posts loaded successfully");

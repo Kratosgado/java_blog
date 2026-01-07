@@ -9,8 +9,6 @@ import com.kratosgado.blog.utils.context.AuthContext;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import javafx.scene.Scene;
-import java.io.IOException;
 
 public class App extends Application {
   private static final Logger logger = LoggerFactory.getLogger(App.class);
@@ -19,10 +17,10 @@ public class App extends Application {
   public void start(Stage primaryStage) throws Exception {
     // Apply modern theme globally
     Application.setUserAgentStylesheet(Application.STYLESHEET_MODENA);
-    
+
     Navigator navigator = Navigator.getInstance();
     navigator.setStage(primaryStage);
-    
+
     if (AuthContext.getInstance().getCurrentUser() == null) {
       navigator.goTo(Routes.LOGIN);
     } else {
