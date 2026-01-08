@@ -203,9 +203,11 @@ public class PostsListController {
   private void createNewPost() {
     logger.info("Creating new post");
     try {
-      // Navigate to create post page - implement based on your Navigator
+      // Navigate to create post page
+      com.kratosgado.blog.utils.Navigator.getInstance().goTo("create-post");
+      logger.debug("Navigated to create post screen");
     } catch (Exception e) {
-      logger.error("Failed to create new post", e);
+      logger.error("Failed to navigate to create post screen", e);
     }
   }
 
