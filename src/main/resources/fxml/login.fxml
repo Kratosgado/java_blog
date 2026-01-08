@@ -6,7 +6,7 @@
 
 <StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.LoginController"
-  stylesheets="@../css/modern-ui.css"
+  stylesheets="@../css/theme.css"
   style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #667eea 0%, #764ba2 100%);">
   
   <VBox alignment="CENTER" maxWidth="450" styleClass="card" 

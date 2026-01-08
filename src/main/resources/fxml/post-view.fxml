@@ -9,7 +9,7 @@
 <ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.PostViewController" fitToWidth="true"
   style="-fx-background-color: #f5f7fa;"
-  stylesheets="@../css/enhanced-theme.css">
+  stylesheets="@../css/theme.css">
 
   <VBox spacing="20" style="-fx-padding: 20;">
 
@@ -33,7 +33,8 @@
 
         <!-- Post Header -->
         <VBox spacing="15">
-          <Label fx:id="postTitleLabel" text="Loading Post..." styleClass="post-title" wrapText="true" />
+          <Label fx:id="postTitleLabel" text="Loading Post..." styleClass="post-title"
+            wrapText="true" />
 
           <!-- Author Info -->
           <HBox spacing="15" alignment="CENTER_LEFT">
@@ -114,11 +115,13 @@
               style="-fx-background-radius: 20;" />
             <VBox spacing="2">
               <Label fx:id="sidebarAuthorLabel" text="Author Name" styleClass="author-name" />
-              <Label fx:id="sidebarAuthorStats" text="42 posts • 1.2k followers" styleClass="author-stats" />
+              <Label fx:id="sidebarAuthorStats" text="42 posts • 1.2k followers"
+                styleClass="author-stats" />
             </VBox>
           </HBox>
 
-          <Label fx:id="authorBioLabel" text="Author bio will appear here..." styleClass="author-bio" wrapText="true" />
+          <Label fx:id="authorBioLabel" text="Author bio will appear here..."
+            styleClass="author-bio" wrapText="true" />
         </VBox>
       </VBox>
     </HBox>
@@ -143,7 +146,8 @@
         <TextArea fx:id="commentTextArea" promptText="Share your thoughts about this post..."
           prefHeight="100" wrapText="true" styleClass="modern-text-area" />
         <HBox alignment="CENTER_LEFT" spacing="10">
-          <CheckBox fx:id="notifyRepliesCheck" text="Notify me of replies" styleClass="modern-checkbox" />
+          <CheckBox fx:id="notifyRepliesCheck" text="Notify me of replies"
+            styleClass="modern-checkbox" />
           <Region HBox.hgrow="ALWAYS" />
           <Button fx:id="cancelCommentBtn" text="Cancel" styleClass="secondary-button" />
           <Button fx:id="postCommentBtn" text="💬 Post Comment" styleClass="primary-button" />
