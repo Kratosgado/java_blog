@@ -17,10 +17,10 @@
 
     <!-- Header -->
     <VBox alignment="CENTER" spacing="10">
-      <Label text="✍️" style="-fx-font-size: 48px;" />
-      <Label text="Welcome Back" styleClass="title" style="-fx-font-size: 36px;" />
+      <Label text="✍️" style="-fx-font-size: 32px;" />
+      <Label text="Welcome Back" styleClass="title" style="-fx-font-size: 28px;" />
       <Label text="Sign in to continue to Blog Hub" styleClass="subtitle-text" 
-        style="-fx-font-size: 16px;" />
+        style="-fx-font-size: 14px;" />
     </VBox>
 
     <Region prefHeight="40" />
