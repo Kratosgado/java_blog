@@ -1,14 +1,6 @@
 
 package com.kratosgado.blog.services;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +8,7 @@ import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dtos.request.LoginDto;
 import com.kratosgado.blog.dtos.request.SignUpDto;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.services.UploadService.UploadType;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.validators.ValidationUtils;
 import com.kratosgado.blog.utils.validators.ValidatorEngine;
@@ -23,9 +16,11 @@ import com.kratosgado.blog.utils.validators.ValidatorEngine;
 public class AuthService {
   private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
   private final UserDAO userDAO;
+  private final UploadService uploadService;
 
   public AuthService() {
     this.userDAO = new UserDAO();
+    this.uploadService = new UploadService();
   }
 
   public boolean register(SignUpDto dto) {
@@ -51,28 +46,10 @@ public class AuthService {
     }
 
     try {
-      // Create uploads directory if it doesn't exist
-      Path uploadDir = Paths.get("uploads/avatars");
-      if (!Files.exists(uploadDir)) {
-        Files.createDirectories(uploadDir);
-      }
-
-      // Generate unique filename
-      String originalFileName = Paths.get(avatarFilePath).getFileName().toString();
-      String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.'));
-      String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
-
-      // Copy file to uploads directory
-      Path source = Paths.get(avatarFilePath);
-      Path target = uploadDir.resolve(uniqueFileName);
-      Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
-
-      logger.info("Avatar uploaded: {} -> {}", originalFileName, uniqueFileName);
-      return "uploads/avatars/" + uniqueFileName;
-
-    } catch (IOException e) {
+      return uploadService.uploadFile(avatarFilePath, UploadType.AVATAR);
+    } catch (Exception e) {
       logger.error("Failed to process avatar upload: {}", avatarFilePath, e);
-      throw BlogExceptions.badRequest("Failed to process avatar upload");
+      throw BlogExceptions.badRequest("Failed to process avatar upload: " + e.getMessage());
     }
   }
 
