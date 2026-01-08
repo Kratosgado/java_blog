@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -29,14 +30,8 @@
 
       <HBox fx:id="userSection" spacing="12" alignment="CENTER" visible="false" managed="false">
         <Label fx:id="userLabel" styleClass="subtitle-text" style="-fx-text-fill: #374151;" />
-        <VBox alignment="CENTER" styleClass="avatar-button">
-          <ImageView fx:id="userAvatarImage" fitWidth="40" fitHeight="40" preserveRatio="true"
-            style="-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);">
-            <viewport>
-              <javafx.geometry.Rectangle2D width="40" height="40" />
-            </viewport>
-          </ImageView>
-        </VBox>
+        <ImageView fx:id="userAvatarImage" fitWidth="40" fitHeight="40" preserveRatio="true"
+          style="-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);" />
       </HBox>
     </HBox>
   </top>
