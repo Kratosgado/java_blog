@@ -148,7 +148,7 @@ public class CreatePostController {
           messageLabel.setText("Post published successfully!");
           messageLabel.setStyle("-fx-text-fill: #4CAF50;");
           clearForm();
-          DashboardController.instance().getPostsButton().fire();
+          DashboardController.instance().goToPosts();
         }
       } catch (Exception ex) {
         logger.error("Failed to publish post", ex);

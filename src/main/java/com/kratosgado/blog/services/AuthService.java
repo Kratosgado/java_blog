@@ -55,9 +55,10 @@ public class AuthService {
 
   public User login(LoginDto dto) {
     ValidatorEngine.validate(dto);
-    User user = userDAO.getUserByEmail(dto.email()).orElseThrow(() -> BlogExceptions.notFound("User not found"));
+    User user = userDAO.getUserByEmail(dto.email())
+        .orElseThrow(() -> BlogExceptions.notFound("Email or password is incorrect"));
     if (!ValidationUtils.verifyPassword(dto.password(), user.getPassword()))
-      throw BlogExceptions.unauthorized("Invalid email or password");
+      throw BlogExceptions.unauthorized("Email or password is incorrect");
     return user;
   }
 

@@ -67,8 +67,12 @@ public class DashboardController {
     return instance;
   }
 
-  public Button getPostsButton() {
-    return postsBtn;
+  public void goToPosts() {
+    postsBtn.fire();
+  }
+
+  public void goToCreatePost() {
+    createPostBtn.fire();
   }
 
   @FXML
@@ -101,7 +105,7 @@ public class DashboardController {
         updateActiveButton(button);
         logger.debug("Loaded content: {}", route);
       } else {
-ToastNotification.error("Failed to load " + route);
+        ToastNotification.error("Failed to load " + route);
       }
     } catch (Exception e) {
       logger.error("Failed to load content: {}", route, e);

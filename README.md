@@ -8,6 +8,7 @@ A comprehensive JavaFX blogging platform with an optimized relational database b
 
 - **Post Management**: Create, read, update, and delete blog posts with featured images, cover images, and icons
 - **Comment System**: Manage post comments with threaded discussions
+- **Review & Rating System**: Users can review and rate posts (1-5 stars) with helpful reviews marking
 - **Tag System**: Organize posts with flexible tagging
 - **Advanced Search**: Database-level search with LIKE queries optimized with indexes
 - **Caching Layer**: In-memory caching with TTL for frequently accessed posts
@@ -30,8 +31,8 @@ Database (PostgreSQL)
 
 ### Key Components
 
-1. **Models**: `Post`, `User`, `Comment`, `Tag` - Domain objects
-2. **DAOs**: `PostDAO`, `UserDAO`, `CommentDAO`, `TagDAO` - Database access
+1. **Models**: `Post`, `User`, `Comment`, `Tag`, `Review` - Domain objects
+2. **DAOs**: `PostDAO`, `UserDAO`, `CommentDAO`, `TagDAO`, `ReviewDAO` - Database access
 3. **Services**: Business logic layer with validation and error handling
 4. **Controllers**: JavaFX UI controllers for user interaction
 5. **Cache**: `PostCache` - In-memory caching with automatic TTL expiration
@@ -80,13 +81,32 @@ Database (PostgreSQL)
 - `tag_id` (INTEGER FOREIGN KEY)
 - PRIMARY KEY (post_id, tag_id)
 
+#### `reviews` - NEW
+- `id` (SERIAL PRIMARY KEY)
+- `post_id` (INTEGER FOREIGN KEY)
+- `user_id` (INTEGER FOREIGN KEY)
+- `rating` (INTEGER) - 1-5 stars with CHECK constraint
+- `title` (VARCHAR(255))
+- `content` (TEXT)
+- `helpful` (BOOLEAN DEFAULT FALSE)
+- `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
+- UNIQUE constraint on (post_id, user_id) - One review per user per post
+
 ### Database Indexes (Performance Optimization)
 
 ```sql
+-- Posts table indexes
 CREATE INDEX idx_posts_user_id ON posts(user_id);
 CREATE INDEX idx_posts_status ON posts(status);
 CREATE INDEX idx_posts_title ON posts(title);
 CREATE INDEX idx_posts_created_at ON posts(created_at);
+
+-- Reviews table indexes  
+CREATE INDEX idx_reviews_post_id ON reviews(post_id);
+CREATE INDEX idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX idx_reviews_rating ON reviews(rating);
+CREATE INDEX idx_reviews_helpful ON reviews(helpful);
 ```
 
 These indexes optimize:
@@ -94,6 +114,8 @@ These indexes optimize:
 - **Status filtering**: `idx_posts_status`
 - **Search queries**: `idx_posts_title`
 - **Date-based sorting**: `idx_posts_created_at`
+- **Review retrieval by post/user**: `idx_reviews_post_id`, `idx_reviews_user_id`
+- **Rating-based filtering**: `idx_reviews_rating`
 
 ## Normalization
 

@@ -124,7 +124,7 @@ public class DashboardHomeController {
   @FXML
   private void viewAllPosts() {
     try {
-      DashboardController.instance().getPostsButton().fire();
+      DashboardController.instance().goToPosts();
     } catch (Exception e) {
       logger.error("Failed to navigate to posts", e);
       ToastNotification.error("Failed to navigate to posts");

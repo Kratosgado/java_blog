@@ -14,9 +14,28 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
 
 public class PostsListController {
   private static final Logger logger = LoggerFactory.getLogger(PostsListController.class);
@@ -51,11 +70,15 @@ public class PostsListController {
   @FXML
   private Button nextPageBtn;
 
+  @FXML
+  private Label totalPostsLabel;
+
   private final PostService postService;
   private int currentPage = 1;
   private int pageSize = 10;
   private String currentFilter = "All";
   private String currentSort = "Latest";
+  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
   public PostsListController() {
     this.postService = new PostService();
@@ -89,27 +112,218 @@ public class PostsListController {
   private void setupTableColumns() {
     postsTable.getColumns().clear();
 
+    // Title Column with custom cell renderer
     TableColumn<Post, String> titleCol = new TableColumn<>("Title");
     titleCol.setCellValueFactory(new PropertyValueFactory<>("title"));
-    titleCol.setPrefWidth(250);
+    titleCol.setPrefWidth(280);
+    titleCol.setCellFactory(column -> new TableCell<Post, String>() {
+      private final Text text = new Text();
 
-    TableColumn<Post, String> statusCol = new TableColumn<>("Status");
-    statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-    statusCol.setPrefWidth(100);
+      @Override
+      protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setGraphic(null);
+          setText(null);
+        } else {
+          text.setText(item);
+          text.setStyle("-fx-font-weight: 600; -fx-font-size: 13px; -fx-fill: #111827;");
+          text.setWrappingWidth(260);
+          setGraphic(text);
 
-    TableColumn<Post, String> createdCol = new TableColumn<>("Created");
-    createdCol.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
-    createdCol.setPrefWidth(150);
+          // Tooltip for long titles
+          if (item.length() > 40) {
+            Tooltip tooltip = new Tooltip(item);
+            tooltip.setShowDelay(Duration.millis(300));
+            setTooltip(tooltip);
+          }
+        }
+      }
+    });
 
+    // Author Column
     TableColumn<Post, String> authorCol = new TableColumn<>("Author");
     authorCol.setCellValueFactory(new PropertyValueFactory<>("authorName"));
-    authorCol.setPrefWidth(120);
+    authorCol.setPrefWidth(140);
+    authorCol.setCellFactory(column -> new TableCell<Post, String>() {
+      @Override
+      protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setText(null);
+          setStyle("");
+        } else {
+          setText(item);
+          setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px;");
+        }
+      }
+    });
 
+    // Date Column with formatted date
+    TableColumn<Post, LocalDateTime> dateCol = new TableColumn<>("Published");
+    dateCol.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+    dateCol.setPrefWidth(130);
+    dateCol.setCellFactory(column -> new TableCell<Post, LocalDateTime>() {
+      @Override
+      protected void updateItem(LocalDateTime item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setText(null);
+          setStyle("");
+        } else {
+          setText(item.format(DATE_FORMATTER));
+          setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px; -fx-alignment: CENTER;");
+          setAlignment(Pos.CENTER);
+        }
+      }
+    });
+
+    // Views Column with icon and formatted number
     TableColumn<Post, Integer> viewsCol = new TableColumn<>("Views");
     viewsCol.setCellValueFactory(new PropertyValueFactory<>("views"));
-    viewsCol.setPrefWidth(80);
+    viewsCol.setPrefWidth(90);
+    viewsCol.setCellFactory(column -> new TableCell<Post, Integer>() {
+      @Override
+      protected void updateItem(Integer item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setText(null);
+          setStyle("");
+        } else {
+          setText(String.format("%,d", item));
+          setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px; -fx-font-weight: 600;");
+          setAlignment(Pos.CENTER);
+        }
+      }
+    });
 
-    postsTable.getColumns().addAll(titleCol, authorCol, statusCol, createdCol, viewsCol);
+    // Status Column with badge styling
+    TableColumn<Post, String> statusCol = new TableColumn<>("Status");
+    statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
+    statusCol.setPrefWidth(110);
+    statusCol.setCellFactory(column -> new TableCell<Post, String>() {
+      @Override
+      protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setGraphic(null);
+          setText(null);
+        } else {
+          Label badge = new Label(item.toUpperCase());
+          badge.setStyle(getStatusStyle(item));
+          badge.setAlignment(Pos.CENTER);
+          badge.setMaxWidth(Double.MAX_VALUE);
+          setGraphic(badge);
+          setAlignment(Pos.CENTER);
+        }
+      }
+
+      private String getStatusStyle(String status) {
+        return switch (status.toLowerCase()) {
+          case "published" -> "-fx-background-color: #d1fae5; -fx-text-fill: #065f46; " +
+              "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
+          case "draft" -> "-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
+              "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
+          default -> "-fx-background-color: #e5e7eb; -fx-text-fill: #374151; " +
+              "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
+        };
+      }
+    });
+
+    // Actions Column with buttons
+    TableColumn<Post, Void> actionsCol = new TableColumn<>("Actions");
+    actionsCol.setPrefWidth(180);
+    actionsCol.setSortable(false);
+    actionsCol.setCellFactory(column -> new TableCell<Post, Void>() {
+      private final Button viewBtn = new Button("View");
+      private final Button editBtn = new Button("Edit");
+      private final Button deleteBtn = new Button("Delete");
+      private final HBox actionBox = new HBox(8);
+
+      {
+        // Style buttons
+        viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+        editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+
+        // Hover effects
+        viewBtn.setOnMouseEntered(e -> viewBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+        viewBtn.setOnMouseExited(e -> viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+
+        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+
+        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #dc2626; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
+            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
+
+        actionBox.setAlignment(Pos.CENTER);
+        actionBox.getChildren().addAll(viewBtn, editBtn, deleteBtn);
+
+        // Button actions
+        viewBtn.setOnAction(event -> {
+          Post post = getTableView().getItems().get(getIndex());
+          viewPost(post);
+        });
+
+        editBtn.setOnAction(event -> {
+          Post post = getTableView().getItems().get(getIndex());
+          editPost(post);
+        });
+
+        deleteBtn.setOnAction(event -> {
+          Post post = getTableView().getItems().get(getIndex());
+          deletePost(post);
+        });
+      }
+
+      @Override
+      protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty) {
+          setGraphic(null);
+        } else {
+          setGraphic(actionBox);
+        }
+      }
+    });
+
+    postsTable.getColumns().addAll(titleCol, authorCol, dateCol, viewsCol, statusCol, actionsCol);
+
+    // Set row factory for alternating row colors
+    postsTable.setRowFactory(tv -> new javafx.scene.control.TableRow<Post>() {
+      @Override
+      protected void updateItem(Post item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+          setStyle("");
+        } else {
+          if (getIndex() % 2 == 0) {
+            setStyle("-fx-background-color: #ffffff;");
+          } else {
+            setStyle("-fx-background-color: #f9fafb;");
+          }
+
+          // Add hover effect
+          setOnMouseEntered(e -> setStyle("-fx-background-color: #f3f4f6; -fx-cursor: hand;"));
+          setOnMouseExited(e -> {
+            if (getIndex() % 2 == 0) {
+              setStyle("-fx-background-color: #ffffff;");
+            } else {
+              setStyle("-fx-background-color: #f9fafb;");
+            }
+          });
+        }
+      }
+    });
   }
 
   private void loadPosts() {
@@ -122,6 +336,9 @@ public class PostsListController {
       var filteredPosts = filterPosts(currentUserPosts);
       var sortedPosts = sortPosts(filteredPosts);
 
+      // Update total posts label
+      totalPostsLabel.setText(sortedPosts.size() + " post" + (sortedPosts.size() != 1 ? "s" : ""));
+
       int totalPages = (int) Math.ceil((double) sortedPosts.size() / pageSize);
       pageLabel.setText("Page " + currentPage + " of " + Math.max(1, totalPages));
 
@@ -132,7 +349,11 @@ public class PostsListController {
           sortedPosts.subList(startIndex, endIndex));
       postsTable.setItems(pageData);
 
-      logger.info("Posts loaded successfully");
+      // Disable pagination buttons appropriately
+      prevPageBtn.setDisable(currentPage == 1);
+      nextPageBtn.setDisable(currentPage >= totalPages || sortedPosts.isEmpty());
+
+      logger.info("Posts loaded successfully: {} posts", sortedPosts.size());
     } catch (Exception e) {
       logger.error("Failed to load posts", e);
     }
@@ -200,11 +421,12 @@ public class PostsListController {
     loadPosts();
   }
 
+  @FXML
   private void createNewPost() {
     logger.info("Creating new post");
     try {
       // Navigate to create post page
-      com.kratosgado.blog.utils.Navigator.getInstance().goTo("create-post");
+      DashboardController.instance().goToCreatePost();
       logger.debug("Navigated to create post screen");
     } catch (Exception e) {
       logger.error("Failed to navigate to create post screen", e);
@@ -223,5 +445,32 @@ public class PostsListController {
     currentPage++;
     loadPosts();
     logger.info("Next page clicked");
+  }
+
+  private void viewPost(Post post) {
+    logger.info("Viewing post: {}", post.getTitle());
+    // TODO: Implement view post functionality
+  }
+
+  private void editPost(Post post) {
+    logger.info("Editing post: {}", post.getTitle());
+    try {
+      // TODO: Pass post ID to edit screen
+      com.kratosgado.blog.utils.Navigator.getInstance().goTo("edit-post");
+    } catch (Exception e) {
+      logger.error("Failed to navigate to edit post screen", e);
+    }
+  }
+
+  private void deletePost(Post post) {
+    logger.info("Deleting post: {}", post.getTitle());
+    try {
+      // TODO: Add confirmation dialog
+      postService.deletePost(post.getId());
+      loadPosts();
+      logger.info("Post deleted successfully");
+    } catch (Exception e) {
+      logger.error("Failed to delete post", e);
+    }
   }
 }
