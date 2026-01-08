@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Comment {
   private int id;
   private int postId;
@@ -17,6 +16,7 @@ public class Comment {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private String authorName;
+  private String authorAvatarUrl;
 
   public Comment(int postId, int userId, String content) {
     this.postId = postId;

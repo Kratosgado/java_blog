@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Post {
   private int id;
   private int userId;
@@ -22,6 +21,10 @@ public class Post {
   private LocalDateTime updatedAt;
   private int views;
   private String featuredImage;
+  private String coverImage;
+  private String icon;
+  private String authorName;
+  private String authorAvatarUrl;
 
   public Post(CreatePostDto dto) {
     userId = dto.userId();
@@ -30,5 +33,7 @@ public class Post {
     excerpt = dto.excerpt();
     status = dto.status();
     featuredImage = dto.featuredImage();
+    coverImage = dto.coverImage();
+    icon = dto.icon();
   }
 }

@@ -3,8 +3,8 @@ package com.kratosgado.blog.controllers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -22,16 +22,16 @@ public class SettingsController {
   private CheckBox publishNotificationsCheckbox;
 
   @FXML
-  private MFXComboBox<String> themeComboBox;
+  private ComboBox<String> themeComboBox;
 
   @FXML
-  private MFXComboBox<String> languageComboBox;
+  private ComboBox<String> languageComboBox;
 
   @FXML
-  private MFXButton saveSettingsBtn;
+  private Button saveSettingsBtn;
 
   @FXML
-  private MFXButton resetSettingsBtn;
+  private Button resetSettingsBtn;
 
   @FXML
   private Label messageLabel;

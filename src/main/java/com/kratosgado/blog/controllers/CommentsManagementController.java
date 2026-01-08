@@ -6,26 +6,61 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.services.CommentService;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class CommentsManagementController {
   private static final Logger logger = LoggerFactory.getLogger(CommentsManagementController.class);
 
   @FXML
-  private VBox commentsContainer;
+  private ComboBox<String> statusFilterCombo;
 
   @FXML
   private Label totalCommentsLabel;
 
+  @FXML
+  private Label pendingCommentsLabel;
+
+  @FXML
+  private Label approvedCommentsLabel;
+
+  @FXML
+  private TableView<Comment> commentsTable;
+
+  @FXML
+  private TableColumn<Comment, String> commentColumn;
+
+  @FXML
+  private TableColumn<Comment, String> authorColumn;
+
+  @FXML
+  private TableColumn<Comment, String> postColumn;
+
+  @FXML
+  private TableColumn<Comment, String> dateColumn;
+
+  @FXML
+  private TableColumn<Comment, String> statusColumn;
+
+  @FXML
+  private TableColumn<Comment, Void> actionsColumn;
+
   private final CommentService commentService;
+  private ObservableList<Comment> commentsList;
 
   public CommentsManagementController() {
     this.commentService = new CommentService();
+    this.commentsList = FXCollections.observableArrayList();
   }
 
   @FXML
@@ -36,49 +71,112 @@ public class CommentsManagementController {
   }
 
   private void setupUI() {
+    // Setup status filter
+    statusFilterCombo.getItems().addAll("All", "Pending", "Approved", "Rejected");
+    statusFilterCombo.setValue("All");
+    statusFilterCombo.setOnAction(e -> filterComments());
+
+    // Setup table columns
+    commentColumn.setCellValueFactory(new PropertyValueFactory<>("content"));
+    authorColumn.setCellValueFactory(new PropertyValueFactory<>("authorName"));
+    postColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty("Post #" + data.getValue().getPostId()));
+    dateColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+    statusColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty("Active"));
+
+    // Setup actions column with buttons
+    actionsColumn.setCellFactory(param -> new TableCell<>() {
+      private final Button approveBtn = new Button("Approve");
+      private final Button rejectBtn = new Button("Reject");
+      private final Button deleteBtn = new Button("Delete");
+      private final HBox container = new HBox(8, approveBtn, rejectBtn, deleteBtn);
+
+      {
+        container.setAlignment(Pos.CENTER);
+        approveBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 6 12;");
+        rejectBtn.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 6 12;");
+        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-padding: 6 12;");
+
+        approveBtn.setOnAction(e -> {
+          Comment comment = getTableView().getItems().get(getIndex());
+          approveComment(comment.getId());
+        });
+
+        rejectBtn.setOnAction(e -> {
+          Comment comment = getTableView().getItems().get(getIndex());
+          rejectComment(comment.getId());
+        });
+
+        deleteBtn.setOnAction(e -> {
+          Comment comment = getTableView().getItems().get(getIndex());
+          deleteComment(comment.getId());
+        });
+      }
+
+      @Override
+      protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        setGraphic(empty ? null : container);
+      }
+    });
+
+    commentsTable.setItems(commentsList);
   }
 
   private void loadComments() {
     try {
-      commentsContainer.getChildren().clear();
+      commentsList.clear();
       var comments = commentService.getAllComments();
       logger.info("Loading {} comments", comments.size());
-      totalCommentsLabel.setText("Total Comments: " + comments.size());
 
-      for (Comment comment : comments) {
-        HBox commentItem = createCommentItem(comment);
-        commentsContainer.getChildren().add(commentItem);
-      }
+      commentsList.addAll(comments);
+      updateStatistics(comments);
     } catch (Exception e) {
       logger.error("Failed to load comments", e);
     }
   }
 
-  private HBox createCommentItem(Comment comment) {
-    HBox container = new HBox(15);
-    container.setAlignment(Pos.CENTER_LEFT);
-    container.setStyle("-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
+  private void updateStatistics(java.util.List<Comment> comments) {
+    int total = comments.size();
+    // Since Comment model doesn't have status field yet, we'll just show totals
+    long pending = 0;
+    long approved = total;
 
-    VBox commentInfo = new VBox(8);
-    Label authorLabel = new Label("By: " + comment.getAuthorName());
-    authorLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12;");
-    Label contentLabel = new Label(comment.getContent());
-    contentLabel.setStyle("-fx-font-size: 13; -fx-wrap-text: true;");
-    contentLabel.setWrapText(true);
-    Label dateLabel = new Label("Posted: " + comment.getCreatedAt());
-    dateLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #999;");
+    totalCommentsLabel.setText(String.valueOf(total));
+    pendingCommentsLabel.setText(String.valueOf(pending));
+    approvedCommentsLabel.setText(String.valueOf(approved));
+  }
 
-    commentInfo.getChildren().addAll(authorLabel, contentLabel, dateLabel);
+  private void filterComments() {
+    String filter = statusFilterCombo.getValue();
+    try {
+      var allComments = commentService.getAllComments();
+      commentsList.clear();
 
-    HBox spacer = new HBox();
-    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+      // For now, show all comments since status field doesn't exist yet
+      commentsList.addAll(allComments);
+    } catch (Exception e) {
+      logger.error("Failed to filter comments", e);
+    }
+  }
 
-    MFXButton deleteBtn = new MFXButton("Delete");
-    deleteBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
-    deleteBtn.setOnAction(e -> deleteComment(comment.getId()));
+  private void approveComment(int commentId) {
+    try {
+      // TODO: Implement approve logic in CommentService
+      logger.info("Approving comment: {}", commentId);
+      loadComments();
+    } catch (Exception ex) {
+      logger.error("Failed to approve comment", ex);
+    }
+  }
 
-    container.getChildren().addAll(commentInfo, spacer, deleteBtn);
-    return container;
+  private void rejectComment(int commentId) {
+    try {
+      // TODO: Implement reject logic in CommentService
+      logger.info("Rejecting comment: {}", commentId);
+      loadComments();
+    } catch (Exception ex) {
+      logger.error("Failed to reject comment", ex);
+    }
   }
 
   private void deleteComment(int commentId) {

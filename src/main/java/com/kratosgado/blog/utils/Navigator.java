@@ -6,9 +6,12 @@ import java.util.Deque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.utils.interfaces.Initializable;
+
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class Navigator {
@@ -16,15 +19,15 @@ public class Navigator {
   private static Navigator instance;
 
   private Stage stage;
-  private final Deque<Screen> screens;
+  private final Deque<AppScreen> screens;
   private static final int WIDTH = 640;
   private static final int HEIGHT = 480;
 
-  private static class Screen {
+  private static class AppScreen {
     private final String name;
     private final Scene scene;
 
-    public Screen(String name, Scene scene) {
+    public AppScreen(String name, Scene scene) {
       this.name = name;
       this.scene = scene;
     }
@@ -46,46 +49,60 @@ public class Navigator {
   }
 
   public void setStage(Stage stage) {
+    // cover full screen
+    stage.setHeight(Screen.getPrimary().getBounds().getHeight());
+    stage.setWidth(Screen.getPrimary().getBounds().getWidth());
     this.stage = stage;
   }
 
-  private Screen getCurrentScreen() {
+  private AppScreen getCurrentScreen() {
     return screens.peek();
   }
 
   public void showCurrentScreen() {
-    Navigator.Screen currentScreen = this.getCurrentScreen();
+    AppScreen currentScreen = this.getCurrentScreen();
     stage.setScene(currentScreen.scene);
     stage.setTitle(currentScreen.name);
     stage.show();
   }
 
   public void pushScreen(String name, Scene scene) {
-    final Screen screen = new Screen(name, scene);
+    final AppScreen screen = new AppScreen(name, scene);
     screens.push(screen);
     logger.debug("Screen pushed: {}", name);
     this.showCurrentScreen();
   }
 
   public void popScreen() {
-    Screen popped = screens.pop();
+    AppScreen popped = screens.pop();
     logger.debug("Screen popped: {}", popped.name);
     this.showCurrentScreen();
   }
 
   public void pushReplacement(String fxml) {
-    final Screen screen = new Screen(fxml, new Scene(loadView(fxml)));
+    pushReplacement(fxml, null);
+  }
+
+  public <T> void pushReplacement(String fxml, T data) {
+    final AppScreen screen = new AppScreen(fxml, new Scene(loadView(fxml, data)));
     screens.pop();
     screens.push(screen);
     logger.debug("Screen replaced: {}", fxml);
     this.showCurrentScreen();
   }
 
-  private <T> T loadView(String fxml) {
-    FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
+  private Parent loadView(String fxml) {
+    return loadView(fxml, null);
+  }
 
+  private <T> Parent loadView(String fxml, T data) {
+    FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
     try {
-      return fxmlLoader.load();
+      final Parent root = fxmlLoader.load();
+      if (data != null) {
+        ((Initializable) fxmlLoader.getController()).initData(data);
+      }
+      return root;
     } catch (Exception e) {
       logger.error("Failed to load FXML: {}", fxml, e);
       return null;
@@ -97,8 +114,12 @@ public class Navigator {
   }
 
   public void goTo(String fxml) {
-    Scene scene = new Scene(loadView(fxml));
-    final Screen screen = new Screen(fxml, scene);
+    goTo(fxml, null);
+  }
+
+  public void goTo(String fxml, Object data) {
+    Scene scene = new Scene(loadView(fxml, data));
+    final AppScreen screen = new AppScreen(fxml, scene);
     screens.push(screen);
     logger.debug("Navigating to: {}", fxml);
     this.showCurrentScreen();
@@ -109,7 +130,7 @@ public class Navigator {
   }
 
   public void changeStage(String fxml) {
-    final Screen screen = new Screen(fxml, loadView(fxml));
+    final AppScreen screen = new AppScreen(fxml, new Scene(loadView(fxml)));
     this.screens.clear();
     this.screens.push(screen);
     Stage newStage = new Stage();

@@ -15,14 +15,14 @@ import com.kratosgado.blog.utils.validators.Strings.IsEmail;
 import com.kratosgado.blog.utils.validators.Strings.IsString;
 import com.kratosgado.blog.utils.validators.Strings.IsStrongPassword;
 
-public class Validator {
-  private static Logger logger = LoggerFactory.getLogger(Validator.class);
+public class ValidatorEngine {
+  private static Logger logger = LoggerFactory.getLogger(ValidatorEngine.class);
 
   public static <T extends Record> void validate(T record) {
     for (RecordComponent field : record.getClass().getRecordComponents()) {
       try {
         Object value = field.getAccessor().invoke(record);
-        // logger.info("Validating field: {} {}", field.getName(), value);
+        logger.info("Validating field: {} {}", field.getName(), value);
 
         if (field.isAnnotationPresent(NotNull.class))
           validateNotNull(field, value);

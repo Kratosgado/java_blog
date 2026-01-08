@@ -1,7 +1,5 @@
 package com.kratosgado.blog.controllers;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,14 +9,12 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
-import io.github.palexdev.materialfx.controls.MFXTextField;
-import io.github.palexdev.materialfx.controls.MFXToggleButton;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.application.Platform;
@@ -26,6 +22,10 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -36,13 +36,13 @@ public class HomeController {
   private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
   @FXML
-  private MFXTextField searchField;
+  private TextField searchField;
 
   @FXML
-  private MFXComboBox<String> categoryComboBox;
+  private ComboBox<String> categoryComboBox;
 
   @FXML
-  private MFXComboBox<String> sortComboBox;
+  private ComboBox<String> sortComboBox;
 
   @FXML
   private ScrollPane featuredScrollPane;
@@ -54,10 +54,10 @@ public class HomeController {
   private Label postsCountLabel;
 
   @FXML
-  private MFXToggleButton gridViewBtn;
+  private ToggleButton gridViewBtn;
 
   @FXML
-  private MFXToggleButton listViewBtn;
+  private ToggleButton listViewBtn;
 
   @FXML
   private ScrollPane postsScrollPane;
@@ -66,7 +66,7 @@ public class HomeController {
   private VBox postsContainer;
 
   @FXML
-  private MFXButton loadMoreBtn;
+  private Button loadMoreBtn;
 
   @FXML
   private VBox categoriesContainer;
@@ -87,13 +87,13 @@ public class HomeController {
   private HBox userSection;
 
   @FXML
-  private MFXButton loginBtn;
+  private Button loginBtn;
 
   @FXML
-  private MFXButton signupBtn;
+  private Button signupBtn;
 
   @FXML
-  private MFXButton userMenuBtn;
+  private ImageView userAvatarImage;
 
   @FXML
   private Label userLabel;
@@ -129,21 +129,51 @@ public class HomeController {
   private void setupAuthentication() {
     // Check if user is logged in and show appropriate section
     boolean isLoggedIn = AuthContext.getInstance().getCurrentUser() != null;
-    
+
     authSection.setVisible(!isLoggedIn);
     authSection.setManaged(!isLoggedIn);
-    
+
     userSection.setVisible(isLoggedIn);
     userSection.setManaged(isLoggedIn);
-    
+
     if (isLoggedIn) {
       userLabel.setText("Welcome, " + AuthContext.getInstance().getCurrentUser().getUsername());
+      loadUserAvatar();
       setupUserMenu();
     }
-    
+
     // Setup button actions
     loginBtn.setOnAction(e -> navigateToLogin());
     signupBtn.setOnAction(e -> navigateToSignup());
+  }
+
+  private void loadUserAvatar() {
+    try {
+      var currentUser = AuthContext.getInstance().getCurrentUser();
+      if (currentUser != null) {
+        // Load user avatar with fallback
+        Image avatar;
+        if (currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().trim().isEmpty()) {
+          avatar = ImageUtils.loadImageWithFallback(currentUser.getAvatarUrl());
+        } else {
+          avatar = ImageUtils.loadDefaultAvatar();
+        }
+        
+        userAvatarImage.setImage(avatar);
+        
+        // Clip to circle for rounded avatar
+        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+        userAvatarImage.setClip(clip);
+        
+        logger.debug("User avatar loaded successfully");
+      }
+    } catch (Exception e) {
+      logger.error("Failed to load user avatar", e);
+      // Load default avatar on error
+      userAvatarImage.setImage(ImageUtils.loadDefaultAvatar());
+      javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+      userAvatarImage.setClip(clip);
+    }
   }
 
   private void setupSearchAndFilters() {
@@ -273,7 +303,7 @@ public class HomeController {
       int popularCount = Math.min(10, tags.size());
       for (int i = 0; i < popularCount; i++) {
         Tag tag = tags.get(i);
-        MFXButton tagButton = new MFXButton("#" + tag.getName());
+        Button tagButton = new Button("#" + tag.getName());
         tagButton.setStyle(
             "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12;");
         tagButton.setOnAction(e -> filterByTag(tag));
@@ -310,7 +340,7 @@ public class HomeController {
     ImageView imageView = new ImageView();
     try {
       // Use placeholder image
-      imageView.setImage(new Image("file:src/main/resources/images/featured-post-placeholder.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(270);
       imageView.setFitHeight(150);
       imageView.setPreserveRatio(true);
@@ -323,7 +353,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label metaLabel = new Label("By Author • " + formatDate(post.getCreatedAt()));
+    Label metaLabel = new Label("By " + post.getAuthorName() + " • " + UiUtils.formatDate(post.getCreatedAt()));
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(imageView, titleLabel, metaLabel);
@@ -341,7 +371,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(new Image("file:src/main/resources/images/post-placeholder.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(260);
       imageView.setFitHeight(140);
       imageView.setPreserveRatio(true);
@@ -360,9 +390,9 @@ public class HomeController {
 
     HBox metaBox = new HBox(15);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label("Author");
+    Label authorLabel = new Label(post.getAuthorName());
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
-    Label dateLabel = new Label(formatDate(post.getCreatedAt()));
+    Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     metaBox.getChildren().addAll(authorLabel, dateLabel);
 
@@ -380,7 +410,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(new Image("file:src/main/resources/images/post-placeholder.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(200);
       imageView.setFitHeight(120);
       imageView.setPreserveRatio(true);
@@ -402,9 +432,9 @@ public class HomeController {
 
     HBox metaBox = new HBox(20);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label("By Author");
+    Label authorLabel = new Label("By " + post.getAuthorName());
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
-    Label dateLabel = new Label(formatDate(post.getCreatedAt()));
+    Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label viewsLabel = new Label("👁️ " + post.getViews() + " views");
     viewsLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
@@ -475,7 +505,7 @@ public class HomeController {
 
   private void openPost(Post post) {
     logger.info("Opening post: {}", post.getId());
-    Navigator.getInstance().goTo(Routes.POST_VIEW);
+    Navigator.getInstance().goTo(Routes.POST_VIEW, post.getId());
   }
 
   private String getExcerpt(String content, int maxLength) {
@@ -483,11 +513,6 @@ public class HomeController {
       return content;
     }
     return content.substring(0, maxLength) + "...";
-  }
-
-  private String formatDate(LocalDateTime date) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-    return date.format(formatter);
   }
 
   private void showLoading(boolean show) {
@@ -524,23 +549,30 @@ public class HomeController {
 
   private void setupUserMenu() {
     ContextMenu userMenu = new ContextMenu();
-    
-    // Admin menu item
+
     MenuItem adminItem = new MenuItem("⚙️ Admin");
     adminItem.setOnAction(e -> navigateToAdmin());
-    
-    // Profile menu item
+
     MenuItem profileItem = new MenuItem("👤 Profile");
     profileItem.setOnAction(e -> navigateToProfile());
-    
-    // Logout menu item
+
     MenuItem logoutItem = new MenuItem("🚪 Logout");
     logoutItem.setOnAction(e -> logout());
-    
+
     userMenu.getItems().addAll(adminItem, profileItem, logoutItem);
+
+    // Show menu when clicking on the avatar
+    userAvatarImage.setOnMouseClicked(e -> {
+      userMenu.show(userAvatarImage, e.getScreenX(), e.getScreenY());
+    });
     
-    userMenuBtn.setOnMouseClicked(e -> {
-      userMenu.show(userMenuBtn, e.getScreenX(), e.getScreenY());
+    // Add hover effect to avatar
+    userAvatarImage.setOnMouseEntered(e -> {
+      userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.6), 12, 0, 0, 2);");
+    });
+    
+    userAvatarImage.setOnMouseExited(e -> {
+      userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);");
     });
   }
 

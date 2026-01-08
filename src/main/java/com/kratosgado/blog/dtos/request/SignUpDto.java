@@ -9,5 +9,6 @@ public record SignUpDto(
     @IsString(minLenth = 4, maxLenth = 20) String username,
     @IsEmail String email,
     @IsStrongPassword String password,
-    @NotEmpty String confirmPassword) {
+    @NotEmpty String confirmPassword,
+    String avatarUrl) {
 }

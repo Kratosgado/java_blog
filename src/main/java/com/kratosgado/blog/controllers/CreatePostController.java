@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,13 +9,14 @@ import com.kratosgado.blog.dtos.request.CreatePostDto;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.services.UploadService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
-import io.github.palexdev.materialfx.controls.MFXTextField;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -28,7 +31,7 @@ public class CreatePostController {
   private Label headerLabel;
 
   @FXML
-  private MFXTextField titleField;
+  private TextField titleField;
 
   @FXML
   private TextArea contentArea;
@@ -37,48 +40,62 @@ public class CreatePostController {
   private Label wordCountLabel;
 
   @FXML
-  private MFXTextField tagInputField;
+  private TextField tagInputField;
 
   @FXML
-  private MFXButton addTagBtn;
+  private Button addTagBtn;
 
   @FXML
   private FlowPane tagsFlowPane;
 
   @FXML
-  private MFXComboBox<String> categoryComboBox;
+  private ComboBox<String> categoryComboBox;
 
   @FXML
   private TextArea excerptArea;
 
   @FXML
-  private MFXTextField imageUrlField;
+  private TextField imageUrlField;
 
   @FXML
-  private MFXButton uploadImageBtn;
+  private Button uploadImageBtn;
+
+  @FXML
+  private TextField coverImageField;
+
+  @FXML
+  private Button uploadCoverImageBtn;
+
+  @FXML
+  private TextField iconField;
+
+  @FXML
+  private Button uploadIconBtn;
 
   @FXML
   private Label messageLabel;
 
   @FXML
-  private MFXButton saveAsDraftBtn;
+  private Button saveAsDraftBtn;
 
   @FXML
-  private MFXButton publishBtn;
+  private Button publishBtn;
 
   @FXML
-  private MFXButton cancelBtn;
+  private Button cancelBtn;
 
   @FXML
-  private MFXButton previewBtn;
+  private Button previewBtn;
 
   private final PostService postService;
   private final TagService tagService;
+  private final UploadService uploadService;
   private Post currentPost;
 
   public CreatePostController() {
     this.postService = new PostService();
     this.tagService = new TagService();
+    this.uploadService = new UploadService();
   }
 
   @FXML
@@ -96,6 +113,8 @@ public class CreatePostController {
     previewBtn.setOnAction(e -> preview());
     addTagBtn.setOnAction(e -> addTag());
     uploadImageBtn.setOnAction(e -> uploadImage());
+    uploadCoverImageBtn.setOnAction(e -> uploadCoverImage());
+    uploadIconBtn.setOnAction(e -> uploadIcon());
 
     categoryComboBox.getItems().addAll("Technology", "Lifestyle", "Business", "Travel", "Other");
     currentPost = new Post();
@@ -113,7 +132,9 @@ public class CreatePostController {
     String content = contentArea.getText();
     String excerpt = excerptArea.getText();
     String featuredImage = imageUrlField.getText();
-    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage);
+    String coverImage = coverImageField.getText();
+    String icon = iconField.getText();
+    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage, coverImage, icon);
 
   }
 
@@ -127,7 +148,7 @@ public class CreatePostController {
           messageLabel.setText("Post published successfully!");
           messageLabel.setStyle("-fx-text-fill: #4CAF50;");
           clearForm();
-          Navigator.getInstance().goTo(Routes.POSTS);
+          DashboardController.instance().goToPosts();
         }
       } catch (Exception ex) {
         logger.error("Failed to publish post", ex);
@@ -178,7 +199,7 @@ public class CreatePostController {
       Label tagLabel = new Label(tag + " ✕");
       tagLabel.setStyle("-fx-text-fill: white;");
 
-      MFXButton removeBtn = new MFXButton();
+      Button removeBtn = new Button();
       removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
       removeBtn.setOnAction(e -> tagsFlowPane.getChildren().remove(tagChip));
 
@@ -189,7 +210,26 @@ public class CreatePostController {
   }
 
   private void uploadImage() {
-    logger.info("Uploading image");
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Image File");
+    if (selectedFile != null) {
+      imageUrlField.setText(selectedFile.toURI().toString());
+    }
+  }
+
+  private void uploadCoverImage() {
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Cover Image");
+    if (selectedFile != null) {
+      coverImageField.setText(selectedFile.toURI().toString());
+      logger.debug("Cover image selected: {}", selectedFile.getName());
+    }
+  }
+
+  private void uploadIcon() {
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Icon");
+    if (selectedFile != null) {
+      iconField.setText(selectedFile.toURI().toString());
+      logger.debug("Icon selected: {}", selectedFile.getName());
+    }
   }
 
   private boolean validateForm() {

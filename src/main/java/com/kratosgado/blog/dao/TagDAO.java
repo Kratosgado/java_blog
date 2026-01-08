@@ -13,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class TagDAO {
+public class TagDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(TagDAO.class);
 
   public TagDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS tags (" +
@@ -31,7 +33,7 @@ public class TagDAO {
           "description TEXT," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
-      
+
       // Create post_tags junction table
       String junctionSql = "CREATE TABLE IF NOT EXISTS post_tags (" +
           "post_id INTEGER NOT NULL," +
@@ -40,7 +42,7 @@ public class TagDAO {
           "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE," +
           "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE)";
       stmt.executeUpdate(junctionSql);
-      
+
       logger.debug("Tags table initialized successfully");
     } catch (Exception e) {
       logger.error("Failed to initialize tags table", e);
@@ -200,7 +202,6 @@ public class TagDAO {
         rs.getString("slug"),
         rs.getString("description"),
         rs.getTimestamp("created_at").toLocalDateTime(),
-        rs.getInt("post_count")
-    );
+        rs.getInt("post_count"));
   }
 }

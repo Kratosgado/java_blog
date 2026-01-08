@@ -13,15 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.utils.interfaces.DAO;
 
-public class CommentDAO {
+public class CommentDAO extends DAO {
   private static final Logger logger = LoggerFactory.getLogger(CommentDAO.class);
 
   public CommentDAO() {
     initDatabase();
   }
 
-  private void initDatabase() {
+  @Override
+  protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = "CREATE TABLE IF NOT EXISTS comments (" +
@@ -86,7 +88,7 @@ public class CommentDAO {
   }
 
   public Optional<Comment> getCommentById(int id) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
@@ -103,7 +105,7 @@ public class CommentDAO {
   }
 
   public List<Comment> getCommentsByPostId(int postId) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.post_id = ? ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -121,7 +123,7 @@ public class CommentDAO {
   }
 
   public List<Comment> getCommentsByUserId(int userId) {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id WHERE c.user_id = ? ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -139,7 +141,7 @@ public class CommentDAO {
   }
 
   public List<Comment> getAllComments() {
-    String sql = "SELECT c.*, u.username as author_name FROM comments c " +
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
         "JOIN users u ON c.user_id = u.id ORDER BY c.created_at DESC";
     List<Comment> comments = new ArrayList<>();
     try (Connection conn = DatabaseConfig.getConnection();
@@ -171,15 +173,15 @@ public class CommentDAO {
   }
 
   private Comment mapResultSetToComment(ResultSet rs) throws Exception {
-    Comment comment = new Comment(
-        rs.getInt("post_id"),
-        rs.getInt("user_id"),
-        rs.getString("content")
-    );
+    Comment comment = new Comment();
     comment.setId(rs.getInt("id"));
+    comment.setPostId(rs.getInt("post_id"));
+    comment.setUserId(rs.getInt("user_id"));
+    comment.setContent(rs.getString("content"));
     comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
     comment.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
     comment.setAuthorName(rs.getString("author_name"));
+    comment.setAuthorAvatarUrl(rs.getString("author_avatar_url"));
     return comment;
   }
 }

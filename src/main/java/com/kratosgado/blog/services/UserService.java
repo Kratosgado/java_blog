@@ -8,6 +8,7 @@ import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.validators.ValidationUtils;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 public class UserService {
 
@@ -26,6 +27,7 @@ public class UserService {
   }
 
   public boolean changePassword(ChangePasswordDto dto) {
+    ValidatorEngine.validate(dto);
     if (dto.newPassword().equals(dto.confirmNewPassword()))
       throw BlogExceptions.badRequest("Passwords do not match");
     User user = userDAO.getUserById(dto.id()).orElseThrow(() -> BlogExceptions.notFound("User not found"));

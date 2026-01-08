@@ -10,7 +10,7 @@ import com.kratosgado.blog.dao.TagDAO;
 import com.kratosgado.blog.dtos.request.CreateTagDto;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
-import com.kratosgado.blog.utils.validators.Validator;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 public class TagService {
   private static final Logger logger = LoggerFactory.getLogger(TagService.class);
@@ -21,7 +21,7 @@ public class TagService {
   }
 
   public boolean createTag(CreateTagDto dto) {
-    Validator.validate(dto);
+    ValidatorEngine.validate(dto);
     Tag tag = new Tag(dto);
     Optional<Tag> existing = tagDAO.getTagBySlug(tag.getSlug());
     if (existing.isPresent()) {
@@ -31,7 +31,7 @@ public class TagService {
   }
 
   public boolean updateTag(int id, CreateTagDto dto) {
-    Validator.validate(dto);
+    ValidatorEngine.validate(dto);
     Optional<Tag> existing = tagDAO.getTagById(id);
     if (existing.isEmpty()) {
       throw BlogExceptions.notFound("Tag not found");

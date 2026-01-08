@@ -7,8 +7,8 @@ import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXButton;
-import io.github.palexdev.materialfx.controls.MFXComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
@@ -19,10 +19,10 @@ public class AnalyticsController {
   private static final Logger logger = LoggerFactory.getLogger(AnalyticsController.class);
 
   @FXML
-  private MFXComboBox<String> timeRangeCombo;
+  private ComboBox<String> timeRangeCombo;
 
   @FXML
-  private MFXButton exportReportBtn;
+  private Button exportReportBtn;
 
   @FXML
   private Label totalViewsLabel;
@@ -119,5 +119,52 @@ public class AnalyticsController {
 
   private void exportReport() {
     logger.info("Exporting analytics report");
+    try {
+      int currentUserId = AuthContext.getInstance().getCurrentUser().getId();
+      var posts = postService.getPostsByUserId(currentUserId);
+      
+      // Build CSV report
+      StringBuilder report = new StringBuilder();
+      report.append("Analytics Report\n");
+      report.append("Generated: ").append(java.time.LocalDateTime.now()).append("\n\n");
+      report.append("Summary:\n");
+      report.append("Total Posts: ").append(posts.size()).append("\n");
+      report.append("Total Views: ").append(postService.getTotalViews(currentUserId)).append("\n");
+      
+      int totalComments = 0;
+      for (var post : posts) {
+        totalComments += commentService.getCommentCountForPost(post.getId());
+      }
+      report.append("Total Comments: ").append(totalComments).append("\n\n");
+      
+      report.append("Posts Detail:\n");
+      report.append("Title,Status,Views,Comments,Created\n");
+      for (var post : posts) {
+        int commentCount = commentService.getCommentCountForPost(post.getId());
+        report.append(String.format("%s,%s,%d,%d,%s\n",
+            post.getTitle().replace(",", ";"),
+            post.getStatus(),
+            post.getViews(),
+            commentCount,
+            post.getCreatedAt()));
+      }
+      
+      // Save to file
+      javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+      fileChooser.setTitle("Export Analytics Report");
+      fileChooser.setInitialFileName("analytics_report_" + java.time.LocalDate.now() + ".csv");
+      fileChooser.getExtensionFilters().add(
+          new javafx.stage.FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+      
+      java.io.File file = fileChooser.showSaveDialog(exportReportBtn.getScene().getWindow());
+      if (file != null) {
+        java.nio.file.Files.writeString(file.toPath(), report.toString());
+        logger.info("Analytics report exported successfully to: {}", file.getAbsolutePath());
+        com.kratosgado.blog.utils.notifications.ToastNotification.success("Report exported successfully!");
+      }
+    } catch (Exception e) {
+      logger.error("Failed to export analytics report", e);
+      com.kratosgado.blog.utils.notifications.ToastNotification.error("Failed to export report");
+    }
   }
 }

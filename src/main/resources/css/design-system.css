@@ -1,0 +1,43 @@
+/* Modern Scalable Design System - Optimized */
+.root {
+    /* Color Palette */
+    -fx-primary: #6366f1;
+    -fx-primary-hover: #4f46e5;
+    -fx-secondary: #10b981;
+    -fx-accent: #f59e0b;
+    -fx-danger: #ef4444;
+    
+    /* Backgrounds */
+    -fx-bg-primary: #ffffff;
+    -fx-bg-secondary: #f9fafb;
+    -fx-bg-tertiary: #f3f4f6;
+    
+    /* Text Colors */
+    -fx-text-primary: #111827;
+    -fx-text-secondary: #6b7280;
+    -fx-text-muted: #9ca3af;
+    
+    /* Borders */
+    -fx-border: #e5e7eb;
+    -fx-border-focus: #6366f1;
+}
+
+/* Scrollbar Styling */
+.scroll-bar:vertical, .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #f3f4f6;
+    -fx-background-radius: 8px;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #d1d5db;
+    -fx-background-radius: 8px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #9ca3af;
+}

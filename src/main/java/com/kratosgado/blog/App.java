@@ -7,13 +7,6 @@ import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import io.github.palexdev.materialfx.controls.MFXNotificationCenter;
-import io.github.palexdev.materialfx.controls.cell.MFXNotificationCell;
-import io.github.palexdev.materialfx.notifications.MFXNotificationCenterSystem;
-import io.github.palexdev.materialfx.notifications.MFXNotificationSystem;
-import io.github.palexdev.materialfx.theming.JavaFXThemes;
-import io.github.palexdev.materialfx.theming.MaterialFXStylesheets;
-import io.github.palexdev.materialfx.theming.UserAgentBuilder;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
@@ -22,22 +15,12 @@ public class App extends Application {
 
   @Override
   public void start(Stage primaryStage) throws Exception {
+    // Apply modern theme globally
+    Application.setUserAgentStylesheet(Application.STYLESHEET_MODENA);
 
-    UserAgentBuilder.builder().themes(JavaFXThemes.MODENA)
-        .themes(MaterialFXStylesheets.forAssemble(true))
-        .setDeploy(true)
-        .setResolveAssets(true).build().setGlobal();
-    MFXNotificationSystem.instance().initOwner(primaryStage);
-    MFXNotificationCenterSystem.instance().initOwner(primaryStage);
-
-    MFXNotificationCenter center = MFXNotificationCenterSystem.instance().getCenter();
-    center.setCellFactory(notification -> new MFXNotificationCell(center, notification) {
-      {
-        setPrefHeight(400);
-      }
-    });
     Navigator navigator = Navigator.getInstance();
     navigator.setStage(primaryStage);
+
     if (AuthContext.getInstance().getCurrentUser() == null) {
       navigator.goTo(Routes.LOGIN);
     } else {
