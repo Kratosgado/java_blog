@@ -8,16 +8,22 @@ import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.TagService;
 
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class TagsManagementController {
   private static final Logger logger = LoggerFactory.getLogger(TagsManagementController.class);
+
+  @FXML
+  private Button createTagBtn;
 
   @FXML
   private VBox tagFormContainer;
@@ -29,7 +35,7 @@ public class TagsManagementController {
   private TextField tagNameField;
 
   @FXML
-  private TextField tagSlugField;
+  private ColorPicker tagColorPicker;
 
   @FXML
   private TextArea tagDescriptionArea;
@@ -41,7 +47,7 @@ public class TagsManagementController {
   private Button cancelFormBtn;
 
   @FXML
-  private VBox tagsListContainer;
+  private FlowPane tagsFlowPane;
 
   private final TagService tagService;
   private Tag currentTag;
@@ -60,54 +66,99 @@ public class TagsManagementController {
   private void setupUI() {
     saveTagBtn.setOnAction(e -> saveTag());
     cancelFormBtn.setOnAction(e -> cancelForm());
+    
+    // Set default color
+    if (tagColorPicker != null) {
+      tagColorPicker.setValue(Color.web("#667eea"));
+    }
   }
 
   private void loadTags() {
     try {
-      tagsListContainer.getChildren().clear();
+      tagsFlowPane.getChildren().clear();
       var tags = tagService.getAllTags();
       logger.info("Loading {} tags", tags.size());
 
       for (Tag tag : tags) {
-        HBox tagItem = createTagItem(tag);
-        tagsListContainer.getChildren().add(tagItem);
+        VBox tagCard = createTagCard(tag);
+        tagsFlowPane.getChildren().add(tagCard);
       }
     } catch (Exception e) {
       logger.error("Failed to load tags", e);
     }
   }
 
-  private HBox createTagItem(Tag tag) {
-    HBox container = new HBox(15);
-    container.setAlignment(Pos.CENTER_LEFT);
-    container.setStyle(
-        "-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #e0e0e0; -fx-border-radius: 8;");
+  private VBox createTagCard(Tag tag) {
+    VBox card = new VBox(12);
+    card.setAlignment(Pos.TOP_LEFT);
+    card.setPrefWidth(200);
+    card.setStyle(
+        "-fx-background-color: white; " +
+        "-fx-padding: 20; " +
+        "-fx-background-radius: 12; " +
+        "-fx-border-color: #e5e7eb; " +
+        "-fx-border-radius: 12; " +
+        "-fx-border-width: 1; " +
+        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);");
 
-    VBox tagInfo = new VBox(5);
+    // Tag name with color indicator
+    HBox headerBox = new HBox(10);
+    headerBox.setAlignment(Pos.CENTER_LEFT);
+    
+    Label colorIndicator = new Label("●");
+    colorIndicator.setStyle("-fx-font-size: 20px; -fx-text-fill: #667eea;");
+    
     Label tagNameLabel = new Label(tag.getName());
-    tagNameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
-    Label tagSlugLabel = new Label("Slug: " + tag.getSlug());
-    tagSlugLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #666;");
+    tagNameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;");
+    
+    headerBox.getChildren().addAll(colorIndicator, tagNameLabel);
+
+    // Slug
+    Label tagSlugLabel = new Label(tag.getSlug());
+    tagSlugLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #6b7280;");
+
+    // Description (if exists)
+    VBox contentBox = new VBox(8);
+    if (tag.getDescription() != null && !tag.getDescription().isEmpty()) {
+      Label descLabel = new Label(tag.getDescription());
+      descLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #374151; -fx-wrap-text: true;");
+      descLabel.setWrapText(true);
+      descLabel.setMaxWidth(160);
+      contentBox.getChildren().add(descLabel);
+    }
+
+    // Post count
     Label postCountLabel = new Label(tag.getPostCount() + " posts");
-    postCountLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #999;");
+    postCountLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #9ca3af; -fx-font-style: italic;");
 
-    tagInfo.getChildren().addAll(tagNameLabel, tagSlugLabel, postCountLabel);
-
-    HBox spacer = new HBox();
-    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    // Actions
+    HBox actionsBox = new HBox(8);
+    actionsBox.setAlignment(Pos.CENTER);
 
     Button editBtn = new Button("Edit");
-    editBtn
-        .setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
+    editBtn.setStyle(
+        "-fx-background-color: #6366f1; " +
+        "-fx-text-fill: white; " +
+        "-fx-background-radius: 6; " +
+        "-fx-padding: 6 12; " +
+        "-fx-cursor: hand; " +
+        "-fx-font-size: 12px;");
     editBtn.setOnAction(e -> editTag(tag));
 
     Button deleteBtn = new Button("Delete");
-    deleteBtn
-        .setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 16;");
+    deleteBtn.setStyle(
+        "-fx-background-color: #ef4444; " +
+        "-fx-text-fill: white; " +
+        "-fx-background-radius: 6; " +
+        "-fx-padding: 6 12; " +
+        "-fx-cursor: hand; " +
+        "-fx-font-size: 12px;");
     deleteBtn.setOnAction(e -> deleteTag(tag.getId()));
 
-    container.getChildren().addAll(tagInfo, spacer, editBtn, deleteBtn);
-    return container;
+    actionsBox.getChildren().addAll(editBtn, deleteBtn);
+
+    card.getChildren().addAll(headerBox, tagSlugLabel, contentBox, postCountLabel, actionsBox);
+    return card;
   }
 
   @FXML
@@ -122,9 +173,19 @@ public class TagsManagementController {
 
   private void saveTag() {
     try {
-      CreateTagDto dto = new CreateTagDto(tagNameField.getText(), tagDescriptionArea.getText());
+      String name = tagNameField.getText();
+      String description = tagDescriptionArea.getText();
+      
+      if (name == null || name.trim().isEmpty()) {
+        logger.warn("Tag name is required");
+        return;
+      }
 
-      boolean success = currentTag == null ? tagService.createTag(dto) : tagService.updateTag(currentTag.getId(), dto);
+      CreateTagDto dto = new CreateTagDto(name.trim(), description);
+
+      boolean success = currentTag == null 
+          ? tagService.createTag(dto) 
+          : tagService.updateTag(currentTag.getId(), dto);
 
       if (success) {
         logger.info("Saving tag: {}", dto.name());
@@ -142,8 +203,10 @@ public class TagsManagementController {
     tagFormContainer.setManaged(true);
     formTitleLabel.setText("Edit Tag");
     tagNameField.setText(tag.getName());
-    tagSlugField.setText(tag.getSlug());
     tagDescriptionArea.setText(tag.getDescription());
+    
+    // Note: Color picker functionality can be added when Tag model supports it
+    
     logger.info("Editing tag: {}", tag.getId());
   }
 
@@ -166,8 +229,9 @@ public class TagsManagementController {
 
   private void clearForm() {
     tagNameField.clear();
-    tagSlugField.clear();
     tagDescriptionArea.clear();
+    if (tagColorPicker != null) {
+      tagColorPicker.setValue(Color.web("#667eea"));
+    }
   }
-
 }
