@@ -16,9 +16,9 @@
     <!--Header -->
     <VBox spacing="5">
       <Label text="My Profile"
-        style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
       <Label text="Manage your personal information"
-        styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+        styleClass="subtitle-text" style="-fx-font-size: 14px;" />
     </VBox>
 
     <!-- Profile Card -->

@@ -15,9 +15,9 @@
     <HBox alignment="CENTER_LEFT" spacing="15">
       <VBox spacing="5">
         <Label text="Dashboard Overview"
-          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
         <Label text="Monitor your blog's performance and activity"
-          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+          styleClass="subtitle-text" style="-fx-font-size: 14px;" />
       </VBox>
     </HBox>
 
@@ -32,50 +32,50 @@
 
       <!-- Total Posts Card -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="0"
-        style="-fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #667eea 0%, #764ba2 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="📝" style="-fx-font-size: 36px;" />
-        <Label text="Total Posts" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+        <Label text="📝" style="-fx-font-size: 24px;" />
+        <Label text="Total Posts" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalPostsLabel" text="0"
-          style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
         <Label text="Published articles"
-          style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.8);" />
+          style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.8);" />
       </VBox>
 
       <!-- Total Comments Card -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="1"
-        style="-fx-background-color: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #10b981 0%, #059669 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="💬" style="-fx-font-size: 36px;" />
-        <Label text="Comments" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+        <Label text="💬" style="-fx-font-size: 24px;" />
+        <Label text="Comments" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalCommentsLabel" text="0"
-          style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
         <Label text="User interactions"
-          style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.8);" />
+          style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.8);" />
       </VBox>
 
       <!-- Total Views Card -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="2"
-        style="-fx-background-color: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #f59e0b 0%, #d97706 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="👁️" style="-fx-font-size: 36px;" />
-        <Label text="Total Views" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+        <Label text="👁️" style="-fx-font-size: 24px;" />
+        <Label text="Total Views" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalViewsLabel" text="0"
-          style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
         <Label text="Post impressions"
-          style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.8);" />
+          style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.8);" />
       </VBox>
 
       <!-- Active Tags Card -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="3"
-        style="-fx-background-color: linear-gradient(135deg, #ec4899 0%, #be185d 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #ec4899 0%, #be185d 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="🏷️" style="-fx-font-size: 36px;" />
-        <Label text="Active Tags" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+        <Label text="🏷️" style="-fx-font-size: 24px;" />
+        <Label text="Active Tags" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalTagsLabel" text="0"
-          style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
         <Label text="Categories used"
-          style="-fx-font-size: 13px; -fx-text-fill: rgba(255,255,255,0.8);" />
+          style="-fx-font-size: 11px; -fx-text-fill: rgba(255,255,255,0.8);" />
       </VBox>
     </GridPane>
 
@@ -83,7 +83,7 @@
     <VBox spacing="20" styleClass="card" style="-fx-padding: 30; -fx-background-radius: 16;">
       <HBox alignment="CENTER_LEFT" spacing="15">
         <Label text="📚 Recent Posts"
-          style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+          style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
         <Region HBox.hgrow="ALWAYS" />
         <Button text="View All Posts" onAction="#viewAllPosts" styleClass="primary-button" />
       </HBox>

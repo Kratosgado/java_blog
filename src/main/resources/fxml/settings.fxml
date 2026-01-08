@@ -14,15 +14,15 @@
     <!-- Header -->
     <VBox spacing="5">
       <Label text="Settings"
-        style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
       <Label text="Customize your blog experience"
-        styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+        styleClass="subtitle-text" style="-fx-font-size: 14px;" />
     </VBox>
 
     <!-- Notifications -->
     <VBox spacing="24" styleClass="card" style="-fx-padding: 32; -fx-background-radius: 16;">
       <Label text="🔔 Notifications"
-        style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
 
       <VBox spacing="20" style="-fx-padding: 10 0;">
         <HBox spacing="20" alignment="CENTER_LEFT">

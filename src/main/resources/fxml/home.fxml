@@ -6,21 +6,21 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.HomeController"
-  style="-fx-background-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+  style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #667eea 0%, #764ba2 100%);"
   stylesheets="@../css/modern-ui.css">
 
   <!-- Top Navigation Bar -->
   <top>
     <HBox alignment="CENTER_LEFT" spacing="20" styleClass="nav-bar" style="-fx-padding: 20 40;">
-      <Label text="✍️ Blog Hub" styleClass="nav-title" style="-fx-font-size: 28px;" />
+      <Label text="✍️ Blog Hub" styleClass="nav-title" style="-fx-font-size: 20px;" />
       <Region HBox.hgrow="ALWAYS" />
-      
-      <TextField fx:id="searchField" promptText="🔍 Search posts..." 
+
+      <TextField fx:id="searchField" promptText="🔍 Search posts..."
         prefWidth="300" styleClass="modern-text-field" />
-      <ComboBox fx:id="categoryComboBox" promptText="📂 Category" 
-        prefWidth="140" styleClass="modern-combo-box" />
-      <ComboBox fx:id="sortComboBox" promptText="⚡ Sort" 
-        prefWidth="140" styleClass="modern-combo-box" />
+      <ComboBox fx:id="categoryComboBox" promptText="📂 Category"
+        styleClass="modern-combo-box" />
+      <ComboBox fx:id="sortComboBox" promptText="⚡ Sort"
+        styleClass="modern-combo-box" />
 
       <HBox fx:id="authSection" spacing="12" alignment="CENTER">
         <Button fx:id="loginBtn" text="Sign In" styleClass="outline" />
@@ -29,7 +29,7 @@
 
       <HBox fx:id="userSection" spacing="12" alignment="CENTER" visible="false" managed="false">
         <Label fx:id="userLabel" styleClass="subtitle-text" style="-fx-text-fill: #374151;" />
-        <Button fx:id="userMenuBtn" text="👤" styleClass="icon-button" />
+        <Button fx:id="userMenuBtn" text="👱" styleClass="icon-button" />
       </HBox>
     </HBox>
   </top>
@@ -45,23 +45,25 @@
       </HBox>
 
       <!-- Content -->
-      <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+      <ScrollPane fitToWidth="true"
+        style="-fx-background: transparent; -fx-background-color: transparent;">
         <VBox spacing="30" style="-fx-padding: 40;">
 
           <!-- Hero Section -->
-          <VBox alignment="CENTER" spacing="20" 
+          <VBox alignment="CENTER" spacing="20"
             style="-fx-background-color: rgba(255,255,255,0.95); -fx-background-radius: 20; 
                    -fx-padding: 60 40; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 25, 0, 0, 8);">
-            <Label text="Welcome to Blog Hub" 
-              style="-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
-            <Label text="Discover amazing stories, ideas, and perspectives from writers around the world" 
-              style="-fx-font-size: 18px; -fx-text-fill: #6b7280; -fx-wrap-text: true; -fx-text-alignment: center;" 
+            <Label text="Welcome to Blog Hub"
+              style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+            <Label
+              text="Discover amazing stories, ideas, and perspectives from writers around the world"
+              style="-fx-font-size: 16px; -fx-text-fill: #6b7280; -fx-wrap-text: true; -fx-text-alignment: center;"
               maxWidth="600" />
           </VBox>
 
           <!-- Featured Posts -->
           <VBox spacing="20">
-            <Label text="✨ Featured Stories" 
+            <Label text="✨ Featured Stories"
               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" />
             <ScrollPane fx:id="featuredScrollPane" fitToWidth="true" hbarPolicy="NEVER"
               style="-fx-background: transparent; -fx-background-color: transparent;">
@@ -75,7 +77,7 @@
             <!-- Posts Feed -->
             <VBox spacing="20" HBox.hgrow="ALWAYS">
               <HBox alignment="CENTER_LEFT" spacing="15">
-                <Label fx:id="postsCountLabel" text="Latest Posts" 
+                <Label fx:id="postsCountLabel" text="Latest Posts"
                   style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: white;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <ToggleButton fx:id="gridViewBtn" text="⊞ Grid" styleClass="toggle-button-active" />
@@ -97,9 +99,9 @@
             <VBox spacing="20" prefWidth="320" minWidth="320">
 
               <!-- Categories -->
-              <VBox spacing="15" styleClass="card" 
+              <VBox spacing="15" styleClass="card"
                 style="-fx-background-radius: 16;">
-                <Label text="📂 Categories" 
+                <Label text="📂 Categories"
                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                 <VBox fx:id="categoriesContainer" spacing="10" />
               </VBox>
@@ -107,7 +109,7 @@
               <!-- Tags -->
               <VBox spacing="15" styleClass="card"
                 style="-fx-background-radius: 16;">
-                <Label text="🏷️ Popular Tags" 
+                <Label text="🏷️ Popular Tags"
                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                 <FlowPane fx:id="popularTagsContainer" hgap="10" vgap="10" />
               </VBox>
@@ -115,7 +117,7 @@
               <!-- Trending -->
               <VBox spacing="15" styleClass="card"
                 style="-fx-background-radius: 16;">
-                <Label text="🔥 Trending" 
+                <Label text="🔥 Trending"
                   style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
                 <VBox fx:id="trendingContainer" spacing="12" />
               </VBox>

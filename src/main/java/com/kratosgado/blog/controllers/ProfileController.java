@@ -7,11 +7,13 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.UserService;
+import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -21,46 +23,34 @@ public class ProfileController {
 
   @FXML
   private Label usernameLabel;
-
+  @FXML
+  private ImageView avatarImageView;
   @FXML
   private Label emailLabel;
-
   @FXML
   private Label joinDateLabel;
-
   @FXML
   private TextArea bioArea;
-
   @FXML
   private TextField websiteField;
-
   @FXML
   private TextField locationField;
-
   @FXML
   private Button changeAvatarBtn;
-
   @FXML
   private Button changePasswordBtn;
-
   @FXML
   private Button cancelBtn;
-
   @FXML
   private Button saveProfileBtn;
-
   @FXML
   private Label messageLabel;
-
   @FXML
   private PasswordField currentPasswordField;
-
   @FXML
   private PasswordField newPasswordField;
-
   @FXML
   private PasswordField confirmNewPasswordField;
-
   @FXML
   private Label passwordMessageLabel;
 
@@ -75,6 +65,7 @@ public class ProfileController {
   private void initialize() {
     logger.debug("Initializing Profile Controller");
     user = AuthContext.getInstance().getCurrentUser();
+    avatarImageView.setImage(ImageUtils.loadImageWithFallback(user.getAvatarUrl()));
     usernameLabel.setText(user.getUsername());
     emailLabel.setText(user.getEmail());
 

@@ -15,9 +15,9 @@
     <HBox alignment="CENTER_LEFT" spacing="20">
       <VBox spacing="5">
         <Label text="My Blog Posts"
-          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
         <Label text="Manage and organize your content"
-          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+          styleClass="subtitle-text" style="-fx-font-size: 14px;" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
       <Button fx:id="createNewPostBtn" text="➕ New Post" styleClass="primary-button-large" />
