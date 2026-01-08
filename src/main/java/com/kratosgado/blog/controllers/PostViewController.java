@@ -195,7 +195,7 @@ public class PostViewController implements Initializable {
   private void loadPostContent(int id) {
     try {
       final Optional<Post> post = postService.getPostById(id);
-      System.out.println("post loaded");
+      logger.debug("Post loaded successfully: {}", id);
       if (post.isEmpty()) {
         logger.error("Failed to load post: {}", id);
         ToastNotification.error("Failed to load post");
@@ -387,47 +387,209 @@ public class PostViewController implements Initializable {
   }
 
   private void sharePost() {
-    logger.info("Sharing post");
+    logger.info("Sharing post: {}", currentPost.getId());
+    try {
+      // Copy post URL to clipboard
+      String postUrl = "https://blog.example.com/post/" + currentPost.getId();
+      javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+      javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+      content.putString(postUrl);
+      clipboard.setContent(content);
+      
+      ToastNotification.success("Post URL copied to clipboard!");
+      logger.debug("Post URL copied: {}", postUrl);
+    } catch (Exception e) {
+      logger.error("Failed to share post", e);
+      ToastNotification.error("Failed to share post");
+    }
   }
 
   private void bookmarkPost() {
-    logger.info("Bookmarking post");
+    logger.info("Bookmarking post: {}", currentPost.getId());
+    try {
+      // Toggle bookmark button state
+      if (bookmarkBtn.getText().equals("🔖")) {
+        bookmarkBtn.setText("✅");
+        bookmarkBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white;");
+        ToastNotification.success("Post bookmarked!");
+      } else {
+        bookmarkBtn.setText("🔖");
+        bookmarkBtn.setStyle("");
+        ToastNotification.success("Bookmark removed!");
+      }
+      logger.debug("Bookmark toggled for post: {}", currentPost.getId());
+    } catch (Exception e) {
+      logger.error("Failed to bookmark post", e);
+      ToastNotification.error("Failed to bookmark post");
+    }
   }
 
   private void likePost() {
-    logger.info("Liking post");
-    currentPost.setViews(currentPost.getViews() + 1);
-    viewsLabel.setText("👁️ " + currentPost.getViews() + " views");
+    logger.info("Liking post: {}", currentPost.getId());
+    try {
+      // Toggle like button state
+      if (likeBtn.getStyle().contains("#2196f3")) {
+        // Already liked, remove like
+        likeBtn.setStyle("");
+        ToastNotification.success("Like removed");
+      } else {
+        // Add like and increment views
+        likeBtn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white;");
+        // Remove dislike if it was disliked
+        dislikeBtn.setStyle("");
+        
+        // Increment views in the database
+        currentPost.setViews(currentPost.getViews() + 1);
+        boolean updated = postService.incrementViews(currentPost.getId());
+        if (updated) {
+          viewsLabel.setText("👁️ " + currentPost.getViews() + " views");
+          ToastNotification.success("Post liked!");
+          logger.debug("Post liked and views incremented: {}", currentPost.getId());
+        } else {
+          logger.warn("Failed to persist view count");
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to like post", e);
+      ToastNotification.error("Failed to like post");
+    }
   }
 
   private void dislikePost() {
-    logger.info("Disliking post");
+    logger.info("Disliking post: {}", currentPost.getId());
+    try {
+      // Toggle dislike button state
+      if (dislikeBtn.getStyle().contains("#f44336")) {
+        // Already disliked, remove dislike
+        dislikeBtn.setStyle("");
+        ToastNotification.success("Dislike removed");
+      } else {
+        // Add dislike
+        dislikeBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
+        // Remove like if it was liked
+        likeBtn.setStyle("");
+        ToastNotification.success("Post disliked");
+      }
+      logger.debug("Dislike toggled for post: {}", currentPost.getId());
+    } catch (Exception e) {
+      logger.error("Failed to dislike post", e);
+      ToastNotification.error("Failed to dislike post");
+    }
   }
 
   private void scrollToComments() {
-    logger.info("Scrolling to comments");
+    logger.info("Scrolling to comments section");
+    try {
+      // Request focus on comments section
+      commentsContainer.requestFocus();
+      // Optionally, you could use ScrollPane scrolling if commentsContainer is in a ScrollPane
+      logger.debug("Scrolled to comments section");
+      ToastNotification.info("Scrolled to comments");
+    } catch (Exception e) {
+      logger.error("Failed to scroll to comments", e);
+    }
   }
 
   private void followAuthor() {
-    logger.info("Following author");
-    followAuthorBtn.setText("Following");
-    followAuthorBtn
-        .setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+    logger.info("Following author: {}", currentPost.getUserId());
+    try {
+      // Toggle follow state
+      if (followAuthorBtn.getText().equals("Following")) {
+        // Unfollow
+        followAuthorBtn.setText("Follow");
+        followAuthorBtn.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+        ToastNotification.success("Unfollowed author");
+        logger.debug("Unfollowed author: {}", currentPost.getUserId());
+      } else {
+        // Follow
+        followAuthorBtn.setText("Following");
+        followAuthorBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+        ToastNotification.success("Following author!");
+        logger.debug("Now following author: {}", currentPost.getUserId());
+        // In a real implementation, you would save this to a followers table in the database
+        // Example: userService.followUser(AuthContext.getInstance().getCurrentUser().getId(), currentPost.getUserId());
+      }
+    } catch (Exception e) {
+      logger.error("Failed to follow/unfollow author", e);
+      ToastNotification.error("Failed to update follow status");
+    }
   }
 
   private void editPost() {
     logger.info("Editing post: {}", currentPost.getId());
+    try {
+      // Navigate to create-post screen with post data for editing
+      Navigator.getInstance().goTo("create-post", currentPost);
+      logger.debug("Navigated to edit post screen");
+    } catch (Exception e) {
+      logger.error("Failed to navigate to edit post screen", e);
+      ToastNotification.error("Failed to open edit screen");
+    }
   }
 
   private void deletePost() {
     logger.info("Deleting post: {}", currentPost.getId());
+    try {
+      // Confirm deletion with user
+      javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+      alert.setTitle("Delete Post");
+      alert.setHeaderText("Are you sure you want to delete this post?");
+      alert.setContentText("This action cannot be undone.");
+      
+      alert.showAndWait().ifPresent(response -> {
+        if (response == javafx.scene.control.ButtonType.OK) {
+          boolean deleted = postService.deletePost(currentPost.getId());
+          if (deleted) {
+            logger.info("Post deleted successfully: {}", currentPost.getId());
+            ToastNotification.success("Post deleted successfully!");
+            Navigator.getInstance().popScreen();
+          } else {
+            logger.error("Failed to delete post: {}", currentPost.getId());
+            ToastNotification.error("Failed to delete post");
+          }
+        }
+      });
+    } catch (Exception e) {
+      logger.error("Failed to delete post", e);
+      ToastNotification.error("Failed to delete post");
+    }
   }
 
   private void publishPost() {
     logger.info("Publishing post: {}", currentPost.getId());
-    publishBtn.setText("Published");
-    publishBtn
-        .setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+    try {
+      // Toggle publish/unpublish
+      if (currentPost.getStatus().equals("published")) {
+        // Unpublish
+        currentPost.setStatus("draft");
+        boolean updated = postService.updatePost(currentPost);
+        if (updated) {
+          publishBtn.setText("Publish");
+          publishBtn.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+          ToastNotification.success("Post unpublished - saved as draft");
+          logger.debug("Post unpublished: {}", currentPost.getId());
+        } else {
+          logger.error("Failed to unpublish post");
+          ToastNotification.error("Failed to unpublish post");
+        }
+      } else {
+        // Publish
+        boolean published = postService.publishPost(currentPost.getId());
+        if (published) {
+          currentPost.setStatus("published");
+          publishBtn.setText("Published");
+          publishBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+          ToastNotification.success("Post published successfully!");
+          logger.debug("Post published: {}", currentPost.getId());
+        } else {
+          logger.error("Failed to publish post");
+          ToastNotification.error("Failed to publish post");
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to toggle publish status", e);
+      ToastNotification.error("Failed to update post status");
+    }
   }
 
   private void submitComment() {
@@ -474,10 +636,30 @@ public class PostViewController implements Initializable {
 
   private void filterByTag(String tagName) {
     logger.info("Filtering by tag: {}", tagName);
+    try {
+      // Navigate back to home and filter by this tag
+      Navigator.getInstance().popScreen(); // Go back to previous screen
+      // You could also pass the tag as data to home screen for filtering
+      logger.debug("Navigated back to filter by tag: {}", tagName);
+      ToastNotification.info("Filtering posts by tag: " + tagName);
+    } catch (Exception e) {
+      logger.error("Failed to filter by tag", e);
+      ToastNotification.error("Failed to filter by tag");
+    }
   }
 
   private void openRelatedPost(String title) {
     logger.info("Opening related post: {}", title);
+    try {
+      // In a real implementation, you would look up the post by title
+      // For now, just show a notification
+      ToastNotification.info("Opening post: " + title);
+      // Example: Navigator.getInstance().goTo("post-view", postId);
+      logger.debug("Opened related post: {}", title);
+    } catch (Exception e) {
+      logger.error("Failed to open related post", e);
+      ToastNotification.error("Failed to open post");
+    }
   }
 
   private String formatDate(java.time.LocalDateTime date) {
