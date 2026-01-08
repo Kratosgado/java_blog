@@ -9,6 +9,7 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.UiUtils;
@@ -92,7 +93,7 @@ public class HomeController {
   private Button signupBtn;
 
   @FXML
-  private Button userMenuBtn;
+  private ImageView userAvatarImage;
 
   @FXML
   private Label userLabel;
@@ -137,12 +138,42 @@ public class HomeController {
 
     if (isLoggedIn) {
       userLabel.setText("Welcome, " + AuthContext.getInstance().getCurrentUser().getUsername());
+      loadUserAvatar();
       setupUserMenu();
     }
 
     // Setup button actions
     loginBtn.setOnAction(e -> navigateToLogin());
     signupBtn.setOnAction(e -> navigateToSignup());
+  }
+
+  private void loadUserAvatar() {
+    try {
+      var currentUser = AuthContext.getInstance().getCurrentUser();
+      if (currentUser != null) {
+        // Load user avatar with fallback
+        Image avatar;
+        if (currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().trim().isEmpty()) {
+          avatar = ImageUtils.loadImageWithFallback(currentUser.getAvatarUrl());
+        } else {
+          avatar = ImageUtils.loadDefaultAvatar();
+        }
+        
+        userAvatarImage.setImage(avatar);
+        
+        // Clip to circle for rounded avatar
+        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+        userAvatarImage.setClip(clip);
+        
+        logger.debug("User avatar loaded successfully");
+      }
+    } catch (Exception e) {
+      logger.error("Failed to load user avatar", e);
+      // Load default avatar on error
+      userAvatarImage.setImage(ImageUtils.loadDefaultAvatar());
+      javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+      userAvatarImage.setClip(clip);
+    }
   }
 
   private void setupSearchAndFilters() {
@@ -309,7 +340,7 @@ public class HomeController {
     ImageView imageView = new ImageView();
     try {
       // Use placeholder image
-      imageView.setImage(new Image("file:src/main/resources/images/java_blog_logo.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(270);
       imageView.setFitHeight(150);
       imageView.setPreserveRatio(true);
@@ -340,7 +371,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(new Image("file:src/main/resources/images/java_blog_logo.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(260);
       imageView.setFitHeight(140);
       imageView.setPreserveRatio(true);
@@ -379,7 +410,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(new Image("file:src/main/resources/images/post-placeholder.jpg"));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
       imageView.setFitWidth(200);
       imageView.setFitHeight(120);
       imageView.setPreserveRatio(true);
@@ -530,8 +561,18 @@ public class HomeController {
 
     userMenu.getItems().addAll(adminItem, profileItem, logoutItem);
 
-    userMenuBtn.setOnMouseClicked(e -> {
-      userMenu.show(userMenuBtn, e.getScreenX(), e.getScreenY());
+    // Show menu when clicking on the avatar
+    userAvatarImage.setOnMouseClicked(e -> {
+      userMenu.show(userAvatarImage, e.getScreenX(), e.getScreenY());
+    });
+    
+    // Add hover effect to avatar
+    userAvatarImage.setOnMouseEntered(e -> {
+      userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.6), 12, 0, 0, 2);");
+    });
+    
+    userAvatarImage.setOnMouseExited(e -> {
+      userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);");
     });
   }
 
