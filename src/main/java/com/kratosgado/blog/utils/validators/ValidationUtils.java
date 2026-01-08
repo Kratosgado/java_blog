@@ -16,9 +16,26 @@ public class ValidationUtils {
     return email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
   }
 
-  // TODO: implement string password
   public static boolean isValidPassword(String password) {
-    return password.length() >= 8;
+    if (password == null || password.length() < 8) {
+      return false;
+    }
+    boolean hasUpperCase = password.chars().anyMatch(Character::isUpperCase);
+    boolean hasLowerCase = password.chars().anyMatch(Character::isLowerCase);
+    boolean hasDigit = password.chars().anyMatch(Character::isDigit);
+    boolean hasSpecial = password.chars().anyMatch(ch -> !Character.isLetterOrDigit(ch));
+    // Password must have at least 3 out of 4 characteristics
+    int characteristics = 0;
+    if (hasUpperCase)
+      characteristics++;
+    if (hasLowerCase)
+      characteristics++;
+    if (hasDigit)
+      characteristics++;
+    if (hasSpecial)
+      characteristics++;
+
+    return characteristics >= 3;
   }
 
   public static String hashPassword(String password) throws InternalException {
