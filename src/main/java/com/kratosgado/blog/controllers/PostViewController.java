@@ -219,20 +219,31 @@ public class PostViewController implements Initializable {
 
     authorLabel.setText(post.getAuthorName());
     dateLabel.setText(formatDate(post.getCreatedAt()));
-    readTimeLabel.setText("5 min read");
+    readTimeLabel.setText(calculateReadTime(post.getContent()));
 
     viewsLabel.setText("👁️ " + post.getViews() + " views");
 
     // Update author avatar with fallback
     if (post.getAuthorAvatarUrl() != null && !post.getAuthorAvatarUrl().trim().isEmpty()) {
       authorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
+      sidebarAuthorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
     } else {
       authorAvatar.setImage(ImageUtils.loadDefaultAvatar());
+      sidebarAuthorAvatar.setImage(ImageUtils.loadDefaultAvatar());
     }
 
     // Update sidebar author information
     sidebarAuthorLabel.setText(post.getAuthorName());
-    sidebarAuthorStats.setText("• " + postService.getTotalViews(post.getUserId()) + " total views");
+    
+    // Calculate total posts and views for author
+    int totalPosts = postService.getPostsByUserId(post.getUserId()).size();
+    long totalViews = postService.getTotalViews(post.getUserId());
+    sidebarAuthorStats.setText(totalPosts + " posts • " + totalViews + " total views");
+
+    // Since User model doesn't have bio field, use a default message
+    if (authorBioLabel != null) {
+      authorBioLabel.setText("Content creator and developer");
+    }
 
     loadFeaturedImage();
 
@@ -244,8 +255,7 @@ public class PostViewController implements Initializable {
 
   private void loadFeaturedImage() {
     try {
-      Image image = new Image(currentPost.getFeaturedImage());
-      featuredImage.setImage(image);
+      featuredImage.setImage(ImageUtils.loadImageWithFallback(currentPost.getFeaturedImage()));
     } catch (Exception e) {
       logger.debug("Featured image not found, using placeholder");
       try {
@@ -261,75 +271,162 @@ public class PostViewController implements Initializable {
     try {
       commentsContainer.getChildren().clear();
 
-      // Load demo comments
-      for (int i = 1; i <= 5; i++) {
-        VBox commentBox = createDemoComment(i);
-        commentsContainer.getChildren().add(commentBox);
+      // Load comments from database
+      var comments = commentService.getCommentsByPostId(currentPost.getId());
+      logger.info("Loading {} comments for post {}", comments.size(), currentPost.getId());
+
+      if (comments.isEmpty()) {
+        // Show "no comments" message
+        Label noCommentsLabel = new Label("No comments yet. Be the first to comment!");
+        noCommentsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666; -fx-padding: 20;");
+        commentsContainer.getChildren().add(noCommentsLabel);
+      } else {
+        for (var comment : comments) {
+          VBox commentBox = createCommentCard(comment);
+          commentsContainer.getChildren().add(commentBox);
+        }
       }
 
       updateCommentCount();
     } catch (Exception e) {
       logger.error("Failed to load comments", e);
+      ToastNotification.error("Failed to load comments");
     }
   }
 
-  private VBox createDemoComment(int commentNumber) {
+  private VBox createCommentCard(com.kratosgado.blog.models.Comment comment) {
     VBox commentBox = new VBox(10);
     commentBox.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 20; -fx-background-radius: 10;");
 
     HBox headerBox = new HBox(10);
     headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
+    // Load comment author avatar
     ImageView avatar = new ImageView();
-    avatar.setImage(ImageUtils.loadDefaultAvatar());
+    if (comment.getAuthorAvatarUrl() != null && !comment.getAuthorAvatarUrl().isEmpty()) {
+      avatar.setImage(ImageUtils.loadImageWithFallback(comment.getAuthorAvatarUrl()));
+    } else {
+      avatar.setImage(ImageUtils.loadDefaultAvatar());
+    }
     avatar.setFitWidth(40);
     avatar.setFitHeight(40);
-    avatar.setStyle("-fx-background-radius: 20;");
+    avatar.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 5, 0, 0, 2);");
+    
+    // Clip to circle
+    javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+    avatar.setClip(clip);
 
     VBox authorInfo = new VBox(2);
-    Label authorName = new Label("Commenter " + commentNumber);
+    Label authorName = new Label(comment.getAuthorName() != null ? comment.getAuthorName() : "Anonymous");
     authorName.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-    Label commentTime = new Label((commentNumber * 2) + " hours ago");
+    Label commentTime = new Label(formatTimeAgo(comment.getCreatedAt()));
     commentTime.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
     authorInfo.getChildren().addAll(authorName, commentTime);
 
     headerBox.getChildren().addAll(avatar, authorInfo);
 
-    Label commentContent = new Label(
-        "This is a great post! I really enjoyed reading about the technology stack used in this application. The explanations are clear and examples are helpful.");
+    Label commentContent = new Label(comment.getContent());
     commentContent.setWrapText(true);
     commentContent.setStyle("-fx-font-size: 14px; -fx-line-spacing: 1.4;");
 
     HBox actionsBox = new HBox(15);
     actionsBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-    Button likeBtn = new Button("👍 " + (commentNumber * 3));
-    likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px;");
+    Button likeBtn = new Button("👍 Like");
+    likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px; -fx-cursor: hand;");
+    likeBtn.setOnMouseEntered(e -> likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
+    likeBtn.setOnMouseExited(e -> likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px; -fx-cursor: hand;"));
 
     Button replyBtn = new Button("Reply");
-    replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px;");
+    replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;");
+    replyBtn.setOnMouseEntered(e -> replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #764ba2; -fx-font-size: 12px; -fx-cursor: hand;"));
+    replyBtn.setOnMouseExited(e -> replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
 
-    actionsBox.getChildren().addAll(likeBtn, replyBtn);
+    // Check if current user is comment author to show delete button
+    if (AuthContext.getInstance().getCurrentUser() != null && 
+        comment.getUserId() == AuthContext.getInstance().getCurrentUser().getId()) {
+      Button deleteBtn = new Button("Delete");
+      deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f44336; -fx-font-size: 12px; -fx-cursor: hand;");
+      deleteBtn.setOnAction(e -> deleteComment(comment.getId()));
+      actionsBox.getChildren().addAll(likeBtn, replyBtn, deleteBtn);
+    } else {
+      actionsBox.getChildren().addAll(likeBtn, replyBtn);
+    }
 
     commentBox.getChildren().addAll(headerBox, commentContent, actionsBox);
     return commentBox;
+  }
+
+  private void deleteComment(int commentId) {
+    try {
+      javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+          javafx.scene.control.Alert.AlertType.CONFIRMATION);
+      alert.setTitle("Delete Comment");
+      alert.setHeaderText("Are you sure you want to delete this comment?");
+      alert.setContentText("This action cannot be undone.");
+
+      alert.showAndWait().ifPresent(response -> {
+        if (response == javafx.scene.control.ButtonType.OK) {
+          boolean deleted = commentService.deleteComment(commentId);
+          if (deleted) {
+            logger.info("Comment deleted successfully: {}", commentId);
+            ToastNotification.success("Comment deleted successfully!");
+            loadComments(); // Reload comments
+          } else {
+            logger.error("Failed to delete comment: {}", commentId);
+            ToastNotification.error("Failed to delete comment");
+          }
+        }
+      });
+    } catch (Exception e) {
+      logger.error("Failed to delete comment", e);
+      ToastNotification.error("Failed to delete comment");
+    }
+  }
+
+  private String formatTimeAgo(java.time.LocalDateTime dateTime) {
+    if (dateTime == null) return "Unknown";
+    
+    java.time.Duration duration = java.time.Duration.between(dateTime, java.time.LocalDateTime.now());
+    long seconds = duration.getSeconds();
+    
+    if (seconds < 60) return "Just now";
+    if (seconds < 3600) return (seconds / 60) + " minutes ago";
+    if (seconds < 86400) return (seconds / 3600) + " hours ago";
+    if (seconds < 604800) return (seconds / 86400) + " days ago";
+    if (seconds < 2592000) return (seconds / 604800) + " weeks ago";
+    if (seconds < 31536000) return (seconds / 2592000) + " months ago";
+    return (seconds / 31536000) + " years ago";
   }
 
   private void loadTags() {
     try {
       tagsFlowPane.getChildren().clear();
 
-      // Load demo tags
-      String[] demoTags = { "Java", "JavaFX", "MaterialFX", "PostgreSQL", "Tutorial", "UI Design" };
-      for (String tagName : demoTags) {
-        Label tagLabel = new Label("#" + tagName);
-        tagLabel.setStyle(
-            "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;");
-        tagLabel.setOnMouseClicked(e -> filterByTag(tagName));
-        tagsFlowPane.getChildren().add(tagLabel);
+      // Load tags from database
+      var tags = tagService.getTagsByPostId(currentPost.getId());
+      logger.info("Loading {} tags for post {}", tags.size(), currentPost.getId());
+
+      if (tags.isEmpty()) {
+        Label noTagsLabel = new Label("No tags");
+        noTagsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #999;");
+        tagsFlowPane.getChildren().add(noTagsLabel);
+      } else {
+        for (var tag : tags) {
+          Label tagLabel = new Label("#" + tag.getName());
+          tagLabel.setStyle(
+              "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;");
+          tagLabel.setOnMouseEntered(e -> tagLabel.setStyle(
+              "-fx-background-color: #1976d2; -fx-text-fill: white; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;"));
+          tagLabel.setOnMouseExited(e -> tagLabel.setStyle(
+              "-fx-background-color: #e3f2fd; -fx-text-fill: #1976d2; -fx-background-radius: 15; -fx-padding: 5 12; -fx-font-size: 12px; -fx-cursor: hand;"));
+          tagLabel.setOnMouseClicked(e -> filterByTag(tag.getName()));
+          tagsFlowPane.getChildren().add(tagLabel);
+        }
       }
     } catch (Exception e) {
       logger.error("Failed to load tags", e);
+      ToastNotification.error("Failed to load tags");
     }
   }
 
@@ -337,36 +434,70 @@ public class PostViewController implements Initializable {
     try {
       relatedPostsContainer.getChildren().clear();
 
-      // Load demo related posts
-      String[] relatedTitles = {
-          "Getting Started with JavaFX 21",
-          "Material Design Principles in Desktop Apps",
-          "Database Integration Best Practices"
-      };
+      // Load published posts excluding current post
+      var allPosts = postService.getPublishedPosts();
+      var relatedPosts = allPosts.stream()
+          .filter(p -> p.getId() != currentPost.getId())
+          .limit(5)
+          .toList();
 
-      for (String title : relatedTitles) {
-        VBox relatedPostCard = createRelatedPostCard(title);
-        relatedPostsContainer.getChildren().add(relatedPostCard);
+      if (relatedPosts.isEmpty()) {
+        Label noPostsLabel = new Label("No related posts");
+        noPostsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #999; -fx-padding: 10;");
+        relatedPostsContainer.getChildren().add(noPostsLabel);
+      } else {
+        for (var post : relatedPosts) {
+          VBox relatedPostCard = createRelatedPostCard(post);
+          relatedPostsContainer.getChildren().add(relatedPostCard);
+        }
       }
     } catch (Exception e) {
       logger.error("Failed to load related posts", e);
     }
   }
 
-  private VBox createRelatedPostCard(String title) {
+  private VBox createRelatedPostCard(Post post) {
     VBox card = new VBox(8);
-    card.setStyle("-fx-padding: 10; -fx-cursor: hand;");
-    card.setOnMouseClicked(e -> openRelatedPost(title));
+    card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-radius: 8;");
+    card.setOnMouseEntered(e -> card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-color: #f5f5f5; -fx-background-radius: 8;"));
+    card.setOnMouseExited(e -> card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-radius: 8;"));
+    card.setOnMouseClicked(e -> openRelatedPost(post.getId()));
 
-    Label titleLabel = new Label(title);
+    Label titleLabel = new Label(post.getTitle());
     titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: 500; -fx-text-fill: #333; -fx-wrap-text: true;");
     titleLabel.setWrapText(true);
+    titleLabel.setMaxWidth(200);
 
-    Label metaLabel = new Label("3 min read • 2 days ago");
+    String readTime = calculateReadTime(post.getContent());
+    String timeAgo = formatTimeAgo(post.getCreatedAt());
+    Label metaLabel = new Label(readTime + " • " + timeAgo);
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(titleLabel, metaLabel);
     return card;
+  }
+
+  private void openRelatedPost(int postId) {
+    logger.info("Opening related post: {}", postId);
+    try {
+      Navigator.getInstance().goTo("post-view", postId);
+      logger.debug("Opened related post: {}", postId);
+    } catch (Exception e) {
+      logger.error("Failed to open related post", e);
+      ToastNotification.error("Failed to open post");
+    }
+  }
+
+  private String calculateReadTime(String content) {
+    if (content == null || content.isEmpty()) {
+      return "1 min read";
+    }
+    
+    // Average reading speed: 200-250 words per minute
+    int wordCount = content.split("\\s+").length;
+    int minutes = Math.max(1, (int) Math.ceil(wordCount / 200.0));
+    
+    return minutes + " min read";
   }
 
   private void updateAuthorActionsVisibility() {
@@ -395,7 +526,7 @@ public class PostViewController implements Initializable {
       javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
       content.putString(postUrl);
       clipboard.setContent(content);
-      
+
       ToastNotification.success("Post URL copied to clipboard!");
       logger.debug("Post URL copied: {}", postUrl);
     } catch (Exception e) {
@@ -437,7 +568,7 @@ public class PostViewController implements Initializable {
         likeBtn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white;");
         // Remove dislike if it was disliked
         dislikeBtn.setStyle("");
-        
+
         // Increment views in the database
         currentPost.setViews(currentPost.getViews() + 1);
         boolean updated = postService.incrementViews(currentPost.getId());
@@ -482,7 +613,8 @@ public class PostViewController implements Initializable {
     try {
       // Request focus on comments section
       commentsContainer.requestFocus();
-      // Optionally, you could use ScrollPane scrolling if commentsContainer is in a ScrollPane
+      // Optionally, you could use ScrollPane scrolling if commentsContainer is in a
+      // ScrollPane
       logger.debug("Scrolled to comments section");
       ToastNotification.info("Scrolled to comments");
     } catch (Exception e) {
@@ -497,17 +629,22 @@ public class PostViewController implements Initializable {
       if (followAuthorBtn.getText().equals("Following")) {
         // Unfollow
         followAuthorBtn.setText("Follow");
-        followAuthorBtn.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+        followAuthorBtn.setStyle(
+            "-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
         ToastNotification.success("Unfollowed author");
         logger.debug("Unfollowed author: {}", currentPost.getUserId());
       } else {
         // Follow
         followAuthorBtn.setText("Following");
-        followAuthorBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
+        followAuthorBtn.setStyle(
+            "-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 20;");
         ToastNotification.success("Following author!");
         logger.debug("Now following author: {}", currentPost.getUserId());
-        // In a real implementation, you would save this to a followers table in the database
-        // Example: userService.followUser(AuthContext.getInstance().getCurrentUser().getId(), currentPost.getUserId());
+        // In a real implementation, you would save this to a followers table in the
+        // database
+        // Example:
+        // userService.followUser(AuthContext.getInstance().getCurrentUser().getId(),
+        // currentPost.getUserId());
       }
     } catch (Exception e) {
       logger.error("Failed to follow/unfollow author", e);
@@ -531,11 +668,12 @@ public class PostViewController implements Initializable {
     logger.info("Deleting post: {}", currentPost.getId());
     try {
       // Confirm deletion with user
-      javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+      javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+          javafx.scene.control.Alert.AlertType.CONFIRMATION);
       alert.setTitle("Delete Post");
       alert.setHeaderText("Are you sure you want to delete this post?");
       alert.setContentText("This action cannot be undone.");
-      
+
       alert.showAndWait().ifPresent(response -> {
         if (response == javafx.scene.control.ButtonType.OK) {
           boolean deleted = postService.deletePost(currentPost.getId());
@@ -565,7 +703,8 @@ public class PostViewController implements Initializable {
         boolean updated = postService.updatePost(currentPost);
         if (updated) {
           publishBtn.setText("Publish");
-          publishBtn.setStyle("-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+          publishBtn.setStyle(
+              "-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
           ToastNotification.success("Post unpublished - saved as draft");
           logger.debug("Post unpublished: {}", currentPost.getId());
         } else {
@@ -578,7 +717,8 @@ public class PostViewController implements Initializable {
         if (published) {
           currentPost.setStatus("published");
           publishBtn.setText("Published");
-          publishBtn.setStyle("-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
+          publishBtn.setStyle(
+              "-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
           ToastNotification.success("Post published successfully!");
           logger.debug("Post published: {}", currentPost.getId());
         } else {
@@ -594,22 +734,43 @@ public class PostViewController implements Initializable {
 
   private void submitComment() {
     String content = commentTextArea.getText().trim();
-    if (!content.isEmpty()) {
-      try {
-        VBox newComment = createNewComment(content);
-        commentsContainer.getChildren().add(0, newComment);
-        updateCommentCount();
+    if (content.isEmpty()) {
+      ToastNotification.error("Comment cannot be empty");
+      return;
+    }
+
+    // Check if user is logged in
+    if (AuthContext.getInstance().getCurrentUser() == null) {
+      ToastNotification.error("You must be logged in to comment");
+      return;
+    }
+
+    try {
+      // Create and save comment to database
+      com.kratosgado.blog.models.Comment comment = new com.kratosgado.blog.models.Comment(
+          currentPost.getId(),
+          AuthContext.getInstance().getCurrentUser().getId(),
+          content);
+
+      boolean created = commentService.createComment(comment);
+      if (created) {
+        logger.info("Comment submitted successfully for post {}", currentPost.getId());
+        ToastNotification.success("Comment posted successfully!");
+        loadComments(); // Reload comments to show the new one
         clearComment();
-        logger.info("Comment submitted successfully");
-      } catch (Exception e) {
-        logger.error("Failed to submit comment", e);
+      } else {
+        logger.error("Failed to create comment");
+        ToastNotification.error("Failed to post comment");
       }
+    } catch (Exception e) {
+      logger.error("Failed to submit comment", e);
+      ToastNotification.error("Failed to post comment: " + e.getMessage());
     }
   }
 
   private VBox createNewComment(String content) {
     VBox commentBox = new VBox(10);
-    commentBox.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 20; -fx-background-radius: 10;");
+    commentBox.setStyle("-fx-background-color: #e8f5e9; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #4caf50; -fx-border-width: 2; -fx-border-radius: 10;");
 
     HBox headerBox = new HBox(10);
     headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -637,10 +798,9 @@ public class PostViewController implements Initializable {
   private void filterByTag(String tagName) {
     logger.info("Filtering by tag: {}", tagName);
     try {
-      // Navigate back to home and filter by this tag
-      Navigator.getInstance().popScreen(); // Go back to previous screen
-      // You could also pass the tag as data to home screen for filtering
-      logger.debug("Navigated back to filter by tag: {}", tagName);
+      // Navigate back to home screen
+      Navigator.getInstance().popScreen();
+      // In a future implementation, you could pass the tag to home screen for filtering
       ToastNotification.info("Filtering posts by tag: " + tagName);
     } catch (Exception e) {
       logger.error("Failed to filter by tag", e);
@@ -648,21 +808,8 @@ public class PostViewController implements Initializable {
     }
   }
 
-  private void openRelatedPost(String title) {
-    logger.info("Opening related post: {}", title);
-    try {
-      // In a real implementation, you would look up the post by title
-      // For now, just show a notification
-      ToastNotification.info("Opening post: " + title);
-      // Example: Navigator.getInstance().goTo("post-view", postId);
-      logger.debug("Opened related post: {}", title);
-    } catch (Exception e) {
-      logger.error("Failed to open related post", e);
-      ToastNotification.error("Failed to open post");
-    }
-  }
-
   private String formatDate(java.time.LocalDateTime date) {
+    if (date == null) return "Unknown date";
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
     return date.format(formatter);
   }
