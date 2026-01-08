@@ -9,6 +9,7 @@ import com.kratosgado.blog.dtos.request.CreatePostDto;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.services.UploadService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
@@ -22,7 +23,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 
 public class CreatePostController {
   private static final Logger logger = LoggerFactory.getLogger(CreatePostController.class);
@@ -89,11 +89,13 @@ public class CreatePostController {
 
   private final PostService postService;
   private final TagService tagService;
+  private final UploadService uploadService;
   private Post currentPost;
 
   public CreatePostController() {
     this.postService = new PostService();
     this.tagService = new TagService();
+    this.uploadService = new UploadService();
   }
 
   @FXML
@@ -207,25 +209,15 @@ public class CreatePostController {
     }
   }
 
-   private void uploadImage() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select Image File");
-    fileChooser.getExtensionFilters().addAll(
-        new FileChooser.ExtensionFilter("Image Files", ".jpeg", "*.png", "*.jpg", "*.gif"),
-        new FileChooser.ExtensionFilter("All Files", "*.*"));
-    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+  private void uploadImage() {
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Image File");
     if (selectedFile != null) {
       imageUrlField.setText(selectedFile.toURI().toString());
     }
   }
 
   private void uploadCoverImage() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select Cover Image");
-    fileChooser.getExtensionFilters().addAll(
-        new FileChooser.ExtensionFilter("Image Files", "*.jpeg", "*.png", "*.jpg", "*.gif"),
-        new FileChooser.ExtensionFilter("All Files", "*.*"));
-    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Cover Image");
     if (selectedFile != null) {
       coverImageField.setText(selectedFile.toURI().toString());
       logger.debug("Cover image selected: {}", selectedFile.getName());
@@ -233,12 +225,7 @@ public class CreatePostController {
   }
 
   private void uploadIcon() {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select Icon");
-    fileChooser.getExtensionFilters().addAll(
-        new FileChooser.ExtensionFilter("Image Files", "*.jpeg", "*.png", "*.jpg", "*.gif", "*.svg"),
-        new FileChooser.ExtensionFilter("All Files", "*.*"));
-    File selectedFile = fileChooser.showOpenDialog(Navigator.getInstance().getStage());
+    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Icon");
     if (selectedFile != null) {
       iconField.setText(selectedFile.toURI().toString());
       logger.debug("Icon selected: {}", selectedFile.getName());
