@@ -15,9 +15,9 @@
     <HBox alignment="CENTER_LEFT" spacing="20">
       <VBox spacing="5">
         <Label text="Comments Management"
-          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
         <Label text="Review and moderate user comments"
-          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+          styleClass="subtitle-text" style="-fx-font-size: 14px;" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
       <ComboBox fx:id="statusFilterCombo" promptText="Filter by Status"
@@ -34,34 +34,34 @@
 
       <!-- Total Comments -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="0"
-        style="-fx-background-color: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #6366f1 0%, #4f46e5 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="💬" style="-fx-font-size: 32px;" />
+        <Label text="💬" style="-fx-font-size: 24px;" />
         <Label text="Total Comments"
-          style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+          style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalCommentsLabel" text="0"
-          style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
       </VBox>
 
       <!-- Pending Review -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="1"
-        style="-fx-background-color: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #f59e0b 0%, #d97706 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="⏳" style="-fx-font-size: 32px;" />
+        <Label text="⏳" style="-fx-font-size: 24px;" />
         <Label text="Pending Review"
-          style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+          style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="pendingCommentsLabel" text="0"
-          style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
       </VBox>
 
       <!-- Approved -->
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="2"
-        style="-fx-background-color: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+        style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #10b981 0%, #059669 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="✓" style="-fx-font-size: 32px;" />
-        <Label text="Approved" style="-fx-font-size: 14px; -fx-text-fill: rgba(255,255,255,0.9);" />
+        <Label text="✓" style="-fx-font-size: 24px;" />
+        <Label text="Approved" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="approvedCommentsLabel" text="0"
-          style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;" />
+          style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
       </VBox>
     </GridPane>
 

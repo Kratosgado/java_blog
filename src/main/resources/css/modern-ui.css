@@ -2,7 +2,9 @@
 
 /* === BASE STYLES === */
 .root {
-  -fx-font-family: "Segoe UI", "Roboto", sans-serif;
+  -fx-font-family:
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    "Apple Color Emoji", "Segoe UI", "Roboto", "Arial", sans-serif;
   -fx-font-size: 14px;
 }
 
@@ -59,6 +61,7 @@
   -fx-border-color: #6366f1;
   -fx-text-fill: #6366f1;
   -fx-border-width: 2px;
+  -fx-border-radius: 8px;
 }
 
 .outline:hover {
@@ -94,8 +97,7 @@
 
 .primary-button-large {
   -fx-background-color: #6366f1;
-  -fx-font-size: 16px;
-  -fx-padding: 16px 32px;
+  -fx-font-size: 14px;
   -fx-background-radius: 12px;
 }
 
@@ -342,4 +344,17 @@
 /* === SEPARATOR === */
 .separator {
   -fx-background-color: #e5e7eb;
+}
+
+/* === ICONS === */
+.icon-label {
+  -fx-font-family:
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    "Apple Color Emoji", sans-serif;
+}
+
+.emoji-icon {
+  -fx-font-family:
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
+    "Apple Color Emoji", sans-serif;
 }

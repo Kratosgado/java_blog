@@ -1,35 +1,32 @@
 package com.kratosgado.blog.controllers;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.User;
-import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
-import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.interfaces.Initializable;
 import com.kratosgado.blog.utils.notifications.ToastNotification;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.FlowPane;
-
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 public class PostViewController implements Initializable {
   private static final Logger logger = LoggerFactory.getLogger(PostViewController.class);
@@ -225,18 +222,18 @@ public class PostViewController implements Initializable {
     readTimeLabel.setText("5 min read");
 
     viewsLabel.setText("👁️ " + post.getViews() + " views");
-    
+
     // Update author avatar with fallback
     if (post.getAuthorAvatarUrl() != null && !post.getAuthorAvatarUrl().trim().isEmpty()) {
       authorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
     } else {
       authorAvatar.setImage(ImageUtils.loadDefaultAvatar());
     }
-    
+
     // Update sidebar author information
     sidebarAuthorLabel.setText(post.getAuthorName());
     sidebarAuthorStats.setText("• " + postService.getTotalViews(post.getUserId()) + " total views");
-    
+
     loadFeaturedImage();
 
     contentLabel.setText(post.getContent());
@@ -247,7 +244,7 @@ public class PostViewController implements Initializable {
 
   private void loadFeaturedImage() {
     try {
-      Image image = new Image("file:src/main/resources/images/featured-post-image.jpg");
+      Image image = new Image(currentPost.getFeaturedImage());
       featuredImage.setImage(image);
     } catch (Exception e) {
       logger.debug("Featured image not found, using placeholder");

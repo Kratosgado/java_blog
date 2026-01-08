@@ -15,9 +15,9 @@
     <HBox alignment="CENTER_LEFT" spacing="20">
       <VBox spacing="5">
         <Label fx:id="headerLabel" text="Create New Post"
-          style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
         <Label text="Share your ideas with the world"
-          styleClass="subtitle-text" style="-fx-font-size: 16px;" />
+          styleClass="subtitle-text" style="-fx-font-size: 14px;" />
       </VBox>
       <Region HBox.hgrow="ALWAYS" />
       <HBox spacing="12">
