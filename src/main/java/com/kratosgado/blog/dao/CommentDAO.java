@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.utils.enums.CommentStatus;
 import com.kratosgado.blog.utils.interfaces.DAO;
 
 public class CommentDAO extends DAO {
@@ -31,11 +32,17 @@ public class CommentDAO extends DAO {
           "post_id INTEGER NOT NULL," +
           "user_id INTEGER NOT NULL," +
           "content TEXT NOT NULL," +
+          "status VARCHAR(20) DEFAULT 'PENDING'," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
           "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
           "FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE," +
           "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)";
       stmt.executeUpdate(sql);
+      
+      // Add status column if it doesn't exist (for existing databases)
+      String alterSql = "ALTER TABLE comments ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'PENDING'";
+      stmt.executeUpdate(alterSql);
+      
       logger.debug("Comments table initialized successfully");
     } catch (Exception e) {
       logger.error("Failed to initialize comments table", e);
@@ -43,12 +50,13 @@ public class CommentDAO extends DAO {
   }
 
   public boolean createComment(Comment comment) {
-    String sql = "INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)";
+    String sql = "INSERT INTO comments (post_id, user_id, content, status) VALUES (?, ?, ?, ?)";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, comment.getPostId());
       stmt.setInt(2, comment.getUserId());
       stmt.setString(3, comment.getContent());
+      stmt.setString(4, comment.getStatus().name());
       stmt.executeUpdate();
       logger.info("Comment created successfully for post: {}", comment.getPostId());
       return true;
@@ -172,12 +180,47 @@ public class CommentDAO extends DAO {
     return 0;
   }
 
+  public boolean updateCommentStatus(int id, CommentStatus status) {
+    String sql = "UPDATE comments SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setString(1, status.name());
+      stmt.setInt(2, id);
+      stmt.executeUpdate();
+      logger.info("Comment status updated to {}: {}", status, id);
+      return true;
+    } catch (Exception e) {
+      logger.error("Failed to update comment status: {}", id, e);
+      return false;
+    }
+  }
+
+  public List<Comment> getCommentsByStatus(CommentStatus status) {
+    String sql = "SELECT c.*, u.username as author_name, u.avatar_url as author_avatar_url FROM comments c " +
+        "JOIN users u ON c.user_id = u.id WHERE c.status = ? ORDER BY c.created_at DESC";
+    List<Comment> comments = new ArrayList<>();
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setString(1, status.name());
+      ResultSet rs = stmt.executeQuery();
+      while (rs.next()) {
+        comments.add(mapResultSetToComment(rs));
+      }
+      logger.info("Fetched {} comments with status {}", comments.size(), status);
+    } catch (Exception e) {
+      logger.error("Failed to fetch comments with status: {}", status, e);
+    }
+    return comments;
+  }
+
   private Comment mapResultSetToComment(ResultSet rs) throws Exception {
     Comment comment = new Comment();
     comment.setId(rs.getInt("id"));
     comment.setPostId(rs.getInt("post_id"));
     comment.setUserId(rs.getInt("user_id"));
     comment.setContent(rs.getString("content"));
+    String statusStr = rs.getString("status");
+    comment.setStatus(statusStr != null ? CommentStatus.valueOf(statusStr) : CommentStatus.PENDING);
     comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
     comment.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
     comment.setAuthorName(rs.getString("author_name"));

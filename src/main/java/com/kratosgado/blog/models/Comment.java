@@ -2,6 +2,8 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 
+import com.kratosgado.blog.utils.enums.CommentStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,7 @@ public class Comment {
   private int postId;
   private int userId;
   private String content;
+  private CommentStatus status;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private String authorName;
@@ -22,5 +25,6 @@ public class Comment {
     this.postId = postId;
     this.userId = userId;
     this.content = content;
+    this.status = CommentStatus.PENDING;
   }
 }

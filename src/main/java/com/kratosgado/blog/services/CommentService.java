@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.dao.CommentDAO;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.utils.enums.CommentStatus;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 
 public class CommentService {
@@ -62,5 +63,41 @@ public class CommentService {
 
   public int getCommentCountForPost(int postId) {
     return commentDAO.getCommentCountForPost(postId);
+  }
+
+  public boolean approveComment(int id) {
+    Optional<Comment> comment = commentDAO.getCommentById(id);
+    if (comment.isEmpty()) {
+      throw BlogExceptions.notFound("Comment not found");
+    }
+    boolean updated = commentDAO.updateCommentStatus(id, CommentStatus.APPROVED);
+    if (updated) {
+      logger.info("Comment approved: {}", id);
+    }
+    return updated;
+  }
+
+  public boolean rejectComment(int id) {
+    Optional<Comment> comment = commentDAO.getCommentById(id);
+    if (comment.isEmpty()) {
+      throw BlogExceptions.notFound("Comment not found");
+    }
+    boolean updated = commentDAO.updateCommentStatus(id, CommentStatus.REJECTED);
+    if (updated) {
+      logger.info("Comment rejected: {}", id);
+    }
+    return updated;
+  }
+
+  public List<Comment> getPendingComments() {
+    return commentDAO.getCommentsByStatus(CommentStatus.PENDING);
+  }
+
+  public List<Comment> getApprovedComments() {
+    return commentDAO.getCommentsByStatus(CommentStatus.APPROVED);
+  }
+
+  public List<Comment> getRejectedComments() {
+    return commentDAO.getCommentsByStatus(CommentStatus.REJECTED);
   }
 }
