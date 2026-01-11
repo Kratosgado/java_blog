@@ -11,7 +11,6 @@ import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.services.UploadService;
 import com.kratosgado.blog.utils.Navigator;
-import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import javafx.scene.control.Button;
