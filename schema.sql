@@ -1,6 +1,6 @@
 -- ================================================================
 -- Smart Blogging Platform - Database Schema
--- Database: PostgreSQL 14+
+-- Database: PostgreSQL 17.2+
 -- Normalization: Third Normal Form (3NF)
 -- ================================================================
 
