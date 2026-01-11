@@ -3,6 +3,7 @@
 This guide provides step-by-step instructions for setting up the PostgreSQL database for the Smart Blogging Platform.
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Database Creation](#database-creation)
@@ -25,7 +26,8 @@ Before setting up the database, ensure you have:
 
 ### Installing PostgreSQL
 
-#### On Ubuntu/Debian:
+#### On Ubuntu/Debian
+
 ```bash
 sudo apt update
 sudo apt install postgresql postgresql-contrib
@@ -33,13 +35,15 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 ```
 
-#### On macOS (using Homebrew):
+#### On macOS (using Homebrew)
+
 ```bash
 brew install postgresql@14
 brew services start postgresql@14
 ```
 
-#### On Windows:
+#### On Windows
+
 Download and install from [PostgreSQL official website](https://www.postgresql.org/download/windows/)
 
 ---
@@ -83,10 +87,10 @@ psql -U postgres
 CREATE DATABASE blog;
 
 -- Create user (if needed)
-CREATE USER bloguser WITH PASSWORD 'your_password_here';
+CREATE USER blogadmin WITH PASSWORD 'your_password_here';
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE blog TO bloguser;
+GRANT ALL PRIVILEGES ON DATABASE blog TO blogadmin;
 
 -- Exit
 \q
@@ -97,9 +101,9 @@ GRANT ALL PRIVILEGES ON DATABASE blog TO bloguser;
 ```bash
 # Create database and user
 createdb -U postgres blog
-createuser -U postgres bloguser
-psql -U postgres -c "ALTER USER bloguser WITH PASSWORD 'your_password_here';"
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE blog TO bloguser;"
+createuser -U postgres blogadmin
+psql -U postgres -c "ALTER USER blogadmin WITH PASSWORD 'your_password_here';"
+psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE blog TO blogadmin;"
 ```
 
 ---
@@ -118,6 +122,7 @@ psql -U postgres -d blog -f schema.sql
 ```
 
 **What this creates:**
+
 - ✅ 6 tables: users, posts, comments, tags, post_tags, reviews
 - ✅ 20+ performance indexes
 - ✅ 2 views: post_statistics, popular_posts
@@ -157,22 +162,13 @@ psql -U postgres -d blog -f seed.sql
 ```
 
 **Sample data includes:**
+
 - 8 users (password: "password123" for all)
 - 14 blog posts (12 published, 2 drafts)
 - 15 tags (Java, JavaFX, Database, etc.)
 - 30 comments
 - 40+ post-tag relationships
 - 25 reviews
-
-### Method 2: Using Java Seeder (Alternative)
-
-```bash
-# Compile the project
-mvn clean compile
-
-# Run the seeder
-mvn exec:java -Dexec.mainClass="com.kratosgado.blog.utils.DatabaseSeeder"
-```
 
 ### Method 3: Manual Data Entry
 
@@ -201,9 +197,9 @@ psql -U postgres -d blog
 
 ```sql
 -- View all indexes
-SELECT tablename, indexname 
-FROM pg_indexes 
-WHERE schemaname = 'public' 
+SELECT tablename, indexname
+FROM pg_indexes
+WHERE schemaname = 'public'
 ORDER BY tablename, indexname;
 ```
 
@@ -225,6 +221,7 @@ SELECT 'Reviews', COUNT(*) FROM reviews;
 ```
 
 **Expected counts (if using seed.sql):**
+
 ```
 Users:     8
 Posts:     14
@@ -238,11 +235,11 @@ Reviews:   25
 
 ```sql
 -- Get published posts with author info
-SELECT p.id, p.title, u.username, p.views 
-FROM posts p 
-JOIN users u ON p.user_id = u.id 
-WHERE p.status = 'published' 
-ORDER BY p.views DESC 
+SELECT p.id, p.title, u.username, p.views
+FROM posts p
+JOIN users u ON p.user_id = u.id
+WHERE p.status = 'published'
+ORDER BY p.views DESC
 LIMIT 5;
 
 -- Get post statistics
@@ -349,24 +346,6 @@ psql -U postgres -d blog -f schema.sql
 psql -U postgres -d blog -f seed.sql
 ```
 
-### View Database Size
-
-```sql
-SELECT 
-  pg_size_pretty(pg_database_size('blog')) as size;
-```
-
-### View Table Sizes
-
-```sql
-SELECT 
-  table_name,
-  pg_size_pretty(pg_total_relation_size(quote_ident(table_name))) as size
-FROM information_schema.tables
-WHERE table_schema = 'public'
-ORDER BY pg_total_relation_size(quote_ident(table_name)) DESC;
-```
-
 ---
 
 ## Database Configuration
@@ -430,7 +409,7 @@ VACUUM FULL;
 ALTER DATABASE blog SET log_min_duration_statement = 1000; -- Log queries > 1s
 
 -- View slow queries
-SELECT 
+SELECT
   query,
   calls,
   total_time,
@@ -460,13 +439,13 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO appuser;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO appuser;
 ```
 
-3. **Enable SSL connections in production:**
+1. **Enable SSL connections in production:**
 
 ```properties
 DB_URL=jdbc:postgresql://localhost:5432/blog?ssl=true&sslmode=require
 ```
 
-4. **Regular backups:**
+1. **Regular backups:**
 
 ```bash
 # Set up automated daily backups

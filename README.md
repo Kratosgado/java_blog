@@ -19,6 +19,7 @@ A comprehensive JavaFX blogging platform with an optimized relational database b
 ## Architecture
 
 ### Layered Design
+
 ```
 Controllers (UI Layer)
     ↓
@@ -42,6 +43,7 @@ Database (PostgreSQL)
 ### Tables
 
 #### `users`
+
 - `id` (SERIAL PRIMARY KEY)
 - `username` (VARCHAR(50) UNIQUE)
 - `email` (VARCHAR(100) UNIQUE)
@@ -50,6 +52,7 @@ Database (PostgreSQL)
 - `created_at` (TIMESTAMP)
 
 #### `posts`
+
 - `id` (SERIAL PRIMARY KEY)
 - `user_id` (INTEGER FOREIGN KEY)
 - `title` (VARCHAR(255) NOT NULL)
@@ -64,6 +67,7 @@ Database (PostgreSQL)
 - `updated_at` (TIMESTAMP)
 
 #### `comments`
+
 - `id` (SERIAL PRIMARY KEY)
 - `post_id` (INTEGER FOREIGN KEY)
 - `user_id` (INTEGER FOREIGN KEY)
@@ -72,16 +76,19 @@ Database (PostgreSQL)
 - `created_at` (TIMESTAMP)
 
 #### `tags`
+
 - `id` (SERIAL PRIMARY KEY)
 - `name` (VARCHAR(100) UNIQUE)
 - `created_at` (TIMESTAMP)
 
 #### `post_tags` (Junction Table)
+
 - `post_id` (INTEGER FOREIGN KEY)
 - `tag_id` (INTEGER FOREIGN KEY)
 - PRIMARY KEY (post_id, tag_id)
 
 #### `reviews` - NEW
+
 - `id` (SERIAL PRIMARY KEY)
 - `post_id` (INTEGER FOREIGN KEY)
 - `user_id` (INTEGER FOREIGN KEY)
@@ -95,21 +102,8 @@ Database (PostgreSQL)
 
 ### Database Indexes (Performance Optimization)
 
-```sql
--- Posts table indexes
-CREATE INDEX idx_posts_user_id ON posts(user_id);
-CREATE INDEX idx_posts_status ON posts(status);
-CREATE INDEX idx_posts_title ON posts(title);
-CREATE INDEX idx_posts_created_at ON posts(created_at);
-
--- Reviews table indexes  
-CREATE INDEX idx_reviews_post_id ON reviews(post_id);
-CREATE INDEX idx_reviews_user_id ON reviews(user_id);
-CREATE INDEX idx_reviews_rating ON reviews(rating);
-CREATE INDEX idx_reviews_helpful ON reviews(helpful);
-```
-
 These indexes optimize:
+
 - **User post retrieval**: `idx_posts_user_id`
 - **Status filtering**: `idx_posts_status`
 - **Search queries**: `idx_posts_title`
@@ -135,38 +129,6 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 - **Logging**: SLF4J with Logback
 - **Security**: BCrypt for password hashing
 
-### Dependencies
-
-```xml
-<!-- JavaFX -->
-<dependency>
-    <groupId>org.openjfx</groupId>
-    <artifactId>javafx-controls</artifactId>
-    <version>21.0.2</version>
-</dependency>
-
-<!-- PostgreSQL JDBC -->
-<dependency>
-    <groupId>org.postgresql</groupId>
-    <artifactId>postgresql</artifactId>
-    <version>42.7.8</version>
-</dependency>
-
-<!-- Security -->
-<dependency>
-    <groupId>at.favre.lib</groupId>
-    <artifactId>bcrypt</artifactId>
-    <version>0.10.2</version>
-</dependency>
-
-<!-- Logging -->
-<dependency>
-    <groupId>org.slf4j</groupId>
-    <artifactId>slf4j-api</artifactId>
-    <version>2.0.0</version>
-</dependency>
-```
-
 ## Installation & Setup
 
 ### Prerequisites
@@ -181,7 +143,7 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 2. Create a new database:
 
 ```sql
-CREATE DATABASE blogging_platform;
+CREATE DATABASE blog_db;
 ```
 
 3. The application will automatically create tables on first run
@@ -191,17 +153,9 @@ CREATE DATABASE blogging_platform;
 Create or update `.env` file in the project root:
 
 ```env
-DB_URL=jdbc:postgresql://localhost:5432/blogging_platform
+DB_URL=jdbc:postgresql://localhost:5432/blog_db
 DB_USER=postgres
 DB_PASS=your_password
-```
-
-Or configure `DatabaseConfig.java`:
-
-```java
-private static final String DB_URL = "jdbc:postgresql://localhost:5432/blogging_platform";
-private static final String USER = "postgres";
-private static final String PASSWORD = "your_password";
 ```
 
 ### Step 3: Build and Run
@@ -212,15 +166,10 @@ mvn clean package
 
 # Run the application
 mvn javafx:run
-
-# Or compile and run directly
-mvn clean compile
-java -cp target/classes:target/dependency/* com.kratosgado.blog.App
 ```
 
 ### Step 4: Access the Application
 
-- **URL**: `http://localhost:8080` (if web service) or open JavaFX window
 - **Default Test Credentials**: (if pre-seeded)
   - Username: `testuser`
   - Password: `password123`
@@ -231,69 +180,17 @@ java -cp target/classes:target/dependency/* com.kratosgado.blog.App
 
 All entities support full CRUD operations:
 
-```java
-// Create
-postService.createPost(postDto);
-
-// Read
-Optional<Post> post = postService.getPostById(1);
-
-// Update
-postService.updatePost(post);
-
-// Delete
-postService.deletePost(1);
-```
-
 ### 2. Search Functionality
 
 **Database-level search** using parameterized queries:
-
-```java
-// Keyword search (case-insensitive)
-List<Post> results = postDAO.searchPostsByKeyword("Java");
-
-// Author search
-List<Post> authorPosts = postDAO.searchPostsByAuthor("John Doe");
-
-// Tag-based search
-List<Post> taggedPosts = postDAO.getPostsByTag("tutorial");
-```
 
 ### 3. Sorting and Pagination
 
 **Efficient pagination with LIMIT/OFFSET**:
 
-```java
-// Get page 2 with 10 items per page
-List<Post> page2 = postDAO.getPostsPaginated(2, 10);
-
-// Get total count for pagination metadata
-int totalPosts = postDAO.getPublishedPostCount();
-int totalPages = (totalPosts + pageSize - 1) / pageSize;
-```
-
 ### 4. Caching Layer
 
 **In-memory caching with automatic TTL (5 minutes)**:
-
-```java
-// Caching is transparent in PostDAO
-Optional<Post> post = postDAO.getPostById(1); // First call: DB, caches result
-Optional<Post> cached = postDAO.getPostById(1); // Second call: Cache hit
-
-// Cache invalidation on update
-postDAO.updatePost(post); // Automatically invalidates cache
-postDAO.deletePost(id);   // Automatically invalidates cache
-```
-
-**Cache Statistics**:
-
-```java
-PostCache.CacheStats stats = PostCache.getInstance().getStats();
-System.out.println("Cache size: " + stats.totalSize);
-System.out.println("Expired entries: " + stats.expiredCount);
-```
 
 ### 5. Input Validation
 
@@ -368,26 +265,26 @@ String sql = "SELECT * FROM posts WHERE title LIKE '%" + query + "%'";
 
 #### Search Performance
 
-| Query Type | Without Index | With Index | Improvement |
-|-----------|--------------|-----------|------------|
-| Search by title | ~250ms | ~5ms | 50x faster |
-| Filter by status | ~180ms | ~2ms | 90x faster |
-| Get user posts | ~150ms | ~3ms | 50x faster |
+| Query Type       | Without Index | With Index | Improvement |
+| ---------------- | ------------- | ---------- | ----------- |
+| Search by title  | ~250ms        | ~5ms       | 50x faster  |
+| Filter by status | ~180ms        | ~2ms       | 90x faster  |
+| Get user posts   | ~150ms        | ~3ms       | 50x faster  |
 
 #### Caching Impact
 
-| Operation | Without Cache | With Cache | Improvement |
-|-----------|--------------|-----------|------------|
-| Get post by ID (hit) | ~20ms | <1ms | 20x faster |
-| First access | ~20ms | ~20ms | No change |
-| Repeated access | ~20ms | <1ms | 20x faster |
+| Operation            | Without Cache | With Cache | Improvement |
+| -------------------- | ------------- | ---------- | ----------- |
+| Get post by ID (hit) | ~20ms         | <1ms       | 20x faster  |
+| First access         | ~20ms         | ~20ms      | No change   |
+| Repeated access      | ~20ms         | <1ms       | 20x faster  |
 
 #### Pagination Impact
 
-| Dataset | Full Load | Paginated | Memory Saved |
-|---------|-----------|-----------|------------|
-| 10,000 posts | ~45MB | ~2MB | 96% |
-| 100,000 posts | ~450MB | ~2MB | 99.5% |
+| Dataset       | Full Load | Paginated | Memory Saved |
+| ------------- | --------- | --------- | ------------ |
+| 10,000 posts  | ~45MB     | ~2MB      | 96%          |
+| 100,000 posts | ~450MB    | ~2MB      | 99.5%        |
 
 ## Testing
 
@@ -434,54 +331,12 @@ src/
     └── java/                      # Tests
 ```
 
-## Code Quality
-
-- **Logging**: SLF4J throughout for debugging
-- **Error Handling**: Custom exception hierarchy
-- **Validation**: Comprehensive input validation
-- **Security**: Parameterized queries, BCrypt passwords
-- **Documentation**: JavaDoc comments on key methods
-
-## Future Enhancements
-
-1. **Full-Text Search**: PostgreSQL FTS for advanced searching
-2. **MongoDB Integration**: NoSQL support for comments
-3. **Redis Caching**: Distributed cache for multi-instance deployment
-4. **REST API**: JSON endpoints for mobile apps
-5. **Replication**: Master-slave database setup
-6. **Query Optimization**: EXPLAIN ANALYZE reports
-7. **Analytics Dashboard**: Charts and graphs for metrics
-
-## Troubleshooting
-
-### Database Connection Issues
-
-```
-Error: Connection refused
-Solution: Ensure PostgreSQL is running and DB_URL is correct
-```
-
-### Out of Memory on Large Datasets
-
-```
-Error: java.lang.OutOfMemoryError
-Solution: Use pagination instead of loading all posts
-Alternative: Increase JVM heap (-Xmx512m)
-```
-
-### Slow Queries
-
-```
-Solution: Check if indexes are created (see Database Indexes)
-Run: CREATE INDEX IF NOT EXISTS ...
-```
-
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feat/feature-name`)
+3. Commit changes (`git commit -m 'Add  feature'`)
+4. Push to branch (`git push origin feat/feature-name`)
 5. Open a Pull Request
 
 ## License
@@ -497,8 +352,9 @@ MIT License - See LICENSE file for details
 ## Support
 
 For issues, questions, or contributions:
+
 - Create an issue on GitHub
-- Contact: support@bloggingplatform.dev
+- Contact: <support@bloggingplatform.dev>
 
 ---
 
