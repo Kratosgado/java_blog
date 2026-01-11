@@ -10,4 +10,9 @@ public class UiUtils {
     return date.format(formatter);
   }
 
+  public static String formateDateString(String dateString) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+    return LocalDateTime.parse(dateString).format(formatter);
+  }
+
 }

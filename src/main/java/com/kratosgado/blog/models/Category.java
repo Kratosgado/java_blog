@@ -19,4 +19,5 @@ public class Category {
   private String slug;
   private String description;
   private Timestamp createdAt;
+  private int postCount;
 }

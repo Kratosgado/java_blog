@@ -49,16 +49,6 @@ public class PostDAO extends DAO {
             CONSTRAINT chk_views_positive CHECK (views >= 0)
           );
 
-          -- Performance indexes for frequent queries
-          CREATE INDEX idx_posts_user_id ON posts(user_id);
-          CREATE INDEX idx_posts_status ON posts(status);
-          CREATE INDEX idx_posts_title ON posts(title);
-          CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
-
-          COMMENT ON TABLE posts IS 'Stores blog posts with full content and metadata';
-          COMMENT ON COLUMN posts.status IS 'Post publication status: draft, published, or archived';
-          COMMENT ON COLUMN posts.icon IS 'Small icon/thumbnail for the post';
-          COMMENT ON COLUMN posts.cover_image IS 'Large banner/cover image for the post';
                 """;
       stmt.executeUpdate(sql);
       logger.debug("Posts table initialized successfully");
