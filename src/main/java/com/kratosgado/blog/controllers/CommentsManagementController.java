@@ -161,9 +161,11 @@ public class CommentsManagementController {
 
   private void approveComment(int commentId) {
     try {
-      // TODO: Implement approve logic in CommentService
-      logger.info("Approving comment: {}", commentId);
-      loadComments();
+      if (commentService.approveComment(commentId)) {
+        logger.info("Comment approved: {}", commentId);
+        // Show success notification
+        loadComments();
+      }
     } catch (Exception ex) {
       logger.error("Failed to approve comment", ex);
     }
@@ -171,9 +173,11 @@ public class CommentsManagementController {
 
   private void rejectComment(int commentId) {
     try {
-      // TODO: Implement reject logic in CommentService
-      logger.info("Rejecting comment: {}", commentId);
-      loadComments();
+      if (commentService.rejectComment(commentId)) {
+        logger.info("Comment rejected: {}", commentId);
+        // Show success notification
+        loadComments();
+      }
     } catch (Exception ex) {
       logger.error("Failed to reject comment", ex);
     }
@@ -181,9 +185,13 @@ public class CommentsManagementController {
 
   private void deleteComment(int commentId) {
     try {
-      if (commentService.deleteComment(commentId)) {
-        logger.info("Deleting comment: {}", commentId);
-        loadComments();
+      if (com.kratosgado.blog.utils.DialogUtils.showConfirmation(
+          "Delete Comment", 
+          "Are you sure you want to delete this comment? This action cannot be undone.")) {
+        if (commentService.deleteComment(commentId)) {
+          logger.info("Comment deleted: {}", commentId);
+          loadComments();
+        }
       }
     } catch (Exception ex) {
       logger.error("Failed to delete comment", ex);
