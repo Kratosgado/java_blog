@@ -24,22 +24,26 @@ public class UserDAO extends DAO {
   protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
-      String sql = """
-                CREATE TABLE users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL, -- BCrypt hashed password
-                email VARCHAR(100) NOT NULL UNIQUE,
-                avatar_url VARCHAR(500),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                );
-                CREATE INDEX idx_users_email ON users(email);
-                CREATE INDEX idx_users_username ON users(username);
-
-                COMMENT ON TABLE users IS 'Stores user account information with authentication details';
-                COMMENT ON COLUMN users.password IS 'BCrypt hashed password for security';
-          """;
+      String sql = "CREATE TABLE IF NOT EXISTS users (" +
+          "id SERIAL PRIMARY KEY," +
+          "username VARCHAR(50) NOT NULL UNIQUE," +
+          "password VARCHAR(255) NOT NULL," +
+          "email VARCHAR(100) NOT NULL UNIQUE," +
+          "avatar_url VARCHAR(500)," +
+          "bio TEXT," +
+          "website VARCHAR(255)," +
+          "location VARCHAR(100)," +
+          "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
+      
+      // Add new columns if they don't exist (for existing databases)
+      String alterBio = "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT";
+      stmt.executeUpdate(alterBio);
+      String alterWebsite = "ALTER TABLE users ADD COLUMN IF NOT EXISTS website VARCHAR(255)";
+      stmt.executeUpdate(alterWebsite);
+      String alterLocation = "ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100)";
+      stmt.executeUpdate(alterLocation);
+      
       logger.debug("Users table initialized successfully");
     } catch (Exception e) {
       logger.error("Failed to initialize users table", e);
@@ -85,13 +89,16 @@ public class UserDAO extends DAO {
       stmt.setInt(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional
-            .of(new User(
-                rs.getInt("id"),
-                rs.getString("username"),
-                rs.getString("password"),
-                rs.getString("email"),
-                rs.getString("avatar_url")));
+        return Optional.of(User.builder()
+            .id(rs.getInt("id"))
+            .username(rs.getString("username"))
+            .password(rs.getString("password"))
+            .email(rs.getString("email"))
+            .avatarUrl(rs.getString("avatar_url"))
+            .bio(rs.getString("bio"))
+            .website(rs.getString("website"))
+            .location(rs.getString("location"))
+            .build());
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -107,13 +114,16 @@ public class UserDAO extends DAO {
       stmt.setString(1, email);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional
-            .of(new User(
-                rs.getInt("id"),
-                rs.getString("username"),
-                rs.getString("password"),
-                rs.getString("email"),
-                rs.getString("avatar_url")));
+        return Optional.of(User.builder()
+            .id(rs.getInt("id"))
+            .username(rs.getString("username"))
+            .password(rs.getString("password"))
+            .email(rs.getString("email"))
+            .avatarUrl(rs.getString("avatar_url"))
+            .bio(rs.getString("bio"))
+            .website(rs.getString("website"))
+            .location(rs.getString("location"))
+            .build());
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -137,6 +147,23 @@ public class UserDAO extends DAO {
       return true;
     } catch (Exception e) {
       logger.error("Failed to update avatar for user id: {}", userId, e);
+      return false;
+    }
+  }
+
+  public boolean updateUserProfile(int userId, String bio, String website, String location) {
+    String sql = "UPDATE users SET bio = ?, website = ?, location = ? WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setString(1, bio);
+      stmt.setString(2, website);
+      stmt.setString(3, location);
+      stmt.setInt(4, userId);
+      stmt.executeUpdate();
+      logger.info("Profile updated for user id: {}", userId);
+      return true;
+    } catch (Exception e) {
+      logger.error("Failed to update profile for user id: {}", userId, e);
       return false;
     }
   }
