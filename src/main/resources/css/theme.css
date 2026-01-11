@@ -6,11 +6,16 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
     "Apple Color Emoji", "Segoe UI", "Roboto", "Arial", sans-serif;
   -fx-font-size: 12px;
+  -primary-color: #1e88e5;
+  -primary-color-dimmed: #1188ff;
+  -bg-color: #f3f4f6;
+  -bg-muted: #e5e7eb;
+  -button-text-fill: #b5b5b5;
 }
 
 /* === BUTTONS === */
 .button {
-  -fx-background-color: #6366f1;
+  -fx-background-color: -primary-color;
   -fx-background-radius: 8px;
   -fx-text-fill: white;
   -fx-font-weight: 500;
@@ -21,7 +26,7 @@
 }
 
 .button:hover {
-  -fx-background-color: #4f46e5;
+  -fx-background-color: -primary-color-dimmed;
   -fx-scale-x: 1.02;
   -fx-scale-y: 1.02;
 }
@@ -33,11 +38,11 @@
 }
 
 .primary-button {
-  -fx-background-color: #6366f1;
+  -fx-background-color: -primary-color;
 }
 
 .primary-button:hover {
-  -fx-background-color: #4f46e5;
+  -fx-background-color: -primary-color-dimmed;
 }
 
 .success-button {
@@ -58,27 +63,27 @@
 
 .outline {
   -fx-background-color: transparent;
-  -fx-border-color: #6366f1;
-  -fx-text-fill: #6366f1;
+  -fx-border-color: -primary-color;
+  -fx-text-fill: -primary-color;
   -fx-border-width: 2px;
   -fx-border-radius: 8px;
 }
 
 .outline:hover {
-  -fx-background-color: #6366f1;
+  -fx-background-color: -primary-color;
   -fx-text-fill: white;
 }
 
 .link-button {
   -fx-background-color: transparent;
-  -fx-text-fill: #6366f1;
+  -fx-text-fill: -primary-color;
   -fx-underline: true;
   -fx-border-color: transparent;
   -fx-padding: 4px 8px;
 }
 
 .link-button:hover {
-  -fx-text-fill: #4f46e5;
+  -fx-text-color: -primary-color-dimmed;
 }
 
 .icon-button {
@@ -96,7 +101,7 @@
 }
 
 .primary-button-large {
-  -fx-background-color: #6366f1;
+  -fx-background-color: -primary-color;
   -fx-font-size: 14px;
   -fx-background-radius: 12px;
 }
@@ -117,7 +122,7 @@
 
 .text-field:focused,
 .modern-text-field:focused {
-  -fx-border-color: #6366f1;
+  -fx-border-color: -primary-color;
 }
 
 .password-field {
@@ -131,7 +136,7 @@
 }
 
 .password-field:focused {
-  -fx-border-color: #6366f1;
+  -fx-border-color: -primary-color;
 }
 
 /* === COMBOBOX === */
@@ -146,7 +151,7 @@
 
 .combo-box:focused,
 .modern-combo-box:focused {
-  -fx-border-color: #6366f1;
+  -fx-border-color: -primary-color;
 }
 
 .combo-box .list-cell {
@@ -243,7 +248,7 @@
 }
 
 .avatar-image:hover {
-  -fx-border-color: #6366f1;
+  -fx-border-color: -primary-color;
 }
 
 .upload-button {
@@ -279,13 +284,13 @@
 
 .toggle-button:selected,
 .toggle-button-active {
-  -fx-background-color: #6366f1;
-  -fx-border-color: #6366f1;
+  -fx-background-color: -primary-color;
+  -fx-border-color: -primary-color;
   -fx-text-fill: white;
 }
 
 .toggle-button:hover {
-  -fx-border-color: #6366f1;
+  -fx-border-color: -primary-color;
 }
 
 /* === SCROLLBAR === */
@@ -322,7 +327,7 @@
 .nav-title {
   -fx-font-size: 18px;
   -fx-font-weight: bold;
-  -fx-text-fill: #6366f1;
+  -fx-text-fill: -primary-color;
 }
 
 .nav-button {

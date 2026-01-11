@@ -24,13 +24,21 @@ public class UserDAO extends DAO {
   protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
-      String sql = "CREATE TABLE IF NOT EXISTS users (" +
-          "id SERIAL PRIMARY KEY," +
-          "username VARCHAR(50) NOT NULL," +
-          "password VARCHAR NOT NULL," +
-          "email VARCHAR(50) UNIQUE NOT NULL," +
-          "avatar_url VARCHAR(500)," +
-          "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+      String sql = """
+                CREATE TABLE users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL, -- BCrypt hashed password
+                email VARCHAR(100) NOT NULL UNIQUE,
+                avatar_url VARCHAR(500),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                );
+                CREATE INDEX idx_users_email ON users(email);
+                CREATE INDEX idx_users_username ON users(username);
+
+                COMMENT ON TABLE users IS 'Stores user account information with authentication details';
+                COMMENT ON COLUMN users.password IS 'BCrypt hashed password for security';
+          """;
       stmt.executeUpdate(sql);
       logger.debug("Users table initialized successfully");
     } catch (Exception e) {
@@ -79,9 +87,9 @@ public class UserDAO extends DAO {
       if (rs.next()) {
         return Optional
             .of(new User(
-                rs.getInt("id"), 
-                rs.getString("username"), 
-                rs.getString("password"), 
+                rs.getInt("id"),
+                rs.getString("username"),
+                rs.getString("password"),
                 rs.getString("email"),
                 rs.getString("avatar_url")));
       }
@@ -101,9 +109,9 @@ public class UserDAO extends DAO {
       if (rs.next()) {
         return Optional
             .of(new User(
-                rs.getInt("id"), 
-                rs.getString("username"), 
-                rs.getString("password"), 
+                rs.getInt("id"),
+                rs.getString("username"),
+                rs.getString("password"),
                 rs.getString("email"),
                 rs.getString("avatar_url")));
       }

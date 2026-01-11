@@ -137,7 +137,7 @@ public class TagsManagementController {
 
     Button editBtn = new Button("Edit");
     editBtn.setStyle(
-        "-fx-background-color: #6366f1; " +
+        "-fx-background-color: -primary-color; " +
         "-fx-text-fill: white; " +
         "-fx-background-radius: 6; " +
         "-fx-padding: 6 12; " +

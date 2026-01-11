@@ -1,8 +1,8 @@
 /* Modern Scalable Design System - Optimized */
 .root {
     /* Color Palette */
-    -fx-primary: #6366f1;
-    -fx-primary-hover: #4f46e5;
+    -fx-primary: -primary-color;
+    -fx-primary-hover: -primary-color-dimmed;
     -fx-secondary: #10b981;
     -fx-accent: #f59e0b;
     -fx-danger: #ef4444;
@@ -19,7 +19,7 @@
     
     /* Borders */
     -fx-border: #e5e7eb;
-    -fx-border-focus: #6366f1;
+    -fx-border-focus: -primary-color;
 }
 
 /* Scrollbar Styling */
