@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
+import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.DialogUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import javafx.scene.control.Button;
@@ -449,14 +451,17 @@ public class PostsListController {
 
   private void viewPost(Post post) {
     logger.info("Viewing post: {}", post.getTitle());
-    // TODO: Implement view post functionality
+    try {
+      com.kratosgado.blog.utils.Navigator.getInstance().goTo(Routes.POST_VIEW, post.getId());
+    } catch (Exception e) {
+      logger.error("Failed to navigate to post view", e);
+    }
   }
 
   private void editPost(Post post) {
     logger.info("Editing post: {}", post.getTitle());
     try {
-      // TODO: Pass post ID to edit screen
-      com.kratosgado.blog.utils.Navigator.getInstance().goTo("edit-post");
+      com.kratosgado.blog.utils.Navigator.getInstance().goTo(Routes.EDIT_POST, post.getId());
     } catch (Exception e) {
       logger.error("Failed to navigate to edit post screen", e);
     }
@@ -465,10 +470,12 @@ public class PostsListController {
   private void deletePost(Post post) {
     logger.info("Deleting post: {}", post.getTitle());
     try {
-      // TODO: Add confirmation dialog
-      postService.deletePost(post.getId());
-      loadPosts();
-      logger.info("Post deleted successfully");
+      if (com.kratosgado.blog.utils.DialogUtils.showConfirmation(
+          "Delete Post", 
+          "Are you sure you want to delete this post? This action cannot be undone.")) {
+        postService.deletePost(post.getId());
+        loadPosts();
+      }
     } catch (Exception e) {
       logger.error("Failed to delete post", e);
     }
