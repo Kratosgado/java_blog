@@ -90,12 +90,15 @@ public class SignUpController {
     } catch (IllegalArgumentException ex) {
       logger.error("Registration failed for email: {}", email, ex);
       ToastNotification.error(ex.getMessage());
+    } catch (RuntimeException ex) {
+      logger.error("Registration failed for email: {}", email, ex);
+      ToastNotification.error(ex.getMessage());
     }
   }
 
   private void handleAvatarUpload() {
     File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Choose Profile Picture");
-    
+
     if (selectedFile != null) {
       try {
         // Validate file using UploadService
@@ -124,9 +127,4 @@ public class SignUpController {
     }
   }
 
-  private void showError(String message) {
-    infoLabel.setStyle("-fx-text-fill: #f44336;");
-    infoLabel.setText(message);
-    infoLabel.setVisible(true);
-  }
 }
