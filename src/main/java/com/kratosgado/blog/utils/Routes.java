@@ -16,6 +16,7 @@ public class Routes {
   public static final String EDIT_POST = "edit-post";
   public static final String COMMENTS = "comments-management";
   public static final String TAGS = "tags-management";
+  public static final String CATEGORIES = "category-management";
   public static final String ANALYTICS = "analytics";
   public static final String PROFILE = "user-profile";
   public static final String SETTINGS = "settings";
