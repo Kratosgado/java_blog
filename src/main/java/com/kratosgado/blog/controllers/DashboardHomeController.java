@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,8 +9,6 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
-import com.kratosgado.blog.utils.Navigator;
-import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.notifications.ToastNotification;
 
@@ -41,10 +41,11 @@ public class DashboardHomeController {
   private final CommentService commentService;
   private final TagService tagService;
 
-  public DashboardHomeController() {
-    this.postService = new PostService();
-    this.commentService = new CommentService();
-    this.tagService = new TagService();
+  @Inject
+  public DashboardHomeController(PostService postService, CommentService commentService, TagService tagService) {
+    this.postService = postService;
+    this.commentService = commentService;
+    this.tagService = tagService;
   }
 
   @FXML

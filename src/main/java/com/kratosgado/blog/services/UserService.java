@@ -3,6 +3,7 @@ package com.kratosgado.blog.services;
 
 import java.util.Optional;
 
+import com.google.inject.Inject;
 import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
 import com.kratosgado.blog.models.User;
@@ -14,8 +15,9 @@ public class UserService {
 
   private final UserDAO userDAO;
 
-  public UserService() {
-    this.userDAO = new UserDAO();
+  @Inject
+  public UserService(UserDAO userDAO) {
+    this.userDAO = userDAO;
   }
 
   public Optional<User> getUserById(int id) {

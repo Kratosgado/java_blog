@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,13 +16,14 @@ public class CategoryService {
 
   private final CategoryDAO categoryDAO;
 
-  public CategoryService() {
-    this.categoryDAO = new CategoryDAO();
+  @Inject
+  public CategoryService(CategoryDAO categoryDAO) {
+    this.categoryDAO = categoryDAO;
   }
 
   public boolean createCategory(String name, String description) {
     String slug = name.toLowerCase().replaceAll("[^a-z0-9]+", "-");
-    
+
     // Check if category already exists
     if (categoryDAO.getCategoryBySlug(slug).isPresent()) {
       throw BlogExceptions.conflict("Category with name '" + name + "' already exists");

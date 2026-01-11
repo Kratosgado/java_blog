@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,9 +62,10 @@ public class AnalyticsController {
   private final PostService postService;
   private final CommentService commentService;
 
-  public AnalyticsController() {
-    this.postService = new PostService();
-    this.commentService = new CommentService();
+  @Inject
+  public AnalyticsController(PostService postService, CommentService commentService) {
+    this.postService = postService;
+    this.commentService = commentService;
   }
 
   @FXML
@@ -122,7 +125,7 @@ public class AnalyticsController {
     try {
       int currentUserId = AuthContext.getInstance().getCurrentUser().getId();
       var posts = postService.getPostsByUserId(currentUserId);
-      
+
       // Build CSV report
       StringBuilder report = new StringBuilder();
       report.append("Analytics Report\n");
@@ -130,13 +133,13 @@ public class AnalyticsController {
       report.append("Summary:\n");
       report.append("Total Posts: ").append(posts.size()).append("\n");
       report.append("Total Views: ").append(postService.getTotalViews(currentUserId)).append("\n");
-      
+
       int totalComments = 0;
       for (var post : posts) {
         totalComments += commentService.getCommentCountForPost(post.getId());
       }
       report.append("Total Comments: ").append(totalComments).append("\n\n");
-      
+
       report.append("Posts Detail:\n");
       report.append("Title,Status,Views,Comments,Created\n");
       for (var post : posts) {
@@ -148,14 +151,14 @@ public class AnalyticsController {
             commentCount,
             post.getCreatedAt()));
       }
-      
+
       // Save to file
       javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
       fileChooser.setTitle("Export Analytics Report");
       fileChooser.setInitialFileName("analytics_report_" + java.time.LocalDate.now() + ".csv");
       fileChooser.getExtensionFilters().add(
           new javafx.stage.FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-      
+
       java.io.File file = fileChooser.showSaveDialog(exportReportBtn.getScene().getWindow());
       if (file != null) {
         java.nio.file.Files.writeString(file.toPath(), report.toString());

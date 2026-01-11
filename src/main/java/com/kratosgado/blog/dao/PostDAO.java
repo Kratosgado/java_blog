@@ -28,7 +28,7 @@ public class PostDAO extends DAO {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
       String sql = """
-                CREATE TABLE posts (
+                CREATE TABLE IF NOT EXISTS posts (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL,
             title VARCHAR(255) NOT NULL,

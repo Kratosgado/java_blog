@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +16,9 @@ public class CommentService {
   private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
   private final CommentDAO commentDAO;
 
-  public CommentService() {
-    this.commentDAO = new CommentDAO();
+  @Inject
+  public CommentService(CommentDAO commentDAO) {
+    this.commentDAO = commentDAO;
   }
 
   public boolean createComment(Comment comment) {

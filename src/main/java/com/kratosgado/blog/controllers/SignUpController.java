@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
 import java.io.File;
 
 import org.slf4j.Logger;
@@ -51,9 +52,10 @@ public class SignUpController {
   private final AuthService authService;
   private final UploadService uploadService;
 
-  public SignUpController() {
-    this.authService = new AuthService();
-    this.uploadService = new UploadService();
+  @Inject
+  public SignUpController(AuthService authService, UploadService uploadService) {
+    this.authService = authService;
+    this.uploadService = uploadService;
   }
 
   @FXML

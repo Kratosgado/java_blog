@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,8 +34,9 @@ public class LoginController {
 
   private final AuthService authService;
 
-  public LoginController() {
-    this.authService = new AuthService();
+  @Inject
+  public LoginController(AuthService authService) {
+    this.authService = authService;
   }
 
   @FXML

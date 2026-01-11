@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
+import com.google.inject.Inject;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
@@ -107,10 +108,11 @@ public class HomeController {
   private int currentPage = 0;
   private static final int PAGE_SIZE = 10;
 
-  public HomeController() {
-    this.postService = new PostService();
-    this.tagService = new TagService();
-    this.categoryService = new CategoryService();
+  @Inject
+  public HomeController(PostService postService, TagService tagService, CategoryService categoryService) {
+    this.postService = postService;
+    this.tagService = tagService;
+    this.categoryService = categoryService;
   }
 
   @FXML
@@ -162,13 +164,13 @@ public class HomeController {
         } else {
           avatar = ImageUtils.loadDefaultAvatar();
         }
-        
+
         userAvatarImage.setImage(avatar);
-        
+
         // Clip to circle for rounded avatar
         javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
         userAvatarImage.setClip(clip);
-        
+
         logger.debug("User avatar loaded successfully");
       }
     } catch (Exception e) {
@@ -287,13 +289,13 @@ public class HomeController {
 
       // Load categories from database
       List<Category> categories = categoryService.getAllCategories();
-      
+
       // If no categories exist, seed with default ones
       if (categories.isEmpty()) {
         seedDefaultCategories();
         categories = categoryService.getAllCategories();
       }
-      
+
       for (Category category : categories) {
         Label categoryLabel = new Label(category.getName());
         categoryLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666; -fx-cursor: hand;");
@@ -592,12 +594,13 @@ public class HomeController {
     userAvatarImage.setOnMouseClicked(e -> {
       userMenu.show(userAvatarImage, e.getScreenX(), e.getScreenY());
     });
-    
+
     // Add hover effect to avatar
     userAvatarImage.setOnMouseEntered(e -> {
-      userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.6), 12, 0, 0, 2);");
+      userAvatarImage
+          .setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(102, 126, 234, 0.6), 12, 0, 0, 2);");
     });
-    
+
     userAvatarImage.setOnMouseExited(e -> {
       userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);");
     });
