@@ -28,15 +28,29 @@ public class UserService {
 
   public boolean changePassword(ChangePasswordDto dto) {
     ValidatorEngine.validate(dto);
-    if (dto.newPassword().equals(dto.confirmNewPassword()))
+    if (!dto.newPassword().equals(dto.confirmNewPassword()))
       throw BlogExceptions.badRequest("Passwords do not match");
     User user = userDAO.getUserById(dto.id()).orElseThrow(() -> BlogExceptions.notFound("User not found"));
-    if (!ValidationUtils.hashPassword(dto.oldPassword()).equals(user.getPassword()))
+    if (!ValidationUtils.verifyPassword(dto.oldPassword(), user.getPassword()))
       throw BlogExceptions.unauthorized("Invalid password");
     String hashedPassword = ValidationUtils.hashPassword(dto.newPassword());
     user.setPassword(hashedPassword);
     return userDAO.setUserPassword(dto.id(), hashedPassword);
 
+  }
+
+  public boolean updateUserProfile(int userId, String bio, String website, String location) {
+    if (userDAO.getUserById(userId).isEmpty()) {
+      throw BlogExceptions.notFound("User not found");
+    }
+    return userDAO.updateUserProfile(userId, bio, website, location);
+  }
+
+  public boolean updateUserAvatar(int userId, String avatarUrl) {
+    if (userDAO.getUserById(userId).isEmpty()) {
+      throw BlogExceptions.notFound("User not found");
+    }
+    return userDAO.updateUserAvatar(userId, avatarUrl);
   }
 
 }
