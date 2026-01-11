@@ -21,4 +21,5 @@ public class User {
   private String bio;
   private String website;
   private String location;
+  private int likesCount;
 }

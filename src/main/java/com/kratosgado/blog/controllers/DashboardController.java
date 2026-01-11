@@ -51,6 +51,9 @@ public class DashboardController {
   private Button tagsBtn;
 
   @FXML
+  private Button categoriesBtn;
+
+  @FXML
   private Button analyticsBtn;
 
   @FXML
@@ -89,6 +92,7 @@ public class DashboardController {
     createPostBtn.setOnAction(e -> loadContent(Routes.CREATE_POST, createPostBtn));
     commentsBtn.setOnAction(e -> loadContent(Routes.COMMENTS, commentsBtn));
     tagsBtn.setOnAction(e -> loadContent(Routes.TAGS, tagsBtn));
+    categoriesBtn.setOnAction(e -> loadContent(Routes.CATEGORIES, categoriesBtn));
     analyticsBtn.setOnAction(e -> loadContent(Routes.ANALYTICS, analyticsBtn));
     profileBtn.setOnAction(e -> loadContent(Routes.PROFILE, profileBtn));
     settingsBtn.setOnAction(e -> loadContent(Routes.SETTINGS, settingsBtn));
@@ -114,8 +118,8 @@ public class DashboardController {
   }
 
   private void updateActiveButton(Button activeButton) {
-    for (Button btn : new Button[] { dashboardBtn, postsBtn, createPostBtn, commentsBtn, tagsBtn, analyticsBtn,
-        profileBtn, settingsBtn }) {
+    for (Button btn : new Button[] { dashboardBtn, postsBtn, createPostBtn, commentsBtn, tagsBtn, categoriesBtn,
+        analyticsBtn, profileBtn, settingsBtn }) {
       btn.setStyle(
           "-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;");
     }
