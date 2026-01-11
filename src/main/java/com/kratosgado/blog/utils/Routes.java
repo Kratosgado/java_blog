@@ -13,6 +13,7 @@ public class Routes {
   public static final String HOME = "home";
   public static final String POST_VIEW = "post-view";
   public static final String CREATE_POST = "create-post";
+  public static final String EDIT_POST = "edit-post";
   public static final String COMMENTS = "comments-management";
   public static final String TAGS = "tags-management";
   public static final String ANALYTICS = "analytics";
