@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,11 +103,13 @@ public class EditPostController implements Initializable {
   private Integer postId;
   private List<String> postTags;
 
-  public EditPostController() {
-    this.postService = new PostService();
-    this.tagService = new TagService();
-    this.uploadService = new UploadService();
-    this.categoryService = new CategoryService();
+  @Inject
+  public EditPostController(PostService postService, TagService tagService, UploadService uploadService,
+      CategoryService categoryService) {
+    this.postService = postService;
+    this.tagService = tagService;
+    this.uploadService = uploadService;
+    this.categoryService = categoryService;
     this.postTags = new ArrayList<>();
   }
 
@@ -128,8 +131,8 @@ public class EditPostController implements Initializable {
       this.postId = (Integer) data;
       loadPost(this.postId);
     } else {
-      logger.error("Invalid data type passed to EditPostController: {}", 
-        data != null ? data.getClass().getName() : "null");
+      logger.error("Invalid data type passed to EditPostController: {}",
+          data != null ? data.getClass().getName() : "null");
       showMessage("Error: Invalid post ID", "#f44336");
     }
   }
@@ -153,7 +156,7 @@ public class EditPostController implements Initializable {
     try {
       List<Category> categories = categoryService.getAllCategories();
       categoryComboBox.getItems().clear();
-      
+
       if (categories.isEmpty()) {
         categoryComboBox.getItems().add("Uncategorized");
       } else {
@@ -161,7 +164,7 @@ public class EditPostController implements Initializable {
           categoryComboBox.getItems().add(category.getName());
         }
       }
-      
+
       // Select first item by default
       if (!categoryComboBox.getItems().isEmpty()) {
         categoryComboBox.getSelectionModel().selectFirst();
@@ -177,7 +180,7 @@ public class EditPostController implements Initializable {
       Optional<Post> postOpt = postService.getPostById(postId);
       if (postOpt.isPresent()) {
         currentPost = postOpt.get();
-        
+
         // Populate form fields with existing post data
         titleField.setText(currentPost.getTitle());
         contentArea.setText(currentPost.getContent());
@@ -185,16 +188,16 @@ public class EditPostController implements Initializable {
         imageUrlField.setText(currentPost.getFeaturedImage() != null ? currentPost.getFeaturedImage() : "");
         coverImageField.setText(currentPost.getCoverImage() != null ? currentPost.getCoverImage() : "");
         iconField.setText(currentPost.getIcon() != null ? currentPost.getIcon() : "");
-        
+
         // Load and select post's category
         loadPostCategory(postId);
-        
+
         // Load post's tags
         loadPostTags(postId);
-        
+
         // Update word count
         updateWordCount();
-        
+
         logger.info("Loaded post for editing: {}", currentPost.getTitle());
       } else {
         showMessage("Post not found", "#f44336");
@@ -225,11 +228,11 @@ public class EditPostController implements Initializable {
       List<Tag> tags = tagService.getTagsByPostId(postId);
       postTags.clear();
       tagsFlowPane.getChildren().clear();
-      
+
       for (Tag tag : tags) {
         String tagName = tag.getName();
         postTags.add(tagName);
-        
+
         // Create visual tag chip
         HBox tagChip = new HBox(5);
         tagChip.setAlignment(Pos.CENTER);
@@ -249,7 +252,7 @@ public class EditPostController implements Initializable {
         tagChip.getChildren().add(tagLabel);
         tagsFlowPane.getChildren().add(tagChip);
       }
-      
+
       logger.debug("Loaded {} tags for post {}", tags.size(), postId);
     } catch (Exception e) {
       logger.error("Failed to load post tags", e);
@@ -278,15 +281,15 @@ public class EditPostController implements Initializable {
         updatePostFromForm("published");
         if (postService.updatePost(currentPost)) {
           logger.info("Updated and published post: {}", currentPost.getTitle());
-          
+
           // Update post category
           updatePostCategory(currentPost.getId());
-          
+
           // Update post tags
           updatePostTags(currentPost.getId());
-          
+
           showMessage("Post updated and published successfully!", "#4CAF50");
-          
+
           // Navigate back after a short delay
           new Thread(() -> {
             try {
@@ -312,13 +315,13 @@ public class EditPostController implements Initializable {
         updatePostFromForm("draft");
         if (postService.updatePost(currentPost)) {
           logger.info("Saved draft: {}", currentPost.getTitle());
-          
+
           // Update post category
           updatePostCategory(currentPost.getId());
-          
+
           // Update post tags
           updatePostTags(currentPost.getId());
-          
+
           showMessage("Draft saved successfully!", "#2196F3");
         }
       } catch (Exception ex) {
@@ -337,7 +340,7 @@ public class EditPostController implements Initializable {
         for (Category category : existingCategories) {
           categoryService.removeCategoryFromPost(postId, category.getId());
         }
-        
+
         // Add new selected category
         List<Category> categories = categoryService.getAllCategories();
         for (Category category : categories) {
@@ -361,15 +364,15 @@ public class EditPostController implements Initializable {
       for (Tag tag : existingTags) {
         tagService.removeTagFromPost(postId, tag.getId());
       }
-      
+
       // Add new tags
       for (String tagName : postTags) {
         // Generate slug from tag name
         String slug = tagName.toLowerCase().replaceAll("[^a-z0-9]+", "-");
-        
+
         // Check if tag already exists
         var existingTag = tagService.getTagBySlug(slug);
-        
+
         int tagId;
         if (existingTag.isPresent()) {
           // Use existing tag
@@ -392,7 +395,7 @@ public class EditPostController implements Initializable {
             continue;
           }
         }
-        
+
         // Associate tag with post
         tagService.addTagToPost(postId, tagId);
         logger.info("Tag '{}' assigned to post {}", tagName, postId);
@@ -406,10 +409,9 @@ public class EditPostController implements Initializable {
   private void cancel() {
     try {
       boolean confirmed = DialogUtils.showConfirmation(
-        "Cancel Editing",
-        "Are you sure you want to cancel? Unsaved changes will be lost."
-      );
-      
+          "Cancel Editing",
+          "Are you sure you want to cancel? Unsaved changes will be lost.");
+
       if (confirmed) {
         logger.info("Edit post cancelled");
         Navigator.getInstance().popScreen();
@@ -428,10 +430,10 @@ public class EditPostController implements Initializable {
     String tag = tagInputField.getText().trim();
     if (!tag.isEmpty() && !postTags.contains(tag)) {
       logger.debug("Adding tag: {}", tag);
-      
+
       // Add to tracking list
       postTags.add(tag);
-      
+
       HBox tagChip = new HBox(5);
       tagChip.setAlignment(Pos.CENTER);
       tagChip.setStyle(

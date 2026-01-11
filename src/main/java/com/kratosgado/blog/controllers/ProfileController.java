@@ -1,6 +1,8 @@
 
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +59,13 @@ public class ProfileController {
   private Label passwordMessageLabel;
 
   private User user;
-  private UserService userService;
-  private UploadService uploadService;
+  private final UserService userService;
+  private final UploadService uploadService;
 
-  public ProfileController() {
-    userService = new UserService();
-    uploadService = new UploadService();
+  @Inject
+  public ProfileController(UserService userService, UploadService uploadService) {
+    this.userService = userService;
+    this.uploadService = uploadService;
   }
 
   @FXML
@@ -72,11 +75,14 @@ public class ProfileController {
     avatarImageView.setImage(ImageUtils.loadImageWithFallback(user.getAvatarUrl()));
     usernameLabel.setText(user.getUsername());
     emailLabel.setText(user.getEmail());
-    
+
     // Load existing profile data
-    if (user.getBio() != null) bioArea.setText(user.getBio());
-    if (user.getWebsite() != null) websiteField.setText(user.getWebsite());
-    if (user.getLocation() != null) locationField.setText(user.getLocation());
+    if (user.getBio() != null)
+      bioArea.setText(user.getBio());
+    if (user.getWebsite() != null)
+      websiteField.setText(user.getWebsite());
+    if (user.getLocation() != null)
+      locationField.setText(user.getLocation());
 
     changeAvatarBtn.setOnAction(e -> changeAvatar());
     changePasswordBtn.setOnAction(e -> changePassword());
@@ -89,9 +95,8 @@ public class ProfileController {
       FileChooser fileChooser = new FileChooser();
       fileChooser.setTitle("Choose Avatar Image");
       fileChooser.getExtensionFilters().addAll(
-          new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
-      );
-      
+          new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+
       java.io.File file = fileChooser.showOpenDialog(changeAvatarBtn.getScene().getWindow());
       if (file != null) {
         String avatarPath = uploadService.uploadFile(file, UploadService.UploadType.AVATAR);
@@ -166,13 +171,13 @@ public class ProfileController {
       String bio = bioArea.getText();
       String website = websiteField.getText();
       String location = locationField.getText();
-      
+
       if (userService.updateUserProfile(user.getId(), bio, website, location)) {
         // Update user object
         user.setBio(bio);
         user.setWebsite(website);
         user.setLocation(location);
-        
+
         messageLabel.setText("Profile updated successfully");
         messageLabel.setStyle("-fx-text-fill: #4CAF50;");
         logger.info("Profile saved for user: {}", user.getId());

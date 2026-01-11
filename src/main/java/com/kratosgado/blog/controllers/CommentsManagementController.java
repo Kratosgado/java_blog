@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +60,9 @@ public class CommentsManagementController {
   private final CommentService commentService;
   private ObservableList<Comment> commentsList;
 
-  public CommentsManagementController() {
-    this.commentService = new CommentService();
+  @Inject
+  public CommentsManagementController(CommentService commentService) {
+    this.commentService = commentService;
     this.commentsList = FXCollections.observableArrayList();
   }
 

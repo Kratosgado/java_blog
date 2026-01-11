@@ -27,8 +27,6 @@
       <!-- Avatar Section -->
       <HBox spacing="30" alignment="CENTER_LEFT">
         <StackPane>
-          <Circle fx:id="avatarCircle" radius="70" fill="-primary-color"
-            stroke="#e5e7eb" strokeWidth="4" />
           <ImageView fx:id="avatarImageView" fitWidth="140" fitHeight="140"
             preserveRatio="true" />
         </StackPane>

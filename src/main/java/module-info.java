@@ -10,10 +10,14 @@ module com.kratosgado.blog {
   requires org.slf4j;
   requires bcrypt;
   requires javafx.graphics;
+  requires com.google.guice;
+  requires javax.inject;
 
-  opens com.kratosgado.blog.controllers to javafx.fxml;
-  opens com.kratosgado.blog.dao to java.sql;
+  opens com.kratosgado.blog.controllers to javafx.fxml, com.google.guice;
+  opens com.kratosgado.blog.dao to java.sql, com.google.guice;
+  opens com.kratosgado.blog.services to com.google.guice;
   opens com.kratosgado.blog.models to com.google.gson, javafx.base;
 
   exports com.kratosgado.blog;
 }
+

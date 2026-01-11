@@ -1,5 +1,7 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,8 +54,9 @@ public class TagsManagementController {
   private final TagService tagService;
   private Tag currentTag;
 
-  public TagsManagementController() {
-    this.tagService = new TagService();
+  @Inject
+  public TagsManagementController(TagService tagService) {
+    this.tagService = tagService;
   }
 
   @FXML

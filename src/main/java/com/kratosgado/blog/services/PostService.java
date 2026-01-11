@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,9 @@ public class PostService {
   private static final Logger logger = LoggerFactory.getLogger(PostService.class);
   private final PostDAO postDAO;
 
-  public PostService() {
-    this.postDAO = new PostDAO();
+  @Inject
+  public PostService(PostDAO postDAO) {
+    this.postDAO = postDAO;
   }
 
   public Optional<Post> createPost(CreatePostDto dto) {

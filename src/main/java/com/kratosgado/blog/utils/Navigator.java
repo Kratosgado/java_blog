@@ -6,6 +6,7 @@ import java.util.Deque;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.config.InjectorProvider;
 import com.kratosgado.blog.utils.interfaces.Initializable;
 
 import javafx.fxml.FXMLLoader;
@@ -97,6 +98,23 @@ public class Navigator {
 
   private <T> Parent loadView(String fxml, T data) {
     FXMLLoader fxmlLoader = new FXMLLoader(ResourceLoader.loadURL("/fxml/" + fxml + ".fxml"));
+    
+    // Set controller factory to use Guice dependency injection
+    fxmlLoader.setControllerFactory(controllerClass -> {
+      try {
+        return InjectorProvider.getInjector().getInstance(controllerClass);
+      } catch (Exception e) {
+        logger.error("Failed to create controller via DI: {}", controllerClass.getName(), e);
+        try {
+          // Fallback to default constructor if DI fails
+          return controllerClass.getDeclaredConstructor().newInstance();
+        } catch (Exception ex) {
+          logger.error("Failed to create controller with default constructor: {}", controllerClass.getName(), ex);
+          throw new RuntimeException("Cannot create controller: " + controllerClass.getName(), ex);
+        }
+      }
+    });
+    
     try {
       final Parent root = fxmlLoader.load();
       if (data != null) {

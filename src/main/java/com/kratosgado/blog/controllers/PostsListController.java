@@ -1,42 +1,32 @@
 package com.kratosgado.blog.controllers;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.Routes;
-import com.kratosgado.blog.utils.DialogUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
-import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
-import javafx.util.Duration;
-import javafx.geometry.Pos;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import javafx.scene.control.Tooltip;
 import javafx.util.Duration;
 
 public class PostsListController {
@@ -82,8 +72,9 @@ public class PostsListController {
   private String currentSort = "Latest";
   private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
-  public PostsListController() {
-    this.postService = new PostService();
+  @Inject
+  public PostsListController(PostService postService) {
+    this.postService = postService;
   }
 
   @FXML
@@ -471,7 +462,7 @@ public class PostsListController {
     logger.info("Deleting post: {}", post.getTitle());
     try {
       if (com.kratosgado.blog.utils.DialogUtils.showConfirmation(
-          "Delete Post", 
+          "Delete Post",
           "Are you sure you want to delete this post? This action cannot be undone.")) {
         postService.deletePost(post.getId());
         loadPosts();

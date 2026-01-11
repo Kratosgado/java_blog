@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +17,9 @@ public class TagService {
   private static final Logger logger = LoggerFactory.getLogger(TagService.class);
   private final TagDAO tagDAO;
 
-  public TagService() {
-    this.tagDAO = new TagDAO();
+  @Inject
+  public TagService(TagDAO tagDAO) {
+    this.tagDAO = tagDAO;
   }
 
   public boolean createTag(CreateTagDto dto) {

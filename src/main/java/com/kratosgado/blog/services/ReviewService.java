@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,9 @@ public class ReviewService {
   private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
   private final ReviewDAO reviewDAO;
 
-  public ReviewService() {
-    this.reviewDAO = new ReviewDAO();
+  @Inject
+  public ReviewService(ReviewDAO reviewDAO) {
+    this.reviewDAO = reviewDAO;
   }
 
   public boolean createReview(Review review) {
@@ -23,17 +25,17 @@ public class ReviewService {
     if (review.getRating() < 1 || review.getRating() > 5) {
       throw BlogExceptions.badRequest("Rating must be between 1 and 5 stars");
     }
-    
+
     // Validate title
     if (review.getTitle() != null && review.getTitle().length() > 255) {
       throw BlogExceptions.badRequest("Review title is too long (max 255 characters)");
     }
-    
+
     // Validate content
     if (review.getContent() != null && review.getContent().length() > 5000) {
       throw BlogExceptions.badRequest("Review content is too long (max 5000 characters)");
     }
-    
+
     return reviewDAO.createReview(review);
   }
 
@@ -42,12 +44,12 @@ public class ReviewService {
     if (existing.isEmpty()) {
       throw BlogExceptions.notFound("Review not found");
     }
-    
+
     // Validate rating
     if (review.getRating() < 1 || review.getRating() > 5) {
       throw BlogExceptions.badRequest("Rating must be between 1 and 5 stars");
     }
-    
+
     return reviewDAO.updateReview(review);
   }
 

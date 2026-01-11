@@ -1,6 +1,7 @@
 
 package com.kratosgado.blog.services;
 
+import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +19,10 @@ public class AuthService {
   private final UserDAO userDAO;
   private final UploadService uploadService;
 
-  public AuthService() {
-    this.userDAO = new UserDAO();
-    this.uploadService = new UploadService();
+  @Inject
+  public AuthService(UserDAO userDAO, UploadService uploadService) {
+    this.userDAO = userDAO;
+    this.uploadService = uploadService;
   }
 
   public boolean register(SignUpDto dto) {

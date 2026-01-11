@@ -3,6 +3,7 @@ package com.kratosgado.blog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.config.InjectorProvider;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
@@ -15,6 +16,11 @@ public class App extends Application {
 
   @Override
   public void start(Stage primaryStage) throws Exception {
+    // Initialize dependency injection container
+    logger.info("Initializing dependency injection container...");
+    InjectorProvider.initialize();
+    logger.info("Dependency injection container initialized successfully");
+
     // Apply modern theme globally
     Application.setUserAgentStylesheet(Application.STYLESHEET_MODENA);
 

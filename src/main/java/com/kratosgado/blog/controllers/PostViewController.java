@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
@@ -141,10 +142,11 @@ public class PostViewController implements Initializable {
     loadPostContent((int) data);
   }
 
-  public PostViewController() {
-    this.postService = new PostService();
-    this.commentService = new CommentService();
-    this.tagService = new TagService();
+  @Inject
+  public PostViewController(PostService postService, CommentService commentService, TagService tagService) {
+    this.postService = postService;
+    this.commentService = commentService;
+    this.tagService = tagService;
   }
 
   @FXML
@@ -234,7 +236,7 @@ public class PostViewController implements Initializable {
 
     // Update sidebar author information
     sidebarAuthorLabel.setText(post.getAuthorName());
-    
+
     // Calculate total posts and views for author
     int totalPosts = postService.getPostsByUserId(post.getUserId()).size();
     long totalViews = postService.getTotalViews(post.getUserId());
@@ -311,7 +313,7 @@ public class PostViewController implements Initializable {
     avatar.setFitWidth(40);
     avatar.setFitHeight(40);
     avatar.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 5, 0, 0, 2);");
-    
+
     // Clip to circle
     javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
     avatar.setClip(clip);
@@ -334,19 +336,25 @@ public class PostViewController implements Initializable {
 
     Button likeBtn = new Button("👍 Like");
     likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px; -fx-cursor: hand;");
-    likeBtn.setOnMouseEntered(e -> likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
-    likeBtn.setOnMouseExited(e -> likeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px; -fx-cursor: hand;"));
+    likeBtn.setOnMouseEntered(e -> likeBtn
+        .setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
+    likeBtn.setOnMouseExited(e -> likeBtn
+        .setStyle("-fx-background-color: transparent; -fx-text-fill: #666; -fx-font-size: 12px; -fx-cursor: hand;"));
 
     Button replyBtn = new Button("Reply");
-    replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;");
-    replyBtn.setOnMouseEntered(e -> replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #764ba2; -fx-font-size: 12px; -fx-cursor: hand;"));
-    replyBtn.setOnMouseExited(e -> replyBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
+    replyBtn
+        .setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;");
+    replyBtn.setOnMouseEntered(e -> replyBtn
+        .setStyle("-fx-background-color: transparent; -fx-text-fill: #764ba2; -fx-font-size: 12px; -fx-cursor: hand;"));
+    replyBtn.setOnMouseExited(e -> replyBtn
+        .setStyle("-fx-background-color: transparent; -fx-text-fill: #667eea; -fx-font-size: 12px; -fx-cursor: hand;"));
 
     // Check if current user is comment author to show delete button
-    if (AuthContext.getInstance().getCurrentUser() != null && 
+    if (AuthContext.getInstance().getCurrentUser() != null &&
         comment.getUserId() == AuthContext.getInstance().getCurrentUser().getId()) {
       Button deleteBtn = new Button("Delete");
-      deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #f44336; -fx-font-size: 12px; -fx-cursor: hand;");
+      deleteBtn.setStyle(
+          "-fx-background-color: transparent; -fx-text-fill: #f44336; -fx-font-size: 12px; -fx-cursor: hand;");
       deleteBtn.setOnAction(e -> deleteComment(comment.getId()));
       actionsBox.getChildren().addAll(likeBtn, replyBtn, deleteBtn);
     } else {
@@ -385,17 +393,24 @@ public class PostViewController implements Initializable {
   }
 
   private String formatTimeAgo(java.time.LocalDateTime dateTime) {
-    if (dateTime == null) return "Unknown";
-    
+    if (dateTime == null)
+      return "Unknown";
+
     java.time.Duration duration = java.time.Duration.between(dateTime, java.time.LocalDateTime.now());
     long seconds = duration.getSeconds();
-    
-    if (seconds < 60) return "Just now";
-    if (seconds < 3600) return (seconds / 60) + " minutes ago";
-    if (seconds < 86400) return (seconds / 3600) + " hours ago";
-    if (seconds < 604800) return (seconds / 86400) + " days ago";
-    if (seconds < 2592000) return (seconds / 604800) + " weeks ago";
-    if (seconds < 31536000) return (seconds / 2592000) + " months ago";
+
+    if (seconds < 60)
+      return "Just now";
+    if (seconds < 3600)
+      return (seconds / 60) + " minutes ago";
+    if (seconds < 86400)
+      return (seconds / 3600) + " hours ago";
+    if (seconds < 604800)
+      return (seconds / 86400) + " days ago";
+    if (seconds < 2592000)
+      return (seconds / 604800) + " weeks ago";
+    if (seconds < 31536000)
+      return (seconds / 2592000) + " months ago";
     return (seconds / 31536000) + " years ago";
   }
 
@@ -459,7 +474,8 @@ public class PostViewController implements Initializable {
   private VBox createRelatedPostCard(Post post) {
     VBox card = new VBox(8);
     card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-radius: 8;");
-    card.setOnMouseEntered(e -> card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-color: #f5f5f5; -fx-background-radius: 8;"));
+    card.setOnMouseEntered(e -> card
+        .setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-color: #f5f5f5; -fx-background-radius: 8;"));
     card.setOnMouseExited(e -> card.setStyle("-fx-padding: 10; -fx-cursor: hand; -fx-background-radius: 8;"));
     card.setOnMouseClicked(e -> openRelatedPost(post.getId()));
 
@@ -492,11 +508,11 @@ public class PostViewController implements Initializable {
     if (content == null || content.isEmpty()) {
       return "1 min read";
     }
-    
+
     // Average reading speed: 200-250 words per minute
     int wordCount = content.split("\\s+").length;
     int minutes = Math.max(1, (int) Math.ceil(wordCount / 200.0));
-    
+
     return minutes + " min read";
   }
 
@@ -770,7 +786,8 @@ public class PostViewController implements Initializable {
 
   private VBox createNewComment(String content) {
     VBox commentBox = new VBox(10);
-    commentBox.setStyle("-fx-background-color: #e8f5e9; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #4caf50; -fx-border-width: 2; -fx-border-radius: 10;");
+    commentBox.setStyle(
+        "-fx-background-color: #e8f5e9; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #4caf50; -fx-border-width: 2; -fx-border-radius: 10;");
 
     HBox headerBox = new HBox(10);
     headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -800,7 +817,8 @@ public class PostViewController implements Initializable {
     try {
       // Navigate back to home screen
       Navigator.getInstance().popScreen();
-      // In a future implementation, you could pass the tag to home screen for filtering
+      // In a future implementation, you could pass the tag to home screen for
+      // filtering
       ToastNotification.info("Filtering posts by tag: " + tagName);
     } catch (Exception e) {
       logger.error("Failed to filter by tag", e);
@@ -809,7 +827,8 @@ public class PostViewController implements Initializable {
   }
 
   private String formatDate(java.time.LocalDateTime date) {
-    if (date == null) return "Unknown date";
+    if (date == null)
+      return "Unknown date";
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
     return date.format(formatter);
   }

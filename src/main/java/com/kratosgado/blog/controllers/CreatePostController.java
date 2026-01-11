@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import com.google.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,11 +100,12 @@ public class CreatePostController {
   private Post currentPost;
   private List<String> postTags;
 
-  public CreatePostController() {
-    this.postService = new PostService();
-    this.tagService = new TagService();
-    this.uploadService = new UploadService();
-    this.categoryService = new CategoryService();
+  @Inject
+  public CreatePostController(PostService postService, TagService tagService, UploadService uploadService, CategoryService categoryService) {
+    this.postService = postService;
+    this.tagService = tagService;
+    this.uploadService = uploadService;
+    this.categoryService = categoryService;
     this.postTags = new ArrayList<>();
   }
 
