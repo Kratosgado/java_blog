@@ -87,7 +87,7 @@ public class PostDAO extends DAO {
   }
 
   public boolean createPost(Post post) {
-    String sql = "INSERT INTO posts (user_id, title, content, excerpt, status, featured_image, cover_image, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    String sql = "INSERT INTO posts (user_id, title, content, excerpt, status, featured_image, cover_image, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, post.getUserId());
@@ -98,9 +98,13 @@ public class PostDAO extends DAO {
       stmt.setString(6, post.getFeaturedImage());
       stmt.setString(7, post.getCoverImage());
       stmt.setString(8, post.getIcon());
-      stmt.executeUpdate();
-      logger.info("Post created successfully: {}", post.getTitle());
-      return true;
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        post.setId(rs.getInt("id"));
+        logger.info("Post created successfully: {} with ID: {}", post.getTitle(), post.getId());
+        return true;
+      }
+      return false;
     } catch (Exception e) {
       logger.error("Failed to create post: {}", post.getTitle(), e);
       return false;

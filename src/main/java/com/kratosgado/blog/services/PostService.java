@@ -20,9 +20,13 @@ public class PostService {
     this.postDAO = new PostDAO();
   }
 
-  public boolean createPost(CreatePostDto dto) {
+  public Optional<Post> createPost(CreatePostDto dto) {
     ValidatorEngine.validate(dto);
-    return postDAO.createPost(new Post(dto));
+    Post post = new Post(dto);
+    if (postDAO.createPost(post)) {
+      return Optional.of(post);
+    }
+    return Optional.empty();
   }
 
   public boolean updatePost(Post post) {
