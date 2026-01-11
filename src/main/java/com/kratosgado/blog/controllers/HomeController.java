@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
+import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
@@ -100,6 +102,7 @@ public class HomeController {
 
   private final PostService postService;
   private final TagService tagService;
+  private final CategoryService categoryService;
   private boolean isGridView = true;
   private int currentPage = 0;
   private static final int PAGE_SIZE = 10;
@@ -107,6 +110,7 @@ public class HomeController {
   public HomeController() {
     this.postService = new PostService();
     this.tagService = new TagService();
+    this.categoryService = new CategoryService();
   }
 
   @FXML
@@ -281,16 +285,39 @@ public class HomeController {
     try {
       categoriesContainer.getChildren().clear();
 
-      // Demo categories
-      String[] demoCategories = { "Technology", "Design", "Business", "Lifestyle", "Tutorial", "News" };
-      for (String category : demoCategories) {
-        Label categoryLabel = new Label(category);
+      // Load categories from database
+      List<Category> categories = categoryService.getAllCategories();
+      
+      // If no categories exist, seed with default ones
+      if (categories.isEmpty()) {
+        seedDefaultCategories();
+        categories = categoryService.getAllCategories();
+      }
+      
+      for (Category category : categories) {
+        Label categoryLabel = new Label(category.getName());
         categoryLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666; -fx-cursor: hand;");
-        categoryLabel.setOnMouseClicked(e -> filterByCategory(category));
+        categoryLabel.setOnMouseClicked(e -> filterByCategory(category.getName()));
         categoriesContainer.getChildren().add(categoryLabel);
       }
     } catch (Exception e) {
       logger.error("Failed to load categories", e);
+    }
+  }
+
+  private void seedDefaultCategories() {
+    try {
+      String[] defaultCategories = { "Technology", "Design", "Business", "Lifestyle", "Tutorial", "News" };
+      for (String name : defaultCategories) {
+        try {
+          categoryService.createCategory(name, "Default " + name + " category");
+        } catch (Exception e) {
+          logger.debug("Category {} might already exist", name);
+        }
+      }
+      logger.info("Default categories seeded successfully");
+    } catch (Exception e) {
+      logger.error("Failed to seed default categories", e);
     }
   }
 
