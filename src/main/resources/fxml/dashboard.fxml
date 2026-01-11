@@ -36,7 +36,7 @@
       
       <Button fx:id="dashboardBtn" text="📊 Overview" prefWidth="200" 
         alignment="CENTER_LEFT" styleClass="nav-button" 
-        style="-fx-background-color: #6366f1; -fx-text-fill: white;" />
+        style="-fx-background-color: -primary-color; -fx-text-fill: white;" />
       
       <Button fx:id="postsBtn" text="📝 My Posts" prefWidth="200" 
         alignment="CENTER_LEFT" styleClass="nav-button" />

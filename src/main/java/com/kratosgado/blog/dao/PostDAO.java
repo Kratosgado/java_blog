@@ -27,30 +27,49 @@ public class PostDAO extends DAO {
   protected void initDatabase() {
     try (Connection conn = DatabaseConfig.getConnection();
         Statement stmt = conn.createStatement();) {
-      String sql = "CREATE TABLE IF NOT EXISTS posts (" +
-          "id SERIAL PRIMARY KEY," +
-          "user_id INTEGER NOT NULL," +
-          "title VARCHAR(255) NOT NULL," +
-          "content TEXT NOT NULL," +
-          "excerpt VARCHAR(500)," +
-          "status VARCHAR(20) DEFAULT 'draft'," +
-          "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-          "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-          "views INTEGER DEFAULT 0," +
-          "featured_image VARCHAR(500)," +
-          "cover_image VARCHAR(500)," +
-          "icon VARCHAR(500)," +
-          "FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)";
+      String sql = """
+                CREATE TABLE posts (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL,
+            excerpt VARCHAR(500),
+            status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
+            featured_image VARCHAR(500),
+            cover_image VARCHAR(500),
+            icon VARCHAR(500),
+            views INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
+            CONSTRAINT chk_title_not_empty CHECK (LENGTH(TRIM(title)) > 0),
+            CONSTRAINT chk_content_not_empty CHECK (LENGTH(TRIM(content)) > 0),
+            CONSTRAINT chk_views_positive CHECK (views >= 0)
+          );
+
+          -- Performance indexes for frequent queries
+          CREATE INDEX idx_posts_user_id ON posts(user_id);
+          CREATE INDEX idx_posts_status ON posts(status);
+          CREATE INDEX idx_posts_title ON posts(title);
+          CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+
+          COMMENT ON TABLE posts IS 'Stores blog posts with full content and metadata';
+          COMMENT ON COLUMN posts.status IS 'Post publication status: draft, published, or archived';
+          COMMENT ON COLUMN posts.icon IS 'Small icon/thumbnail for the post';
+          COMMENT ON COLUMN posts.cover_image IS 'Large banner/cover image for the post';
+                """;
       stmt.executeUpdate(sql);
       logger.debug("Posts table initialized successfully");
-      
+
       // Create indexes for performance optimization
       createIndexes(conn);
     } catch (Exception e) {
       logger.error("Failed to initialize posts table", e);
     }
   }
-  
+
   private void createIndexes(Connection conn) {
     try (Statement stmt = conn.createStatement()) {
       // Index on user_id for quick user post retrieval
@@ -203,7 +222,7 @@ public class PostDAO extends DAO {
       logger.error("Failed to fetch all posts", e);
     }
     return posts;
-   }
+  }
 
   public List<Post> searchPostsByKeyword(String keyword) {
     String sql = "SELECT p.*, u.username as author_name, u.avatar_url as author_avatar_url FROM posts p " +
@@ -269,7 +288,7 @@ public class PostDAO extends DAO {
       logger.error("Failed to search posts by tag: {}", tagName, e);
     }
     return posts;
-   }
+  }
 
   /**
    * Get paginated posts with efficient LIMIT/OFFSET
