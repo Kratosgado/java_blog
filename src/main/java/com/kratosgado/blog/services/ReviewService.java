@@ -6,9 +6,13 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dao.nosql.ReviewMongoDAO;
+import com.kratosgado.blog.dtos.request.CreateReviewDto;
 import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 /**
  * Review service using MongoDB for flexible review storage.
@@ -20,30 +24,41 @@ import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 public class ReviewService {
   private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
   private final ReviewMongoDAO reviewMongoDAO;
+  private final UserDAO userDAO;
 
   public ReviewService() {
     this.reviewMongoDAO = new ReviewMongoDAO();
+    this.userDAO = new UserDAO();
     logger.info("ReviewService initialized with MongoDB backend");
   }
 
-  public boolean createReview(Review review) {
-    // Validate rating
-    if (review.getRating() < 1 || review.getRating() > 5) {
+  public boolean createReview(CreateReviewDto dto) {
+    ValidatorEngine.validate(dto);
+    
+    // Validate rating range (1-5)
+    if (dto.rating() < 1 || dto.rating() > 5) {
       throw BlogExceptions.badRequest("Rating must be between 1 and 5 stars");
     }
 
-    // Validate title
-    if (review.getTitle() != null && review.getTitle().length() > 255) {
-      throw BlogExceptions.badRequest("Review title is too long (max 255 characters)");
-    }
-
-    // Validate content
-    if (review.getContent() != null && review.getContent().length() > 5000) {
-      throw BlogExceptions.badRequest("Review content is too long (max 5000 characters)");
+    Review review = new Review(dto.postId(), dto.userId(), dto.rating(), dto.title(), dto.content());
+    
+    // Fetch user information to populate author name and avatar
+    Optional<User> userOpt = userDAO.getUserById(dto.userId());
+    if (userOpt.isPresent()) {
+      User user = userOpt.get();
+      review.setAuthorName(user.getUsername());
+      review.setAuthorAvatarUrl(user.getAvatarUrl());
+      logger.debug("Set author details for review: {} ({})", user.getUsername(), user.getAvatarUrl());
+    } else {
+      logger.warn("User not found for userId: {}, review will have no author info", dto.userId());
     }
 
     Optional<Review> result = reviewMongoDAO.createReview(review);
-    return result.isPresent();
+    if (result.isPresent()) {
+      logger.info("Review created successfully for post: {}", dto.postId());
+      return true;
+    }
+    return false;
   }
 
   public List<Review> getReviewsByPostId(int postId) {

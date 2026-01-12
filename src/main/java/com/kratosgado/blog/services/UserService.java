@@ -6,6 +6,8 @@ import java.util.Optional;
 import com.google.inject.Inject;
 import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
+import com.kratosgado.blog.dtos.request.UpdateUserAvatarDto;
+import com.kratosgado.blog.dtos.request.UpdateUserProfileDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.validators.ValidationUtils;
@@ -41,18 +43,20 @@ public class UserService {
 
   }
 
-  public boolean updateUserProfile(int userId, String bio, String website, String location) {
-    if (userDAO.getUserById(userId).isEmpty()) {
+  public boolean updateUserProfile(UpdateUserProfileDto dto) {
+    ValidatorEngine.validate(dto);
+    if (userDAO.getUserById(dto.userId()).isEmpty()) {
       throw BlogExceptions.notFound("User not found");
     }
-    return userDAO.updateUserProfile(userId, bio, website, location);
+    return userDAO.updateUserProfile(dto.userId(), dto.bio(), dto.website(), dto.location());
   }
 
-  public boolean updateUserAvatar(int userId, String avatarUrl) {
-    if (userDAO.getUserById(userId).isEmpty()) {
+  public boolean updateUserAvatar(UpdateUserAvatarDto dto) {
+    ValidatorEngine.validate(dto);
+    if (userDAO.getUserById(dto.userId()).isEmpty()) {
       throw BlogExceptions.notFound("User not found");
     }
-    return userDAO.updateUserAvatar(userId, avatarUrl);
+    return userDAO.updateUserAvatar(dto.userId(), dto.avatarUrl());
   }
 
 }

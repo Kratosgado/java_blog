@@ -2,14 +2,19 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dao.UserDAO;
 import com.kratosgado.blog.dao.nosql.CommentMongoDAO;
+import com.kratosgado.blog.dtos.request.CreateCommentDto;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.enums.CommentStatus;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 /**
  * Comment service using MongoDB for flexible comment storage.
@@ -21,22 +26,36 @@ import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 public class CommentService {
   private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
   private final CommentMongoDAO commentMongoDAO;
+  private final UserDAO userDAO;
 
   public CommentService() {
     this.commentMongoDAO = new CommentMongoDAO();
+    this.userDAO = new UserDAO();
     logger.info("CommentService initialized with MongoDB backend");
   }
 
-  public boolean createComment(Comment comment) {
-    if (comment.getContent() == null || comment.getContent().isEmpty()) {
-      throw BlogExceptions.badRequest("Comment content is required");
-    }
-    if (comment.getContent().length() > 5000) {
-      throw BlogExceptions.badRequest("Comment is too long (max 5000 characters)");
+  public boolean createComment(CreateCommentDto dto) {
+    ValidatorEngine.validate(dto);
+    
+    Comment comment = new Comment(dto.postId(), dto.userId(), dto.content());
+    
+    // Fetch user information to populate author name and avatar
+    Optional<User> userOpt = userDAO.getUserById(dto.userId());
+    if (userOpt.isPresent()) {
+      User user = userOpt.get();
+      comment.setAuthorName(user.getUsername());
+      comment.setAuthorAvatarUrl(user.getAvatarUrl());
+      logger.debug("Set author details for comment: {} ({})", user.getUsername(), user.getAvatarUrl());
+    } else {
+      logger.warn("User not found for userId: {}, comment will have no author info", dto.userId());
     }
     
     Optional<Comment> result = commentMongoDAO.createComment(comment);
-    return result.isPresent();
+    if (result.isPresent()) {
+      logger.info("Comment created successfully for post: {}", dto.postId());
+      return true;
+    }
+    return false;
   }
 
   public List<Comment> getCommentsByPostId(int postId) {
