@@ -11,7 +11,5 @@ public record CreatePostDto(
     @NotEmpty String content,
     @IsString(maxLenth = 100) String excerpt,
     @NotNull String status,
-    String featuredImage,
-    String coverImage,
-    String icon) {
+    String coverImage) {
 }

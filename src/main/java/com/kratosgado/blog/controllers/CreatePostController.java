@@ -165,10 +165,8 @@ public class CreatePostController {
     String title = titleField.getText();
     String content = contentArea.getText();
     String excerpt = excerptArea.getText();
-    String featuredImage = imageUrlField.getText();
-    String coverImage = coverImageField.getText();
-    String icon = iconField.getText();
-    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage, coverImage, icon);
+    String coverImage = imageUrlField.getText();
+    return new CreatePostDto(userId, title, content, excerpt, status, coverImage);
 
   }
 

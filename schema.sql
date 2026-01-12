@@ -46,10 +46,9 @@ CREATE TABLE posts (
   content TEXT NOT NULL,
   excerpt VARCHAR(500),
   status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
-  featured_image VARCHAR(500),
   cover_image VARCHAR(500),
-  icon VARCHAR(500),
   views INTEGER DEFAULT 0,
+  likes_count INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   
@@ -57,7 +56,8 @@ CREATE TABLE posts (
   
   CONSTRAINT chk_title_not_empty CHECK (LENGTH(TRIM(title)) > 0),
   CONSTRAINT chk_content_not_empty CHECK (LENGTH(TRIM(content)) > 0),
-  CONSTRAINT chk_views_positive CHECK (views >= 0)
+  CONSTRAINT chk_views_positive CHECK (views >= 0),
+  CONSTRAINT chk_likes_positive CHECK (likes_count >= 0)
 );
 
 -- Performance indexes for frequent queries
@@ -68,8 +68,7 @@ CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
 
 COMMENT ON TABLE posts IS 'Stores blog posts with full content and metadata';
 COMMENT ON COLUMN posts.status IS 'Post publication status: draft, published, or archived';
-COMMENT ON COLUMN posts.icon IS 'Small icon/thumbnail for the post';
-COMMENT ON COLUMN posts.cover_image IS 'Large banner/cover image for the post';
+COMMENT ON COLUMN posts.cover_image IS 'Cover/banner image for the post';
 
 -- ================================================================
 -- TABLE: comments

@@ -35,9 +35,7 @@ public class PostDAO extends DAO {
             content TEXT NOT NULL,
             excerpt VARCHAR(500),
             status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
-            featured_image VARCHAR(500),
             cover_image VARCHAR(500),
-            icon VARCHAR(500),
             views INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -77,7 +75,7 @@ public class PostDAO extends DAO {
   }
 
   public boolean createPost(Post post) {
-    String sql = "INSERT INTO posts (user_id, title, content, excerpt, status, featured_image, cover_image, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+    String sql = "INSERT INTO posts (user_id, title, content, excerpt, status, cover_image) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, post.getUserId());
@@ -85,9 +83,7 @@ public class PostDAO extends DAO {
       stmt.setString(3, post.getContent());
       stmt.setString(4, post.getExcerpt());
       stmt.setString(5, post.getStatus());
-      stmt.setString(6, post.getFeaturedImage());
-      stmt.setString(7, post.getCoverImage());
-      stmt.setString(8, post.getIcon());
+      stmt.setString(6, post.getCoverImage());
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         post.setId(rs.getInt("id"));
@@ -102,17 +98,15 @@ public class PostDAO extends DAO {
   }
 
   public boolean updatePost(Post post) {
-    String sql = "UPDATE posts SET title = ?, content = ?, excerpt = ?, status = ?, featured_image = ?, cover_image = ?, icon = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    String sql = "UPDATE posts SET title = ?, content = ?, excerpt = ?, status = ?, cover_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setString(1, post.getTitle());
       stmt.setString(2, post.getContent());
       stmt.setString(3, post.getExcerpt());
       stmt.setString(4, post.getStatus());
-      stmt.setString(5, post.getFeaturedImage());
-      stmt.setString(6, post.getCoverImage());
-      stmt.setString(7, post.getIcon());
-      stmt.setInt(8, post.getId());
+      stmt.setString(5, post.getCoverImage());
+      stmt.setInt(6, post.getId());
       stmt.executeUpdate();
       // Invalidate cache for this post
       PostCache.getInstance().invalidate(post.getId());
@@ -379,11 +373,56 @@ public class PostDAO extends DAO {
     post.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
     post.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
     post.setViews(rs.getInt("views"));
-    post.setFeaturedImage(rs.getString("featured_image"));
+    post.setLikesCount(rs.getInt("likes_count"));
     post.setCoverImage(rs.getString("cover_image"));
-    post.setIcon(rs.getString("icon"));
     post.setAuthorName(rs.getString("author_name"));
     post.setAuthorAvatarUrl(rs.getString("author_avatar_url"));
     return post;
+  }
+
+  /**
+   * Increment the likes count for a post.
+   * 
+   * @param postId the ID of the post
+   * @return true if successful, false otherwise
+   */
+  public boolean incrementLikesCount(int postId) {
+    String sql = "UPDATE posts SET likes_count = likes_count + 1 WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setInt(1, postId);
+      int updated = stmt.executeUpdate();
+      if (updated > 0) {
+        logger.info("Likes count incremented for post id: {}", postId);
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      logger.error("Failed to increment likes count for post id: {}", postId, e);
+      return false;
+    }
+  }
+
+  /**
+   * Decrement the likes count for a post (cannot go below 0).
+   * 
+   * @param postId the ID of the post
+   * @return true if successful, false otherwise
+   */
+  public boolean decrementLikesCount(int postId) {
+    String sql = "UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = ?";
+    try (Connection conn = DatabaseConfig.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);) {
+      stmt.setInt(1, postId);
+      int updated = stmt.executeUpdate();
+      if (updated > 0) {
+        logger.info("Likes count decremented for post id: {}", postId);
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      logger.error("Failed to decrement likes count for post id: {}", postId, e);
+      return false;
+    }
   }
 }

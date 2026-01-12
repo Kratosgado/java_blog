@@ -257,9 +257,9 @@ public class PostViewController implements Initializable {
 
   private void loadFeaturedImage() {
     try {
-      featuredImage.setImage(ImageUtils.loadImageWithFallback(currentPost.getFeaturedImage()));
+      featuredImage.setImage(ImageUtils.loadImageWithFallback(currentPost.getCoverImage()));
     } catch (Exception e) {
-      logger.debug("Featured image not found, using placeholder");
+      logger.debug("Cover image not found, using placeholder");
       try {
         Image placeholder = new Image("file:src/main/resources/images/java_blog_logo.jpg");
         featuredImage.setImage(placeholder);

@@ -108,7 +108,7 @@ public class CategoryDAO extends DAO {
             .name(rs.getString("name"))
             .slug(rs.getString("slug"))
             .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at"))
+            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
             .build());
       }
       return Optional.empty();
@@ -130,7 +130,7 @@ public class CategoryDAO extends DAO {
             .name(rs.getString("name"))
             .slug(rs.getString("slug"))
             .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at"))
+            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
             .build());
       }
       return Optional.empty();
@@ -152,7 +152,7 @@ public class CategoryDAO extends DAO {
             .name(rs.getString("name"))
             .slug(rs.getString("slug"))
             .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at"))
+            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
             .build());
       }
       logger.info("Retrieved {} categories", categories.size());
@@ -177,7 +177,7 @@ public class CategoryDAO extends DAO {
             .name(rs.getString("name"))
             .slug(rs.getString("slug"))
             .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at"))
+            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
             .build());
       }
       logger.info("Retrieved {} categories for post {}", categories.size(), postId);

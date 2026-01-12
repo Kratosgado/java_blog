@@ -185,9 +185,7 @@ public class EditPostController implements Initializable {
         titleField.setText(currentPost.getTitle());
         contentArea.setText(currentPost.getContent());
         excerptArea.setText(currentPost.getExcerpt() != null ? currentPost.getExcerpt() : "");
-        imageUrlField.setText(currentPost.getFeaturedImage() != null ? currentPost.getFeaturedImage() : "");
-        coverImageField.setText(currentPost.getCoverImage() != null ? currentPost.getCoverImage() : "");
-        iconField.setText(currentPost.getIcon() != null ? currentPost.getIcon() : "");
+        imageUrlField.setText(currentPost.getCoverImage() != null ? currentPost.getCoverImage() : "");
 
         // Load and select post's category
         loadPostCategory(postId);
@@ -270,9 +268,7 @@ public class EditPostController implements Initializable {
     currentPost.setContent(contentArea.getText());
     currentPost.setExcerpt(excerptArea.getText());
     currentPost.setStatus(status);
-    currentPost.setFeaturedImage(imageUrlField.getText());
-    currentPost.setCoverImage(coverImageField.getText());
-    currentPost.setIcon(iconField.getText());
+    currentPost.setCoverImage(imageUrlField.getText());
   }
 
   private void publishPost() {

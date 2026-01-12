@@ -20,9 +20,8 @@ public class Post {
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
   private int views;
-  private String featuredImage;
+  private int likesCount;
   private String coverImage;
-  private String icon;
   private String authorName;
   private String authorAvatarUrl;
 
@@ -32,8 +31,6 @@ public class Post {
     content = dto.content();
     excerpt = dto.excerpt();
     status = dto.status();
-    featuredImage = dto.featuredImage();
     coverImage = dto.coverImage();
-    icon = dto.icon();
   }
 }

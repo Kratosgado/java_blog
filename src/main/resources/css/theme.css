@@ -1,4 +1,5 @@
 /* Modern JavaFX Theme - Comprehensive & Optimized */
+/* @import "components/button.css"; */
 
 /* === BASE STYLES === */
 .root {
@@ -23,6 +24,10 @@
   -fx-cursor: hand;
   -fx-border-color: transparent;
   -fx-font-size: 14px;
+}
+.btn-sm {
+  -fx-font-size: -font-size-sm;
+  -fx-padding: -spacing-xs -spacing-md;
 }
 
 .button:hover {
@@ -83,7 +88,7 @@
 }
 
 .link-button:hover {
-  -fx-text-color: -primary-color-dimmed;
+  -fx-text-fill: #f3f4f6;
 }
 
 .icon-button {

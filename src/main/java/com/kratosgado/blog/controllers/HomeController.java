@@ -369,7 +369,7 @@ public class HomeController {
     ImageView imageView = new ImageView();
     try {
       // Use placeholder image
-      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getCoverImage()));
       imageView.setFitWidth(270);
       imageView.setFitHeight(150);
       imageView.setPreserveRatio(true);
@@ -400,7 +400,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getCoverImage()));
       imageView.setFitWidth(260);
       imageView.setFitHeight(140);
       imageView.setPreserveRatio(true);
@@ -439,7 +439,7 @@ public class HomeController {
 
     ImageView imageView = new ImageView();
     try {
-      imageView.setImage(ImageUtils.loadImageWithFallback(post.getFeaturedImage()));
+      imageView.setImage(ImageUtils.loadImageWithFallback(post.getCoverImage()));
       imageView.setFitWidth(200);
       imageView.setFitHeight(120);
       imageView.setPreserveRatio(true);
