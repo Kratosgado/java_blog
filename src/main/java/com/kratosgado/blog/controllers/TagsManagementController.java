@@ -72,7 +72,7 @@ public class TagsManagementController {
     
     // Set default color
     if (tagColorPicker != null) {
-      tagColorPicker.setValue(Color.web("#667eea"));
+      tagColorPicker.setValue(Color.web("#6b7280"));
     }
   }
 
@@ -109,7 +109,7 @@ public class TagsManagementController {
     headerBox.setAlignment(Pos.CENTER_LEFT);
     
     Label colorIndicator = new Label("●");
-    colorIndicator.setStyle("-fx-font-size: 20px; -fx-text-fill: #667eea;");
+    colorIndicator.setStyle("-fx-font-size: 20px; -fx-text-fill: #6b7280;");
     
     Label tagNameLabel = new Label(tag.getName());
     tagNameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;");
@@ -150,7 +150,7 @@ public class TagsManagementController {
 
     Button deleteBtn = new Button("Delete");
     deleteBtn.setStyle(
-        "-fx-background-color: #ef4444; " +
+        "-fx-background-color: #374151; " +
         "-fx-text-fill: white; " +
         "-fx-background-radius: 6; " +
         "-fx-padding: 6 12; " +
@@ -234,7 +234,7 @@ public class TagsManagementController {
     tagNameField.clear();
     tagDescriptionArea.clear();
     if (tagColorPicker != null) {
-      tagColorPicker.setValue(Color.web("#667eea"));
+      tagColorPicker.setValue(Color.web("#6b7280"));
     }
   }
 }

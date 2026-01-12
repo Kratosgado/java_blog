@@ -237,9 +237,9 @@ public class PostsListController {
         // Style buttons
         viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
             "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
+        editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
             "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
+        deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
             "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
 
         // Hover effects
@@ -248,14 +248,14 @@ public class PostsListController {
         viewBtn.setOnMouseExited(e -> viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
-        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; " +
+        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #4b5563; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
+        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
-        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #dc2626; -fx-text-fill: white; " +
+        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #1f2937; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
+        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
         actionBox.setAlignment(Pos.CENTER);

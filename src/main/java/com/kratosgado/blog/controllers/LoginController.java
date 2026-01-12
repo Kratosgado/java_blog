@@ -75,7 +75,7 @@ public class LoginController {
   }
 
   private void showError(String message) {
-    infoLabel.setStyle("-fx-text-fill: #f44336;");
+    infoLabel.setStyle("-fx-text-fill: #1f2937;");
     infoLabel.setText(message);
     infoLabel.setVisible(true);
   }
