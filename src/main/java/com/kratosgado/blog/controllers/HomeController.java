@@ -183,8 +183,8 @@ public class HomeController {
   }
 
   private void setupSearchAndFilters() {
-    categoryComboBox.getItems().addAll("All Categories", "Technology", "Design", "Business", "Lifestyle");
-    categoryComboBox.getSelectionModel().selectFirst();
+    // Load categories dynamically from database
+    loadCategoryComboBox();
 
     sortComboBox.getItems().addAll("Latest", "Most Popular", "Most Viewed", "Most Commented");
     sortComboBox.getSelectionModel().selectFirst();
@@ -195,6 +195,29 @@ public class HomeController {
 
     categoryComboBox.setOnAction(e -> performSearch(searchField.getText()));
     sortComboBox.setOnAction(e -> performSearch(searchField.getText()));
+  }
+  
+  /**
+   * Load categories from database and populate the category combo box.
+   */
+  private void loadCategoryComboBox() {
+    try {
+      categoryComboBox.getItems().clear();
+      categoryComboBox.getItems().add("All Categories");
+      
+      List<Category> categories = categoryService.getAllCategories();
+      for (Category category : categories) {
+        categoryComboBox.getItems().add(category.getName());
+      }
+      
+      categoryComboBox.getSelectionModel().selectFirst();
+      logger.info("Loaded {} categories into filter dropdown", categories.size());
+    } catch (Exception e) {
+      logger.error("Failed to load categories for filter", e);
+      // Fallback to default list
+      categoryComboBox.getItems().addAll("Technology", "Design", "Business", "Lifestyle");
+      categoryComboBox.getSelectionModel().selectFirst();
+    }
   }
 
   private void setupViewToggle() {
@@ -250,7 +273,8 @@ public class HomeController {
         postsContainer.getChildren().clear();
       }
 
-      List<Post> posts = postService.getPublishedPosts();
+      // Get filtered posts based on search term, category, and tag
+      List<Post> posts = getFilteredPosts();
 
       // Simple pagination simulation
       int fromIndex = currentPage * PAGE_SIZE;
@@ -258,7 +282,10 @@ public class HomeController {
 
       if (fromIndex < posts.size()) {
         List<Post> pagePosts = posts.subList(fromIndex, toIndex);
-        postsCountLabel.setText("Latest Posts (" + posts.size() + ")");
+        
+        // Update label based on filters
+        String labelText = getPostsLabelText(posts.size());
+        postsCountLabel.setText(labelText);
 
         for (Post post : pagePosts) {
           if (isGridView) {
@@ -275,6 +302,90 @@ public class HomeController {
       logger.info("Loaded {} posts on page {}", Math.min(PAGE_SIZE, posts.size() - fromIndex), currentPage);
     } catch (Exception e) {
       logger.error("Failed to load posts", e);
+    }
+  }
+
+  /**
+   * Get filtered posts based on current search term, category, and sort order.
+   */
+  private List<Post> getFilteredPosts() {
+    String searchTerm = searchField.getText().trim();
+    String selectedCategory = categoryComboBox.getValue();
+    String selectedSort = sortComboBox.getValue();
+    
+    List<Post> posts;
+    
+    // Check if searching by tag (starts with #)
+    if (searchTerm.startsWith("#") && searchTerm.length() > 1) {
+      String tagName = searchTerm.substring(1); // Remove the #
+      posts = postService.getPostsByTag(tagName);
+      logger.info("Filtering by tag: {}", tagName);
+    }
+    // Check if filtering by category
+    else if (selectedCategory != null && !selectedCategory.equals("All Categories")) {
+      posts = postService.getPostsByCategory(selectedCategory);
+      logger.info("Filtering by category: {}", selectedCategory);
+      
+      // Apply search term filter if present
+      if (!searchTerm.isEmpty()) {
+        posts = posts.stream()
+          .filter(p -> p.getTitle().toLowerCase().contains(searchTerm.toLowerCase()) || 
+                      p.getContent().toLowerCase().contains(searchTerm.toLowerCase()))
+          .toList();
+        logger.info("Applied search filter: {}", searchTerm);
+      }
+    }
+    // Check if searching by keyword
+    else if (!searchTerm.isEmpty()) {
+      posts = postService.searchPostsByKeyword(searchTerm);
+      logger.info("Searching by keyword: {}", searchTerm);
+    }
+    // Default: get all published posts
+    else {
+      posts = postService.getPublishedPosts();
+      logger.info("Loading all published posts");
+    }
+    
+    // Apply sorting
+    posts = applySorting(posts, selectedSort);
+    
+    return posts;
+  }
+  
+  /**
+   * Apply sorting to the post list.
+   */
+  private List<Post> applySorting(List<Post> posts, String sortOrder) {
+    if (sortOrder == null) {
+      return posts;
+    }
+    
+    return switch (sortOrder) {
+      case "Most Popular", "Most Viewed" -> posts.stream()
+        .sorted((a, b) -> Integer.compare(b.getViews(), a.getViews()))
+        .toList();
+      case "Most Commented" -> posts; // Not implemented yet - return as-is
+      default -> posts.stream() // Latest
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .toList();
+    };
+  }
+  
+  /**
+   * Generate appropriate label text based on current filters.
+   */
+  private String getPostsLabelText(int count) {
+    String searchTerm = searchField.getText().trim();
+    String selectedCategory = categoryComboBox.getValue();
+    
+    if (searchTerm.startsWith("#") && searchTerm.length() > 1) {
+      return "Posts tagged " + searchTerm + " (" + count + ")";
+    } else if (selectedCategory != null && !selectedCategory.equals("All Categories")) {
+      return selectedCategory + " Posts (" + count + ")";
+    } else if (!searchTerm.isEmpty()) {
+      return "Search Results (" + count + ")";
+    } else {
+      return "Latest Posts (" + count + ")";
     }
   }
 
@@ -312,7 +423,9 @@ public class HomeController {
       String[] defaultCategories = { "Technology", "Design", "Business", "Lifestyle", "Tutorial", "News" };
       for (String name : defaultCategories) {
         try {
-          categoryService.createCategory(name, "Default " + name + " category");
+          com.kratosgado.blog.dtos.request.CreateCategoryDto dto = 
+              new com.kratosgado.blog.dtos.request.CreateCategoryDto(name, "Default " + name + " category");
+          categoryService.createCategory(dto);
         } catch (Exception e) {
           logger.debug("Category {} might already exist", name);
         }
@@ -485,7 +598,7 @@ public class HomeController {
     item.setStyle("-fx-padding: 5; -fx-cursor: hand;");
 
     Label numberLabel = new Label((trendingContainer.getChildren().size() + 1) + ".");
-    numberLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #667eea; -fx-min-width: 20;");
+    numberLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #6b7280; -fx-min-width: 20;");
 
     Label titleLabel = new Label(post.getTitle());
     titleLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #333;");
@@ -501,14 +614,14 @@ public class HomeController {
     isGridView = grid;
     if (grid) {
       gridViewBtn.setStyle(
-          "-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 12;");
+          "-fx-background-color: #6b7280; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 12;");
       listViewBtn
           .setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 12;");
     } else {
       gridViewBtn
           .setStyle("-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 5; -fx-padding: 8 12;");
       listViewBtn.setStyle(
-          "-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 12;");
+          "-fx-background-color: #6b7280; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 8 12;");
     }
     currentPage = 0;
     loadPosts();
