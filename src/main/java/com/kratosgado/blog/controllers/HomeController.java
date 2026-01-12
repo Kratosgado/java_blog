@@ -5,29 +5,28 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Tag;
 import com.google.inject.Inject;
 import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
-import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -196,7 +195,7 @@ public class HomeController {
     categoryComboBox.setOnAction(e -> performSearch(searchField.getText()));
     sortComboBox.setOnAction(e -> performSearch(searchField.getText()));
   }
-  
+
   /**
    * Load categories from database and populate the category combo box.
    */
@@ -204,12 +203,12 @@ public class HomeController {
     try {
       categoryComboBox.getItems().clear();
       categoryComboBox.getItems().add("All Categories");
-      
+
       List<Category> categories = categoryService.getAllCategories();
       for (Category category : categories) {
         categoryComboBox.getItems().add(category.getName());
       }
-      
+
       categoryComboBox.getSelectionModel().selectFirst();
       logger.info("Loaded {} categories into filter dropdown", categories.size());
     } catch (Exception e) {
@@ -282,7 +281,7 @@ public class HomeController {
 
       if (fromIndex < posts.size()) {
         List<Post> pagePosts = posts.subList(fromIndex, toIndex);
-        
+
         // Update label based on filters
         String labelText = getPostsLabelText(posts.size());
         postsCountLabel.setText(labelText);
@@ -312,9 +311,9 @@ public class HomeController {
     String searchTerm = searchField.getText().trim();
     String selectedCategory = categoryComboBox.getValue();
     String selectedSort = sortComboBox.getValue();
-    
+
     List<Post> posts;
-    
+
     // Check if searching by tag (starts with #)
     if (searchTerm.startsWith("#") && searchTerm.length() > 1) {
       String tagName = searchTerm.substring(1); // Remove the #
@@ -325,13 +324,13 @@ public class HomeController {
     else if (selectedCategory != null && !selectedCategory.equals("All Categories")) {
       posts = postService.getPostsByCategory(selectedCategory);
       logger.info("Filtering by category: {}", selectedCategory);
-      
+
       // Apply search term filter if present
       if (!searchTerm.isEmpty()) {
         posts = posts.stream()
-          .filter(p -> p.getTitle().toLowerCase().contains(searchTerm.toLowerCase()) || 
-                      p.getContent().toLowerCase().contains(searchTerm.toLowerCase()))
-          .toList();
+            .filter(p -> p.getTitle().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                p.getContent().toLowerCase().contains(searchTerm.toLowerCase()))
+            .toList();
         logger.info("Applied search filter: {}", searchTerm);
       }
     }
@@ -345,13 +344,13 @@ public class HomeController {
       posts = postService.getPublishedPosts();
       logger.info("Loading all published posts");
     }
-    
+
     // Apply sorting
     posts = applySorting(posts, selectedSort);
-    
+
     return posts;
   }
-  
+
   /**
    * Apply sorting to the post list.
    */
@@ -359,25 +358,25 @@ public class HomeController {
     if (sortOrder == null) {
       return posts;
     }
-    
+
     return switch (sortOrder) {
       case "Most Popular", "Most Viewed" -> posts.stream()
-        .sorted((a, b) -> Integer.compare(b.getViews(), a.getViews()))
-        .toList();
+          .sorted((a, b) -> Integer.compare(b.getViews(), a.getViews()))
+          .toList();
       case "Most Commented" -> posts; // Not implemented yet - return as-is
       default -> posts.stream() // Latest
-        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-        .toList();
+          .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+          .toList();
     };
   }
-  
+
   /**
    * Generate appropriate label text based on current filters.
    */
   private String getPostsLabelText(int count) {
     String searchTerm = searchField.getText().trim();
     String selectedCategory = categoryComboBox.getValue();
-    
+
     if (searchTerm.startsWith("#") && searchTerm.length() > 1) {
       return "Posts tagged " + searchTerm + " (" + count + ")";
     } else if (selectedCategory != null && !selectedCategory.equals("All Categories")) {
@@ -423,8 +422,8 @@ public class HomeController {
       String[] defaultCategories = { "Technology", "Design", "Business", "Lifestyle", "Tutorial", "News" };
       for (String name : defaultCategories) {
         try {
-          com.kratosgado.blog.dtos.request.CreateCategoryDto dto = 
-              new com.kratosgado.blog.dtos.request.CreateCategoryDto(name, "Default " + name + " category");
+          com.kratosgado.blog.dtos.request.CreateCategoryDto dto = new com.kratosgado.blog.dtos.request.CreateCategoryDto(
+              name, "Default " + name + " category");
           categoryService.createCategory(dto);
         } catch (Exception e) {
           logger.debug("Category {} might already exist", name);
@@ -694,14 +693,10 @@ public class HomeController {
 
     MenuItem adminItem = new MenuItem("⚙️ Admin");
     adminItem.setOnAction(e -> navigateToAdmin());
-
-    MenuItem profileItem = new MenuItem("👤 Profile");
-    profileItem.setOnAction(e -> navigateToProfile());
-
     MenuItem logoutItem = new MenuItem("🚪 Logout");
     logoutItem.setOnAction(e -> logout());
 
-    userMenu.getItems().addAll(adminItem, profileItem, logoutItem);
+    userMenu.getItems().addAll(adminItem, logoutItem);
 
     // Show menu when clicking on the avatar
     userAvatarImage.setOnMouseClicked(e -> {
@@ -717,11 +712,6 @@ public class HomeController {
     userAvatarImage.setOnMouseExited(e -> {
       userAvatarImage.setStyle("-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 2);");
     });
-  }
-
-  private void navigateToProfile() {
-    logger.info("Navigating to profile");
-    Navigator.getInstance().goTo(Routes.USER_PROFILE);
   }
 
   private void navigateToAdmin() {

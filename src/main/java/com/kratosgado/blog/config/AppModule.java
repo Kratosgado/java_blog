@@ -3,11 +3,11 @@ package com.kratosgado.blog.config;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.kratosgado.blog.dao.CategoryDAO;
-import com.kratosgado.blog.dao.CommentDAO;
 import com.kratosgado.blog.dao.PostDAO;
-import com.kratosgado.blog.dao.ReviewDAO;
 import com.kratosgado.blog.dao.TagDAO;
 import com.kratosgado.blog.dao.UserDAO;
+import com.kratosgado.blog.dao.nosql.CommentMongoDAO;
+import com.kratosgado.blog.dao.nosql.ReviewMongoDAO;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.services.CommentService;
@@ -28,10 +28,10 @@ public class AppModule extends AbstractModule {
     // Bind DAOs as singletons
     bind(UserDAO.class).in(Singleton.class);
     bind(PostDAO.class).in(Singleton.class);
-    bind(CommentDAO.class).in(Singleton.class);
+    bind(CommentMongoDAO.class).in(Singleton.class);
     bind(CategoryDAO.class).in(Singleton.class);
     bind(TagDAO.class).in(Singleton.class);
-    bind(ReviewDAO.class).in(Singleton.class);
+    bind(ReviewMongoDAO.class).in(Singleton.class);
 
     // Bind Services as singletons
     bind(AuthService.class).in(Singleton.class);

@@ -2,35 +2,24 @@ package com.kratosgado.blog.services;
 
 import java.util.List;
 import java.util.Optional;
-import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.dao.UserDAO;
+import com.google.inject.Inject;
 import com.kratosgado.blog.dao.nosql.CommentMongoDAO;
 import com.kratosgado.blog.dtos.request.CreateCommentDto;
 import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.enums.CommentStatus;
-import com.kratosgado.blog.utils.exceptions.BlogExceptions;
 import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
-/**
- * Comment service using MongoDB for flexible comment storage.
- * Migrated from PostgreSQL to MongoDB for better handling of:
- * - Threaded/nested comments
- * - Rich features (reactions, mentions, attachments)
- * - Flexible schema evolution
- */
 public class CommentService {
   private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
   private final CommentMongoDAO commentMongoDAO;
-  private final UserDAO userDAO;
 
-  public CommentService() {
-    this.commentMongoDAO = new CommentMongoDAO();
-    this.userDAO = new UserDAO();
+  @Inject
+  public CommentService(CommentMongoDAO commentMongoDAO) {
+    this.commentMongoDAO = commentMongoDAO;
     logger.info("CommentService initialized with MongoDB backend");
   }
 

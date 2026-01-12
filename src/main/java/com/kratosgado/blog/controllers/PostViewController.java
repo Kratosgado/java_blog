@@ -1,12 +1,12 @@
 package com.kratosgado.blog.controllers;
 
-import com.google.inject.Inject;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.kratosgado.blog.dtos.request.CreateCommentDto;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
@@ -836,29 +836,6 @@ public class PostViewController implements Initializable {
     }
   }
 
-  private VBox createNewComment(String content) {
-    VBox commentBox = new VBox(10);
-    commentBox.setStyle(
-        "-fx-background-color: #e8f5e9; -fx-padding: 20; -fx-background-radius: 10; -fx-border-color: #4caf50; -fx-border-width: 2; -fx-border-radius: 10;");
-
-    HBox headerBox = new HBox(10);
-    headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-    Label authorName = new Label("You");
-    authorName.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2196f3;");
-    Label commentTime = new Label("Just now");
-    commentTime.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
-
-    headerBox.getChildren().addAll(authorName, commentTime);
-
-    Label commentContent = new Label(content);
-    commentContent.setWrapText(true);
-    commentContent.setStyle("-fx-font-size: 14px; -fx-line-spacing: 1.4;");
-
-    commentBox.getChildren().addAll(headerBox, commentContent);
-    return commentBox;
-  }
-
   private void clearComment() {
     commentTextArea.clear();
     notifyRepliesCheck.setSelected(false);
@@ -869,8 +846,6 @@ public class PostViewController implements Initializable {
     try {
       // Navigate back to home screen
       Navigator.getInstance().popScreen();
-      // In a future implementation, you could pass the tag to home screen for
-      // filtering
       ToastNotification.info("Filtering posts by tag: " + tagName);
     } catch (Exception e) {
       logger.error("Failed to filter by tag", e);
