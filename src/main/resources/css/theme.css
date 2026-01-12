@@ -1,4 +1,4 @@
-/* Modern JavaFX Theme - Comprehensive & Optimized */
+/* Modern JavaFX Theme - White & Gray Color Scheme */
 /* @import "components/button.css"; */
 
 /* === BASE STYLES === */
@@ -7,11 +7,11 @@
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
     "Apple Color Emoji", "Segoe UI", "Roboto", "Arial", sans-serif;
   -fx-font-size: 12px;
-  -primary-color: #1e88e5;
-  -primary-color-dimmed: #1188ff;
-  -bg-color: #f3f4f6;
+  -primary-color: #4b5563;
+  -primary-color-dimmed: #374151;
+  -bg-color: #f9fafb;
   -bg-muted: #e5e7eb;
-  -button-text-fill: #b5b5b5;
+  -button-text-fill: #6b7280;
 }
 
 /* === BUTTONS === */
@@ -37,7 +37,7 @@
 }
 
 .button:pressed {
-  -fx-background-color: #4338ca;
+  -fx-background-color: #1f2937;
   -fx-scale-x: 0.98;
   -fx-scale-y: 0.98;
 }
@@ -51,19 +51,19 @@
 }
 
 .success-button {
-  -fx-background-color: #10b981;
+  -fx-background-color: #6b7280;
 }
 
 .success-button:hover {
-  -fx-background-color: #059669;
+  -fx-background-color: #4b5563;
 }
 
 .danger-button {
-  -fx-background-color: #ef4444;
+  -fx-background-color: #374151;
 }
 
 .danger-button:hover {
-  -fx-background-color: #dc2626;
+  -fx-background-color: #1f2937;
 }
 
 .outline {
@@ -88,7 +88,7 @@
 }
 
 .link-button:hover {
-  -fx-text-fill: #f3f4f6;
+  -fx-text-fill: #374151;
 }
 
 .icon-button {
@@ -215,12 +215,12 @@
 }
 
 .label.error {
-  -fx-text-fill: #ef4444;
+  -fx-text-fill: #1f2937;
   -fx-font-size: 12px;
 }
 
 .success-text {
-  -fx-text-fill: #10b981;
+  -fx-text-fill: #4b5563;
 }
 
 /* === CARDS === */

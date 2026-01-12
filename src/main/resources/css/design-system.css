@@ -1,11 +1,11 @@
-/* Modern Scalable Design System - Optimized */
+/* Modern Scalable Design System - White & Gray Theme */
 .root {
-    /* Color Palette */
-    -fx-primary: -primary-color;
-    -fx-primary-hover: -primary-color-dimmed;
-    -fx-secondary: #10b981;
-    -fx-accent: #f59e0b;
-    -fx-danger: #ef4444;
+    /* Color Palette - Gray Shades */
+    -fx-primary: #4b5563;
+    -fx-primary-hover: #374151;
+    -fx-secondary: #6b7280;
+    -fx-accent: #9ca3af;
+    -fx-danger: #1f2937;
     
     /* Backgrounds */
     -fx-bg-primary: #ffffff;
@@ -19,7 +19,7 @@
     
     /* Borders */
     -fx-border: #e5e7eb;
-    -fx-border-focus: -primary-color;
+    -fx-border-focus: #4b5563;
 }
 
 /* Scrollbar Styling */
