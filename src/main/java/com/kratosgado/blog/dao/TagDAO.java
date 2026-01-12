@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.utils.cache.TagCache;
 import com.kratosgado.blog.utils.interfaces.DAO;
 
 public class TagDAO extends DAO {
@@ -74,6 +75,8 @@ public class TagDAO extends DAO {
       stmt.setString(3, tag.getDescription());
       stmt.setInt(4, tag.getId());
       stmt.executeUpdate();
+      // Invalidate cache
+      TagCache.getInstance().invalidate(tag.getId());
       logger.info("Tag updated successfully: {}", tag.getId());
       return true;
     } catch (Exception e) {
@@ -88,6 +91,8 @@ public class TagDAO extends DAO {
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
       stmt.executeUpdate();
+      // Invalidate cache
+      TagCache.getInstance().invalidate(id);
       logger.info("Tag deleted successfully: {}", id);
       return true;
     } catch (Exception e) {
@@ -97,6 +102,13 @@ public class TagDAO extends DAO {
   }
 
   public Optional<Tag> getTagById(int id) {
+    // Check cache first
+    Optional<Tag> cached = TagCache.getInstance().get(id);
+    if (cached.isPresent()) {
+      return cached;
+    }
+    
+    // Cache miss - query database
     String sql = "SELECT t.*, COUNT(pt.post_id) as post_count FROM tags t " +
         "LEFT JOIN post_tags pt ON t.id = pt.tag_id WHERE t.id = ? GROUP BY t.id";
     try (Connection conn = DatabaseConfig.getConnection();
@@ -104,7 +116,10 @@ public class TagDAO extends DAO {
       stmt.setInt(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(mapResultSetToTag(rs));
+        Tag tag = mapResultSetToTag(rs);
+        // Cache the result
+        TagCache.getInstance().put(tag);
+        return Optional.of(tag);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -114,6 +129,13 @@ public class TagDAO extends DAO {
   }
 
   public Optional<Tag> getTagBySlug(String slug) {
+    // Check cache first
+    Optional<Tag> cached = TagCache.getInstance().getBySlug(slug);
+    if (cached.isPresent()) {
+      return cached;
+    }
+    
+    // Cache miss - query database
     String sql = "SELECT t.*, COUNT(pt.post_id) as post_count FROM tags t " +
         "LEFT JOIN post_tags pt ON t.id = pt.tag_id WHERE t.slug = ? GROUP BY t.id";
     try (Connection conn = DatabaseConfig.getConnection();
@@ -121,7 +143,10 @@ public class TagDAO extends DAO {
       stmt.setString(1, slug);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(mapResultSetToTag(rs));
+        Tag tag = mapResultSetToTag(rs);
+        // Cache the result
+        TagCache.getInstance().put(tag);
+        return Optional.of(tag);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -140,6 +165,8 @@ public class TagDAO extends DAO {
       while (rs.next()) {
         tags.add(mapResultSetToTag(rs));
       }
+      // Cache all tags
+      TagCache.getInstance().putAll(tags);
       logger.info("Fetched {} tags", tags.size());
     } catch (Exception e) {
       logger.error("Failed to fetch all tags", e);

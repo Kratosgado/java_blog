@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.utils.cache.CategoryCache;
 import com.kratosgado.blog.utils.interfaces.DAO;
 
 public class CategoryDAO extends DAO {
@@ -74,6 +75,8 @@ public class CategoryDAO extends DAO {
       stmt.setString(3, category.getDescription());
       stmt.setInt(4, category.getId());
       stmt.executeUpdate();
+      // Invalidate cache
+      CategoryCache.getInstance().invalidate(category.getId());
       logger.info("Category updated successfully: {}", category.getId());
       return true;
     } catch (Exception e) {
@@ -88,6 +91,8 @@ public class CategoryDAO extends DAO {
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
       stmt.executeUpdate();
+      // Invalidate cache
+      CategoryCache.getInstance().invalidate(id);
       logger.info("Category deleted successfully: {}", id);
       return true;
     } catch (Exception e) {
@@ -97,19 +102,23 @@ public class CategoryDAO extends DAO {
   }
 
   public Optional<Category> getCategoryById(int id) {
+    // Check cache first
+    Optional<Category> cached = CategoryCache.getInstance().get(id);
+    if (cached.isPresent()) {
+      return cached;
+    }
+    
+    // Cache miss - query database
     String sql = "SELECT * FROM categories WHERE id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(Category.builder()
-            .id(rs.getInt("id"))
-            .name(rs.getString("name"))
-            .slug(rs.getString("slug"))
-            .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .build());
+        Category category = mapResultSetToCategory(rs);
+        // Cache the result
+        CategoryCache.getInstance().put(category);
+        return Optional.of(category);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -119,19 +128,23 @@ public class CategoryDAO extends DAO {
   }
 
   public Optional<Category> getCategoryBySlug(String slug) {
+    // Check cache first
+    Optional<Category> cached = CategoryCache.getInstance().getBySlug(slug);
+    if (cached.isPresent()) {
+      return cached;
+    }
+    
+    // Cache miss - query database
     String sql = "SELECT * FROM categories WHERE slug = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setString(1, slug);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(Category.builder()
-            .id(rs.getInt("id"))
-            .name(rs.getString("name"))
-            .slug(rs.getString("slug"))
-            .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .build());
+        Category category = mapResultSetToCategory(rs);
+        // Cache the result
+        CategoryCache.getInstance().put(category);
+        return Optional.of(category);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -141,20 +154,23 @@ public class CategoryDAO extends DAO {
   }
 
   public List<Category> getAllCategories() {
+    // Check cache first
+    Optional<List<Category>> cached = CategoryCache.getInstance().getAll();
+    if (cached.isPresent()) {
+      return cached.get();
+    }
+    
+    // Cache miss - query database
     List<Category> categories = new ArrayList<>();
     String sql = "SELECT * FROM categories ORDER BY name ASC";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
-        categories.add(Category.builder()
-            .id(rs.getInt("id"))
-            .name(rs.getString("name"))
-            .slug(rs.getString("slug"))
-            .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .build());
+        categories.add(mapResultSetToCategory(rs));
       }
+      // Cache all categories
+      CategoryCache.getInstance().putAll(categories);
       logger.info("Retrieved {} categories", categories.size());
     } catch (Exception e) {
       logger.error("Failed to get all categories", e);
@@ -172,13 +188,7 @@ public class CategoryDAO extends DAO {
       stmt.setInt(1, postId);
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
-        categories.add(Category.builder()
-            .id(rs.getInt("id"))
-            .name(rs.getString("name"))
-            .slug(rs.getString("slug"))
-            .description(rs.getString("description"))
-            .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .build());
+        categories.add(mapResultSetToCategory(rs));
       }
       logger.info("Retrieved {} categories for post {}", categories.size(), postId);
     } catch (Exception e) {
@@ -229,5 +239,22 @@ public class CategoryDAO extends DAO {
       logger.error("Failed to get category count", e);
     }
     return 0;
+  }
+
+  /**
+   * Maps a ResultSet row to a Category object.
+   * 
+   * @param rs the ResultSet containing category data
+   * @return a Category object populated with data from the ResultSet
+   * @throws Exception if there's an error reading from the ResultSet
+   */
+  private Category mapResultSetToCategory(ResultSet rs) throws Exception {
+    return Category.builder()
+        .id(rs.getInt("id"))
+        .name(rs.getString("name"))
+        .slug(rs.getString("slug"))
+        .description(rs.getString("description"))
+        .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+        .build();
   }
 }
