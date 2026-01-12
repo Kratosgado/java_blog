@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class Post {
   private int id;
   private int userId;
+  private Integer categoryId;  // Must have a category
   private String title;
   private String content;
   private String excerpt;
@@ -27,6 +28,7 @@ public class Post {
 
   public Post(CreatePostDto dto) {
     userId = dto.userId();
+    categoryId = dto.categoryId();
     title = dto.title();
     content = dto.content();
     excerpt = dto.excerpt();
