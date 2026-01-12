@@ -133,7 +133,7 @@ public class EditPostController implements Initializable {
     } else {
       logger.error("Invalid data type passed to EditPostController: {}",
           data != null ? data.getClass().getName() : "null");
-      showMessage("Error: Invalid post ID", "#f44336");
+      showMessage("Error: Invalid post ID", "#1f2937");
     }
   }
 
@@ -198,12 +198,12 @@ public class EditPostController implements Initializable {
 
         logger.info("Loaded post for editing: {}", currentPost.getTitle());
       } else {
-        showMessage("Post not found", "#f44336");
+        showMessage("Post not found", "#1f2937");
         logger.error("Post with ID {} not found", postId);
       }
     } catch (Exception ex) {
       logger.error("Failed to load post", ex);
-      showMessage("Failed to load post: " + ex.getMessage(), "#f44336");
+      showMessage("Failed to load post: " + ex.getMessage(), "#1f2937");
     }
   }
 
@@ -235,7 +235,7 @@ public class EditPostController implements Initializable {
         HBox tagChip = new HBox(5);
         tagChip.setAlignment(Pos.CENTER);
         tagChip.setStyle(
-            "-fx-background-color: #667eea; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
+            "-fx-background-color: #6b7280; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
 
         Label tagLabel = new Label(tagName + " ✕");
         tagLabel.setStyle("-fx-text-fill: white;");
@@ -275,7 +275,16 @@ public class EditPostController implements Initializable {
     if (validateForm()) {
       try {
         updatePostFromForm("published");
-        if (postService.updatePost(currentPost)) {
+        com.kratosgado.blog.dtos.request.UpdatePostDto dto = 
+            new com.kratosgado.blog.dtos.request.UpdatePostDto(
+                currentPost.getId(),
+                currentPost.getTitle(),
+                currentPost.getContent(),
+                currentPost.getExcerpt(),
+                currentPost.getStatus(),
+                currentPost.getCoverImage());
+        
+        if (postService.updatePost(dto)) {
           logger.info("Updated and published post: {}", currentPost.getTitle());
 
           // Update post category
@@ -284,7 +293,7 @@ public class EditPostController implements Initializable {
           // Update post tags
           updatePostTags(currentPost.getId());
 
-          showMessage("Post updated and published successfully!", "#4CAF50");
+          showMessage("Post updated and published successfully!", "#6b7280");
 
           // Navigate back after a short delay
           new Thread(() -> {
@@ -300,7 +309,7 @@ public class EditPostController implements Initializable {
         }
       } catch (Exception ex) {
         logger.error("Failed to update post", ex);
-        showMessage(ex.getMessage(), "#f44336");
+        showMessage(ex.getMessage(), "#1f2937");
       }
     }
   }
@@ -309,7 +318,16 @@ public class EditPostController implements Initializable {
     if (!titleField.getText().isEmpty()) {
       try {
         updatePostFromForm("draft");
-        if (postService.updatePost(currentPost)) {
+        com.kratosgado.blog.dtos.request.UpdatePostDto dto = 
+            new com.kratosgado.blog.dtos.request.UpdatePostDto(
+                currentPost.getId(),
+                currentPost.getTitle(),
+                currentPost.getContent(),
+                currentPost.getExcerpt(),
+                currentPost.getStatus(),
+                currentPost.getCoverImage());
+        
+        if (postService.updatePost(dto)) {
           logger.info("Saved draft: {}", currentPost.getTitle());
 
           // Update post category
@@ -318,11 +336,11 @@ public class EditPostController implements Initializable {
           // Update post tags
           updatePostTags(currentPost.getId());
 
-          showMessage("Draft saved successfully!", "#2196F3");
+          showMessage("Draft saved successfully!", "#4b5563");
         }
       } catch (Exception ex) {
         logger.error("Failed to save draft", ex);
-        showMessage(ex.getMessage(), "#f44336");
+        showMessage(ex.getMessage(), "#1f2937");
       }
     }
   }
@@ -433,7 +451,7 @@ public class EditPostController implements Initializable {
       HBox tagChip = new HBox(5);
       tagChip.setAlignment(Pos.CENTER);
       tagChip.setStyle(
-          "-fx-background-color: #667eea; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
+          "-fx-background-color: #6b7280; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
 
       Label tagLabel = new Label(tag + " ✕");
       tagLabel.setStyle("-fx-text-fill: white;");
@@ -476,15 +494,15 @@ public class EditPostController implements Initializable {
 
   private boolean validateForm() {
     if (titleField.getText().isEmpty()) {
-      showMessage("Title is required", "#f44336");
+      showMessage("Title is required", "#1f2937");
       return false;
     }
     if (contentArea.getText().isEmpty()) {
-      showMessage("Content is required", "#f44336");
+      showMessage("Content is required", "#1f2937");
       return false;
     }
     if (currentPost == null) {
-      showMessage("No post loaded for editing", "#f44336");
+      showMessage("No post loaded for editing", "#1f2937");
       return false;
     }
     return true;
