@@ -175,47 +175,45 @@ COMMENT ON COLUMN reviews.helpful IS 'Marks reviews that were marked as helpful'
 -- ================================================================
 
 -- View: Post statistics with counts
+-- NOTE: In hybrid architecture, comment_count_pg and review_count_pg will be 0
+-- Application layer should fetch actual counts from MongoDB
 CREATE OR REPLACE VIEW post_statistics AS
 SELECT 
   p.id,
   p.title,
-  p.status,
   p.views,
-  p.created_at,
-  u.username as author,
-  COUNT(DISTINCT c.id) as comment_count,
-  COUNT(DISTINCT r.id) as review_count,
-  COALESCE(AVG(r.rating), 0) as average_rating,
-  COUNT(DISTINCT pt.tag_id) as tag_count
+  p.likes_count,
+  COALESCE(COUNT(DISTINCT c.id), 0) as comment_count_pg,  -- Legacy PostgreSQL count (will be 0)
+  COALESCE(COUNT(DISTINCT r.id), 0) as review_count_pg,   -- Legacy PostgreSQL count (will be 0)
+  COALESCE(AVG(r.rating), 0) as avg_rating_pg             -- Legacy PostgreSQL average (will be 0)
 FROM posts p
-LEFT JOIN users u ON p.user_id = u.id
 LEFT JOIN comments c ON p.id = c.post_id
 LEFT JOIN reviews r ON p.id = r.post_id
-LEFT JOIN post_tags pt ON p.id = pt.post_id
-GROUP BY p.id, p.title, p.status, p.views, p.created_at, u.username;
+GROUP BY p.id, p.title, p.views, p.likes_count;
 
-COMMENT ON VIEW post_statistics IS 'Aggregated statistics for each post including counts and averages';
+COMMENT ON VIEW post_statistics IS 'Post statistics with PostgreSQL legacy counts (use MongoDB for actual comments/reviews)';
 
--- View: Popular posts (by views and comments)
+-- View: Popular posts (by views and likes)
+-- NOTE: In hybrid architecture, this view uses PostgreSQL data only
+-- Comment counts should be fetched from MongoDB in the application layer
 CREATE OR REPLACE VIEW popular_posts AS
 SELECT 
   p.id,
+  p.user_id,
   p.title,
   p.excerpt,
+  p.status,
+  p.cover_image,
   p.views,
-  p.featured_image,
-  u.username as author,
-  COUNT(c.id) as comment_count,
-  p.created_at
+  p.likes_count,
+  p.created_at,
+  p.updated_at,
+  (p.views * 0.7 + p.likes_count * 0.3) as popularity_score
 FROM posts p
-LEFT JOIN users u ON p.user_id = u.id
-LEFT JOIN comments c ON p.id = c.post_id
 WHERE p.status = 'published'
-GROUP BY p.id, p.title, p.excerpt, p.views, p.featured_image, u.username, p.created_at
-ORDER BY p.views DESC, comment_count DESC
-LIMIT 10;
+ORDER BY popularity_score DESC;
 
-COMMENT ON VIEW popular_posts IS 'Top 10 most popular posts based on views and engagement';
+COMMENT ON VIEW popular_posts IS 'Popular posts ranked by views and likes (hybrid: fetch comments from MongoDB)';
 
 -- ================================================================
 -- FUNCTIONS: Useful stored procedures
