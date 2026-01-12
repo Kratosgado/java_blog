@@ -26,20 +26,20 @@ echo -e "${YELLOW}[1/5] Setting up PostgreSQL...${NC}"
 
 # Check if postgis container exists
 if [ "$(docker ps -aq -f name=postgis)" ]; then
-	echo -e "${YELLOW}PostgreSQL container exists. Stopping and removing...${NC}"
-	docker stop postgis 2>/dev/null || true
-	docker rm postgis 2>/dev/null || true
+  echo -e "${YELLOW}PostgreSQL container exists. Stopping and removing...${NC}"
+  docker stop postgis 2>/dev/null || true
+  docker rm postgis 2>/dev/null || true
 fi
 
 # Create and start PostgreSQL container
 echo -e "${GREEN}Creating PostgreSQL container...${NC}"
 docker run -d \
-	--name postgis \
-	-e POSTGRES_DB=blog_db \
-	-e POSTGRES_USER=blog_user \
-	-e POSTGRES_PASSWORD=blog_password \
-	-p 5432:5432 \
-	postgres:17
+  --name postgis \
+  -e POSTGRES_DB=blog_db \
+  -e POSTGRES_USER=blog_user \
+  -e POSTGRES_PASSWORD=blog_password \
+  -p 5432:5432 \
+  postgres:17
 
 # Wait for PostgreSQL to be ready
 echo -e "${GREEN}Waiting for PostgreSQL to be ready...${NC}"
@@ -47,8 +47,8 @@ sleep 5
 
 # Test connection
 until docker exec postgis pg_isready -U blog_user -d blog_db >/dev/null 2>&1; do
-	echo -e "${YELLOW}Waiting for PostgreSQL...${NC}"
-	sleep 2
+  echo -e "${YELLOW}Waiting for PostgreSQL...${NC}"
+  sleep 2
 done
 
 echo -e "${GREEN}✓ PostgreSQL is ready!${NC}"
@@ -61,17 +61,17 @@ echo -e "${YELLOW}[2/5] Setting up MongoDB...${NC}"
 
 # Check if mongodb container exists
 if [ "$(docker ps -aq -f name=mongodb)" ]; then
-	echo -e "${YELLOW}MongoDB container exists. Stopping and removing...${NC}"
-	docker stop mongodb 2>/dev/null || true
-	docker rm mongodb 2>/dev/null || true
+  echo -e "${YELLOW}MongoDB container exists. Stopping and removing...${NC}"
+  docker stop mongodb 2>/dev/null || true
+  docker rm mongodb 2>/dev/null || true
 fi
 
 # Create and start MongoDB container
 echo -e "${GREEN}Creating MongoDB container...${NC}"
 docker run -d \
-	--name mongodb \
-	-p 27017:27017 \
-	mongo:6.0
+  --name mongodb \
+  -p 27017:27017 \
+  mongo:6.0
 
 # Wait for MongoDB to be ready
 echo -e "${GREEN}Waiting for MongoDB to be ready...${NC}"
@@ -79,8 +79,8 @@ sleep 5
 
 # Test MongoDB connection
 until docker exec mongodb mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
-	echo -e "${YELLOW}Waiting for MongoDB...${NC}"
-	sleep 2
+  echo -e "${YELLOW}Waiting for MongoDB...${NC}"
+  sleep 2
 done
 
 echo -e "${GREEN}✓ MongoDB is ready!${NC}"
@@ -92,8 +92,7 @@ echo ""
 echo -e "${YELLOW}[3/5] Initializing PostgreSQL schema...${NC}"
 
 # Copy schema file to container and execute
-docker cp schema.sql postgis:/tmp/schema.sql
-docker exec postgis psql -U blog_user -d blog_db -f /tmp/schema.sql
+docker exec postgis psql -U blog_user -d blog_db -f ./schema.sql
 
 echo -e "${GREEN}✓ PostgreSQL schema created!${NC}"
 echo ""
@@ -104,81 +103,7 @@ echo ""
 echo -e "${YELLOW}[4/5] Seeding PostgreSQL data...${NC}"
 
 # Create modified seed file without comments and reviews (they go to MongoDB)
-docker exec postgis psql -U blog_user -d blog_db <<'EOF'
--- ================================================================
--- Smart Blogging Platform - PostgreSQL Seed Data
--- (Comments and Reviews are in MongoDB)
--- ================================================================
-
--- Clear existing data
-TRUNCATE TABLE post_tags, tags, posts, users RESTART IDENTITY CASCADE;
-
--- ================================================================
--- SEED DATA: Users
--- Password for all users: "password123" (BCrypt hashed)
--- ================================================================
-INSERT INTO users (username, email, password, avatar_url) VALUES
-('john_doe', 'john.doe@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=1'),
-('jane_smith', 'jane.smith@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=2'),
-('bob_wilson', 'bob.wilson@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=3'),
-('alice_johnson', 'alice.johnson@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=4'),
-('charlie_brown', 'charlie.brown@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=5'),
-('diana_prince', 'diana.prince@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=6'),
-('ethan_hunt', 'ethan.hunt@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=7'),
-('fiona_gallagher', 'fiona.gallagher@example.com', '\$2a\$10\$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=8');
-
--- ================================================================
--- SEED DATA: Tags
--- ================================================================
-INSERT INTO tags (name, slug, description) VALUES
-('Java', 'java', 'Articles about Java programming language'),
-('JavaFX', 'javafx', 'JavaFX GUI framework tutorials and tips'),
-('Database', 'database', 'Database design, SQL, and optimization'),
-('PostgreSQL', 'postgresql', 'PostgreSQL specific content'),
-('Tutorial', 'tutorial', 'Step-by-step tutorials'),
-('Best Practices', 'best-practices', 'Industry best practices and patterns'),
-('Performance', 'performance', 'Performance optimization techniques'),
-('Architecture', 'architecture', 'Software architecture and design patterns'),
-('Testing', 'testing', 'Testing strategies and frameworks'),
-('DevOps', 'devops', 'DevOps practices and tools'),
-('Security', 'security', 'Security best practices'),
-('Web Development', 'web-development', 'Web development articles'),
-('Mobile', 'mobile', 'Mobile app development'),
-('Cloud', 'cloud', 'Cloud computing and services'),
-('AI/ML', 'ai-ml', 'Artificial Intelligence and Machine Learning');
-
--- ================================================================
--- SEED DATA: Posts (14 posts)
--- ================================================================
-INSERT INTO posts (user_id, title, content, excerpt, status, featured_image, cover_image, icon, views) VALUES
-(1, 'Getting Started with JavaFX: A Comprehensive Guide', 
-'JavaFX is a powerful framework for building rich desktop applications in Java...', 
-'Learn the fundamentals of JavaFX and build your first desktop application.', 
-'published', 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800', 
-'https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=1200', '☕', 1523),
-
-(1, 'Database Design Principles: Third Normal Form', 
-'Database normalization is crucial for maintaining data integrity...', 
-'Master database normalization and achieve Third Normal Form.', 
-'published', 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800',
-'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200', '🗄️', 892),
-
-(2, 'Mastering SQL Indexing for Performance', 
-'Database indexes dramatically improve query performance...', 
-'Learn how to use indexes effectively to speed up queries.', 
-'published', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800',
-'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200', '⚡', 2156);
-
--- ================================================================
--- SEED DATA: Post-Tag Relationships
--- ================================================================
-INSERT INTO post_tags (post_id, tag_id) VALUES
-(1, 2), (1, 5), (1, 1),
-(2, 3), (2, 4), (2, 6),
-(3, 3), (3, 7), (3, 5);
-
-COMMIT;
-EOF
+docker exec postgis psql -U blog_user -d blog_db -f ./seed.sql
 
 echo -e "${GREEN}✓ PostgreSQL data seeded!${NC}"
 echo ""

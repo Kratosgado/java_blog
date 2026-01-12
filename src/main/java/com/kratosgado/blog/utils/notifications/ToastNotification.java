@@ -34,10 +34,10 @@ public class ToastNotification {
   private static final Duration DEFAULT_DURATION = Duration.seconds(3);
 
   public enum ToastType {
-    SUCCESS("#4CAF50", "✓"),
-    ERROR("#f44336", "✕"),
+    SUCCESS("#6b7280", "✓"),
+    ERROR("#1f2937", "✕"),
     WARNING("#FF9800", "⚠"),
-    INFO("#2196F3", "ℹ");
+    INFO("#4b5563", "ℹ");
 
     final String color;
     final String icon;
