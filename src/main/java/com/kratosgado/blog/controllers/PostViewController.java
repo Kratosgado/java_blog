@@ -7,7 +7,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dtos.request.CreateCommentDto;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
@@ -146,7 +148,8 @@ public class PostViewController implements Initializable {
   }
 
   @Inject
-  public PostViewController(PostService postService, CommentService commentService, TagService tagService, CategoryService categoryService) {
+  public PostViewController(PostService postService, CommentService commentService, TagService tagService,
+      CategoryService categoryService) {
     this.postService = postService;
     this.commentService = commentService;
     this.tagService = tagService;
@@ -219,7 +222,7 @@ public class PostViewController implements Initializable {
 
   private void displayPost(Post post) {
     postTitleLabel.setText(post.getTitle());
-    
+
     // Fetch and display category name
     if (post.getCategoryId() != null) {
       try {
@@ -808,10 +811,13 @@ public class PostViewController implements Initializable {
     }
 
     try {
+      User user = AuthContext.getInstance().getCurrentUser();
       // Create and save comment to database using DTO
-      com.kratosgado.blog.dtos.request.CreateCommentDto dto = new com.kratosgado.blog.dtos.request.CreateCommentDto(
+      CreateCommentDto dto = new CreateCommentDto(
           currentPost.getId(),
-          AuthContext.getInstance().getCurrentUser().getId(),
+          user.getId(),
+          user.getUsername(),
+          user.getAvatarUrl(),
           content);
 
       boolean created = commentService.createComment(dto);

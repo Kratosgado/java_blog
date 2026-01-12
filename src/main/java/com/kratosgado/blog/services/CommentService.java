@@ -36,20 +36,11 @@ public class CommentService {
 
   public boolean createComment(CreateCommentDto dto) {
     ValidatorEngine.validate(dto);
-    
+
     Comment comment = new Comment(dto.postId(), dto.userId(), dto.content());
-    
-    // Fetch user information to populate author name and avatar
-    Optional<User> userOpt = userDAO.getUserById(dto.userId());
-    if (userOpt.isPresent()) {
-      User user = userOpt.get();
-      comment.setAuthorName(user.getUsername());
-      comment.setAuthorAvatarUrl(user.getAvatarUrl());
-      logger.debug("Set author details for comment: {} ({})", user.getUsername(), user.getAvatarUrl());
-    } else {
-      logger.warn("User not found for userId: {}, comment will have no author info", dto.userId());
-    }
-    
+    comment.setAuthorName(dto.authorName());
+    comment.setAuthorAvatarUrl(dto.authorAvatarUrl());
+
     Optional<Comment> result = commentMongoDAO.createComment(comment);
     if (result.isPresent()) {
       logger.info("Comment created successfully for post: {}", dto.postId());
@@ -73,7 +64,7 @@ public class CommentService {
   public int getCommentCountForPost(int postId) {
     return commentMongoDAO.getCommentCountForPost(postId);
   }
-  
+
   public int getApprovedCommentCountForPost(int postId) {
     return commentMongoDAO.getApprovedCommentCountForPost(postId);
   }
@@ -93,15 +84,17 @@ public class CommentService {
   public List<Comment> getRejectedComments() {
     return commentMongoDAO.getCommentsByStatus(CommentStatus.REJECTED.name());
   }
-  
+
   public List<Comment> searchComments(String keyword) {
     return commentMongoDAO.searchComments(keyword);
   }
 
   // Note: These methods are kept for backwards compatibility with controllers
-  // MongoDB uses ObjectId internally, but we expose integer IDs for UI compatibility
-  // In a production system, these would be refactored to use MongoDB ObjectId strings
-  
+  // MongoDB uses ObjectId internally, but we expose integer IDs for UI
+  // compatibility
+  // In a production system, these would be refactored to use MongoDB ObjectId
+  // strings
+
   public boolean approveComment(int commentId) {
     logger.warn("approveComment with integer ID is deprecated - MongoDB uses ObjectId strings");
     // This is a simplified stub - full implementation requires storing ID mapping
