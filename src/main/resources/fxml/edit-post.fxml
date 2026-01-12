@@ -75,7 +75,7 @@
 
         <!-- Excerpt -->
         <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="0">
-          <Label text="Excerpt (Optional)" styleClass="field-label" />
+          <Label text="Excerpt " styleClass="field-label" />
           <TextArea fx:id="excerptArea"
             promptText="Brief summary..."
             prefHeight="80" wrapText="true"
