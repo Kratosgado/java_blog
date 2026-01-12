@@ -74,6 +74,13 @@
       <artifactId>javax.inject</artifactId>
       <version>1</version>
     </dependency>
+
+    <!-- MongoDB Java Driver for NoSQL reviews storage -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>4.11.1</version>
+    </dependency>
   </dependencies>
 
   <properties>

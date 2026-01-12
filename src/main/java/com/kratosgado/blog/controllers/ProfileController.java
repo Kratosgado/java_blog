@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.dtos.request.ChangePasswordDto;
+import com.kratosgado.blog.dtos.request.UpdateUserAvatarDto;
+import com.kratosgado.blog.dtos.request.UpdateUserProfileDto;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.UserService;
 import com.kratosgado.blog.services.UploadService;
@@ -101,22 +103,23 @@ public class ProfileController {
       if (file != null) {
         String avatarPath = uploadService.uploadFile(file, UploadService.UploadType.AVATAR);
         if (avatarPath != null) {
-          if (userService.updateUserAvatar(user.getId(), avatarPath)) {
+          UpdateUserAvatarDto dto = new UpdateUserAvatarDto(user.getId(), avatarPath);
+          if (userService.updateUserAvatar(dto)) {
             user.setAvatarUrl(avatarPath);
             avatarImageView.setImage(ImageUtils.loadImageWithFallback(avatarPath));
             messageLabel.setText("Avatar updated successfully");
-            messageLabel.setStyle("-fx-text-fill: #4CAF50;");
+            messageLabel.setStyle("-fx-text-fill: #6b7280;");
             logger.info("Avatar changed for user: {}", user.getId());
           } else {
             messageLabel.setText("Failed to update avatar");
-            messageLabel.setStyle("-fx-text-fill: #f44336;");
+            messageLabel.setStyle("-fx-text-fill: #1f2937;");
           }
         }
       }
     } catch (Exception e) {
       logger.error("Error changing avatar", e);
       messageLabel.setText("Error: " + e.getMessage());
-      messageLabel.setStyle("-fx-text-fill: #f44336;");
+      messageLabel.setStyle("-fx-text-fill: #1f2937;");
     }
   }
 
@@ -129,13 +132,13 @@ public class ProfileController {
 
       if (newPassword.isEmpty() || oldPassword.isEmpty()) {
         passwordMessageLabel.setText("All fields are required");
-        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+        passwordMessageLabel.setStyle("-fx-text-fill: #1f2937;");
         return;
       }
 
       if (!newPassword.equals(confirmNewPassword)) {
         passwordMessageLabel.setText("Passwords do not match");
-        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+        passwordMessageLabel.setStyle("-fx-text-fill: #1f2937;");
         return;
       }
 
@@ -143,19 +146,19 @@ public class ProfileController {
 
       if (userService.changePassword(dto)) {
         passwordMessageLabel.setText("Password changed successfully");
-        passwordMessageLabel.setStyle("-fx-text-fill: #4CAF50;");
+        passwordMessageLabel.setStyle("-fx-text-fill: #6b7280;");
         currentPasswordField.clear();
         newPasswordField.clear();
         confirmNewPasswordField.clear();
         logger.info("Password changed for user: {}", id);
       } else {
         passwordMessageLabel.setText("Failed to change password");
-        passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+        passwordMessageLabel.setStyle("-fx-text-fill: #1f2937;");
       }
     } catch (Exception e) {
       logger.error("Error changing password", e);
       passwordMessageLabel.setText("Error: " + e.getMessage());
-      passwordMessageLabel.setStyle("-fx-text-fill: #f44336;");
+      passwordMessageLabel.setStyle("-fx-text-fill: #1f2937;");
     }
   }
 
@@ -172,23 +175,24 @@ public class ProfileController {
       String website = websiteField.getText();
       String location = locationField.getText();
 
-      if (userService.updateUserProfile(user.getId(), bio, website, location)) {
+      UpdateUserProfileDto dto = new UpdateUserProfileDto(user.getId(), bio, website, location);
+      if (userService.updateUserProfile(dto)) {
         // Update user object
         user.setBio(bio);
         user.setWebsite(website);
         user.setLocation(location);
 
         messageLabel.setText("Profile updated successfully");
-        messageLabel.setStyle("-fx-text-fill: #4CAF50;");
+        messageLabel.setStyle("-fx-text-fill: #6b7280;");
         logger.info("Profile saved for user: {}", user.getId());
       } else {
         messageLabel.setText("Failed to update profile");
-        messageLabel.setStyle("-fx-text-fill: #f44336;");
+        messageLabel.setStyle("-fx-text-fill: #1f2937;");
       }
     } catch (Exception e) {
       logger.error("Error saving profile", e);
       messageLabel.setText("Error: " + e.getMessage());
-      messageLabel.setStyle("-fx-text-fill: #f44336;");
+      messageLabel.setStyle("-fx-text-fill: #1f2937;");
     }
   }
 

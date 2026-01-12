@@ -68,18 +68,18 @@ public class SettingsController {
     try {
       logger.info("Saving settings - Theme: {}, Language: {}", themeComboBox.getValue(), languageComboBox.getValue());
       messageLabel.setText("Settings saved successfully!");
-      messageLabel.setStyle("-fx-text-fill: #4CAF50;");
+      messageLabel.setStyle("-fx-text-fill: #6b7280;");
     } catch (Exception e) {
       logger.error("Error saving settings", e);
       messageLabel.setText("Error: " + e.getMessage());
-      messageLabel.setStyle("-fx-text-fill: #f44336;");
+      messageLabel.setStyle("-fx-text-fill: #1f2937;");
     }
   }
 
   private void resetSettings() {
     loadSettings();
     messageLabel.setText("Settings reset to default");
-    messageLabel.setStyle("-fx-text-fill: #2196F3;");
+    messageLabel.setStyle("-fx-text-fill: #4b5563;");
     logger.info("Settings reset to default");
   }
 }

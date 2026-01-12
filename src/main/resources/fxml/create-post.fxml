@@ -68,14 +68,15 @@
 
         <!-- Category -->
         <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
-          <Label text="Category" styleClass="field-label" />
+          <Label text="Category *" styleClass="field-label" />
           <ComboBox fx:id="categoryComboBox" maxWidth="Infinity"
             styleClass="modern-combo-box" />
+          <Label text="* Category is required" style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" />
         </VBox>
 
         <!-- Excerpt -->
         <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="0">
-          <Label text="Excerpt (Optional)" styleClass="field-label" />
+          <Label text="Excerpt" styleClass="field-label" />
           <TextArea fx:id="excerptArea"
             promptText="Brief summary..."
             prefHeight="80" wrapText="true"
@@ -87,32 +88,23 @@
 
       <!-- Tags Section -->
       <VBox spacing="10">
-        <Label text="Tags" styleClass="field-label" />
+        <Label text="Tags *" styleClass="field-label" />
         <HBox spacing="12" alignment="CENTER_LEFT">
-          <TextField fx:id="tagInputField"
-            promptText="Add tags (press Enter)"
-            HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
+          <ComboBox fx:id="tagComboBox"
+            promptText="Select a tag"
+            HBox.hgrow="ALWAYS" styleClass="modern-combo-box" />
           <Button fx:id="addTagBtn" text="➕ Add" styleClass="primary-button" />
         </HBox>
         <FlowPane fx:id="tagsFlowPane" hgap="10" vgap="10"
           style="-fx-padding: 12 0;" />
+        <Label text="* At least one tag is required"
+          style="-fx-text-fill: #6B7280; -fx-font-size: 11px;" />
       </VBox>
 
       <!-- Image Uploads -->
       <VBox spacing="16">
         <Label text="Media"
           style="-fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #111827;" />
-
-        <!-- Featured Image -->
-        <VBox spacing="10">
-          <Label text="Featured Image" styleClass="field-label" />
-          <HBox spacing="12">
-            <TextField fx:id="imageUrlField"
-              promptText="Image URL"
-              HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
-            <Button fx:id="uploadImageBtn" text="📁 Browse" styleClass="outline" />
-          </HBox>
-        </VBox>
 
         <!-- Cover Image -->
         <VBox spacing="10">
@@ -122,17 +114,6 @@
               promptText="Cover image URL"
               HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
             <Button fx:id="uploadCoverImageBtn" text="📁 Browse" styleClass="outline" />
-          </HBox>
-        </VBox>
-
-        <!-- Icon -->
-        <VBox spacing="10">
-          <Label text="Post Icon" styleClass="field-label" />
-          <HBox spacing="12">
-            <TextField fx:id="iconField"
-              promptText="Icon URL or emoji"
-              HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
-            <Button fx:id="uploadIconBtn" text="📁 Browse" styleClass="outline" />
           </HBox>
         </VBox>
       </VBox>

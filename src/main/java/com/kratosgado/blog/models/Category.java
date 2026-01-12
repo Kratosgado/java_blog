@@ -2,6 +2,7 @@
 package com.kratosgado.blog.models;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,6 @@ public class Category {
   private String name;
   private String slug;
   private String description;
-  private Timestamp createdAt;
+  private LocalDateTime createdAt;
   private int postCount;
 }

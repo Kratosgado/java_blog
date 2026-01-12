@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.DatabaseConfig;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.utils.cache.UserCache;
 import com.kratosgado.blog.utils.interfaces.DAO;
 
 public class UserDAO extends DAO {
@@ -33,10 +34,9 @@ public class UserDAO extends DAO {
           "bio TEXT," +
           "website VARCHAR(255)," +
           "location VARCHAR(100)," +
-          "likes_count INTEGER DEFAULT 0," +
           "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
       stmt.executeUpdate(sql);
-      
+
       // Add new columns if they don't exist (for existing databases)
       String alterBio = "ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT";
       stmt.executeUpdate(alterBio);
@@ -44,9 +44,7 @@ public class UserDAO extends DAO {
       stmt.executeUpdate(alterWebsite);
       String alterLocation = "ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(100)";
       stmt.executeUpdate(alterLocation);
-      String alterLikesCount = "ALTER TABLE users ADD COLUMN IF NOT EXISTS likes_count INTEGER DEFAULT 0";
-      stmt.executeUpdate(alterLikesCount);
-      
+
       logger.debug("Users table initialized successfully");
     } catch (Exception e) {
       logger.error("Failed to initialize users table", e);
@@ -77,6 +75,8 @@ public class UserDAO extends DAO {
       stmt.setString(1, password);
       stmt.setInt(2, id);
       stmt.executeUpdate();
+      // Invalidate cache for this user
+      UserCache.getInstance().invalidate(id);
       logger.info("Password updated for user id: {}", id);
       return true;
     } catch (Exception e) {
@@ -86,23 +86,22 @@ public class UserDAO extends DAO {
   }
 
   public Optional<User> getUserById(int id) {
+    // Check cache first
+    Optional<User> cached = UserCache.getInstance().get(id);
+    if (cached.isPresent()) {
+      return cached;
+    }
+
     String sql = "SELECT * FROM users WHERE id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setInt(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(User.builder()
-            .id(rs.getInt("id"))
-            .username(rs.getString("username"))
-            .password(rs.getString("password"))
-            .email(rs.getString("email"))
-            .avatarUrl(rs.getString("avatar_url"))
-            .bio(rs.getString("bio"))
-            .website(rs.getString("website"))
-            .location(rs.getString("location"))
-            .likesCount(rs.getInt("likes_count"))
-            .build());
+        User user = mapResultSetToUser(rs);
+        // Cache the user
+        UserCache.getInstance().put(user);
+        return Optional.of(user);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -112,23 +111,22 @@ public class UserDAO extends DAO {
   }
 
   public Optional<User> getUserByEmail(String email) {
+    // Check cache first
+    Optional<User> cached = UserCache.getInstance().getByEmail(email);
+    if (cached.isPresent()) {
+      return cached;
+    }
+
     String sql = "SELECT * FROM users WHERE email = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
       stmt.setString(1, email);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
-        return Optional.of(User.builder()
-            .id(rs.getInt("id"))
-            .username(rs.getString("username"))
-            .password(rs.getString("password"))
-            .email(rs.getString("email"))
-            .avatarUrl(rs.getString("avatar_url"))
-            .bio(rs.getString("bio"))
-            .website(rs.getString("website"))
-            .location(rs.getString("location"))
-            .likesCount(rs.getInt("likes_count"))
-            .build());
+        User user = mapResultSetToUser(rs);
+        // Cache the user
+        UserCache.getInstance().put(user);
+        return Optional.of(user);
       }
       return Optional.empty();
     } catch (Exception e) {
@@ -148,6 +146,8 @@ public class UserDAO extends DAO {
       stmt.setString(1, avatarUrl);
       stmt.setInt(2, userId);
       stmt.executeUpdate();
+      // Invalidate cache for this user
+      UserCache.getInstance().invalidate(userId);
       logger.info("Avatar updated for user id: {}", userId);
       return true;
     } catch (Exception e) {
@@ -165,6 +165,8 @@ public class UserDAO extends DAO {
       stmt.setString(3, location);
       stmt.setInt(4, userId);
       stmt.executeUpdate();
+      // Invalidate cache for this user
+      UserCache.getInstance().invalidate(userId);
       logger.info("Profile updated for user id: {}", userId);
       return true;
     } catch (Exception e) {
@@ -173,38 +175,24 @@ public class UserDAO extends DAO {
     }
   }
 
-  public boolean incrementLikesCount(int userId) {
-    String sql = "UPDATE users SET likes_count = likes_count + 1 WHERE id = ?";
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);) {
-      stmt.setInt(1, userId);
-      int updated = stmt.executeUpdate();
-      if (updated > 0) {
-        logger.info("Likes count incremented for user id: {}", userId);
-        return true;
-      }
-      return false;
-    } catch (Exception e) {
-      logger.error("Failed to increment likes count for user id: {}", userId, e);
-      return false;
-    }
-  }
-
-  public boolean decrementLikesCount(int userId) {
-    String sql = "UPDATE users SET likes_count = GREATEST(likes_count - 1, 0) WHERE id = ?";
-    try (Connection conn = DatabaseConfig.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);) {
-      stmt.setInt(1, userId);
-      int updated = stmt.executeUpdate();
-      if (updated > 0) {
-        logger.info("Likes count decremented for user id: {}", userId);
-        return true;
-      }
-      return false;
-    } catch (Exception e) {
-      logger.error("Failed to decrement likes count for user id: {}", userId, e);
-      return false;
-    }
+  /**
+   * Maps a ResultSet row to a User object.
+   * 
+   * @param rs the ResultSet containing user data
+   * @return a User object populated with data from the ResultSet
+   * @throws Exception if there's an error reading from the ResultSet
+   */
+  private User mapResultSetToUser(ResultSet rs) throws Exception {
+    return User.builder()
+        .id(rs.getInt("id"))
+        .username(rs.getString("username"))
+        .password(rs.getString("password"))
+        .email(rs.getString("email"))
+        .avatarUrl(rs.getString("avatar_url"))
+        .bio(rs.getString("bio"))
+        .website(rs.getString("website"))
+        .location(rs.getString("location"))
+        .build();
   }
 
 }

@@ -124,7 +124,7 @@ public class DashboardController {
           "-fx-background-color: transparent; -fx-text-fill: #333; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;");
     }
     activeButton.setStyle(
-        "-fx-background-color: #667eea; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;");
+        "-fx-background-color: #6b7280; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;");
   }
 
   private void logout() {

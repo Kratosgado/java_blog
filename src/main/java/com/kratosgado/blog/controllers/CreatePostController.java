@@ -12,7 +12,6 @@ import com.kratosgado.blog.dtos.request.CreatePostDto;
 import com.kratosgado.blog.dtos.request.CreateTagDto;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
@@ -49,6 +48,9 @@ public class CreatePostController {
   private TextField tagInputField;
 
   @FXML
+  private ComboBox<String> tagComboBox;
+
+  @FXML
   private Button addTagBtn;
 
   @FXML
@@ -61,23 +63,10 @@ public class CreatePostController {
   private TextArea excerptArea;
 
   @FXML
-  private TextField imageUrlField;
-
-  @FXML
-  private Button uploadImageBtn;
-
-  @FXML
   private TextField coverImageField;
 
   @FXML
   private Button uploadCoverImageBtn;
-
-  @FXML
-  private TextField iconField;
-
-  @FXML
-  private Button uploadIconBtn;
-
   @FXML
   private Label messageLabel;
 
@@ -98,15 +87,18 @@ public class CreatePostController {
   private final UploadService uploadService;
   private final CategoryService categoryService;
   private Post currentPost;
-  private List<String> postTags;
+  private List<String> postTags;  // Track selected tag names
+  private List<Integer> postTagIds;  // Track selected tag IDs
 
   @Inject
-  public CreatePostController(PostService postService, TagService tagService, UploadService uploadService, CategoryService categoryService) {
+  public CreatePostController(PostService postService, TagService tagService, UploadService uploadService,
+      CategoryService categoryService) {
     this.postService = postService;
     this.tagService = tagService;
     this.uploadService = uploadService;
     this.categoryService = categoryService;
     this.postTags = new ArrayList<>();
+    this.postTagIds = new ArrayList<>();
   }
 
   @FXML
@@ -122,12 +114,11 @@ public class CreatePostController {
     saveAsDraftBtn.setOnAction(e -> saveDraft());
     cancelBtn.setOnAction(e -> cancel());
     previewBtn.setOnAction(e -> preview());
-    addTagBtn.setOnAction(e -> addTag());
-    uploadImageBtn.setOnAction(e -> uploadImage());
+    addTagBtn.setOnAction(e -> addTagFromComboBox());
     uploadCoverImageBtn.setOnAction(e -> uploadCoverImage());
-    uploadIconBtn.setOnAction(e -> uploadIcon());
 
     loadCategories();
+    loadTags();
     currentPost = new Post();
   }
 
@@ -135,7 +126,7 @@ public class CreatePostController {
     try {
       List<Category> categories = categoryService.getAllCategories();
       categoryComboBox.getItems().clear();
-      
+
       if (categories.isEmpty()) {
         categoryComboBox.getItems().add("Uncategorized");
       } else {
@@ -143,7 +134,7 @@ public class CreatePostController {
           categoryComboBox.getItems().add(category.getName());
         }
       }
-      
+
       // Select first item by default
       if (!categoryComboBox.getItems().isEmpty()) {
         categoryComboBox.getSelectionModel().selectFirst();
@@ -151,6 +142,23 @@ public class CreatePostController {
     } catch (Exception e) {
       logger.error("Failed to load categories", e);
       categoryComboBox.getItems().addAll("Technology", "Lifestyle", "Business", "Travel", "Other");
+    }
+  }
+
+  private void loadTags() {
+    try {
+      var tags = tagService.getAllTags();
+      if (tagComboBox != null) {
+        tagComboBox.getItems().clear();
+        for (var tag : tags) {
+          tagComboBox.getItems().add(tag.getName());
+        }
+        if (!tagComboBox.getItems().isEmpty()) {
+          tagComboBox.getSelectionModel().selectFirst();
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to load tags", e);
     }
   }
 
@@ -162,14 +170,31 @@ public class CreatePostController {
 
   private CreatePostDto getPostDto(String status) {
     int userId = AuthContext.getInstance().getCurrentUser().getId();
+    Integer categoryId = getSelectedCategoryId();
+    List<Integer> tagIds = new ArrayList<>(postTagIds);  // Copy the selected tag IDs
     String title = titleField.getText();
     String content = contentArea.getText();
     String excerpt = excerptArea.getText();
-    String featuredImage = imageUrlField.getText();
     String coverImage = coverImageField.getText();
-    String icon = iconField.getText();
-    return new CreatePostDto(userId, title, content, excerpt, status, featuredImage, coverImage, icon);
+    return new CreatePostDto(userId, categoryId, tagIds, title, content, excerpt, status, coverImage);
+  }
 
+  private Integer getSelectedCategoryId() {
+    String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
+    if (selectedCategory == null || selectedCategory.isEmpty() || selectedCategory.equals("Uncategorized")) {
+      return null;
+    }
+    try {
+      List<Category> categories = categoryService.getAllCategories();
+      for (Category category : categories) {
+        if (category.getName().equals(selectedCategory)) {
+          return category.getId();
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to get category ID", e);
+    }
+    return null;
   }
 
   private void publishPost() {
@@ -177,114 +202,61 @@ public class CreatePostController {
       try {
         CreatePostDto dto = getPostDto("published");
         var postOpt = postService.createPost(dto);
-        
+
         if (postOpt.isPresent()) {
           Post createdPost = postOpt.get();
           logger.info("Publishing post: {}", createdPost.getTitle());
-          
-          // Assign selected category to post
-          assignCategoryToPost(createdPost.getId());
-          
-          // Assign tags to post
+
+          // Tags are now handled through DTO and will be associated in PostService
           assignTagsToPost(createdPost.getId());
-          
+
           messageLabel.setText("Post published successfully!");
-          messageLabel.setStyle("-fx-text-fill: #4CAF50;");
+          messageLabel.setStyle("-fx-text-fill: #6b7280;");
           clearForm();
           DashboardController.instance().goToPosts();
         }
       } catch (Exception ex) {
         logger.error("Failed to publish post", ex);
-        showMessage(ex.getMessage(), "#f44336");
+        showMessage(ex.getMessage(), "#1f2937");
       }
     }
   }
 
   private void saveDraft() {
+    // Drafts can be saved without category/tags validation
     if (!titleField.getText().isEmpty()) {
       try {
         CreatePostDto dto = getPostDto("draft");
         var postOpt = postService.createPost(dto);
-        
+
         if (postOpt.isPresent()) {
           Post createdPost = postOpt.get();
           logger.info("Saving draft: {}", createdPost.getTitle());
-          
-          // Assign selected category to post
-          assignCategoryToPost(createdPost.getId());
-          
-          // Assign tags to post
+
+          // Tags are now handled through DTO and will be associated in PostService
           assignTagsToPost(createdPost.getId());
-          
+
           messageLabel.setText("Draft saved successfully!");
-          messageLabel.setStyle("-fx-text-fill: #2196F3;");
+          messageLabel.setStyle("-fx-text-fill: #4b5563;");
           clearForm();
         }
       } catch (Exception ex) {
         logger.error("Failed to save draft", ex);
-        showMessage(ex.getMessage(), "#f44336");
-      }
-    }
-  }
-
-  private void assignCategoryToPost(int postId) {
-    String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
-    if (selectedCategory != null && !selectedCategory.isEmpty() && !selectedCategory.equals("Uncategorized")) {
-      try {
-        List<Category> categories = categoryService.getAllCategories();
-        for (Category category : categories) {
-          if (category.getName().equals(selectedCategory)) {
-            categoryService.addCategoryToPost(postId, category.getId());
-            logger.info("Category '{}' assigned to post {}", selectedCategory, postId);
-            break;
-          }
-        }
-      } catch (Exception e) {
-        logger.error("Failed to assign category to post", e);
-        // Don't fail the post creation if category assignment fails
+        showMessage(ex.getMessage(), "#1f2937");
       }
     }
   }
 
   private void assignTagsToPost(int postId) {
-    if (postTags.isEmpty()) {
+    if (postTagIds.isEmpty()) {
       return;
     }
 
     try {
-      for (String tagName : postTags) {
-        // Generate slug from tag name
-        String slug = tagName.toLowerCase().replaceAll("[^a-z0-9]+", "-");
-        
-        // Check if tag already exists
-        var existingTag = tagService.getTagBySlug(slug);
-        
-        int tagId;
-        if (existingTag.isPresent()) {
-          // Use existing tag
-          tagId = existingTag.get().getId();
-          logger.debug("Using existing tag: {}", tagName);
-        } else {
-          // Create new tag
-          CreateTagDto tagDto = new CreateTagDto(tagName, null);
-          if (tagService.createTag(tagDto)) {
-            var newTag = tagService.getTagBySlug(slug);
-            if (newTag.isPresent()) {
-              tagId = newTag.get().getId();
-              logger.info("Created new tag: {}", tagName);
-            } else {
-              logger.error("Failed to retrieve newly created tag: {}", tagName);
-              continue;
-            }
-          } else {
-            logger.error("Failed to create tag: {}", tagName);
-            continue;
-          }
-        }
-        
+      for (int tagId : postTagIds) {
         // Associate tag with post
         tagService.addTagToPost(postId, tagId);
-        logger.info("Tag '{}' assigned to post {}", tagName, postId);
+        logger.info("Tag ID {} assigned to post {}", tagId, postId);
       }
     } catch (Exception e) {
       logger.error("Failed to assign tags to post", e);
@@ -305,40 +277,56 @@ public class CreatePostController {
     logger.info("Previewing post");
   }
 
-  private void addTag() {
-    String tag = tagInputField.getText().trim();
-    if (!tag.isEmpty() && !postTags.contains(tag)) {
-      logger.debug("Adding tag: {}", tag);
-      
-      // Add to tracking list
-      postTags.add(tag);
-      
-      HBox tagChip = new HBox(5);
-      tagChip.setAlignment(Pos.CENTER);
-      tagChip.setStyle(
-          "-fx-background-color: #667eea; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
+  private void addTagFromComboBox() {
+    if (tagComboBox == null || tagComboBox.getValue() == null) {
+      return;
+    }
 
-      Label tagLabel = new Label(tag + " ✕");
-      tagLabel.setStyle("-fx-text-fill: white;");
+    String selectedTagName = tagComboBox.getValue().trim();
+    if (selectedTagName.isEmpty() || postTags.contains(selectedTagName)) {
+      return;
+    }
 
-      Button removeBtn = new Button();
-      removeBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
-      removeBtn.setOnAction(e -> {
-        postTags.remove(tag);
-        tagsFlowPane.getChildren().remove(tagChip);
-      });
+    // Get the tag ID
+    try {
+      var tags = tagService.getAllTags();
+      for (var tag : tags) {
+        if (tag.getName().equals(selectedTagName)) {
+          int tagId = tag.getId();
+          
+          // Add to tracking lists
+          postTags.add(selectedTagName);
+          postTagIds.add(tagId);
 
-      tagChip.getChildren().add(tagLabel);
-      tagsFlowPane.getChildren().add(tagChip);
-      tagInputField.clear();
+          // Create visual tag chip
+          HBox tagChip = createTagChip(selectedTagName, tagId);
+          tagsFlowPane.getChildren().add(tagChip);
+          
+          logger.debug("Added tag: {} (ID: {})", selectedTagName, tagId);
+          break;
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Failed to add tag", e);
     }
   }
 
-  private void uploadImage() {
-    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Image File");
-    if (selectedFile != null) {
-      imageUrlField.setText(selectedFile.toURI().toString());
-    }
+  private HBox createTagChip(String tagName, int tagId) {
+    HBox tagChip = new HBox(5);
+    tagChip.setAlignment(Pos.CENTER);
+    tagChip.setStyle(
+        "-fx-background-color: #6b7280; -fx-padding: 5 10; -fx-background-radius: 15; -fx-text-fill: white;");
+
+    Label tagLabel = new Label(tagName + " ✕");
+    tagLabel.setStyle("-fx-text-fill: white; -fx-cursor: hand;");
+    tagLabel.setOnMouseClicked(e -> {
+      postTags.remove(tagName);
+      postTagIds.remove(Integer.valueOf(tagId));
+      tagsFlowPane.getChildren().remove(tagChip);
+    });
+
+    tagChip.getChildren().add(tagLabel);
+    return tagChip;
   }
 
   private void uploadCoverImage() {
@@ -349,23 +337,29 @@ public class CreatePostController {
     }
   }
 
-  private void uploadIcon() {
-    File selectedFile = uploadService.chooseImageFile(Navigator.getInstance().getStage(), "Select Icon");
-    if (selectedFile != null) {
-      iconField.setText(selectedFile.toURI().toString());
-      logger.debug("Icon selected: {}", selectedFile.getName());
-    }
-  }
-
   private boolean validateForm() {
     if (titleField.getText().isEmpty()) {
-      showMessage("Title is required", "#f44336");
+      showMessage("Title is required", "#1f2937");
       return false;
     }
     if (contentArea.getText().isEmpty()) {
-      showMessage("Content is required", "#f44336");
+      showMessage("Content is required", "#1f2937");
       return false;
     }
+    
+    // Category is mandatory for publishing
+    String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
+    if (selectedCategory == null || selectedCategory.isEmpty() || selectedCategory.equals("Uncategorized")) {
+      showMessage("Please select a category", "#1f2937");
+      return false;
+    }
+    
+    // At least one tag is mandatory for publishing
+    if (postTagIds.isEmpty()) {
+      showMessage("Please add at least one tag", "#1f2937");
+      return false;
+    }
+    
     return true;
   }
 
@@ -378,13 +372,14 @@ public class CreatePostController {
     titleField.clear();
     contentArea.clear();
     excerptArea.clear();
-    imageUrlField.clear();
     coverImageField.clear();
-    iconField.clear();
-    tagInputField.clear();
+    if (tagInputField != null) {
+      tagInputField.clear();
+    }
     tagsFlowPane.getChildren().clear();
     postTags.clear();
-    
+    postTagIds.clear();
+
     // Reset category selection
     if (!categoryComboBox.getItems().isEmpty()) {
       categoryComboBox.getSelectionModel().selectFirst();

@@ -8,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.dao.CategoryDAO;
+import com.kratosgado.blog.dtos.request.CreateCategoryDto;
+import com.kratosgado.blog.dtos.request.UpdateCategoryDto;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.validators.ValidatorEngine;
 
 public class CategoryService {
   private static final Logger logger = LoggerFactory.getLogger(CategoryService.class);
@@ -21,39 +24,41 @@ public class CategoryService {
     this.categoryDAO = categoryDAO;
   }
 
-  public boolean createCategory(String name, String description) {
-    String slug = name.toLowerCase().replaceAll("[^a-z0-9]+", "-");
+  public boolean createCategory(CreateCategoryDto dto) {
+    ValidatorEngine.validate(dto);
+    String slug = dto.name().toLowerCase().replaceAll("[^a-z0-9]+", "-");
 
     // Check if category already exists
     if (categoryDAO.getCategoryBySlug(slug).isPresent()) {
-      throw BlogExceptions.conflict("Category with name '" + name + "' already exists");
+      throw BlogExceptions.conflict("Category with name '" + dto.name() + "' already exists");
     }
 
     Category category = Category.builder()
-        .name(name)
+        .name(dto.name())
         .slug(slug)
-        .description(description)
+        .description(dto.description())
         .build();
 
     boolean created = categoryDAO.createCategory(category);
     if (!created) {
       throw BlogExceptions.internal("Failed to create category");
     }
-    logger.info("Category created: {}", name);
+    logger.info("Category created: {}", dto.name());
     return true;
   }
 
-  public boolean updateCategory(int id, String name, String description) {
-    Category existing = categoryDAO.getCategoryById(id)
+  public boolean updateCategory(UpdateCategoryDto dto) {
+    ValidatorEngine.validate(dto);
+    Category existing = categoryDAO.getCategoryById(dto.id())
         .orElseThrow(() -> BlogExceptions.notFound("Category not found"));
 
-    String slug = name.toLowerCase().replaceAll("[^a-z0-9]+", "-");
+    String slug = dto.name().toLowerCase().replaceAll("[^a-z0-9]+", "-");
 
     Category updated = Category.builder()
-        .id(id)
-        .name(name)
+        .id(dto.id())
+        .name(dto.name())
         .slug(slug)
-        .description(description)
+        .description(dto.description())
         .createdAt(existing.getCreatedAt())
         .build();
 
@@ -61,7 +66,7 @@ public class CategoryService {
     if (!success) {
       throw BlogExceptions.internal("Failed to update category");
     }
-    logger.info("Category updated: {}", id);
+    logger.info("Category updated: {}", dto.id());
     return true;
   }
 

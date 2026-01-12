@@ -7,7 +7,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
   fx:controller="com.kratosgado.blog.controllers.HomeController"
-  style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, -primary-color 0%, #134ba2 100%);"
+  style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, -primary-color 0%, -primary-color-dimmed 100%);"
   stylesheets="@../css/theme.css">
 
   <!-- Top Navigation Bar -->

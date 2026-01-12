@@ -1,5 +1,6 @@
 package com.kratosgado.blog.controllers;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import com.google.inject.Inject;
@@ -65,7 +66,7 @@ public class CategoryManagementController {
   @FXML
   private TableColumn<Category, Integer> postCountColumn;
   @FXML
-  private TableColumn<Category, String> createdAtColumn;
+  private TableColumn<Category, LocalDateTime> createdAtColumn;
   @FXML
   private TableColumn<Category, Void> actionsColumn;
 
@@ -96,18 +97,15 @@ public class CategoryManagementController {
     postCountColumn.setCellValueFactory(new PropertyValueFactory<>("postCount"));
 
     createdAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
-    createdAtColumn.setCellFactory(column -> new TableCell<Category, String>() {
+    createdAtColumn.setCellFactory(column -> new TableCell<>() {
       @Override
-      protected void updateItem(String item, boolean empty) {
+      protected void updateItem(LocalDateTime item, boolean empty) {
         super.updateItem(item, empty);
         if (empty || item == null) {
           setText(null);
         } else {
-          try {
-            setText(UiUtils.formateDateString(item));
-          } catch (Exception e) {
-            setText(item);
-          }
+          setText(UiUtils.formatDate(item));
+          setAlignment(Pos.CENTER);
         }
       }
     });
@@ -206,7 +204,9 @@ public class CategoryManagementController {
     try {
       if (editingCategory == null) {
         // Create new category
-        boolean created = categoryService.createCategory(name, description);
+        com.kratosgado.blog.dtos.request.CreateCategoryDto dto = 
+            new com.kratosgado.blog.dtos.request.CreateCategoryDto(name, description);
+        boolean created = categoryService.createCategory(dto);
         if (created) {
           ToastNotification.success("Category created successfully");
           loadCategories();
@@ -217,7 +217,9 @@ public class CategoryManagementController {
         }
       } else {
         // Update existing category
-        boolean updated = categoryService.updateCategory(editingCategory.getId(), name, description);
+        com.kratosgado.blog.dtos.request.UpdateCategoryDto dto = 
+            new com.kratosgado.blog.dtos.request.UpdateCategoryDto(editingCategory.getId(), name, description);
+        boolean updated = categoryService.updateCategory(dto);
         if (updated) {
           ToastNotification.success("Category updated successfully");
           loadCategories();

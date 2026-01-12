@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.Routes;
+import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
 
 import javafx.collections.FXCollections;
@@ -70,7 +71,6 @@ public class PostsListController {
   private int pageSize = 10;
   private String currentFilter = "All";
   private String currentSort = "Latest";
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy");
 
   @Inject
   public PostsListController(PostService postService) {
@@ -164,7 +164,7 @@ public class PostsListController {
           setText(null);
           setStyle("");
         } else {
-          setText(item.format(DATE_FORMATTER));
+          setText(UiUtils.formatDate(item));
           setStyle("-fx-text-fill: #6b7280; -fx-font-size: 13px; -fx-alignment: CENTER;");
           setAlignment(Pos.CENTER);
         }
@@ -225,7 +225,7 @@ public class PostsListController {
 
     // Actions Column with buttons
     TableColumn<Post, Void> actionsCol = new TableColumn<>("Actions");
-    actionsCol.setPrefWidth(180);
+    actionsCol.setPrefWidth(200);
     actionsCol.setSortable(false);
     actionsCol.setCellFactory(column -> new TableCell<Post, Void>() {
       private final Button viewBtn = new Button("View");
@@ -236,11 +236,11 @@ public class PostsListController {
       {
         // Style buttons
         viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+        editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
+            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
+        deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
+            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
 
         // Hover effects
         viewBtn.setOnMouseEntered(e -> viewBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; " +
@@ -248,14 +248,14 @@ public class PostsListController {
         viewBtn.setOnMouseExited(e -> viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
-        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #059669; -fx-text-fill: white; " +
+        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #4b5563; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; " +
+        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
-        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #dc2626; -fx-text-fill: white; " +
+        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #1f2937; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; " +
+        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
             "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
 
         actionBox.setAlignment(Pos.CENTER);
