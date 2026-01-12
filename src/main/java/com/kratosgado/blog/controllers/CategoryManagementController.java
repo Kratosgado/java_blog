@@ -204,7 +204,9 @@ public class CategoryManagementController {
     try {
       if (editingCategory == null) {
         // Create new category
-        boolean created = categoryService.createCategory(name, description);
+        com.kratosgado.blog.dtos.request.CreateCategoryDto dto = 
+            new com.kratosgado.blog.dtos.request.CreateCategoryDto(name, description);
+        boolean created = categoryService.createCategory(dto);
         if (created) {
           ToastNotification.success("Category created successfully");
           loadCategories();
@@ -215,7 +217,9 @@ public class CategoryManagementController {
         }
       } else {
         // Update existing category
-        boolean updated = categoryService.updateCategory(editingCategory.getId(), name, description);
+        com.kratosgado.blog.dtos.request.UpdateCategoryDto dto = 
+            new com.kratosgado.blog.dtos.request.UpdateCategoryDto(editingCategory.getId(), name, description);
+        boolean updated = categoryService.updateCategory(dto);
         if (updated) {
           ToastNotification.success("Category updated successfully");
           loadCategories();

@@ -95,9 +95,9 @@ public class CommentsManagementController {
 
       {
         container.setAlignment(Pos.CENTER);
-        approveBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-padding: 6 12;");
-        rejectBtn.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-padding: 6 12;");
-        deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-padding: 6 12;");
+        approveBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; -fx-padding: 6 12;");
+        rejectBtn.setStyle("-fx-background-color: #9ca3af; -fx-text-fill: white; -fx-padding: 6 12;");
+        deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 6 12;");
 
         approveBtn.setOnAction(e -> {
           Comment comment = getTableView().getItems().get(getIndex());
