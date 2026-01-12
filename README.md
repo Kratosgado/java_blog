@@ -21,6 +21,10 @@ A comprehensive JavaFX blogging platform with a **hybrid database architecture**
 
 ## Architecture
 
+### Entity-Relationship Diagram
+
+![ERD](./docs/erd.png)
+
 ### Layered Design
 
 ```
@@ -44,7 +48,7 @@ Database Layer (Hybrid)
 ### Key Components
 
 1. **Models**: `Post`, `User`, `Comment`, `Tag`, `Category`, `Review` - Domain objects with Lombok annotations
-2. **DAOs**: 
+2. **DAOs**:
    - **SQL**: `PostDAO`, `UserDAO`, `TagDAO`, `CategoryDAO` - PostgreSQL data access
    - **NoSQL**: `CommentMongoDAO`, `ReviewMongoDAO` - MongoDB data access with flexible schemas
 3. **Services**: Business logic layer with validation and error handling
@@ -64,6 +68,7 @@ The platform uses a **hybrid database architecture**:
 - **MongoDB (NoSQL)**: Unstructured, flexible schema data (Comments, Reviews)
 
 **Why MongoDB for Comments & Reviews?**
+
 - Variable structure (reactions, mentions, attachments, rich media)
 - Threaded/nested comments without complex SQL JOINs
 - High write throughput for user-generated content
@@ -121,6 +126,7 @@ The platform uses a **hybrid database architecture**:
 #### `comments` - **NEW (NoSQL)**
 
 Document structure with flexible schema:
+
 ```javascript
 {
   _id: ObjectId,
@@ -146,6 +152,7 @@ Document structure with flexible schema:
 #### `reviews` - **NEW (NoSQL)**
 
 Document structure with flexible schema:
+
 ```javascript
 {
   _id: ObjectId,
@@ -212,26 +219,32 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 ### Option 1: Quick Start with Docker (Recommended)
 
 1. **Start PostgreSQL database container**:
+
    ```bash
    ./dev.sh start
    ```
+
    This starts PostgreSQL in a Docker container named "postgis" on port 5432.
 
 2. **Start MongoDB container**:
+
    ```bash
    docker run -d \
      --name mongodb \
      -p 27017:27017 \
      mongo:6.0
    ```
+
    This starts MongoDB on port 27017.
 
 3. **Build and run the application**:
+
    ```bash
    mvn clean javafx:run
    ```
 
 4. **Stop databases when done**:
+
    ```bash
    ./dev.sh exit
    docker stop mongodb
@@ -244,6 +257,7 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 1. **Install PostgreSQL 14+** if not already installed
 
 2. **Create database and user**:
+
    ```sql
    CREATE DATABASE blog_db;
    CREATE USER blog_user WITH PASSWORD 'your_password';
@@ -251,12 +265,14 @@ The database schema is **normalized to Third Normal Form (3NF)**:
    ```
 
 3. **Initialize database schema**:
+
    ```bash
    psql -U blog_user -d blog_db -f src/main/resources/schema.sql
    psql -U blog_user -d blog_db -f src/main/resources/seed.sql
    ```
 
 4. **Run full-text search migration** (optional but recommended):
+
    ```bash
    psql -U blog_user -d blog_db -f src/main/resources/migrations/full_text_search.sql
    ```
@@ -266,20 +282,22 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 1. **Install MongoDB 6.0+** if not already installed
 
 2. **Start MongoDB service**:
+
    ```bash
    sudo systemctl start mongod
    ```
 
 3. **Create database and collections**:
+
    ```javascript
    // Connect to MongoDB shell
    mongosh
-   
+
    // Create database and collections
    use blog_nosql
    db.createCollection("comments")
    db.createCollection("reviews")
-   
+
    // Create indexes
    db.comments.createIndex({ post_id: 1 })
    db.comments.createIndex({ user_id: 1 })
@@ -293,18 +311,20 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 
 1. **Configure database connections**:
    Create `.env` file in project root (or use environment variables):
+
    ```env
    # PostgreSQL
    DB_URL=jdbc:postgresql://localhost:5432/blog_db
    DB_USER=blog_user
    DB_PASS=your_password
-   
+
    # MongoDB
    MONGO_URI=mongodb://localhost:27017
    MONGO_DB_NAME=blog_nosql
    ```
 
 2. **Build and run application**:
+
    ```bash
    mvn clean javafx:run
    ```
@@ -314,6 +334,7 @@ The database schema is **normalized to Third Normal Form (3NF)**:
 The application will open automatically in a JavaFX window.
 
 **Pre-seeded Test Accounts**:
+
 - Username: `alice` / Password: `password123`
 - Username: `bob` / Password: `password123`
 - Username: `charlie` / Password: `password123`
@@ -425,7 +446,7 @@ PostgreSQL native full-text search with ranking:
 
 ```sql
 -- Weighted search vector (title > content > excerpt)
-search_vector = 
+search_vector =
   setweight(to_tsvector('english', title), 'A') ||
   setweight(to_tsvector('english', content), 'B') ||
   setweight(to_tsvector('english', excerpt), 'C')
@@ -441,15 +462,17 @@ ORDER BY rank DESC;
 ### 4. Pagination & Denormalization
 
 **Pagination**: Avoid loading all data into memory
+
 ```sql
 -- Only load required page (20 items per page)
-SELECT * FROM posts 
-WHERE status = 'published' 
-ORDER BY created_at DESC 
+SELECT * FROM posts
+WHERE status = 'published'
+ORDER BY created_at DESC
 LIMIT 20 OFFSET 0;
 ```
 
 **Denormalization**: Strategic redundancy for read performance
+
 - `posts.author_name`, `posts.author_avatar_url` (avoid JOIN with users)
 - `comments.author_name`, `comments.author_avatar_url`
 - `tags.post_count`, `categories.post_count` (pre-computed counts)
@@ -499,7 +522,7 @@ SearchSortAlgorithms.quickSort(posts, Comparator.comparing(Post::getCreatedAt));
 int index = SearchSortAlgorithms.binarySearch(sortedPosts, postId, Post::getId);
 
 // Top N - Find highest rated posts efficiently
-List<Post> topPosts = SearchSortAlgorithms.topN(posts, 10, 
+List<Post> topPosts = SearchSortAlgorithms.topN(posts, 10,
   Comparator.comparing(Post::getViews).reversed());
 ```
 
@@ -509,47 +532,47 @@ List<Post> topPosts = SearchSortAlgorithms.topN(posts, 10,
 
 ### Overall Improvements
 
-| Metric | Before Optimization | After Optimization | Improvement |
-|--------|-------------------|-------------------|-------------|
-| **Avg Response Time** | 318ms | 22ms | **93% faster** |
-| **90th Percentile** | 485ms | 48ms | **90% faster** |
-| **Queries per Page** | 8-12 | 2-4 | **67% reduction** |
-| **Cache Hit Ratio** | 0% | 90% | **10x fewer DB queries** |
+| Metric                | Before Optimization | After Optimization | Improvement              |
+| --------------------- | ------------------- | ------------------ | ------------------------ |
+| **Avg Response Time** | 318ms               | 22ms               | **93% faster**           |
+| **90th Percentile**   | 485ms               | 48ms               | **90% faster**           |
+| **Queries per Page**  | 8-12                | 2-4                | **67% reduction**        |
+| **Cache Hit Ratio**   | 0%                  | 90%                | **10x fewer DB queries** |
 
 ### Query Performance Comparison
 
-| Operation | Before | After | Improvement | Method |
-|-----------|--------|-------|-------------|--------|
-| **Get Post (cached)** | 95ms | 2ms | **98%** | Caching |
-| **Search Posts** | 450ms | 4.5ms | **99%** | Full-text search |
-| **Get Posts (paginated)** | 320ms | 18ms | **94%** | Index + Pagination |
-| **Get User by Email** | 95ms | 8ms | **92%** | Index |
-| **Get Posts by Tag** | 280ms | 32ms | **89%** | Index + Cache |
-| **Post Statistics** | 520ms | 42ms | **92%** | View + Index |
+| Operation                 | Before | After | Improvement | Method             |
+| ------------------------- | ------ | ----- | ----------- | ------------------ |
+| **Get Post (cached)**     | 95ms   | 2ms   | **98%**     | Caching            |
+| **Search Posts**          | 450ms  | 4.5ms | **99%**     | Full-text search   |
+| **Get Posts (paginated)** | 320ms  | 18ms  | **94%**     | Index + Pagination |
+| **Get User by Email**     | 95ms   | 8ms   | **92%**     | Index              |
+| **Get Posts by Tag**      | 280ms  | 32ms  | **89%**     | Index + Cache      |
+| **Post Statistics**       | 520ms  | 42ms  | **92%**     | View + Index       |
 
 ### Cache Performance
 
-| Cache Type | Hit Ratio | Memory | TTL | Impact |
-|------------|-----------|--------|-----|--------|
-| PostCache | 85% | ~12 MB | 5 min | 31x faster |
-| UserCache | 92% | ~0.5 MB | 10 min | 36x faster |
-| TagCache | 98% | ~0.02 MB | 30 min | 40x faster |
+| Cache Type | Hit Ratio | Memory   | TTL    | Impact     |
+| ---------- | --------- | -------- | ------ | ---------- |
+| PostCache  | 85%       | ~12 MB   | 5 min  | 31x faster |
+| UserCache  | 92%       | ~0.5 MB  | 10 min | 36x faster |
+| TagCache   | 98%       | ~0.02 MB | 30 min | 40x faster |
 
 ### Algorithm Performance
 
-| Algorithm | Dataset Size | Time | Complexity |
-|-----------|--------------|------|------------|
-| QuickSort | 1,000 items | 19ms | O(n log n) |
-| Binary Search | 10,000 items | 12µs | O(log n) |
-| Linear Search | 10,000 items | 3.2ms | O(n) |
+| Algorithm     | Dataset Size | Time  | Complexity |
+| ------------- | ------------ | ----- | ---------- |
+| QuickSort     | 1,000 items  | 19ms  | O(n log n) |
+| Binary Search | 10,000 items | 12µs  | O(log n)   |
+| Linear Search | 10,000 items | 3.2ms | O(n)       |
 
 ### Scalability Projections
 
-| Dataset Size | Get Post (cached) | Search Posts (FTS) | Paginated List |
-|--------------|------------------|-------------------|----------------|
-| Current (14) | 0.5ms | 4.5ms | 18ms |
-| 1,000 posts | 0.5ms | 12ms | 25ms |
-| 100,000 posts | 0.5ms | 45ms | 35ms |
+| Dataset Size  | Get Post (cached) | Search Posts (FTS) | Paginated List |
+| ------------- | ----------------- | ------------------ | -------------- |
+| Current (14)  | 0.5ms             | 4.5ms              | 18ms           |
+| 1,000 posts   | 0.5ms             | 12ms               | 25ms           |
+| 100,000 posts | 0.5ms             | 45ms               | 35ms           |
 
 ## Testing
 
