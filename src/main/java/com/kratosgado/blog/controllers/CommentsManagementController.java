@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.services.CommentService;
+import com.kratosgado.blog.utils.widgets.CustomButton;
+import com.kratosgado.blog.utils.widgets.CustomButton.ButtonType;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -82,28 +84,25 @@ public class CommentsManagementController {
     // Setup table columns
     commentColumn.setCellValueFactory(new PropertyValueFactory<>("content"));
     authorColumn.setCellValueFactory(new PropertyValueFactory<>("authorName"));
-    postColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty("Post #" + data.getValue().getPostId()));
+    postColumn.setCellValueFactory(
+        data -> new javafx.beans.property.SimpleStringProperty("Post #" + data.getValue().getPostId()));
     dateColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
     statusColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty("Active"));
 
     // Setup actions column with buttons
     actionsColumn.setCellFactory(param -> new TableCell<>() {
-      private final Button approveBtn = new Button("Approve");
+      private final Button approveBtn = new CustomButton("Approve", ButtonType.SUCCESS, e -> {
+        Comment comment = getTableView().getItems().get(getIndex());
+        approveComment(comment.getId());
+      });
       private final Button rejectBtn = new Button("Reject");
       private final Button deleteBtn = new Button("Delete");
       private final HBox container = new HBox(8, approveBtn, rejectBtn, deleteBtn);
 
       {
         container.setAlignment(Pos.CENTER);
-        approveBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; -fx-padding: 6 12;");
         rejectBtn.setStyle("-fx-background-color: #9ca3af; -fx-text-fill: white; -fx-padding: 6 12;");
         deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 6 12;");
-
-        approveBtn.setOnAction(e -> {
-          Comment comment = getTableView().getItems().get(getIndex());
-          approveComment(comment.getId());
-        });
-
         rejectBtn.setOnAction(e -> {
           Comment comment = getTableView().getItems().get(getIndex());
           rejectComment(comment.getId());
@@ -189,7 +188,7 @@ public class CommentsManagementController {
   private void deleteComment(int commentId) {
     try {
       if (com.kratosgado.blog.utils.DialogUtils.showConfirmation(
-          "Delete Comment", 
+          "Delete Comment",
           "Are you sure you want to delete this comment? This action cannot be undone.")) {
         if (commentService.deleteComment(commentId)) {
           logger.info("Comment deleted: {}", commentId);

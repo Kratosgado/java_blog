@@ -1,4 +1,4 @@
-@import "design-system.css";
+@import "../design-system.css";
 
 /* Button Components */
 .button {
@@ -94,4 +94,3 @@
   -fx-font-size: -font-size-lg;
   -fx-padding: -spacing-md -spacing-xl;
 }
-

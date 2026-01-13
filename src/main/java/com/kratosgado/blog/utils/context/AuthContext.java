@@ -27,6 +27,10 @@ public class AuthContext {
     saveUser();
   }
 
+  public boolean isLoggedIn() {
+    return currentUser != null;
+  }
+
   public void logout() {
     currentUser = null;
     userPrefs.remove("user");

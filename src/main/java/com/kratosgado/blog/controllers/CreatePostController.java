@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.dtos.request.CreatePostDto;
-import com.kratosgado.blog.dtos.request.CreateTagDto;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.CategoryService;
@@ -86,9 +85,8 @@ public class CreatePostController {
   private final TagService tagService;
   private final UploadService uploadService;
   private final CategoryService categoryService;
-  private Post currentPost;
-  private List<String> postTags;  // Track selected tag names
-  private List<Integer> postTagIds;  // Track selected tag IDs
+  private List<String> postTags; // Track selected tag names
+  private List<Integer> postTagIds; // Track selected tag IDs
 
   @Inject
   public CreatePostController(PostService postService, TagService tagService, UploadService uploadService,
@@ -119,7 +117,6 @@ public class CreatePostController {
 
     loadCategories();
     loadTags();
-    currentPost = new Post();
   }
 
   private void loadCategories() {
@@ -171,7 +168,7 @@ public class CreatePostController {
   private CreatePostDto getPostDto(String status) {
     int userId = AuthContext.getInstance().getCurrentUser().getId();
     Integer categoryId = getSelectedCategoryId();
-    List<Integer> tagIds = new ArrayList<>(postTagIds);  // Copy the selected tag IDs
+    List<Integer> tagIds = new ArrayList<>(postTagIds); // Copy the selected tag IDs
     String title = titleField.getText();
     String content = contentArea.getText();
     String excerpt = excerptArea.getText();
@@ -293,7 +290,7 @@ public class CreatePostController {
       for (var tag : tags) {
         if (tag.getName().equals(selectedTagName)) {
           int tagId = tag.getId();
-          
+
           // Add to tracking lists
           postTags.add(selectedTagName);
           postTagIds.add(tagId);
@@ -301,7 +298,7 @@ public class CreatePostController {
           // Create visual tag chip
           HBox tagChip = createTagChip(selectedTagName, tagId);
           tagsFlowPane.getChildren().add(tagChip);
-          
+
           logger.debug("Added tag: {} (ID: {})", selectedTagName, tagId);
           break;
         }
@@ -346,20 +343,20 @@ public class CreatePostController {
       showMessage("Content is required", "#1f2937");
       return false;
     }
-    
+
     // Category is mandatory for publishing
     String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
     if (selectedCategory == null || selectedCategory.isEmpty() || selectedCategory.equals("Uncategorized")) {
       showMessage("Please select a category", "#1f2937");
       return false;
     }
-    
+
     // At least one tag is mandatory for publishing
     if (postTagIds.isEmpty()) {
       showMessage("Please add at least one tag", "#1f2937");
       return false;
     }
-    
+
     return true;
   }
 

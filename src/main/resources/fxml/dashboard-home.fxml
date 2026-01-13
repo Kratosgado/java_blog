@@ -34,7 +34,7 @@
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="0"
         style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #6b7280 0%, #4b5563 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="📝" style="-fx-font-size: 24px;" />
+        <Label text="📚" style="-fx-font-size: 24px;" />
         <Label text="Total Posts" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalPostsLabel" text="0"
           style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />
@@ -46,7 +46,7 @@
       <VBox spacing="12" styleClass="card" GridPane.columnIndex="1"
         style="-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #6b7280 0%, #4b5563 100%); 
                -fx-padding: 24; -fx-background-radius: 16;">
-        <Label text="💬" style="-fx-font-size: 24px;" />
+        <Label text="🗫" style="-fx-font-size: 24px;" />
         <Label text="Comments" style="-fx-font-size: 12px; -fx-text-fill: rgba(255,255,255,0.9);" />
         <Label fx:id="totalCommentsLabel" text="0"
           style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: white;" />

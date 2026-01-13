@@ -19,7 +19,6 @@ import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.services.UploadService;
 import com.kratosgado.blog.utils.DialogUtils;
 import com.kratosgado.blog.utils.Navigator;
-import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.interfaces.Initializable;
 
 import javafx.scene.control.Button;
@@ -275,15 +274,14 @@ public class EditPostController implements Initializable {
     if (validateForm()) {
       try {
         updatePostFromForm("published");
-        com.kratosgado.blog.dtos.request.UpdatePostDto dto = 
-            new com.kratosgado.blog.dtos.request.UpdatePostDto(
-                currentPost.getId(),
-                currentPost.getTitle(),
-                currentPost.getContent(),
-                currentPost.getExcerpt(),
-                currentPost.getStatus(),
-                currentPost.getCoverImage());
-        
+        com.kratosgado.blog.dtos.request.UpdatePostDto dto = new com.kratosgado.blog.dtos.request.UpdatePostDto(
+            currentPost.getId(),
+            currentPost.getTitle(),
+            currentPost.getContent(),
+            currentPost.getExcerpt(),
+            currentPost.getStatus(),
+            currentPost.getCoverImage());
+
         if (postService.updatePost(dto)) {
           logger.info("Updated and published post: {}", currentPost.getTitle());
 
@@ -318,15 +316,14 @@ public class EditPostController implements Initializable {
     if (!titleField.getText().isEmpty()) {
       try {
         updatePostFromForm("draft");
-        com.kratosgado.blog.dtos.request.UpdatePostDto dto = 
-            new com.kratosgado.blog.dtos.request.UpdatePostDto(
-                currentPost.getId(),
-                currentPost.getTitle(),
-                currentPost.getContent(),
-                currentPost.getExcerpt(),
-                currentPost.getStatus(),
-                currentPost.getCoverImage());
-        
+        com.kratosgado.blog.dtos.request.UpdatePostDto dto = new com.kratosgado.blog.dtos.request.UpdatePostDto(
+            currentPost.getId(),
+            currentPost.getTitle(),
+            currentPost.getContent(),
+            currentPost.getExcerpt(),
+            currentPost.getStatus(),
+            currentPost.getCoverImage());
+
         if (postService.updatePost(dto)) {
           logger.info("Saved draft: {}", currentPost.getTitle());
 

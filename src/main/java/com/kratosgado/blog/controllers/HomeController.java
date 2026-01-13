@@ -28,7 +28,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -125,15 +124,15 @@ public class HomeController {
     setupAuthentication();
     setupSearchAndFilters();
     setupViewToggle();
-    setupLoadMore();
-    setupCategories();
-    setupTags();
-    setupTrending();
+    loadMoreBtn.setOnAction(e -> loadMorePosts());
+    loadCategories();
+    loadPopularTags();
+    loadTrendingPosts();
   }
 
   private void setupAuthentication() {
     // Check if user is logged in and show appropriate section
-    boolean isLoggedIn = AuthContext.getInstance().getCurrentUser() != null;
+    boolean isLoggedIn = AuthContext.getInstance().isLoggedIn();
 
     authSection.setVisible(!isLoggedIn);
     authSection.setManaged(!isLoggedIn);
@@ -148,50 +147,31 @@ public class HomeController {
     }
 
     // Setup button actions
-    loginBtn.setOnAction(e -> navigateToLogin());
-    signupBtn.setOnAction(e -> navigateToSignup());
+    loginBtn.setOnAction(e -> Navigator.getInstance().goTo(Routes.LOGIN));
+    signupBtn.setOnAction(e -> Navigator.getInstance().goTo(Routes.SIGNUP));
   }
 
   private void loadUserAvatar() {
-    try {
-      var currentUser = AuthContext.getInstance().getCurrentUser();
-      if (currentUser != null) {
-        // Load user avatar with fallback
-        Image avatar;
-        if (currentUser.getAvatarUrl() != null && !currentUser.getAvatarUrl().trim().isEmpty()) {
-          avatar = ImageUtils.loadImageWithFallback(currentUser.getAvatarUrl());
-        } else {
-          avatar = ImageUtils.loadDefaultAvatar();
-        }
-
-        userAvatarImage.setImage(avatar);
-
-        // Clip to circle for rounded avatar
-        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
-        userAvatarImage.setClip(clip);
-
-        logger.debug("User avatar loaded successfully");
-      }
-    } catch (Exception e) {
-      logger.error("Failed to load user avatar", e);
-      // Load default avatar on error
-      userAvatarImage.setImage(ImageUtils.loadDefaultAvatar());
+    final var currentUser = AuthContext.getInstance().getCurrentUser();
+    if (currentUser != null) {
+      userAvatarImage.setImage(ImageUtils.loadImageWithFallback(currentUser.getAvatarUrl()));
+      // Clip to circle for rounded avatar
       javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
       userAvatarImage.setClip(clip);
+
+      logger.debug("User avatar loaded successfully");
     }
   }
 
   private void setupSearchAndFilters() {
     // Load categories dynamically from database
     loadCategoryComboBox();
-
     sortComboBox.getItems().addAll("Latest", "Most Popular", "Most Viewed", "Most Commented");
     sortComboBox.getSelectionModel().selectFirst();
 
     searchField.textProperty().addListener((obs, oldVal, newVal) -> {
       performSearch(newVal);
     });
-
     categoryComboBox.setOnAction(e -> performSearch(searchField.getText()));
     sortComboBox.setOnAction(e -> performSearch(searchField.getText()));
   }
@@ -203,12 +183,8 @@ public class HomeController {
     try {
       categoryComboBox.getItems().clear();
       categoryComboBox.getItems().add("All Categories");
-
-      List<Category> categories = categoryService.getAllCategories();
-      for (Category category : categories) {
-        categoryComboBox.getItems().add(category.getName());
-      }
-
+      List<String> categories = categoryService.getAllCategories().stream().map(Category::getName).toList();
+      categoryComboBox.getItems().addAll(categories);
       categoryComboBox.getSelectionModel().selectFirst();
       logger.info("Loaded {} categories into filter dropdown", categories.size());
     } catch (Exception e) {
@@ -224,22 +200,6 @@ public class HomeController {
     listViewBtn.setOnAction(e -> setGridView(false));
 
     setGridView(true);
-  }
-
-  private void setupLoadMore() {
-    loadMoreBtn.setOnAction(e -> loadMorePosts());
-  }
-
-  private void setupCategories() {
-    loadCategories();
-  }
-
-  private void setupTags() {
-    loadPopularTags();
-  }
-
-  private void setupTrending() {
-    loadTrendingPosts();
   }
 
   private void loadInitialData() {
@@ -485,7 +445,7 @@ public class HomeController {
       imageView.setFitWidth(270);
       imageView.setFitHeight(150);
       imageView.setPreserveRatio(true);
-      imageView.setStyle("-fx-background-radius: 8;");
+      imageView.setStyle("-fx-border-radius: 8;");
     } catch (Exception e) {
       logger.debug("Featured post image not found for post {}", post.getId());
     }
@@ -525,7 +485,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label excerptLabel = new Label(getExcerpt(post.getContent(), 100));
+    Label excerptLabel = new Label(post.getExcerpt());
     excerptLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666; -fx-line-spacing: 1.4;");
     excerptLabel.setWrapText(true);
 
@@ -567,7 +527,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label excerptLabel = new Label(getExcerpt(post.getContent(), 150));
+    Label excerptLabel = new Label(post.getExcerpt());
     excerptLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666; -fx-line-spacing: 1.4;");
     excerptLabel.setWrapText(true);
 
@@ -649,13 +609,6 @@ public class HomeController {
     Navigator.getInstance().goTo(Routes.POST_VIEW, post.getId());
   }
 
-  private String getExcerpt(String content, int maxLength) {
-    if (content.length() <= maxLength) {
-      return content;
-    }
-    return content.substring(0, maxLength) + "...";
-  }
-
   private void showLoading(boolean show) {
     loadingContainer.setVisible(show);
     loadingContainer.setManaged(show);
@@ -672,16 +625,6 @@ public class HomeController {
     });
   }
 
-  private void navigateToLogin() {
-    logger.info("Navigating to login");
-    Navigator.getInstance().goTo(Routes.LOGIN);
-  }
-
-  private void navigateToSignup() {
-    logger.info("Navigating to signup");
-    Navigator.getInstance().goTo(Routes.SIGNUP);
-  }
-
   private void logout() {
     logger.info("Logging out user");
     AuthContext.getInstance().logout();
@@ -693,7 +636,7 @@ public class HomeController {
 
     MenuItem adminItem = new MenuItem("⚙️ Admin");
     adminItem.setOnAction(e -> navigateToAdmin());
-    MenuItem logoutItem = new MenuItem("🚪 Logout");
+    MenuItem logoutItem = new MenuItem("➜] Logout");
     logoutItem.setOnAction(e -> logout());
 
     userMenu.getItems().addAll(adminItem, logoutItem);

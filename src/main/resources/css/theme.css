@@ -1,13 +1,14 @@
 /* Modern JavaFX Theme - White & Gray Color Scheme */
 /* @import "components/button.css"; */
-
+@import "design-system.css";
+@import "components/button.css";
 /* === BASE STYLES === */
 .root {
   -fx-font-family:
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji",
     "Apple Color Emoji", "Segoe UI", "Roboto", "Arial", sans-serif;
   -fx-font-size: 12px;
-  -primary-color: #4b5563;
+  -primary-color: #3b82f6;
   -primary-color-dimmed: #374151;
   -bg-color: #f9fafb;
   -bg-muted: #e5e7eb;
@@ -16,15 +17,43 @@
 
 /* === BUTTONS === */
 .button {
-  -fx-background-color: -primary-color;
   -fx-background-radius: 8px;
-  -fx-text-fill: white;
   -fx-font-weight: 500;
-  -fx-padding: 12px 24px;
-  -fx-cursor: hand;
   -fx-border-color: transparent;
-  -fx-font-size: 14px;
+  -fx-background-color: #3b82f6;
+  -fx-text-fill: white;
+  -fx-padding: 6px 12px;
+  -fx-font-size: 12px;
+  -fx-cursor: hand;
 }
+
+.primary-button {
+  -fx-background-color: #3b82f6;
+}
+
+.primary-button:hover {
+  -fx-background-color: #2563eb;
+}
+
+.secondary-button {
+  -fx-background-color: -secondary;
+  -fx-border-color: -primary-color;
+  -fx-text-fill: -primary-color;
+}
+
+.error-button {
+  -fx-background-color: -error;
+}
+
+.error-button:hover {
+  -fx-background-color: -error-hover;
+}
+
+.secondary-button:hover {
+  -fx-background-color: -secondary-hover;
+  -fx-text-fill: -text-inverse;
+}
+
 .btn-sm {
   -fx-font-size: -font-size-sm;
   -fx-padding: -spacing-xs -spacing-md;
@@ -56,14 +85,6 @@
 
 .success-button:hover {
   -fx-background-color: #4b5563;
-}
-
-.danger-button {
-  -fx-background-color: #374151;
-}
-
-.danger-button:hover {
-  -fx-background-color: #1f2937;
 }
 
 .outline {
@@ -119,10 +140,10 @@
   -fx-border-width: 2px;
   -fx-border-radius: 8px;
   -fx-background-radius: 8px;
-  -fx-padding: 12px 16px;
+  -fx-padding: 6px 8px;
   -fx-font-size: 14px;
   -fx-text-fill: #111827;
-  -fx-prompt-text-fill: #9ca3af;
+  -fx-prompt-text-fill: -primary;
 }
 
 .text-field:focused,
@@ -136,7 +157,7 @@
   -fx-border-width: 2px;
   -fx-border-radius: 8px;
   -fx-background-radius: 8px;
-  -fx-padding: 12px 16px;
+  -fx-padding: 6px 8px;
   -fx-font-size: 14px;
 }
 
@@ -148,7 +169,7 @@
 .combo-box,
 .modern-combo-box {
   -fx-background-color: #ffffff;
-  -fx-border-color: #e5e7eb;
+  -fx-border-color: -primary;
   -fx-border-width: 2px;
   -fx-border-radius: 8px;
   -fx-background-radius: 8px;
@@ -162,7 +183,7 @@
 .combo-box .list-cell {
   -fx-background-color: #ffffff;
   -fx-text-fill: #111827;
-  -fx-padding: 12px 16px;
+  -fx-padding: 6px 8px;
 }
 
 .combo-box .list-cell:hover {
@@ -171,19 +192,19 @@
 
 /* === LABELS === */
 .label.title {
-  -fx-font-size: 24px;
+  -fx-font-size: 18px;
   -fx-font-weight: bold;
   -fx-text-fill: #111827;
 }
 
 .label.subtitle {
-  -fx-font-size: 16px;
+  -fx-font-size: 14px;
   -fx-font-weight: 600;
   -fx-text-fill: #374151;
 }
 
 .section-title {
-  -fx-font-size: 16px;
+  -fx-font-size: 14px;
   -fx-font-weight: bold;
   -fx-text-fill: #111827;
 }
@@ -336,7 +357,6 @@
 }
 
 .nav-button {
-  -fx-background-color: transparent;
   -fx-text-fill: #6b7280;
   -fx-padding: 12px 16px;
   -fx-background-radius: 8px;
@@ -347,7 +367,6 @@
 }
 
 .nav-button:hover {
-  -fx-background-color: #f3f4f6;
   -fx-text-fill: #374151;
 }
 
