@@ -22,7 +22,7 @@
       <Label fx:id="userLabel" styleClass="subtitle-text"
         style="-fx-font-size: 14px; -fx-font-weight: 600;" />
 
-      <Button fx:id="logoutBtn" text="Logout" styleClass="danger-button" />
+      <Button fx:id="logoutBtn" text="Logout" styleClass="error-button" />
     </HBox>
   </top>
 

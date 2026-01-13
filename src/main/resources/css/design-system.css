@@ -33,7 +33,7 @@
 }
 
 .scroll-bar .track {
-  -fx-background-color: #f3f4f6;
+  -fx-background-color: -primary;
   -fx-background-radius: 8px;
 }
 

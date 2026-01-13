@@ -1,7 +1,6 @@
 package com.kratosgado.blog.controllers;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import com.google.inject.Inject;
 
@@ -12,6 +11,8 @@ import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.CustomButton;
+import com.kratosgado.blog.utils.widgets.CustomButton.ButtonType;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -112,22 +113,20 @@ public class CategoryManagementController {
 
     actionsColumn.setCellFactory(column -> new TableCell<Category, Void>() {
       private final Button editBtn = new Button("✏️ Edit");
-      private final Button deleteBtn = new Button("🗑️ Delete");
+      private final Button deleteBtn = new CustomButton("🗑️ Delete", ButtonType.ERROR, e -> {
+        Category category = getTableView().getItems().get(getIndex());
+        handleDeleteCategory(category);
+
+      });
       private final HBox actionBox = new HBox(10, editBtn, deleteBtn);
 
       {
         editBtn.getStyleClass().addAll("outline", "small-button");
-        deleteBtn.getStyleClass().addAll("danger-outline", "small-button");
         actionBox.setAlignment(Pos.CENTER);
 
         editBtn.setOnAction(e -> {
           Category category = getTableView().getItems().get(getIndex());
           handleEditCategory(category);
-        });
-
-        deleteBtn.setOnAction(e -> {
-          Category category = getTableView().getItems().get(getIndex());
-          handleDeleteCategory(category);
         });
       }
 
@@ -204,8 +203,8 @@ public class CategoryManagementController {
     try {
       if (editingCategory == null) {
         // Create new category
-        com.kratosgado.blog.dtos.request.CreateCategoryDto dto = 
-            new com.kratosgado.blog.dtos.request.CreateCategoryDto(name, description);
+        com.kratosgado.blog.dtos.request.CreateCategoryDto dto = new com.kratosgado.blog.dtos.request.CreateCategoryDto(
+            name, description);
         boolean created = categoryService.createCategory(dto);
         if (created) {
           ToastNotification.success("Category created successfully");
@@ -217,8 +216,8 @@ public class CategoryManagementController {
         }
       } else {
         // Update existing category
-        com.kratosgado.blog.dtos.request.UpdateCategoryDto dto = 
-            new com.kratosgado.blog.dtos.request.UpdateCategoryDto(editingCategory.getId(), name, description);
+        com.kratosgado.blog.dtos.request.UpdateCategoryDto dto = new com.kratosgado.blog.dtos.request.UpdateCategoryDto(
+            editingCategory.getId(), name, description);
         boolean updated = categoryService.updateCategory(dto);
         if (updated) {
           ToastNotification.success("Category updated successfully");

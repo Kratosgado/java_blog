@@ -73,10 +73,4 @@ public class LoginController {
       logger.error("Failed to navigate to signup", e);
     }
   }
-
-  private void showError(String message) {
-    infoLabel.setStyle("-fx-text-fill: #1f2937;");
-    infoLabel.setText(message);
-    infoLabel.setVisible(true);
-  }
 }
