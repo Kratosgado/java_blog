@@ -126,7 +126,7 @@
     <!-- Bottom Actions -->
     <HBox spacing="15" alignment="CENTER_RIGHT">
       <Button fx:id="cancelBtn" text="Cancel" styleClass="outline"
-        style="-fx-padding: 12px 24px;" />
+        style="-fx-padding: 6px 12px;" />
     </HBox>
   </VBox>
 </ScrollPane>

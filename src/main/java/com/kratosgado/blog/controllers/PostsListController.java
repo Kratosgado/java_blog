@@ -1,7 +1,6 @@
 package com.kratosgado.blog.controllers;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,8 @@ import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.UiUtils;
 import com.kratosgado.blog.utils.context.AuthContext;
+import com.kratosgado.blog.utils.widgets.CustomButton;
+import com.kratosgado.blog.utils.widgets.CustomButton.ButtonType;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -228,54 +229,25 @@ public class PostsListController {
     actionsCol.setPrefWidth(200);
     actionsCol.setSortable(false);
     actionsCol.setCellFactory(column -> new TableCell<Post, Void>() {
-      private final Button viewBtn = new Button("View");
-      private final Button editBtn = new Button("Edit");
-      private final Button deleteBtn = new Button("Delete");
+
+      private final Button viewBtn = new CustomButton("View", event -> {
+        Post post = getTableView().getItems().get(getIndex());
+        viewPost(post);
+      });
+      private final Button editBtn = new CustomButton("Edit", ButtonType.INFO, event -> {
+        Post post = getTableView().getItems().get(getIndex());
+        editPost(post);
+      });
+      private final Button deleteBtn = new CustomButton("Delete", ButtonType.ERROR, event -> {
+        Post post = getTableView().getItems().get(getIndex());
+        deletePost(post);
+      });
       private final HBox actionBox = new HBox(8);
 
       {
-        // Style buttons
-        viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
-            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
-            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-        deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
-            "-fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;");
-
-        // Hover effects
-        viewBtn.setOnMouseEntered(e -> viewBtn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        viewBtn.setOnMouseExited(e -> viewBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-
-        editBtn.setOnMouseEntered(e -> editBtn.setStyle("-fx-background-color: #4b5563; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        editBtn.setOnMouseExited(e -> editBtn.setStyle("-fx-background-color: #6b7280; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-
-        deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle("-fx-background-color: #1f2937; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle("-fx-background-color: #374151; -fx-text-fill: white; " +
-            "-fx-padding: 6 12; -fx-background-radius: 6; -fx-font-size: 12px; -fx-cursor: hand;"));
-
         actionBox.setAlignment(Pos.CENTER);
         actionBox.getChildren().addAll(viewBtn, editBtn, deleteBtn);
 
-        // Button actions
-        viewBtn.setOnAction(event -> {
-          Post post = getTableView().getItems().get(getIndex());
-          viewPost(post);
-        });
-
-        editBtn.setOnAction(event -> {
-          Post post = getTableView().getItems().get(getIndex());
-          editPost(post);
-        });
-
-        deleteBtn.setOnAction(event -> {
-          Post post = getTableView().getItems().get(getIndex());
-          deletePost(post);
-        });
       }
 
       @Override

@@ -73,7 +73,7 @@
         <HBox spacing="20" alignment="CENTER" styleClass="engagement-bar">
           <Button fx:id="likeBtn" text="👍" styleClass="engagement-button" />
           <Button fx:id="dislikeBtn" text="👎" styleClass="engagement-button" />
-          <Button fx:id="commentBtn" text="💬 Comments" styleClass="engagement-button" />
+          <Button fx:id="commentBtn" text="🗨 Comments" styleClass="engagement-button" />
 
           <Region HBox.hgrow="ALWAYS" />
 
