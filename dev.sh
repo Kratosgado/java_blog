@@ -2,7 +2,7 @@
 
 # ================================================================
 # Smart Blogging Platform - Development Script
-# Manage PostgreSQL and MongoDB Docker containers
+# Manage PostgreSQL/MongoDB Docker and Spring Boot/JavaFX apps
 # ================================================================
 
 case "$1" in
@@ -15,8 +15,25 @@ start)
   echo "MongoDB:    localhost:27017 (blog_nosql)"
   ;;
 run)
-  echo "Running application..."
-  mvn clean javafx:run
+  if [ "$2" == "all" ]; then
+    echo "Running all applications..."
+    cd blog-backend && mvn clean spring-boot:run
+    cd blog-frontend && mvn clean javafx:run
+  elif [ "$2" == "backend" ] || [ "$2" == "api" ]; then
+    echo "Running Spring Boot backend..."
+    cd blog-backend && mvn clean spring-boot:run
+  elif [ "$2" == "frontend" ] || [ "$2" == "ui" ]; then
+    echo "Running JavaFX frontend..."
+    cd blog-frontend && mvn clean javafx:run
+  else
+    echo "Usage: $0 run {backend|frontend}"
+    echo "  backend  - Run Spring Boot REST API (port 8080)"
+    echo "  frontend - Run JavaFX desktop application"
+  fi
+  ;;
+build)
+  echo "Building all modules..."
+  mvn clean install -DskipTests
   ;;
 stop | exit)
   echo "Stopping databases..."
@@ -58,7 +75,7 @@ shell)
   fi
   ;;
 status)
-  echo "Database Status:"
+  echo "Status:"
   echo "================"
   echo ""
   if [ "$(docker ps -q -f name=postgis)" ]; then
@@ -75,10 +92,11 @@ status)
 *)
   echo "Smart Blogging Platform - Development Script"
   echo ""
-  echo "Usage: $0 {command}"
+  echo "Usage: $0 {command} [options]"
   echo ""
   echo "Commands:"
-  echo "  run     - Run the application"
+  echo "  build   - Build all Maven modules"
+  echo "  run     - Run application (backend|frontend)"
   echo "  setup   - Complete database setup (creates containers and seeds data)"
   echo "  start   - Start existing database containers"
   echo "  stop    - Stop database containers"
@@ -88,8 +106,11 @@ status)
   echo "  shell   - Open database shell (postgres|mongo)"
   echo ""
   echo "Examples:"
+  echo "  $0 build              # Build all modules"
   echo "  $0 setup              # First time setup"
   echo "  $0 start              # Start databases"
+  echo "  $0 run backend        # Run Spring Boot API"
+  echo "  $0 run frontend       # Run JavaFX app"
   echo "  $0 logs postgres      # View PostgreSQL logs"
   echo "  $0 shell mongo        # Open MongoDB shell"
   exit 1
