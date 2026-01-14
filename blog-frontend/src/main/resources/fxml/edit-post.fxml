@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+  fx:controller="com.kratosgado.blog.controllers.EditPostController"
+  fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;"
+  stylesheets="@../css/theme.css">
+
+  <VBox spacing="30" style="-fx-background-color: transparent;">
+
+    <!-- Header with Actions -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+      <VBox spacing="5">
+        <Label fx:id="headerLabel" text="Edit Post"
+          style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #111827;" />
+        <Label text="Update your blog post"
+          styleClass="subtitle-text" style="-fx-font-size: 14px;" />
+      </VBox>
+      <Region HBox.hgrow="ALWAYS" />
+      <HBox spacing="12">
+        <Button fx:id="saveAsDraftBtn" text="💾 Save Draft" styleClass="outline" />
+        <Button fx:id="previewBtn" text="👁️ Preview" styleClass="outline" />
+        <Button fx:id="publishBtn" text="🚀 Update And Publish" styleClass="success-button"
+          style="-fx-padding: 14px 28px;" />
+      </HBox>
+    </HBox>
+
+    <!-- Main Form -->
+    <VBox spacing="24" styleClass="card" style="-fx-padding: 32; -fx-background-radius: 16;">
+
+      <!-- Title -->
+      <VBox spacing="10">
+        <Label text="Post Title *" styleClass="field-label"
+          style="-fx-font-size: 14px; -fx-font-weight: 600;" />
+        <TextField fx:id="titleField"
+          promptText="Enter an engaging title..."
+          styleClass="modern-text-field"
+          style="-fx-font-size: 18px; -fx-padding: 16;" />
+      </VBox>
+
+      <!-- Content Editor -->
+      <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+          <Label text="Content *" styleClass="field-label"
+            style="-fx-font-size: 14px; -fx-font-weight: 600;" />
+          <Region HBox.hgrow="ALWAYS" />
+          <Label fx:id="wordCountLabel" text="0 words"
+            styleClass="info-text" style="-fx-font-size: 13px;" />
+        </HBox>
+        <TextArea fx:id="contentArea"
+          promptText="Write your blog post content here..."
+          prefHeight="400" wrapText="true"
+          style="-fx-background-color: #ffffff; -fx-border-color: #e5e7eb; 
+                 -fx-border-width: 2px; -fx-border-radius: 8px; 
+                 -fx-background-radius: 8px; -fx-padding: 16; 
+                 -fx-font-size: 15px; -fx-font-family: 'Segoe UI';" />
+      </VBox>
+
+      <!-- Two Column Layout -->
+      <GridPane hgap="24" vgap="24">
+        <columnConstraints>
+          <ColumnConstraints percentWidth="50" />
+          <ColumnConstraints percentWidth="50" />
+        </columnConstraints>
+
+        <!-- Category -->
+        <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
+          <Label text="Category" styleClass="field-label" />
+          <ComboBox fx:id="categoryComboBox" maxWidth="Infinity"
+            styleClass="modern-combo-box" />
+        </VBox>
+
+        <!-- Excerpt -->
+        <VBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="0">
+          <Label text="Excerpt " styleClass="field-label" />
+          <TextArea fx:id="excerptArea"
+            promptText="Brief summary..."
+            prefHeight="80" wrapText="true"
+            style="-fx-background-color: #ffffff; -fx-border-color: #e5e7eb; 
+                   -fx-border-width: 2px; -fx-border-radius: 8px; 
+                   -fx-background-radius: 8px; -fx-padding: 12; -fx-font-size: 14px;" />
+        </VBox>
+      </GridPane>
+
+      <!-- Tags Section -->
+      <VBox spacing="10">
+        <Label text="Tags" styleClass="field-label" />
+        <HBox spacing="12" alignment="CENTER_LEFT">
+          <TextField fx:id="tagInputField"
+            promptText="Add tags (press Enter)"
+            HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
+          <Button fx:id="addTagBtn" text="➕ Add" styleClass="primary-button" />
+        </HBox>
+        <FlowPane fx:id="tagsFlowPane" hgap="10" vgap="10"
+          style="-fx-padding: 12 0;" />
+      </VBox>
+
+      <!-- Image Uploads -->
+      <VBox spacing="16">
+        <Label text="Media"
+          style="-fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #111827;" />
+
+        <!-- Featured Image -->
+        <VBox spacing="10">
+          <Label text="Featured Image" styleClass="field-label" />
+          <HBox spacing="12">
+            <TextField fx:id="imageUrlField"
+              promptText="Image URL"
+              HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
+            <Button fx:id="uploadImageBtn" text="📁 Browse" styleClass="outline" />
+          </HBox>
+        </VBox>
+
+        <!-- Cover Image -->
+        <VBox spacing="10">
+          <Label text="Cover Image" styleClass="field-label" />
+          <HBox spacing="12">
+            <TextField fx:id="coverImageField"
+              promptText="Cover image URL"
+              HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
+            <Button fx:id="uploadCoverImageBtn" text="📁 Browse" styleClass="outline" />
+          </HBox>
+        </VBox>
+
+        <!-- Icon -->
+        <VBox spacing="10">
+          <Label text="Post Icon" styleClass="field-label" />
+          <HBox spacing="12">
+            <TextField fx:id="iconField"
+              promptText="Icon URL or emoji"
+              HBox.hgrow="ALWAYS" styleClass="modern-text-field" />
+            <Button fx:id="uploadIconBtn" text="📁 Browse" styleClass="outline" />
+          </HBox>
+        </VBox>
+      </VBox>
+
+      <!-- Status Message -->
+      <Label fx:id="messageLabel" wrapText="true" styleClass="info-text"
+        style="-fx-min-height: 20;" />
+    </VBox>
+
+    <!-- Bottom Actions -->
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+      <Button fx:id="cancelBtn" text="Cancel" styleClass="outline"
+        style="-fx-padding: 6px 12px;" />
+    </HBox>
+  </VBox>
+</ScrollPane>

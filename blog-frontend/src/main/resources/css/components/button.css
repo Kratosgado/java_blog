@@ -1,0 +1,96 @@
+@import "../design-system.css";
+
+/* Button Components */
+.button {
+  -fx-background-color: -primary-color;
+  -fx-background-radius: -radius-lg;
+  -fx-border-radius: -radius-lg;
+  -fx-border-color: transparent;
+  -fx-text-fill: -text-inverse;
+  -fx-font-family: -font-family-primary;
+  -fx-font-size: -font-size-base;
+  -fx-font-weight: -font-weight-medium;
+  -fx-padding: -spacing-sm -spacing-lg;
+  -fx-cursor: hand;
+  -fx-transition: all -transition-normal;
+}
+
+.button:hover {
+  -fx-background-color: -primary-hover;
+  -fx-scale-x: 1.02;
+  -fx-scale-y: 1.02;
+}
+
+.button:pressed {
+  -fx-background-color: -primary-dark;
+  -fx-scale-x: 0.98;
+  -fx-scale-y: 0.98;
+}
+
+.button:focused {
+  -fx-border-color: -border-focus;
+  -fx-border-width: 2;
+}
+
+.button:disabled {
+  -fx-background-color: -text-tertiary;
+  -fx-text-fill: -text-disabled;
+  -fx-scale-x: 1;
+  -fx-scale-y: 1;
+}
+
+/* Button Variants */
+.button.secondary {
+  -fx-background-color: transparent;
+  -fx-border-color: -primary-color;
+  -fx-text-fill: -primary-color;
+}
+
+.button.secondary:hover {
+  -fx-background-color: -primary-color;
+  -fx-text-fill: -text-inverse;
+}
+
+.button.danger {
+  -fx-background-color: -danger-color;
+}
+
+.button.danger:hover {
+  -fx-background-color: -danger-hover;
+}
+
+.button.success {
+  -fx-background-color: -success-color;
+}
+
+.button.outline {
+  -fx-background-color: transparent;
+  -fx-border-color: -primary-color;
+  -fx-text-fill: -primary-color;
+  -fx-border-width: 1.5;
+}
+
+.button.outline:hover {
+  -fx-background-color: -primary-light;
+  -fx-border-color: -primary-hover;
+}
+
+.button.ghost {
+  -fx-background-color: transparent;
+  -fx-text-fill: -primary-color;
+}
+
+.button.ghost:hover {
+  -fx-background-color: -background-tertiary;
+}
+
+/* Button Sizes */
+.button.small {
+  -fx-font-size: -font-size-sm;
+  -fx-padding: -spacing-xs -spacing-md;
+}
+
+.button.large {
+  -fx-font-size: -font-size-lg;
+  -fx-padding: -spacing-md -spacing-xl;
+}

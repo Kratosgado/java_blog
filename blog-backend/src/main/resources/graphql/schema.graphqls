@@ -1,0 +1,242 @@
+type Query {
+  # User queries
+  user(id: ID!): User
+  users(page: Int = 0, size: Int = 10): UserPage!
+
+  # Post queries
+  post(id: ID!): Post
+  posts(
+    page: Int = 0
+    size: Int = 10
+    sortBy: String = "createdAt"
+    sortDir: String = "DESC"
+  ): PostPage!
+  searchPosts(keyword: String!, page: Int = 0, size: Int = 10): PostPage!
+  postsByCategory(categoryId: ID!, page: Int = 0, size: Int = 10): PostPage!
+  postsByUser(userId: ID!, page: Int = 0, size: Int = 10): PostPage!
+
+  # Comment queries
+  comment(id: ID!): Comment
+  commentsByPost(postId: ID!, page: Int = 0, size: Int = 10): CommentPage!
+
+  # Category queries
+  category(id: ID!): Category
+  categories: [Category!]!
+
+  # Tag queries
+  tag(id: ID!): Tag
+  tags: [Tag!]!
+
+  # Review queries
+  review(id: ID!): Review
+  reviewsByPost(postId: ID!): [Review!]!
+}
+
+type Mutation {
+  # User mutations
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  updateUserProfile(id: ID!, input: UpdateProfileInput!): User!
+
+  # Post mutations
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: ID!, input: UpdatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+  publishPost(id: ID!): Post!
+
+  # Comment mutations
+  createComment(input: CreateCommentInput!): Comment!
+  updateComment(id: ID!, content: String!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  # Category mutations
+  createCategory(input: CreateCategoryInput!): Category!
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category!
+  deleteCategory(id: ID!): Boolean!
+
+  # Review mutations
+  createReview(input: CreateReviewInput!): Review!
+  updateReview(id: ID!, input: UpdateReviewInput!): Review!
+  deleteReview(id: ID!): Boolean!
+}
+
+# Types
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  avatarUrl: String
+  bio: String
+  website: String
+  location: String
+  role: String!
+  posts: [Post!]
+}
+
+type Post {
+  id: ID!
+  title: String!
+  slug: String!
+  content: String!
+  excerpt: String
+  featuredImage: String
+  status: PostStatus!
+  viewCount: Int!
+  createdAt: String!
+  updatedAt: String
+  publishedAt: String
+  author: User!
+  category: Category
+  comments: [Comment!]
+  reviews: [Review!]
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  status: CommentStatus!
+  createdAt: String!
+  updatedAt: String
+  author: User!
+  post: Post!
+  parent: Comment
+  replies: [Comment!]
+}
+
+type Category {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  createdAt: String!
+  updatedAt: String
+  postCount: Int
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  createdAt: String!
+  postCount: Int
+}
+
+type Review {
+  id: ID!
+  rating: Int!
+  title: String!
+  content: String!
+  createdAt: String!
+  updatedAt: String
+  author: User!
+  post: Post!
+}
+
+# Pagination types
+type UserPage {
+  content: [User!]!
+  totalPages: Int!
+  totalElements: Int!
+  currentPage: Int!
+}
+
+type PostPage {
+  content: [Post!]!
+  totalPages: Int!
+  totalElements: Int!
+  currentPage: Int!
+}
+
+type CommentPage {
+  content: [Comment!]!
+  totalPages: Int!
+  totalElements: Int!
+  currentPage: Int!
+}
+
+# Enums
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+# Input types
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+  confirmPassword: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input UpdateProfileInput {
+  bio: String
+  website: String
+  location: String
+  avatarUrl: String
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  excerpt: String
+  featuredImage: String
+  categoryId: ID
+  status: PostStatus
+}
+
+input UpdatePostInput {
+  title: String
+  content: String
+  excerpt: String
+  featuredImage: String
+  categoryId: ID
+  status: PostStatus
+}
+
+input CreateCommentInput {
+  postId: ID!
+  content: String!
+  parentId: ID
+}
+
+input CreateCategoryInput {
+  name: String!
+  description: String
+}
+
+input UpdateCategoryInput {
+  name: String
+  description: String
+}
+
+input CreateReviewInput {
+  postId: ID!
+  rating: Int!
+  title: String!
+  content: String!
+}
+
+input UpdateReviewInput {
+  rating: Int
+  title: String
+  content: String
+}
+
+# Auth payload
+type AuthPayload {
+  token: String!
+  user: User!
+}

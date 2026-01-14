@@ -1,0 +1,47 @@
+/* Modern Scalable Design System - White & Gray Theme */
+.root {
+  /* Color Palette - Gray Shades */
+  -primary: #3b82f6;
+  -primary-hover: #2563eb;
+  -secondary: #6b7280;
+  -secondary-hover: #4b5563;
+  -error: #ff2937;
+  -error-hover: #f75151;
+  -fx-accent: #9ca3af;
+  -fx-danger: #1f2937;
+
+  /* Backgrounds */
+  -fx-bg-primary: #ffffff;
+  -fx-bg-secondary: #f9fafb;
+  -fx-bg-tertiary: #f3f4f6;
+
+  /* Text Colors */
+  -fx-text-primary: #111827;
+  -fx-text-secondary: #6b7280;
+  -fx-text-muted: #9ca3af;
+
+  /* Borders */
+  -fx-border: #e5e7eb;
+  -fx-border-focus: #4b5563;
+}
+
+/* Scrollbar Styling */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+  -fx-background-color: transparent;
+  -fx-padding: 0;
+}
+
+.scroll-bar .track {
+  -fx-background-color: -primary;
+  -fx-background-radius: 8px;
+}
+
+.scroll-bar .thumb {
+  -fx-background-color: #d1d5db;
+  -fx-background-radius: 8px;
+}
+
+.scroll-bar .thumb:hover {
+  -fx-background-color: #9ca3af;
+}

@@ -1,0 +1,275 @@
+### Validation and Error Handling Tests
+### Base URL
+@host = http://localhost:8080/api
+
+### Test 1: Create post with missing required fields
+# @name missingRequiredFields
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "",
+  "content": ""
+}
+
+###
+
+### Test 2: Create post with invalid category ID
+# @name invalidCategoryId
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Test Post",
+  "content": "Test Content",
+  "categoryId": 99999
+}
+
+###
+
+### Test 3: Update non-existent post
+# @name updateNonExistentPost
+PUT {{host}}/posts/99999 HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Updated Title"
+}
+
+###
+
+### Test 4: Get non-existent post (404 error)
+# @name getNonExistentPost
+GET {{host}}/posts/99999 HTTP/1.1
+
+###
+
+### Test 5: Delete non-existent post
+# @name deleteNonExistentPost
+DELETE {{host}}/posts/99999 HTTP/1.1
+X-User-Id: 1
+
+###
+
+### Test 6: Unauthorized post update (different user)
+# @name unauthorizedUpdate
+PUT {{host}}/posts/1 HTTP/1.1
+Content-Type: application/json
+X-User-Id: 999
+
+{
+  "title": "Trying to update someone else's post"
+}
+
+###
+
+### Test 7: Create comment with empty content
+# @name emptyCommentContent
+POST {{host}}/comments HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "postId": 1,
+  "content": ""
+}
+
+###
+
+### Test 8: Create comment for non-existent post
+# @name commentNonExistentPost
+POST {{host}}/comments HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "postId": 99999,
+  "content": "This should fail"
+}
+
+###
+
+### Test 9: Create category with duplicate slug
+# @name duplicateCategorySlug
+POST {{host}}/categories HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "name": "Technology",
+  "slug": "technology",
+  "description": "Duplicate slug"
+}
+
+###
+
+### Test 10: Invalid pagination parameters (negative page)
+# @name invalidPaginationNegative
+GET {{host}}/posts?page=-1&size=10 HTTP/1.1
+
+###
+
+### Test 11: Invalid pagination parameters (size too large)
+# @name invalidPaginationLarge
+GET {{host}}/posts?page=0&size=10000 HTTP/1.1
+
+###
+
+### Test 12: Invalid sort field
+# @name invalidSortField
+GET {{host}}/posts?page=0&size=10&sortBy=invalidField&sortDir=ASC HTTP/1.1
+
+###
+
+### Test 13: Type mismatch (string instead of number)
+# @name typeMismatch
+GET {{host}}/posts/notANumber HTTP/1.1
+
+###
+
+### Test 14: Missing authentication header
+# @name missingAuth
+DELETE {{host}}/posts/1 HTTP/1.1
+
+###
+
+### Test 15: Invalid JSON payload
+# @name invalidJSON
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Test",
+  "content": "Test"
+  missing comma here
+}
+
+###
+
+### Test 16: SQL Injection attempt in search
+# @name sqlInjectionAttempt
+GET {{host}}/posts/search?keyword='; DROP TABLE posts; -- HTTP/1.1
+
+###
+
+### Test 17: XSS attempt in post content
+# @name xssAttempt
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "<script>alert('XSS')</script>",
+  "content": "<img src=x onerror=alert('XSS')>",
+  "status": "PUBLISHED"
+}
+
+###
+
+### Test 18: Constraint violation (unique email)
+# @name duplicateEmail
+POST {{host}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "existing@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!"
+}
+
+###
+
+### Test 19: Password mismatch validation
+# @name passwordMismatch
+POST {{host}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "Password123!",
+  "confirmPassword": "DifferentPassword!"
+}
+
+###
+
+### Test 20: Weak password validation
+# @name weakPassword
+POST {{host}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "123",
+  "confirmPassword": "123"
+}
+
+###
+
+### Test 21: Invalid email format
+# @name invalidEmail
+POST {{host}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "not-an-email",
+  "password": "Password123!",
+  "confirmPassword": "Password123!"
+}
+
+###
+
+### Test 22: Username too short
+# @name shortUsername
+POST {{host}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "email": "user@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!"
+}
+
+###
+
+### Test 23: Content length exceeds maximum
+# @name contentTooLong
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Test Post",
+  "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. [... repeat 10000 times ...]",
+  "status": "DRAFT"
+}
+
+###
+
+### Test 24: Invalid enum value
+# @name invalidEnum
+POST {{host}}/posts HTTP/1.1
+Content-Type: application/json
+X-User-Id: 1
+
+{
+  "title": "Test Post",
+  "content": "Test Content",
+  "status": "INVALID_STATUS"
+}
+
+###
+
+### Test 25: Rate limiting (if implemented)
+# @name rateLimitTest
+GET {{host}}/posts HTTP/1.1
+
+###
