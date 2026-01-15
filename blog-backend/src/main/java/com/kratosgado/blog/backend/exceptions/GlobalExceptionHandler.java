@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.exceptions;
 
-import com.kratosgado.blog.dtos.response.ApiResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
+
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,19 +24,28 @@ public class GlobalExceptionHandler {
 
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+  @ExceptionHandler(BlogException.class)
+  public ResponseEntity<ResponseDto<String>> handleResourceNotFound(
+      BlogException ex) {
+    logger.error("Blog exception: {}", ex.getMessage());
+    return ResponseEntity
+        .status(ex.getStatus())
+        .body(ResponseDto.error(ex.getMessage()));
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(
+  public ResponseEntity<ResponseDto<Map<String, String>>> handleValidationExceptions(
       MethodArgumentNotValidException ex) {
     Map<String, String> errors = new HashMap<>();
     ex.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
     logger.error("Validation error: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.fail("Validation failed", errors));
+        .body(ResponseDto.fail("Validation failed", errors));
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ApiResponse<String>> handleConstraintViolation(
+  public ResponseEntity<ResponseDto<String>> handleConstraintViolation(
       ConstraintViolationException ex) {
     String errors = ex.getConstraintViolations().stream()
         .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
@@ -43,74 +53,74 @@ public class GlobalExceptionHandler {
     logger.error("Constraint violation: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error("Constraint violation: " + errors));
+        .body(ResponseDto.error("Constraint violation: " + errors));
   }
 
   @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<ApiResponse<String>> handleResourceNotFound(
+  public ResponseEntity<ResponseDto<String>> handleResourceNotFound(
       ResourceNotFoundException ex) {
     logger.error("Resource not found: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
-        .body(ApiResponse.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getMessage()));
   }
 
   @ExceptionHandler(DuplicateResourceException.class)
-  public ResponseEntity<ApiResponse<String>> handleDuplicateResource(
+  public ResponseEntity<ResponseDto<String>> handleDuplicateResource(
       DuplicateResourceException ex) {
     logger.error("Duplicate resource: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .body(ApiResponse.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getMessage()));
   }
 
   @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<ApiResponse<String>> handleUnauthorized(
+  public ResponseEntity<ResponseDto<String>> handleUnauthorized(
       UnauthorizedException ex) {
     logger.error("Unauthorized access: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
-        .body(ApiResponse.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getMessage()));
   }
 
   @ExceptionHandler(AuthenticationException.class)
-  public ResponseEntity<ApiResponse<String>> handleAuthenticationException(
+  public ResponseEntity<ResponseDto<String>> handleAuthenticationException(
       AuthenticationException ex) {
     logger.error("Authentication failed: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
-        .body(ApiResponse.error("Authentication failed: " + ex.getMessage()));
+        .body(ResponseDto.error("Authentication failed: " + ex.getMessage()));
   }
 
   @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<ApiResponse<String>> handleAccessDenied(
+  public ResponseEntity<ResponseDto<String>> handleAccessDenied(
       AccessDeniedException ex) {
     logger.error("Access denied: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
-        .body(ApiResponse.error("Access denied: " + ex.getMessage()));
+        .body(ResponseDto.error("Access denied: " + ex.getMessage()));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ApiResponse<String>> handleIllegalArgument(
+  public ResponseEntity<ResponseDto<String>> handleIllegalArgument(
       IllegalArgumentException ex) {
     logger.error("Illegal argument: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getMessage()));
   }
 
   @ExceptionHandler(IllegalStateException.class)
-  public ResponseEntity<ApiResponse<String>> handleIllegalState(
+  public ResponseEntity<ResponseDto<String>> handleIllegalState(
       IllegalStateException ex) {
     logger.error("Illegal state: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .body(ApiResponse.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ApiResponse<String>> handleTypeMismatch(
+  public ResponseEntity<ResponseDto<String>> handleTypeMismatch(
       MethodArgumentTypeMismatchException ex) {
     String error = String.format("Parameter '%s' should be of type %s",
         ex.getName(),
@@ -118,24 +128,24 @@ public class GlobalExceptionHandler {
     logger.error("Type mismatch: {}", error);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ApiResponse.error(error));
+        .body(ResponseDto.error(error));
   }
 
   @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<ApiResponse<String>> handleRuntimeException(
+  public ResponseEntity<ResponseDto<String>> handleRuntimeException(
       RuntimeException ex, WebRequest request) {
     logger.error("Runtime exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error("An unexpected error occurred"));
+        .body(ResponseDto.error("An unexpected error occurred"));
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ApiResponse<String>> handleGlobalException(
+  public ResponseEntity<ResponseDto<String>> handleGlobalException(
       Exception ex, WebRequest request) {
     logger.error("Unhandled exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.error("An internal server error occurred"));
+        .body(ResponseDto.error("An internal server error occurred"));
   }
 }
