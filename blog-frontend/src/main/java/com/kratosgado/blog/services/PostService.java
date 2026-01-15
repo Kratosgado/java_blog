@@ -30,7 +30,7 @@ public class PostService {
       this.postApiClient.setAuthToken(token);
     }
   }
-  
+
   private void ensureAuthToken() {
     String token = AuthContext.getInstance().getAuthToken();
     if (token != null) {
@@ -161,11 +161,6 @@ public class PostService {
   public List<com.kratosgado.blog.models.Post> getPostsByTag(String tagName) {
     logger.warn("getPostsByTag() not yet implemented via API");
     throw new UnsupportedOperationException("getPostsByTag not yet implemented via API");
-  }
-
-  public long getTotalViews(Long userId) {
-    logger.warn("getTotalViews() not yet implemented via API");
-    throw new UnsupportedOperationException("getTotalViews not yet implemented via API");
   }
 
   public boolean incrementViews(Long postId) {

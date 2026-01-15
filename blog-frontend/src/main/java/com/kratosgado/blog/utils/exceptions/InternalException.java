@@ -1,7 +1,7 @@
 
 package com.kratosgado.blog.utils.exceptions;
 
-public class InternalException extends RuntimeException {
+public class InternalException extends BlogException {
   public InternalException(String message) {
     super(message);
   }

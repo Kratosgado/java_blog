@@ -25,10 +25,7 @@ module com.kratosgado.blog {
   requires org.mongodb.driver.core;
 
   opens com.kratosgado.blog.controllers to javafx.fxml, com.google.guice;
-  opens com.kratosgado.blog.dao to java.sql, com.google.guice;
-  opens com.kratosgado.blog.dao.nosql to com.google.guice;
   opens com.kratosgado.blog.services to com.google.guice;
-  opens com.kratosgado.blog.models to com.google.gson, javafx.base;
   opens com.kratosgado.blog.config to com.google.guice;
 
   exports com.kratosgado.blog;

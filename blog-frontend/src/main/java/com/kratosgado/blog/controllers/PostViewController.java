@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.services.CategoryService;
@@ -143,7 +145,7 @@ public class PostViewController implements Initializable {
   @Override
   public void initData(Object data) {
     logger.debug("Initializing Post View Controller with data: {}", data);
-    loadPostContent((int) data);
+    loadPostContent((Long) data);
     setupUI();
   }
 
@@ -198,17 +200,28 @@ public class PostViewController implements Initializable {
     loadRelatedPosts();
   }
 
-  private void loadPostContent(int id) {
+  private void loadPostContent(Long id) {
     try {
-      final Optional<Post> post = postService.getPostById(id);
+      final var postResponse = postService.getPostById(id);
+      
+      // Convert PostResponse to Post
+      currentPost = new Post();
+      currentPost.setId(postResponse.id());
+      currentPost.setUserId(postResponse.authorId());
+      currentPost.setCategoryId(postResponse.categoryId());
+      currentPost.setTitle(postResponse.title());
+      currentPost.setContent(postResponse.content());
+      currentPost.setExcerpt(postResponse.excerpt());
+      currentPost.setStatus(postResponse.status().name().toLowerCase());
+      currentPost.setCreatedAt(postResponse.createdAt());
+      currentPost.setUpdatedAt(postResponse.updatedAt());
+      currentPost.setViews(Integer.valueOf(postResponse.views()));
+      currentPost.setLikesCount(Integer.valueOf(postResponse.likesCount()));
+      currentPost.setCoverImage(postResponse.coverImage());
+      currentPost.setAuthorName(postResponse.authorName());
+      currentPost.setAuthorAvatarUrl(postResponse.authorAvatarUrl());
+      
       logger.debug("Post loaded successfully: {}", id);
-      if (post.isEmpty()) {
-        logger.error("Failed to load post: {}", id);
-        ToastNotification.error("Failed to load post");
-        Navigator.getInstance().popScreen();
-        return;
-      }
-      currentPost = post.get();
 
       displayPost(currentPost);
       loadComments();
@@ -216,7 +229,9 @@ public class PostViewController implements Initializable {
       updateAuthorActionsVisibility();
 
     } catch (Exception e) {
-      logger.error("Failed to load demo post", e);
+      logger.error("Failed to load post: {}", id, e);
+      ToastNotification.error("Failed to load post");
+      Navigator.getInstance().popScreen();
     }
   }
 
@@ -226,8 +241,8 @@ public class PostViewController implements Initializable {
     // Fetch and display category name
     if (post.getCategoryId() != null) {
       try {
-        var category = categoryService.getCategoryById(post.getCategoryId());
-        categoryLabel.setText(category.isPresent() ? category.get().getName() : "Uncategorized");
+        Category category = categoryService.getCategoryById(post.getCategoryId());
+        categoryLabel.setText(category != null ? category.getName() : "Uncategorized");
       } catch (Exception e) {
         logger.error("Failed to load category", e);
         categoryLabel.setText("Uncategorized");
@@ -255,9 +270,15 @@ public class PostViewController implements Initializable {
     sidebarAuthorLabel.setText(post.getAuthorName());
 
     // Calculate total posts and views for author
-    int totalPosts = postService.getPostsByUserId(post.getUserId()).size();
-    long totalViews = postService.getTotalViews(post.getUserId());
-    sidebarAuthorStats.setText(totalPosts + " posts • " + totalViews + " total views");
+    // TODO: Implement getTotalViews() and getPostsByUserId() in PostService
+    try {
+      int totalPosts = 0; // postService.getPostsByUserId(post.getUserId()).size();
+      long totalViews = 0; // postService.getTotalViews(post.getUserId());
+      sidebarAuthorStats.setText(totalPosts + " posts • " + totalViews + " total views");
+    } catch (Exception e) {
+      logger.debug("Could not load author stats", e);
+      sidebarAuthorStats.setText("Statistics unavailable");
+    }
 
     // Since User model doesn't have bio field, use a default message
     if (authorBioLabel != null) {
@@ -382,7 +403,7 @@ public class PostViewController implements Initializable {
     return commentBox;
   }
 
-  private void deleteComment(int commentId) {
+  private void deleteComment(Long commentId) {
     try {
       javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
           javafx.scene.control.Alert.AlertType.CONFIRMATION);
@@ -392,13 +413,13 @@ public class PostViewController implements Initializable {
 
       alert.showAndWait().ifPresent(response -> {
         if (response == javafx.scene.control.ButtonType.OK) {
-          boolean deleted = commentService.deleteComment(commentId);
-          if (deleted) {
+          try {
+            commentService.deleteComment(commentId);
             logger.info("Comment deleted successfully: {}", commentId);
             ToastNotification.success("Comment deleted successfully!");
             loadComments(); // Reload comments
-          } else {
-            logger.error("Failed to delete comment: {}", commentId);
+          } catch (Exception e) {
+            logger.error("Failed to delete comment: {}", commentId, e);
             ToastNotification.error("Failed to delete comment");
           }
         }
@@ -510,7 +531,7 @@ public class PostViewController implements Initializable {
     return card;
   }
 
-  private void openRelatedPost(int postId) {
+  private void openRelatedPost(Long postId) {
     logger.info("Opening related post: {}", postId);
     try {
       Navigator.getInstance().goTo("post-view", postId);
@@ -597,45 +618,25 @@ public class PostViewController implements Initializable {
         return;
       }
 
-      // Toggle like button state
+      // TODO: Implement like/unlike API endpoints
+      // Toggle like button state (UI only for now)
       if (likeBtn.getStyle().contains("#2196f3")) {
         // Already liked, remove like
-        com.kratosgado.blog.dtos.request.UnlikePostRequest dto = new com.kratosgado.blog.dtos.request.UnlikePostRequest(
-            currentPost.getId(),
-            AuthContext.getInstance().getCurrentUser().getId());
-        boolean success = postService.unlikePost(dto);
-        if (success) {
-          likeBtn.setStyle("");
-          currentPost.setLikesCount(currentPost.getLikesCount() - 1);
-          ToastNotification.success("Like removed");
-          logger.debug("Post unliked: {}", currentPost.getId());
-        } else {
-          ToastNotification.error("Failed to unlike post");
-        }
+        likeBtn.setStyle("");
+        currentPost.setLikesCount(currentPost.getLikesCount() - 1);
+        ToastNotification.info("Like removed (UI only - API not implemented)");
+        logger.debug("Post unliked (UI only): {}", currentPost.getId());
       } else {
         // Add like
-        com.kratosgado.blog.dtos.request.LikePostRequest dto = new com.kratosgado.blog.dtos.request.LikePostRequest(
-            currentPost.getId(),
-            AuthContext.getInstance().getCurrentUser().getId());
-        boolean success = postService.likePost(dto);
-        if (success) {
-          likeBtn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white;");
-          // Remove dislike if it was disliked
-          dislikeBtn.setStyle("");
+        likeBtn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white;");
+        // Remove dislike if it was disliked
+        dislikeBtn.setStyle("");
 
-          // Update local state
-          currentPost.setLikesCount(currentPost.getLikesCount() + 1);
+        // Update local state
+        currentPost.setLikesCount(currentPost.getLikesCount() + 1);
 
-          // Also increment views
-          postService.incrementViews(currentPost.getId());
-          currentPost.setViews(currentPost.getViews() + 1);
-          viewsLabel.setText("👁️ " + currentPost.getViews() + " views");
-
-          ToastNotification.success("Post liked!");
-          logger.debug("Post liked: {}", currentPost.getId());
-        } else {
-          ToastNotification.error("Failed to like post");
-        }
+        ToastNotification.info("Post liked (UI only - API not implemented)");
+        logger.debug("Post liked (UI only): {}", currentPost.getId());
       }
     } catch (Exception e) {
       logger.error("Failed to like post", e);
@@ -733,13 +734,13 @@ public class PostViewController implements Initializable {
 
       alert.showAndWait().ifPresent(response -> {
         if (response == javafx.scene.control.ButtonType.OK) {
-          boolean deleted = postService.deletePost(currentPost.getId());
-          if (deleted) {
+          try {
+            postService.deletePost(currentPost.getId());
             logger.info("Post deleted successfully: {}", currentPost.getId());
             ToastNotification.success("Post deleted successfully!");
             Navigator.getInstance().popScreen();
-          } else {
-            logger.error("Failed to delete post: {}", currentPost.getId());
+          } catch (Exception e) {
+            logger.error("Failed to delete post: {}", currentPost.getId(), e);
             ToastNotification.error("Failed to delete post");
           }
         }
@@ -758,15 +759,15 @@ public class PostViewController implements Initializable {
         // Unpublish
         currentPost.setStatus("draft");
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
-            currentPost.getId(),
             currentPost.getTitle(),
             currentPost.getContent(),
             currentPost.getExcerpt(),
-            "draft",
-            currentPost.getCoverImage());
+            currentPost.getCategoryId(),
+            currentPost.getCoverImage(),
+            "draft");
 
-        boolean updated = postService.updatePost(dto);
-        if (updated) {
+        Post updated = postService.updatePost(currentPost.getId(), dto);
+        if (updated != null) {
           publishBtn.setText("Publish");
           publishBtn.setStyle(
               "-fx-background-color: #6b7280; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");
@@ -778,8 +779,16 @@ public class PostViewController implements Initializable {
         }
       } else {
         // Publish
-        boolean published = postService.publishPost(currentPost.getId());
-        if (published) {
+        com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
+            currentPost.getTitle(),
+            currentPost.getContent(),
+            currentPost.getExcerpt(),
+            currentPost.getCategoryId(),
+            currentPost.getCoverImage(),
+            "published");
+        
+        Post published = postService.updatePost(currentPost.getId(), dto);
+        if (published != null) {
           currentPost.setStatus("published");
           publishBtn.setText("Published");
           publishBtn.setStyle(
@@ -815,13 +824,10 @@ public class PostViewController implements Initializable {
       // Create and save comment to database using DTO
       CreateCommentRequest dto = new CreateCommentRequest(
           currentPost.getId(),
-          user.getId(),
-          user.getUsername(),
-          user.getAvatarUrl(),
           content);
 
-      boolean created = commentService.createComment(dto);
-      if (created) {
+      Comment created = commentService.createComment(dto);
+      if (created != null) {
         logger.info("Comment submitted successfully for post {}", currentPost.getId());
         ToastNotification.success("Comment posted successfully!");
         loadComments(); // Reload comments to show the new one

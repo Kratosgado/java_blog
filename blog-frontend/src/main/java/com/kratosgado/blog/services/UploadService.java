@@ -13,7 +13,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.exceptions.BlogException;
 
 import javafx.scene.image.Image;
 import javafx.stage.FileChooser;
@@ -59,7 +59,7 @@ public class UploadService {
    * Opens a file chooser dialog for image selection.
    * 
    * @param window The parent window for the dialog
-   * @param title The title of the file chooser dialog
+   * @param title  The title of the file chooser dialog
    * @return The selected file, or null if cancelled
    */
   public File chooseImageFile(Window window, String title) {
@@ -79,7 +79,7 @@ public class UploadService {
    * Opens a file chooser dialog for document selection.
    * 
    * @param window The parent window for the dialog
-   * @param title The title of the file chooser dialog
+   * @param title  The title of the file chooser dialog
    * @return The selected file, or null if cancelled
    */
   public File chooseDocumentFile(Window window, String title) {
@@ -98,7 +98,7 @@ public class UploadService {
    * Opens a file chooser dialog for CSV file selection.
    * 
    * @param window The parent window for the dialog
-   * @param title The title of the file chooser dialog
+   * @param title  The title of the file chooser dialog
    * @return The selected file, or null if cancelled
    */
   public File chooseCSVFile(Window window, String title) {
@@ -115,26 +115,27 @@ public class UploadService {
    * Checks file extension, size, and image dimensions.
    * 
    * @param file The file to validate
-   * @throws BlogExceptions.BadRequestException if validation fails
+   * @throws BlogException.BadRequestException if validation fails
    */
   public void validateAvatarFile(File file) {
     validateImageFile(file);
-    
+
     // Check file size
     long fileSize = file.length();
     if (fileSize > MAX_AVATAR_SIZE) {
-      throw BlogExceptions.badRequest("Avatar size must be less than " + (MAX_AVATAR_SIZE / (1024 * 1024)) + "MB");
+      throw BlogException.badRequest("Avatar size must be less than " + (MAX_AVATAR_SIZE / (1024 * 1024)) + "MB");
     }
 
     // Check image dimensions
     try {
       Image image = new Image(file.toURI().toString());
       if (image.getWidth() > MAX_AVATAR_DIMENSION || image.getHeight() > MAX_AVATAR_DIMENSION) {
-        throw BlogExceptions.badRequest("Avatar dimensions must be less than " + MAX_AVATAR_DIMENSION + "x" + MAX_AVATAR_DIMENSION + " pixels");
+        throw BlogException.badRequest(
+            "Avatar dimensions must be less than " + MAX_AVATAR_DIMENSION + "x" + MAX_AVATAR_DIMENSION + " pixels");
       }
     } catch (Exception e) {
       logger.error("Failed to load image for dimension check", e);
-      throw BlogExceptions.badRequest("Failed to validate image dimensions");
+      throw BlogException.badRequest("Failed to validate image dimensions");
     }
   }
 
@@ -143,24 +144,24 @@ public class UploadService {
    * Checks file extension and size.
    * 
    * @param file The file to validate
-   * @throws BlogExceptions.BadRequestException if validation fails
+   * @throws BlogException.BadRequestException if validation fails
    */
   public void validateImageFile(File file) {
     if (file == null || !file.exists()) {
-      throw BlogExceptions.badRequest("File does not exist");
+      throw BlogException.badRequest("File does not exist");
     }
 
     // Check file extension
     String fileName = file.getName().toLowerCase();
     boolean validExtension = IMAGE_EXTENSIONS.stream().anyMatch(fileName::endsWith);
     if (!validExtension) {
-      throw BlogExceptions.badRequest("Invalid image file format. Allowed: " + String.join(", ", IMAGE_EXTENSIONS));
+      throw BlogException.badRequest("Invalid image file format. Allowed: " + String.join(", ", IMAGE_EXTENSIONS));
     }
 
     // Check file size
     long fileSize = file.length();
     if (fileSize > MAX_IMAGE_SIZE) {
-      throw BlogExceptions.badRequest("Image size must be less than " + (MAX_IMAGE_SIZE / (1024 * 1024)) + "MB");
+      throw BlogException.badRequest("Image size must be less than " + (MAX_IMAGE_SIZE / (1024 * 1024)) + "MB");
     }
   }
 
@@ -168,38 +169,40 @@ public class UploadService {
    * Validates a file for document upload.
    * 
    * @param file The file to validate
-   * @throws BlogExceptions.BadRequestException if validation fails
+   * @throws BlogException.BadRequestException if validation fails
    */
   public void validateDocumentFile(File file) {
     if (file == null || !file.exists()) {
-      throw BlogExceptions.badRequest("File does not exist");
+      throw BlogException.badRequest("File does not exist");
     }
 
     // Check file extension
     String fileName = file.getName().toLowerCase();
     boolean validExtension = DOCUMENT_EXTENSIONS.stream().anyMatch(fileName::endsWith);
     if (!validExtension) {
-      throw BlogExceptions.badRequest("Invalid document file format. Allowed: " + String.join(", ", DOCUMENT_EXTENSIONS));
+      throw BlogException
+          .badRequest("Invalid document file format. Allowed: " + String.join(", ", DOCUMENT_EXTENSIONS));
     }
 
     // Check file size
     long fileSize = file.length();
     if (fileSize > MAX_FILE_SIZE) {
-      throw BlogExceptions.badRequest("File size must be less than " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB");
+      throw BlogException.badRequest("File size must be less than " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB");
     }
   }
 
   /**
    * Uploads a file and returns its URI.
    * 
-   * @param filePath The path to the file to upload
-   * @param uploadType The type of upload (determines destination directory and validation)
+   * @param filePath   The path to the file to upload
+   * @param uploadType The type of upload (determines destination directory and
+   *                   validation)
    * @return The URI of the uploaded file
-   * @throws BlogExceptions.BadRequestException if upload fails
+   * @throws BlogException.BadRequestException if upload fails
    */
   public String uploadFile(String filePath, UploadType uploadType) {
     if (filePath == null || filePath.isEmpty()) {
-      throw BlogExceptions.badRequest("File path is required");
+      throw BlogException.badRequest("File path is required");
     }
 
     File file = new File(filePath);
@@ -209,14 +212,15 @@ public class UploadService {
   /**
    * Uploads a file and returns its URI.
    * 
-   * @param file The file to upload
-   * @param uploadType The type of upload (determines destination directory and validation)
+   * @param file       The file to upload
+   * @param uploadType The type of upload (determines destination directory and
+   *                   validation)
    * @return The URI of the uploaded file
-   * @throws BlogExceptions.BadRequestException if upload fails
+   * @throws BlogException.BadRequestException if upload fails
    */
   public String uploadFile(File file, UploadType uploadType) {
     if (file == null || !file.exists()) {
-      throw BlogExceptions.badRequest("File does not exist");
+      throw BlogException.badRequest("File does not exist");
     }
 
     // Validate file based on upload type
@@ -234,7 +238,7 @@ public class UploadService {
       case GENERAL:
         // Basic validation only
         if (file.length() > MAX_FILE_SIZE) {
-          throw BlogExceptions.badRequest("File size must be less than " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB");
+          throw BlogException.badRequest("File size must be less than " + (MAX_FILE_SIZE / (1024 * 1024)) + "MB");
         }
         break;
     }
@@ -243,7 +247,7 @@ public class UploadService {
       // Determine upload directory
       String uploadDir = getUploadDirectory(uploadType);
       Path uploadPath = Paths.get(uploadDir);
-      
+
       // Create directory if it doesn't exist
       if (!Files.exists(uploadPath)) {
         Files.createDirectories(uploadPath);
@@ -265,7 +269,7 @@ public class UploadService {
 
     } catch (IOException e) {
       logger.error("Failed to upload file: {}", file.getAbsolutePath(), e);
-      throw BlogExceptions.badRequest("Failed to upload file: " + e.getMessage());
+      throw BlogException.badRequest("Failed to upload file: " + e.getMessage());
     }
   }
 

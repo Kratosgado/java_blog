@@ -58,7 +58,8 @@ public class DashboardHomeController {
     try {
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
 
-      var allPosts = postService.getPostsByUserId(currentUserId);
+      // TODO: Implement getPostsByUserId() in PostService
+      var allPosts = java.util.Collections.<Post>emptyList(); // postService.getPostsByUserId(currentUserId);
       totalPostsLabel.setText(String.valueOf(allPosts.size()));
 
       int totalComments = 0;
@@ -67,7 +68,8 @@ public class DashboardHomeController {
       }
       totalCommentsLabel.setText(String.valueOf(totalComments));
 
-      long totalViews = postService.getTotalViews(currentUserId);
+      // TODO: Implement getTotalViews() in PostService
+      long totalViews = 0; // postService.getTotalViews(currentUserId);
       totalViewsLabel.setText(String.valueOf(totalViews));
 
       var allTags = tagService.getAllTags();

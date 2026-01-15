@@ -2,7 +2,7 @@ package com.kratosgado.blog.utils.http;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.kratosgado.blog.dtos.response.ApiResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,16 +33,16 @@ public abstract class BaseApiClient {
   /**
    * Parse ApiResponse from JSON with generic type
    */
-  protected <T> ApiResponse<T> parseApiResponse(String json, Class<T> dataType) {
-    Type type = TypeToken.getParameterized(ApiResponse.class, dataType).getType();
+  protected <T> ResponseDto<T> parseApiResponse(String json, Class<T> dataType) {
+    Type type = TypeToken.getParameterized(ResponseDto.class, dataType).getType();
     return gson.fromJson(json, type);
   }
 
   /**
    * Parse ApiResponse from JSON with TypeToken
    */
-  protected <T> ApiResponse<T> parseApiResponse(String json, Type type) {
-    Type responseType = TypeToken.getParameterized(ApiResponse.class, type).getType();
+  protected <T> ResponseDto<T> parseApiResponse(String json, Type type) {
+    Type responseType = TypeToken.getParameterized(ResponseDto.class, type).getType();
     return gson.fromJson(json, responseType);
   }
 
@@ -51,8 +51,9 @@ public abstract class BaseApiClient {
    */
   protected String extractErrorMessage(String responseBody) {
     try {
-      Type type = new TypeToken<ApiResponse<Object>>(){}.getType();
-      ApiResponse<Object> errorResponse = gson.fromJson(responseBody, type);
+      Type type = new TypeToken<ResponseDto<Object>>() {
+      }.getType();
+      ResponseDto<Object> errorResponse = gson.fromJson(responseBody, type);
       if (errorResponse != null && errorResponse.message() != null) {
         return errorResponse.message();
       }
@@ -65,15 +66,16 @@ public abstract class BaseApiClient {
   /**
    * Handle response and throw exception if not successful
    */
-  protected <T> T handleResponse(HttpClient.HttpResponse<String> response, Class<T> dataType, String operation) throws IOException {
+  protected <T> T handleResponse(HttpClient.HttpResponse<String> response, Class<T> dataType, String operation)
+      throws IOException {
     if (!response.isSuccessful()) {
       String errorMessage = extractErrorMessage(response.getRawBody());
       logger.error("{} failed: {}", operation, errorMessage);
       throw new ApiException(operation + " failed: " + errorMessage, response.getStatusCode());
     }
 
-    ApiResponse<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
-    
+    ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
+
     if (!"success".equals(apiResponse.status())) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }

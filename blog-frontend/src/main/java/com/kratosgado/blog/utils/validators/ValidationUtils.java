@@ -4,7 +4,7 @@ package com.kratosgado.blog.utils.validators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kratosgado.blog.utils.exceptions.BlogExceptions;
+import com.kratosgado.blog.utils.exceptions.BlogException;
 import com.kratosgado.blog.utils.exceptions.InternalException;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
@@ -43,7 +43,7 @@ public class ValidationUtils {
       return BCrypt.withDefaults().hashToString(12, password.toCharArray());
     } catch (Exception e) {
       logger.error("Password hashing failed", e);
-      throw BlogExceptions.internal();
+      throw BlogException.internal();
     }
   }
 
