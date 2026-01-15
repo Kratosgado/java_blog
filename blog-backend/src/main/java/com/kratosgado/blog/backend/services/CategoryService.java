@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
@@ -27,7 +28,7 @@ public class CategoryService {
     String slug = generateSlug(request.name());
 
     if (categoryRepository.existsBySlug(slug)) {
-      throw new RuntimeException("Category with this name already exists");
+      throw BlogException.conflict("Category with this name already exists");
     }
 
     Category category = Category.builder()
@@ -44,12 +45,12 @@ public class CategoryService {
   @Transactional
   public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
     Category category = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new RuntimeException("Category not found"));
+        .orElseThrow(() -> BlogException.notFound("Category not found"));
 
     String slug = generateSlug(request.name());
 
     if (!category.getSlug().equals(slug) && categoryRepository.existsBySlug(slug)) {
-      throw new RuntimeException("Category with this name already exists");
+      throw BlogException.conflict("Category with this name already exists");
     }
 
     category.setName(request.name());
@@ -63,21 +64,18 @@ public class CategoryService {
 
   @Transactional
   public void deleteCategory(Long categoryId) {
-    Category category = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new RuntimeException("Category not found"));
-
-    categoryRepository.delete(category);
+    categoryRepository.deleteById(categoryId);
     logger.info("Category deleted: {}", categoryId);
   }
 
   public Category getCategoryById(Long categoryId) {
     return categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new RuntimeException("Category not found"));
+        .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
   public Category getCategoryBySlug(String slug) {
     return categoryRepository.findBySlug(slug)
-        .orElseThrow(() -> new RuntimeException("Category not found"));
+        .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
   public List<Category> getAllCategories() {

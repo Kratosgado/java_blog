@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
@@ -25,10 +26,10 @@ public class AuthService {
 
   public User login(LoginRequest request) {
     var user = userRepository.findByEmail(request.email())
-        .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        .orElseThrow(() -> BlogException.unauthorized("Invalid email or password"));
 
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-      throw new RuntimeException("Invalid email or password");
+      throw BlogException.unauthorized("Invalid email or password");
     }
 
     logger.info("User logged in successfully: {}", user.getEmail());
@@ -37,7 +38,7 @@ public class AuthService {
 
   public User register(RegisterRequest request) {
     if (userRepository.findByEmail(request.email()).isPresent()) {
-      throw new RuntimeException("Email already exists");
+      throw BlogException.conflict("Email already exists");
     }
 
     var user = new User();

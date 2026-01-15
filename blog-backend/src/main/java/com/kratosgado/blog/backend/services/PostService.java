@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
@@ -42,7 +43,7 @@ public class PostService {
   @Transactional
   public Post updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findByIdAndUserId(postId, userId)
-        .orElseThrow(() -> new RuntimeException("Post not found or you don't have permission"));
+        .orElseThrow(() -> BlogException.notFound("Post not found or you don't have permission"));
 
     if (request.title() != null)
       post.setTitle(request.title());
@@ -65,7 +66,7 @@ public class PostService {
   @Transactional
   public void deletePost(Long postId, Long userId) {
     Post post = postRepository.findByIdAndUserId(postId, userId)
-        .orElseThrow(() -> new RuntimeException("Post not found or you don't have permission"));
+        .orElseThrow(() -> BlogException.notFound("Post not found or you don't have permission"));
 
     postRepository.delete(post);
     logger.info("Post deleted: {} by user {}", postId, userId);
@@ -73,7 +74,7 @@ public class PostService {
 
   public Post getPostById(Long postId) {
     return postRepository.findById(postId)
-        .orElseThrow(() -> new RuntimeException("Post not found"));
+        .orElseThrow(() -> BlogException.notFound("Post not found"));
   }
 
   public Page<Post> getPublishedPosts(Pageable pageable) {

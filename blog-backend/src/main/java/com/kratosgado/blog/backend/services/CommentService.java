@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.models.Comment;
@@ -36,7 +37,7 @@ public class CommentService {
   @Transactional
   public Comment approveComment(Long commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new RuntimeException("Comment not found"));
+        .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
     comment.setStatus(CommentStatus.APPROVED);
     comment = commentRepository.save(comment);
@@ -48,7 +49,7 @@ public class CommentService {
   @Transactional
   public Comment rejectComment(Long commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new RuntimeException("Comment not found"));
+        .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
     comment.setStatus(CommentStatus.REJECTED);
     comment = commentRepository.save(comment);
@@ -60,11 +61,11 @@ public class CommentService {
   @Transactional
   public void deleteComment(Long commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new RuntimeException("Comment not found"));
+        .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
     // Only the comment author can delete their comment
     if (!comment.getUserId().equals(userId)) {
-      throw new RuntimeException("You don't have permission to delete this comment");
+      throw BlogException.unauthorized("You are not allowed to delete this comment");
     }
 
     commentRepository.delete(comment);
