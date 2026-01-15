@@ -1,7 +1,15 @@
 
 package com.kratosgado.blog.utils.exceptions;
 
-public class BlogExceptions {
+public class BlogException extends RuntimeException {
+
+  public BlogException(String message) {
+    super(message);
+  }
+
+  public BlogException(Throwable cause) {
+    super(cause);
+  }
 
   public static BadRequestException badRequest(String message) {
     return new BadRequestException(message);
