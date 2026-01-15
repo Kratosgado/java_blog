@@ -10,6 +10,7 @@ import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.utils.exceptions.BlogException;
 import com.kratosgado.blog.utils.http.AuthApiClient;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
 
@@ -31,37 +32,33 @@ public class AuthService {
 
   /**
    * Register a new user
-   * @param username Username
-   * @param email Email
-   * @param password Password
+   * 
+   * @param username        Username
+   * @param email           Email
+   * @param password        Password
    * @param confirmPassword Password confirmation
    * @return User object with auth token stored
    */
   public User register(String username, String email, String password, String confirmPassword) {
     try {
-      // Validate passwords match
       if (!password.equals(confirmPassword)) {
-        throw new IllegalArgumentException("Passwords do not match");
+        throw BlogException.badRequest("Passwords do not match");
       }
-
-      // Create register request
       RegisterRequest request = new RegisterRequest(username, email, password);
-      
-      // Call API
       AuthResponse response = authApiClient.register(request);
-      
+
       // Store token and user info
       this.currentToken = response.token();
       this.currentUser = User.builder()
-        .id(response.userId())
-        .username(response.username())
-        .email(response.email())
-        .role(response.role())
-        .build();
-      
+          .id(response.userId())
+          .username(response.username())
+          .email(response.email())
+          .role(response.role())
+          .build();
+
       logger.info("User registered successfully: {}", email);
       return currentUser;
-      
+
     } catch (IOException e) {
       logger.error("Registration failed due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -73,7 +70,8 @@ public class AuthService {
 
   /**
    * Login with email and password
-   * @param email User email
+   * 
+   * @param email    User email
    * @param password User password
    * @return User object with auth token stored
    */
@@ -81,22 +79,22 @@ public class AuthService {
     try {
       // Create login request
       LoginRequest request = new LoginRequest(email, password);
-      
+
       // Call API
       AuthResponse response = authApiClient.login(request);
-      
+
       // Store token and user info
       this.currentToken = response.token();
       this.currentUser = User.builder()
-        .id(response.userId())
-        .username(response.username())
-        .email(response.email())
-        .role(response.role())
-        .build();
-      
+          .id(response.userId())
+          .username(response.username())
+          .email(response.email())
+          .role(response.role())
+          .build();
+
       logger.info("User logged in successfully: {}", email);
       return currentUser;
-      
+
     } catch (IOException e) {
       logger.error("Login failed due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -108,6 +106,7 @@ public class AuthService {
 
   /**
    * Validate current token
+   * 
    * @return true if token is valid
    */
   public boolean validateToken() {

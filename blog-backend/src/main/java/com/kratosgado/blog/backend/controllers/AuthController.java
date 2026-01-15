@@ -7,8 +7,6 @@ import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.backend.services.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,16 +18,11 @@ import java.util.Map;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
-  private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
   private final AuthService authService;
   private final JwtUtil jwtUtil;
 
   @PostMapping("/login")
-  public ResponseEntity<ResponseDto<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
-    logger.info("Login attempt for email: {}", request.email());
-
+  public AuthResponse login(@Valid @RequestBody LoginRequest request) {
     var user = authService.login(request);
 
     Map<String, Object> claims = new HashMap<>();
@@ -38,20 +31,17 @@ public class AuthController {
 
     String token = jwtUtil.generateToken(user.getEmail(), claims);
 
-    AuthResponse authResponse = new AuthResponse(
+    return new AuthResponse(
         token,
         user.getId(),
         user.getUsername(),
         user.getEmail(),
         user.getRole());
 
-    return ResponseEntity.ok(ResponseDto.success(authResponse));
   }
 
   @PostMapping("/register")
-  public ResponseEntity<ResponseDto<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-    logger.info("Registration attempt for email: {}", request.email());
-
+  public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
     var user = authService.register(request);
 
     Map<String, Object> claims = new HashMap<>();
@@ -60,14 +50,13 @@ public class AuthController {
 
     String token = jwtUtil.generateToken(user.getEmail(), claims);
 
-    AuthResponse authResponse = new AuthResponse(
+    return new AuthResponse(
         token,
         user.getId(),
         user.getUsername(),
         user.getEmail(),
         user.getRole());
 
-    return ResponseEntity.ok(ResponseDto.success(authResponse));
   }
 
   @GetMapping("/validate")

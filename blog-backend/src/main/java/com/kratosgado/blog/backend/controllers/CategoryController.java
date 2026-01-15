@@ -1,25 +1,27 @@
 package com.kratosgado.blog.backend.controllers;
 
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
-import com.kratosgado.blog.backend.services.CategoryService;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
-
-  private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
-
   private final CategoryService categoryService;
 
   @PostMapping
@@ -36,10 +38,8 @@ public class CategoryController {
 
   @DeleteMapping("/{id}")
   public String deleteCategory(@PathVariable("id") Long id) {
+    categoryService.deleteCategory(id);
     return "Category deleted successfully";
-    // logger.info("Deleting category ID: {}", id);
-    // categoryService.deleteCategory(id);
-
   }
 
   @GetMapping("/{id}")

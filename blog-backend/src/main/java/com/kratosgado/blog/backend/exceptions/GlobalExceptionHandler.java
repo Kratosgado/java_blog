@@ -25,12 +25,12 @@ public class GlobalExceptionHandler {
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(BlogException.class)
-  public ResponseEntity<ResponseDto<String>> handleResourceNotFound(
+  public ResponseEntity<ResponseDto<?>> handleResourceNotFound(
       BlogException ex) {
     logger.error("Blog exception: {}", ex.getMessage());
     return ResponseEntity
         .status(ex.getStatus())
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(ex.getStatus().getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -41,11 +41,11 @@ public class GlobalExceptionHandler {
     logger.error("Validation error: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.fail("Validation failed", errors));
+        .body(ResponseDto.fail(HttpStatus.BAD_REQUEST.getReasonPhrase(), "Validation failed", errors));
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ResponseDto<String>> handleConstraintViolation(
+  public ResponseEntity<ResponseDto<?>> handleConstraintViolation(
       ConstraintViolationException ex) {
     String errors = ex.getConstraintViolations().stream()
         .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
@@ -53,43 +53,44 @@ public class GlobalExceptionHandler {
     logger.error("Constraint violation: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error("Constraint violation: " + errors));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), "Constraint violation: " + errors));
   }
 
   @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<ResponseDto<String>> handleResourceNotFound(
+  public ResponseEntity<ResponseDto<?>> handleResourceNotFound(
       ResourceNotFoundException ex) {
     logger.error("Resource not found: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(DuplicateResourceException.class)
-  public ResponseEntity<ResponseDto<String>> handleDuplicateResource(
+  public ResponseEntity<ResponseDto<?>> handleDuplicateResource(
       DuplicateResourceException ex) {
     logger.error("Duplicate resource: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<ResponseDto<String>> handleUnauthorized(
+  public ResponseEntity<ResponseDto<?>> handleUnauthorized(
       UnauthorizedException ex) {
     logger.error("Unauthorized access: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.UNAUTHORIZED.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(AuthenticationException.class)
-  public ResponseEntity<ResponseDto<String>> handleAuthenticationException(
+  public ResponseEntity<ResponseDto<?>> handleAuthenticationException(
       AuthenticationException ex) {
     logger.error("Authentication failed: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
-        .body(ResponseDto.error("Authentication failed: " + ex.getMessage()));
+        .body(
+            ResponseDto.error(HttpStatus.UNAUTHORIZED.getReasonPhrase(), "Authentication failed: " + ex.getMessage()));
   }
 
   @ExceptionHandler(AccessDeniedException.class)
@@ -102,25 +103,25 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ResponseDto<String>> handleIllegalArgument(
+  public ResponseEntity<?> handleIllegalArgument(
       IllegalArgumentException ex) {
     logger.error("Illegal argument: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(IllegalStateException.class)
-  public ResponseEntity<ResponseDto<String>> handleIllegalState(
+  public ResponseEntity<ResponseDto<?>> handleIllegalState(
       IllegalStateException ex) {
     logger.error("Illegal state: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .body(ResponseDto.error(ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ResponseDto<String>> handleTypeMismatch(
+  public ResponseEntity<ResponseDto<?>> handleTypeMismatch(
       MethodArgumentTypeMismatchException ex) {
     String error = String.format("Parameter '%s' should be of type %s",
         ex.getName(),
@@ -128,7 +129,7 @@ public class GlobalExceptionHandler {
     logger.error("Type mismatch: {}", error);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error(error));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), error));
   }
 
   @ExceptionHandler(RuntimeException.class)
@@ -141,11 +142,12 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ResponseDto<String>> handleGlobalException(
+  public ResponseEntity<ResponseDto<?>> handleGlobalException(
       Exception ex, WebRequest request) {
     logger.error("Unhandled exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ResponseDto.error("An internal server error occurred"));
+        .body(
+            ResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), "An internal server error occurred"));
   }
 }

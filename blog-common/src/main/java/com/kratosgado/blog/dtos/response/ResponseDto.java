@@ -5,11 +5,15 @@ public record ResponseDto<T>(
     String message,
     T data) {
   public static <T> ResponseDto<T> success(T data) {
-    return new ResponseDto<>("success", "Operation completed successfully", data);
+    return success("OK", "Operation completed successfully", data);
   }
 
   public static <T> ResponseDto<T> success(String message, T data) {
-    return new ResponseDto<>("success", message, data);
+    return success("OK", message, data);
+  }
+
+  public static <T> ResponseDto<T> success(String status, String message, T data) {
+    return new ResponseDto<>(status, message, data);
   }
 
   public static <T> ResponseDto<T> error(String message) {
@@ -17,7 +21,11 @@ public record ResponseDto<T>(
   }
 
   public static <T> ResponseDto<T> fail(String message, T data) {
-    return new ResponseDto<>("fail", message, data);
+    return fail("fail", message, data);
+  }
+
+  public static <T> ResponseDto<T> fail(String status, String message, T data) {
+    return new ResponseDto<>(status, message, data);
   }
 
   public static ResponseDto<Void> error(String status, String message) {

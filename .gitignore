@@ -6,3 +6,4 @@ target
 .env
 .idea
 uploads
+logs

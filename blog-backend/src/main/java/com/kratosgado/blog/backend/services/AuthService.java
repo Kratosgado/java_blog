@@ -13,9 +13,6 @@ import com.kratosgado.blog.models.User;
 
 @Service
 public class AuthService {
-
-  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
@@ -31,8 +28,6 @@ public class AuthService {
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       throw BlogException.unauthorized("Invalid email or password");
     }
-
-    logger.info("User logged in successfully: {}", user.getEmail());
     return user;
   }
 
@@ -49,7 +44,6 @@ public class AuthService {
 
     user = userRepository.save(user);
 
-    logger.info("User registered successfully: {}", user.getEmail());
     return user;
   }
 }

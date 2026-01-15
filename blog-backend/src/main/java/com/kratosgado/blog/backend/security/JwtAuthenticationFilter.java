@@ -31,7 +31,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request,
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    logger.info("Calling JwtAuthenticationFilter");
 
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
@@ -42,7 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
       return;
     }
-    logger.info("Authorization header found");
 
     // Extract JWT token
     jwt = authHeader.substring(7);

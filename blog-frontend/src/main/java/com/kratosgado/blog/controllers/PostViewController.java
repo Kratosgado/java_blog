@@ -1,7 +1,6 @@
 package com.kratosgado.blog.controllers;
 
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -203,7 +202,7 @@ public class PostViewController implements Initializable {
   private void loadPostContent(Long id) {
     try {
       final var postResponse = postService.getPostById(id);
-      
+
       // Convert PostResponse to Post
       currentPost = new Post();
       currentPost.setId(postResponse.id());
@@ -220,7 +219,7 @@ public class PostViewController implements Initializable {
       currentPost.setCoverImage(postResponse.coverImage());
       currentPost.setAuthorName(postResponse.authorName());
       currentPost.setAuthorAvatarUrl(postResponse.authorAvatarUrl());
-      
+
       logger.debug("Post loaded successfully: {}", id);
 
       displayPost(currentPost);
@@ -786,7 +785,7 @@ public class PostViewController implements Initializable {
             currentPost.getCategoryId(),
             currentPost.getCoverImage(),
             "published");
-        
+
         Post published = postService.updatePost(currentPost.getId(), dto);
         if (published != null) {
           currentPost.setStatus("published");

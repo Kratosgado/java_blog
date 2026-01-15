@@ -2,8 +2,6 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +12,6 @@ import com.kratosgado.blog.models.Category;
 
 @Service
 public class CategoryService {
-
-  private static final Logger logger = LoggerFactory.getLogger(CategoryService.class);
-
   private final CategoryRepository categoryRepository;
 
   public CategoryService(CategoryRepository categoryRepository) {
@@ -37,9 +32,7 @@ public class CategoryService {
         .description(request.description())
         .build();
 
-    category = categoryRepository.save(category);
-    logger.info("Category created: {}", category.getName());
-    return category;
+    return categoryRepository.save(category);
   }
 
   @Transactional
@@ -57,15 +50,12 @@ public class CategoryService {
     category.setSlug(slug);
     category.setDescription(request.description());
 
-    category = categoryRepository.save(category);
-    logger.info("Category updated: {}", categoryId);
-    return category;
+    return categoryRepository.save(category);
   }
 
   @Transactional
   public void deleteCategory(Long categoryId) {
     categoryRepository.deleteById(categoryId);
-    logger.info("Category deleted: {}", categoryId);
   }
 
   public Category getCategoryById(Long categoryId) {
