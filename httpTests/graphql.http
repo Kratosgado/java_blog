@@ -1,0 +1,355 @@
+### GraphQL API Tests
+
+
+### Base URL
+
+@graphqlEndpoint = {{host}}/graphql
+@host = http://localhost:8080/api
+
+
+### Query: Get a single post
+
+# @name getPost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPost($id: ID!) { post(id: $id) { id title slug content excerpt status createdAt author { id username email } category { id name slug } } }",
+  "variables": {
+    "id": "1"
+  }
+}
+
+
+### 
+
+
+### Query: Get paginated posts
+
+# @name getPosts
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPosts($page: Int, $size: Int, $sortBy: String, $sortDir: String) { posts(page: $page, size: $size, sortBy: $sortBy, sortDir: $sortDir) { content { id title slug excerpt status createdAt author { username } } totalPages totalElements currentPage } }",
+  "variables": {
+    "page": 0,
+    "size": 10,
+    "sortBy": "createdAt",
+    "sortDir": "DESC"
+  }
+}
+
+
+### 
+
+
+### Query: Search posts
+
+# @name searchPosts
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query SearchPosts($keyword: String!, $page: Int, $size: Int) { searchPosts(keyword: $keyword, page: $page, size: $size) { content { id title excerpt } totalElements } }",
+  "variables": {
+    "keyword": "Spring",
+    "page": 0,
+    "size": 10
+  }
+}
+
+
+### 
+
+
+### Query: Get posts by category
+
+# @name getPostsByCategory
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPostsByCategory($categoryId: ID!, $page: Int, $size: Int) { postsByCategory(categoryId: $categoryId, page: $page, size: $size) { content { id title slug category { name } } totalElements } }",
+  "variables": {
+    "categoryId": "1",
+    "page": 0,
+    "size": 10
+  }
+}
+
+
+### 
+
+
+### Query: Get posts by user
+
+# @name getPostsByUser
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPostsByUser($userId: ID!, $page: Int, $size: Int) { postsByUser(userId: $userId, page: $page, size: $size) { content { id title author { username email } } totalElements } }",
+  "variables": {
+    "page": 0,
+    "size": 10,
+    "userId": "1"
+  }
+}
+
+
+### 
+
+
+### Query: Get user with posts
+
+# @name getUserWithPosts
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetUser($id: ID!) { user(id: $id) { id username email bio website location posts { id title status createdAt } } }",
+  "variables": {
+    "id": "1"
+  }
+}
+
+
+### 
+
+
+### Query: Get all categories
+
+# @name getCategories
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetCategories { categories { id name slug description postCount } }"
+}
+
+
+### 
+
+
+### Query: Get post with comments
+
+# @name getPostWithComments
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPostWithComments($id: ID!) { post(id: $id) { id title comments { id content createdAt author { username } replies { id content author { username } } } } }",
+  "variables": {
+    "id": "1"
+  }
+}
+
+
+### 
+
+
+### Query: Get comments by post (paginated)
+
+# @name getCommentsByPost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetCommentsByPost($postId: ID!, $page: Int, $size: Int) { commentsByPost(postId: $postId, page: $page, size: $size) { content { id content status createdAt author { username } } totalElements } }",
+  "variables": {
+    "page": 0,
+    "postId": "1",
+    "size": 10
+  }
+}
+
+
+### 
+
+
+### Query: Get reviews by post
+
+# @name getReviewsByPost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetReviewsByPost($postId: ID!) { reviewsByPost(postId: $postId) { id rating title content createdAt author { username avatarUrl } } }",
+  "variables": {
+    "postId": "1"
+  }
+}
+
+
+### 
+
+
+### Mutation: Create a post
+
+# @name createPost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { id title slug status createdAt } }",
+  "variables": {
+    "input": {
+      "categoryId": "1",
+      "content": "This post was created using GraphQL mutation",
+      "excerpt": "GraphQL mutation example",
+      "status": "DRAFT",
+      "title": "New GraphQL Post"
+    }
+  }
+}
+
+
+### 
+
+
+### Mutation: Update a post
+
+# @name updatePost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "mutation UpdatePost($id: ID!, $input: UpdatePostInput!) { updatePost(id: $id, input: $input) { id title content status updatedAt } }",
+  "variables": {
+    "id": "1",
+    "input": {
+      "content": "Updated content via GraphQL",
+      "status": "PUBLISHED",
+      "title": "Updated Post Title"
+    }
+  }
+}
+
+
+### 
+
+
+### Mutation: Create a comment
+
+# @name createComment
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "mutation CreateComment($input: CreateCommentInput!) { createComment(input: $input) { id content status createdAt author { username } } }",
+  "variables": {
+    "input": {
+      "content": "This is a comment created via GraphQL",
+      "postId": "1"
+    }
+  }
+}
+
+
+### 
+
+
+### Mutation: Create a category
+
+# @name createCategory
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "mutation CreateCategory($input: CreateCategoryInput!) { createCategory(input: $input) { id name slug description } }",
+  "variables": {
+    "input": {
+      "description": "Category created via GraphQL",
+      "name": "GraphQL Category"
+    }
+  }
+}
+
+
+### 
+
+
+### Mutation: Create a review
+
+# @name createReview
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "mutation CreateReview($input: CreateReviewInput!) { createReview(input: $input) { id rating title content createdAt } }",
+  "variables": {
+    "input": {
+      "content": "This is a very well-written and informative article. Highly recommended!",
+      "postId": "1",
+      "rating": 5,
+      "title": "Excellent Article"
+    }
+  }
+}
+
+
+### 
+
+
+### Complex Query: Get post with all related data
+
+# @name getCompletePost
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetCompletePost($id: ID!) { post(id: $id) { id title slug content excerpt featuredImage status viewCount createdAt updatedAt publishedAt author { id username email avatarUrl bio } category { id name slug description } comments { id content status createdAt author { username avatarUrl } replies { id content author { username } } } reviews { id rating title content createdAt author { username } } } }",
+  "variables": {
+    "id": "1"
+  }
+}
+
+
+### 
+
+
+### Test invalid query (should return error)
+
+# @name invalidQuery
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query { invalidField { id name } }"
+}
+
+
+### 
+
+
+### Test query with missing required variable
+
+# @name missingVariable
+
+GRAPHQL {{graphqlEndpoint}} HTTP/1.1
+Accept: application/json
+
+{
+  "query": "query GetPost($id: ID!) { post(id: $id) { id title } }"
+}
+
+
+### 

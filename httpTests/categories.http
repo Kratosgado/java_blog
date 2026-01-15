@@ -1,0 +1,186 @@
+### Categories API Tests
+
+
+### Base URL
+
+@host = http://localhost:8080/api
+
+
+### Login first to get token (Admin user)
+
+# @name login
+
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "kratos@gmail.com",
+  "password": "28935617Aa@"
+}
+
+
+### 
+
+
+### Create a new category
+
+# @name createCategory
+
+POST {{host}}/categories HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "description": "Articles about technology, programming, and software development",
+  "name": "Technology",
+  "slug": "technology"
+}
+
+
+### 
+
+
+### Create another category
+
+# @name createCategory2
+
+POST {{host}}/categories HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "description": "Everything related to web development",
+  "name": "Web Development",
+  "slug": "web-development"
+}
+
+
+### 
+
+
+### Update a category
+
+# @name updateCategory
+
+PUT {{host}}/categories/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "description": "Articles about technology, programming, software development, and innovation",
+  "name": "Technology & Innovation"
+}
+
+
+### 
+
+
+### Get a single category by ID
+
+# @name getCategory
+
+GET {{host}}/categories/1 HTTP/1.1
+
+
+### 
+
+
+### Get all categories
+
+# @name getAllCategories
+
+GET {{host}}/categories HTTP/1.1
+
+
+### 
+
+
+### Get category by slug
+
+# @name getCategoryBySlug
+
+GET {{host}}/categories/slug/technology HTTP/1.1
+
+
+### 
+
+
+### Delete a category
+
+# @name deleteCategory
+
+DELETE {{host}}/categories/1 HTTP/1.1
+Authorization: Bearer {{login.response.body.data.token}}
+
+
+### 
+
+
+### Test create category with duplicate slug (validation)
+
+# @name createDuplicateCategory
+
+POST {{host}}/categories HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "description": "Duplicate slug test",
+  "name": "Another Technology",
+  "slug": "technology"
+}
+
+
+### 
+
+
+### Test create category with missing required fields
+
+# @name createInvalidCategory
+
+POST {{host}}/categories HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "description": "Missing name and slug"
+}
+
+
+### 
+
+
+### Test update non-existent category
+
+# @name updateInvalidCategory
+
+PUT {{host}}/categories/99999 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.data.token}}
+
+{
+  "name": "This should fail"
+}
+
+
+### 
+
+
+### Get category with post count
+
+# @name getCategoryWithPostCount
+
+GET {{host}}/categories/1/with-post-count HTTP/1.1
+
+
+### 
+
+
+### Get popular categories (sorted by post count)
+
+# @name getPopularCategories
+
+GET {{host}}/categories/popular?limit=5 HTTP/1.1
+
+
+### 
