@@ -34,16 +34,16 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             // Public endpoints - no authentication required
             .requestMatchers("/auth/**").permitAll()
-            .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
+            .requestMatchers("/docs/**").permitAll()
             .requestMatchers("/graphiql/**", "/graphql").permitAll()
-            
+
             // Public read access to content
             .requestMatchers("GET", "/posts/**", "/categories/**", "/comments/**").permitAll()
             .requestMatchers("GET", "/users/{id}").permitAll()
-            
+
             // Admin-only endpoints
             .requestMatchers("/admin/**").hasRole("ADMIN")
-            
+
             // All other endpoints require authentication
             .anyRequest().authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
