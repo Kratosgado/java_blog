@@ -2,7 +2,7 @@ package com.kratosgado.blog.backend.controllers;
 
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
-import com.kratosgado.blog.dtos.response.ApiResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.backend.services.AuthService;
@@ -27,7 +27,7 @@ public class AuthController {
   private final JwtUtil jwtUtil;
 
   @PostMapping("/login")
-  public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+  public ResponseEntity<ResponseDto<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
     logger.info("Login attempt for email: {}", request.email());
 
     var user = authService.login(request);
@@ -45,11 +45,11 @@ public class AuthController {
         user.getEmail(),
         user.getRole());
 
-    return ResponseEntity.ok(ApiResponse.success(authResponse));
+    return ResponseEntity.ok(ResponseDto.success(authResponse));
   }
 
   @PostMapping("/register")
-  public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+  public ResponseEntity<ResponseDto<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
     logger.info("Registration attempt for email: {}", request.email());
 
     var user = authService.register(request);
@@ -67,11 +67,11 @@ public class AuthController {
         user.getEmail(),
         user.getRole());
 
-    return ResponseEntity.ok(ApiResponse.success(authResponse));
+    return ResponseEntity.ok(ResponseDto.success(authResponse));
   }
 
   @GetMapping("/validate")
-  public ResponseEntity<ApiResponse<Map<String, Object>>> validateToken(
+  public ResponseEntity<ResponseDto<Map<String, Object>>> validateToken(
       @RequestHeader("Authorization") String authHeader) {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
@@ -79,9 +79,9 @@ public class AuthController {
 
       if (jwtUtil.validateToken(token, username)) {
         Map<String, Object> data = Map.of("valid", true, "username", username);
-        return ResponseEntity.ok(ApiResponse.success(data));
+        return ResponseEntity.ok(ResponseDto.success(data));
       }
     }
-    return ResponseEntity.ok(ApiResponse.success(Map.of("valid", false)));
+    return ResponseEntity.ok(ResponseDto.success(Map.of("valid", false)));
   }
 }

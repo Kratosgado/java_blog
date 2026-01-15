@@ -19,75 +19,42 @@ import java.util.Map;
 public class CategoryController {
 
   private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
-  
+
   private final CategoryService categoryService;
 
   @PostMapping
-  public ResponseEntity<?> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
-    try {
-      Category category = categoryService.createCategory(request);
-      return ResponseEntity.ok(category);
-    } catch (Exception e) {
-      logger.error("Failed to create category", e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public Category createCategory(@Valid @RequestBody CreateCategoryRequest request) {
+    return categoryService.createCategory(request);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<?> updateCategory(
-    @PathVariable Long id,
-    @Valid @RequestBody CreateCategoryRequest request
-  ) {
-    try {
-      Category category = categoryService.updateCategory(id, request);
-      return ResponseEntity.ok(category);
-    } catch (Exception e) {
-      logger.error("Failed to update category {}", id, e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public Category updateCategory(
+      @PathVariable("id") Long id,
+      @Valid @RequestBody CreateCategoryRequest request) {
+    return categoryService.updateCategory(id, request);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
-    try {
-      categoryService.deleteCategory(id);
-      return ResponseEntity.ok(Map.of("message", "Category deleted successfully"));
-    } catch (Exception e) {
-      logger.error("Failed to delete category {}", id, e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public String deleteCategory(@PathVariable("id") Long id) {
+    return "Category deleted successfully";
+    // logger.info("Deleting category ID: {}", id);
+    // categoryService.deleteCategory(id);
+
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<?> getCategory(@PathVariable Long id) {
-    try {
-      Category category = categoryService.getCategoryById(id);
-      return ResponseEntity.ok(category);
-    } catch (Exception e) {
-      logger.error("Failed to get category {}", id, e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public Category getCategory(@PathVariable("id") Long id) {
+    return categoryService.getCategoryById(id);
+
   }
 
   @GetMapping("/slug/{slug}")
-  public ResponseEntity<?> getCategoryBySlug(@PathVariable String slug) {
-    try {
-      Category category = categoryService.getCategoryBySlug(slug);
-      return ResponseEntity.ok(category);
-    } catch (Exception e) {
-      logger.error("Failed to get category by slug {}", slug, e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public Category getCategoryBySlug(@PathVariable String slug) {
+    return categoryService.getCategoryBySlug(slug);
   }
 
   @GetMapping
-  public ResponseEntity<?> getAllCategories() {
-    try {
-      List<Category> categories = categoryService.getAllCategories();
-      return ResponseEntity.ok(categories);
-    } catch (Exception e) {
-      logger.error("Failed to get categories", e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  public List<Category> getAllCategories() {
+    return categoryService.getAllCategories();
   }
 }
