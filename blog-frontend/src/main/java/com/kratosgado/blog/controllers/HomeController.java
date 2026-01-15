@@ -291,7 +291,7 @@ public class HomeController {
       // TODO: Need to look up category ID from category name
       logger.warn("Category filtering not yet fully implemented - needs category ID lookup");
       posts = getAllPostsFallback();
-      
+
       // Apply search term filter if present
       if (!searchTerm.isEmpty()) {
         posts = posts.stream()
@@ -352,8 +352,8 @@ public class HomeController {
    */
   private List<Post> getAllPostsFallback() {
     try {
-      com.kratosgado.blog.dtos.response.PageResponse<com.kratosgado.blog.dtos.response.PostResponse> pageResponse = 
-          postService.getAllPosts(0, 100);
+      com.kratosgado.blog.dtos.response.PageResponse<com.kratosgado.blog.dtos.response.PostResponse> pageResponse = postService
+          .getAllPosts(0, 100);
       // Convert PostResponse list to Post list
       return pageResponse.content().stream().map(pr -> {
         Post p = new Post();

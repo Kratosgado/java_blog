@@ -1,9 +1,15 @@
 ### Posts API Tests
+
+
 ### Base URL
+
 @host = http://localhost:8080/api
 
+
 ### Login first to get token
+
 # @name login
+
 POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
 
@@ -12,122 +18,179 @@ Content-Type: application/json
   "password": "28935617Aa@"
 }
 
-###
+
+### 
+
 
 ### Create a new post
+
 # @name createPost
+
 POST {{host}}/posts HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-  "title": "Getting Started with Spring Boot 3",
-  "slug": "getting-started-with-spring-boot-3",
+  "categoryId": 1,
   "content": "Spring Boot 3 brings many exciting features including native image support, improved observability, and Java 17+ baseline...",
   "excerpt": "Learn about the new features in Spring Boot 3",
   "featuredImage": "https://example.com/images/spring-boot-3.jpg",
-  "categoryId": 1,
-  "status": "DRAFT"
+  "slug": "getting-started-with-spring-boot-3",
+  "status": "DRAFT",
+  "title": "Getting Started with Spring Boot 3"
 }
 
-###
+
+### 
+
 
 ### Update a post
+
 # @name updatePost
+
 PUT {{host}}/posts/1 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-  "title": "Getting Started with Spring Boot 3 - Updated",
   "content": "Updated content about Spring Boot 3...",
-  "status": "PUBLISHED"
+  "status": "PUBLISHED",
+  "title": "Getting Started with Spring Boot 3 - Updated"
 }
 
-###
+
+### 
+
 
 ### Get a single post by ID
+
 # @name getPost
+
 GET {{host}}/posts/1 HTTP/1.1
 
-###
+
+### 
+
 
 ### Get all published posts (with pagination and sorting)
+
 # @name getPosts
+
 GET {{host}}/posts?page=0&size=10&sortBy=createdAt&sortDir=DESC HTTP/1.1
 
-###
+
+### 
+
 
 ### Get posts with different sorting
+
 # @name getPostsSortedByTitle
+
 GET {{host}}/posts?page=0&size=10&sortBy=title&sortDir=ASC HTTP/1.1
 
-###
+
+### 
+
 
 ### Search posts by keyword
+
 # @name searchPosts
+
 GET {{host}}/posts/search?keyword=Spring&page=0&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Get posts by user
+
 # @name getUserPosts
+
 GET {{host}}/posts/user/1?page=0&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Get posts by category
+
 # @name getCategoryPosts
+
 GET {{host}}/posts/category/1?page=0&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Delete a post
+
 # @name deletePost
+
 DELETE {{host}}/posts/1 HTTP/1.1
 Authorization: Bearer {{login.response.body.data.token}}
 
-###
+
+### 
+
 
 ### Test pagination - Second page
+
 # @name getPostsPage2
+
 GET {{host}}/posts?page=1&size=5 HTTP/1.1
 
-###
+
+### 
+
 
 ### Test invalid post ID (should return 404)
+
 # @name getInvalidPost
+
 GET {{host}}/posts/99999 HTTP/1.1
 
-###
+
+### 
+
 
 ### Test create post with missing required fields (validation)
+
 # @name createInvalidPost
+
 POST {{host}}/posts HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{login.response.body.data.token}}
 
 {
-  "title": "",
-  "content": ""
+  "content": "",
+  "title": ""
 }
 
-###
+
+### 
+
 
 ### Test create post without authentication (should fail)
+
 # @name createPostWithoutAuth
+
 POST {{host}}/posts HTTP/1.1
 Content-Type: application/json
 
 {
-  "title": "Test Post",
-  "content": "Test Content"
+  "content": "Test Content",
+  "title": "Test Post"
 }
 
-###
+
+### 
+
 
 ### Filter posts by status (if implemented)
+
 # @name getPublishedPosts
+
 GET {{host}}/posts?status=PUBLISHED&page=0&size=10 HTTP/1.1
 
-###
+
+### 

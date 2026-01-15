@@ -57,6 +57,7 @@ Accept: application/json
   "query": "query SearchPosts($keyword: String!, $page: Int, $size: Int) { searchPosts(keyword: $keyword, page: $page, size: $size) { content { id title excerpt } totalElements } }",
   "variables": {
     "keyword": "Spring",
+    "page": 0,
     "size": 10
   }
 }

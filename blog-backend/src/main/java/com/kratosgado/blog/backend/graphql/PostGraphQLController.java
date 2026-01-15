@@ -96,4 +96,5 @@ public class PostGraphQLController {
 
     return result;
   }
+
 }
