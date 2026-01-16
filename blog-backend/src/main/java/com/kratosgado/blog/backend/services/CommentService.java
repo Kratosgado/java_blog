@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,8 +14,6 @@ import com.kratosgado.blog.models.CommentStatus;
 @Service
 public class CommentService {
 
-  private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
-
   private final CommentRepository commentRepository;
 
   public CommentService(CommentRepository commentRepository) {
@@ -30,7 +26,7 @@ public class CommentService {
     comment.setStatus(CommentStatus.PENDING);
 
     comment = commentRepository.save(comment);
-    logger.info("Comment created: {} on post {} by user {}", comment.getId(), request.postId(), userId);
+
     return comment;
   }
 
@@ -42,7 +38,6 @@ public class CommentService {
     comment.setStatus(CommentStatus.APPROVED);
     comment = commentRepository.save(comment);
 
-    logger.info("Comment approved: {}", commentId);
     return comment;
   }
 
@@ -54,7 +49,6 @@ public class CommentService {
     comment.setStatus(CommentStatus.REJECTED);
     comment = commentRepository.save(comment);
 
-    logger.info("Comment rejected: {}", commentId);
     return comment;
   }
 
@@ -69,7 +63,7 @@ public class CommentService {
     }
 
     commentRepository.delete(comment);
-    logger.info("Comment deleted: {} by user {}", commentId, userId);
+
   }
 
   public Page<Comment> getPostComments(Long postId, Pageable pageable) {

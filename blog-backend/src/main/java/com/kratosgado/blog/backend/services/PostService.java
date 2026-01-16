@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,9 +13,6 @@ import com.kratosgado.blog.models.Post;
 
 @Service
 public class PostService {
-
-  private static final Logger logger = LoggerFactory.getLogger(PostService.class);
-
   private final PostRepository postRepository;
 
   public PostService(PostRepository postRepository) {
@@ -36,7 +31,6 @@ public class PostService {
     post.setStatus(request.status());
 
     post = postRepository.save(post);
-    logger.info("Post created: {} by user {}", post.getId(), userId);
     return post;
   }
 
@@ -59,7 +53,6 @@ public class PostService {
       post.setStatus(request.status());
 
     post = postRepository.save(post);
-    logger.info("Post updated: {} by user {}", postId, userId);
     return post;
   }
 
@@ -69,7 +62,6 @@ public class PostService {
         .orElseThrow(() -> BlogException.notFound("Post not found or you don't have permission"));
 
     postRepository.delete(post);
-    logger.info("Post deleted: {} by user {}", postId, userId);
   }
 
   public Post getPostById(Long postId) {

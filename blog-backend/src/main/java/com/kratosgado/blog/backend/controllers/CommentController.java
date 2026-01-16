@@ -12,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,44 +76,34 @@ public class CommentController {
 
   @GetMapping("/post/{postId}")
   @GetEnpoint
-  public ResponseEntity<?> getPostComments(
+  public com.kratosgado.blog.dtos.response.PageResponse<Comment> getPostComments(
       @PathVariable Long postId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    try {
-      PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").ascending());
-      Page<Comment> comments = commentService.getPostComments(postId, pageRequest);
+      @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
+    Page<Comment> comments = commentService.getPostComments(postId, pageable);
 
-      return ResponseEntity.ok(Map.of(
-          "content", comments.getContent(),
-          "totalPages", comments.getTotalPages(),
-          "totalElements", comments.getTotalElements(),
-          "currentPage", comments.getNumber()));
-    } catch (Exception e) {
-      logger.error("Failed to get post comments", e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+    return new com.kratosgado.blog.dtos.response.PageResponse<Comment>(comments.getContent(),
+        pageable.getPageNumber() + 1,
+        comments.getNumber(),
+        comments.getTotalElements(),
+        comments.getTotalPages(),
+        comments.isFirst(),
+        comments.isLast());
   }
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
-  public ResponseEntity<?> getUserComments(
+  public com.kratosgado.blog.dtos.response.PageResponse<Comment> getUserComments(
       @PathVariable Long userId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    try {
-      PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-      Page<Comment> comments = commentService.getUserComments(userId, pageRequest);
+      @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
+    Page<Comment> comments = commentService.getUserComments(userId, pageable);
 
-      return ResponseEntity.ok(Map.of(
-          "content", comments.getContent(),
-          "totalPages", comments.getTotalPages(),
-          "totalElements", comments.getTotalElements(),
-          "currentPage", comments.getNumber()));
-    } catch (Exception e) {
-      logger.error("Failed to get user comments", e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+    return new com.kratosgado.blog.dtos.response.PageResponse<Comment>(comments.getContent(),
+        pageable.getPageNumber() + 1,
+        comments.getNumber(),
+        comments.getTotalElements(),
+        comments.getTotalPages(),
+        comments.isFirst(),
+        comments.isLast());
   }
 
   @GetMapping("/post/{postId}/count")

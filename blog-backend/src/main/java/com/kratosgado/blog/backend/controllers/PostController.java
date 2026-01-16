@@ -1,12 +1,8 @@
 package com.kratosgado.blog.backend.controllers;
 
-import java.util.Map;
-
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -105,57 +101,51 @@ public class PostController {
   @GetMapping("/search")
   @Operation(summary = "Search posts", description = "Searches for posts by keyword in title and content")
   @GetEnpoint
-  public ResponseEntity<ResponseDto<Map<String, Object>>> searchPosts(
+  public PageResponse<Post> searchPosts(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @RequestParam(defaultValue = "0") @Parameter(description = "Page number") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> posts = postService.searchPosts(keyword, pageRequest);
+      @ParameterObject Pageable pageable) {
+    Page<Post> posts = postService.searchPosts(keyword, pageable);
 
-    Map<String, Object> response = Map.of(
-        "content", posts.getContent(),
-        "totalPages", posts.getTotalPages(),
-        "totalElements", posts.getTotalElements(),
-        "currentPage", posts.getNumber());
-
-    return ResponseEntity.ok(ResponseDto.success(response));
+    return new PageResponse<Post>(posts.getContent(),
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get posts by user", description = "Retrieves all posts created by a specific user")
   @GetEnpoint
-  public ResponseEntity<ResponseDto<Map<String, Object>>> getUserPosts(
+  public PageResponse<Post> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> posts = postService.getUserPosts(userId, pageRequest);
+      @ParameterObject Pageable pageable) {
+    Page<Post> posts = postService.getUserPosts(userId, pageable);
 
-    Map<String, Object> response = Map.of(
-        "content", posts.getContent(),
-        "totalPages", posts.getTotalPages(),
-        "totalElements", posts.getTotalElements(),
-        "currentPage", posts.getNumber());
-
-    return ResponseEntity.ok(ResponseDto.success(response));
+    return new PageResponse<Post>(posts.getContent(),
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 
   @GetMapping("/category/{categoryId}")
   @Operation(summary = "Get posts by category", description = "Retrieves all posts in a specific category")
   @GetEnpoint
-  public ResponseEntity<ResponseDto<Map<String, Object>>> getCategoryPosts(
+  public PageResponse<Post> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> posts = postService.getPostsByCategory(categoryId, pageRequest);
+      @ParameterObject Pageable pageable) {
+    Page<Post> posts = postService.getPostsByCategory(categoryId, pageable);
 
-    Map<String, Object> response = Map.of(
-        "content", posts.getContent(),
-        "totalPages", posts.getTotalPages(),
-        "totalElements", posts.getTotalElements(),
-        "currentPage", posts.getNumber());
-
-    return ResponseEntity.ok(ResponseDto.success(response));
+    return new PageResponse<Post>(posts.getContent(),
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 }
