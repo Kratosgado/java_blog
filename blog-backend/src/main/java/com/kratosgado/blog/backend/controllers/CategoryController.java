@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
 import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
@@ -24,11 +28,13 @@ import lombok.RequiredArgsConstructor;
 public class CategoryController {
   private final CategoryService categoryService;
 
+  @SecuredCreateEndpoint
   @PostMapping
   public Category createCategory(@Valid @RequestBody CreateCategoryRequest request) {
     return categoryService.createCategory(request);
   }
 
+  @UpdateEndpoint
   @PutMapping("/{id}")
   public Category updateCategory(
       @PathVariable("id") Long id,
@@ -37,23 +43,26 @@ public class CategoryController {
   }
 
   @DeleteMapping("/{id}")
-  public String deleteCategory(@PathVariable("id") Long id) {
+  @DeleteEndpoint
+  public void deleteCategory(@PathVariable("id") Long id) {
     categoryService.deleteCategory(id);
-    return "Category deleted successfully";
   }
 
   @GetMapping("/{id}")
+  @GetEnpoint
   public Category getCategory(@PathVariable("id") Long id) {
     return categoryService.getCategoryById(id);
 
   }
 
   @GetMapping("/slug/{slug}")
+  @GetEnpoint
   public Category getCategoryBySlug(@PathVariable String slug) {
     return categoryService.getCategoryBySlug(slug);
   }
 
   @GetMapping
+  @GetEnpoint
   public List<Category> getAllCategories() {
     return categoryService.getAllCategories();
   }

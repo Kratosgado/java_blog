@@ -39,6 +39,11 @@ Content-Type: application/json
   "password": "28935617Aa@"
 }
 
+> {%
+  var token = response.body.data.token;
+  client.global.set("adminAuth", "Bearer " + token);
+%}
+
 
 ### 
 
@@ -46,4 +51,4 @@ Content-Type: application/json
 ### Validate token
 
 GET {{host}}/auth/validate HTTP/1.1
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}

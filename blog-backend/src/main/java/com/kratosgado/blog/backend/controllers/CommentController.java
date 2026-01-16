@@ -2,6 +2,10 @@ package com.kratosgado.blog.backend.controllers;
 
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -22,24 +26,20 @@ import java.util.Map;
 public class CommentController {
 
   private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
-  
+
   private final CommentService commentService;
 
   @PostMapping
-  public ResponseEntity<?> createComment(
-    @Valid @RequestBody CreateCommentRequest request
-  ) {
-    try {
-      Long userId = SecurityUtils.getCurrentUserId();
-      Comment comment = commentService.createComment(request, userId);
-      return ResponseEntity.ok(comment);
-    } catch (Exception e) {
-      logger.error("Failed to create comment", e);
-      return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-    }
+  @SecuredUpdateEndpoint
+  public Comment createComment(
+      @Valid @RequestBody CreateCommentRequest request) {
+    Long userId = SecurityUtils.getCurrentUserId();
+    return commentService.createComment(request, userId);
+
   }
 
   @PutMapping("/{id}/approve")
+  @SecuredUpdateEndpoint
   public ResponseEntity<?> approveComment(@PathVariable Long id) {
     try {
       Comment comment = commentService.approveComment(id);
@@ -51,6 +51,7 @@ public class CommentController {
   }
 
   @PutMapping("/{id}/reject")
+  @SecuredUpdateEndpoint
   public ResponseEntity<?> rejectComment(@PathVariable Long id) {
     try {
       Comment comment = commentService.rejectComment(id);
@@ -62,9 +63,9 @@ public class CommentController {
   }
 
   @DeleteMapping("/{id}")
+  @DeleteEndpoint
   public ResponseEntity<?> deleteComment(
-    @PathVariable Long id
-  ) {
+      @PathVariable Long id) {
     try {
       Long userId = SecurityUtils.getCurrentUserId();
       commentService.deleteComment(id, userId);
@@ -76,21 +77,20 @@ public class CommentController {
   }
 
   @GetMapping("/post/{postId}")
+  @GetEnpoint
   public ResponseEntity<?> getPostComments(
-    @PathVariable Long postId,
-    @RequestParam(defaultValue = "0") int page,
-    @RequestParam(defaultValue = "10") int size
-  ) {
+      @PathVariable Long postId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
     try {
       PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").ascending());
       Page<Comment> comments = commentService.getPostComments(postId, pageRequest);
-      
+
       return ResponseEntity.ok(Map.of(
-        "content", comments.getContent(),
-        "totalPages", comments.getTotalPages(),
-        "totalElements", comments.getTotalElements(),
-        "currentPage", comments.getNumber()
-      ));
+          "content", comments.getContent(),
+          "totalPages", comments.getTotalPages(),
+          "totalElements", comments.getTotalElements(),
+          "currentPage", comments.getNumber()));
     } catch (Exception e) {
       logger.error("Failed to get post comments", e);
       return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -98,21 +98,20 @@ public class CommentController {
   }
 
   @GetMapping("/user/{userId}")
+  @GetEnpoint
   public ResponseEntity<?> getUserComments(
-    @PathVariable Long userId,
-    @RequestParam(defaultValue = "0") int page,
-    @RequestParam(defaultValue = "10") int size
-  ) {
+      @PathVariable Long userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "10") int size) {
     try {
       PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
       Page<Comment> comments = commentService.getUserComments(userId, pageRequest);
-      
+
       return ResponseEntity.ok(Map.of(
-        "content", comments.getContent(),
-        "totalPages", comments.getTotalPages(),
-        "totalElements", comments.getTotalElements(),
-        "currentPage", comments.getNumber()
-      ));
+          "content", comments.getContent(),
+          "totalPages", comments.getTotalPages(),
+          "totalElements", comments.getTotalElements(),
+          "currentPage", comments.getNumber()));
     } catch (Exception e) {
       logger.error("Failed to get user comments", e);
       return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -120,6 +119,7 @@ public class CommentController {
   }
 
   @GetMapping("/post/{postId}/count")
+  @GetEnpoint
   public ResponseEntity<?> getPostCommentCount(@PathVariable Long postId) {
     try {
       Long count = commentService.getPostCommentCount(postId);

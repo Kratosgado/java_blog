@@ -17,7 +17,7 @@ start)
 run)
   if [ "$2" == "all" ]; then
     echo "Running all applications..."
-    cd blog-backend && mvn clean spring-boot:run
+    cd blog-backend && mvn clean spring-boot:run &
     cd blog-frontend && mvn clean javafx:run
   elif [ "$2" == "backend" ] || [ "$2" == "api" ]; then
     echo "Running Spring Boot backend..."

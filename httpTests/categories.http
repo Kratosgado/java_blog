@@ -28,7 +28,7 @@ Content-Type: application/json
 
 POST {{host}}/categories HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{userAuth}}
 
 {
   "description": "Articles about technology, programming, and software development",
@@ -46,7 +46,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 POST {{host}}/categories HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "description": "Everything related to web development",
@@ -64,7 +64,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 PUT {{host}}/categories/2 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "description": "Articles about technology, programming, software development, and innovation",
@@ -110,7 +110,7 @@ GET {{host}}/categories/slug/technology HTTP/1.1
 # @name deleteCategory
 
 DELETE {{host}}/categories/1 HTTP/1.1
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 
 ### 
@@ -122,7 +122,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 POST {{host}}/categories HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "description": "Duplicate slug test",
@@ -140,7 +140,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 POST {{host}}/categories HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "description": "Missing name and slug"
@@ -156,7 +156,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 
 PUT {{host}}/categories/99999 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "name": "This should fail"

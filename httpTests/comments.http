@@ -18,7 +18,7 @@ Content-Type: application/json
 # @name createComment
 POST {{host}}/comments HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "postId": 1,
@@ -31,7 +31,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 # @name createReply
 POST {{host}}/comments HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "postId": 1,
@@ -45,7 +45,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 # @name updateComment
 PUT {{host}}/comments/1 HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "content": "Great article! Very helpful and comprehensive information about Spring Boot 3."
@@ -74,7 +74,7 @@ GET {{host}}/comments/post/1?page=1&size=5 HTTP/1.1
 ### Delete a comment
 # @name deleteComment
 DELETE {{host}}/comments/1 HTTP/1.1
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 ###
 
@@ -82,7 +82,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 # @name createInvalidComment
 POST {{host}}/comments HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "postId": 1,
@@ -95,7 +95,7 @@ Authorization: Bearer {{login.response.body.data.token}}
 # @name createCommentInvalidPost
 POST {{host}}/comments HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 {
   "postId": 99999,
@@ -119,13 +119,13 @@ Content-Type: application/json
 ### Approve a comment (Admin only)
 # @name approveComment
 PUT {{host}}/comments/1/approve HTTP/1.1
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 ###
 
 ### Reject a comment (Admin only)
 # @name rejectComment
 PUT {{host}}/comments/1/reject HTTP/1.1
-Authorization: Bearer {{login.response.body.data.token}}
+Authorization: {{adminAuth}}
 
 ###

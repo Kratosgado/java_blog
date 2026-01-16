@@ -4,6 +4,7 @@ import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.backend.annotations.OpenApi.CreateEndpoint;
 import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.backend.services.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class AuthController {
   private final JwtUtil jwtUtil;
 
   @PostMapping("/login")
+  @CreateEndpoint
   public AuthResponse login(@Valid @RequestBody LoginRequest request) {
     var user = authService.login(request);
 
@@ -41,6 +43,7 @@ public class AuthController {
   }
 
   @PostMapping("/register")
+  @CreateEndpoint
   public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
     var user = authService.register(request);
 

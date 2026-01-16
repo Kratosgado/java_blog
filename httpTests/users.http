@@ -1,7 +1,7 @@
 ### Users API Tests
 ### Base URL
 @host = http://localhost:8080/api
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+@token = {{adminAuth}}
 
 ### Get user by ID
 # @name getUser
