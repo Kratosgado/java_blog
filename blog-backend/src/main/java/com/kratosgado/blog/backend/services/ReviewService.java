@@ -5,6 +5,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.DuplicateResourceException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.ReviewRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
@@ -26,11 +29,11 @@ public class ReviewService {
   public Review createReview(CreateReviewRequest request, Long userId) {
 
     if (!postRepository.existsById(request.postId())) {
-      throw new IllegalArgumentException("Post not found with id: " + request.postId());
+      throw new ResourceNotFoundException("Post", "id", request.postId());
     }
 
     if (reviewRepository.existsByPostIdAndUserId(request.postId(), userId)) {
-      throw new IllegalArgumentException("User has already reviewed this post");
+      throw new DuplicateResourceException("You have already reviewed this post");
     }
 
     Review review = new Review(
@@ -50,10 +53,10 @@ public class ReviewService {
   public Review updateReview(Long id, UpdateReviewRequest request, Long userId) {
 
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
-      throw new SecurityException("User not authorized to update this review");
+      throw new UnauthorizedException("You are not authorized to update this review");
     }
 
     if (request.rating() != null) {
@@ -78,10 +81,10 @@ public class ReviewService {
   public void deleteReview(Long id, Long userId) {
 
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
-      throw new SecurityException("User not authorized to delete this review");
+      throw new UnauthorizedException("You are not authorized to delete this review");
     }
 
     reviewRepository.deleteById(id);
@@ -91,7 +94,7 @@ public class ReviewService {
   public Review getReviewById(Long id) {
 
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
     enrichReviewWithUserData(review);
     return review;
   }

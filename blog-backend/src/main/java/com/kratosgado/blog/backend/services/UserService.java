@@ -6,6 +6,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.DuplicateResourceException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.models.User;
@@ -21,17 +24,17 @@ public class UserService {
 
   public User getUserById(Long id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
   }
 
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
-        .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
   }
 
   public User getUserByUsername(String username) {
     return userRepository.findByUsername(username)
-        .orElseThrow(() -> new IllegalArgumentException("User not found with username: " + username));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
   }
 
   public Page<User> getAllUsers(Pageable pageable) {
@@ -41,14 +44,14 @@ public class UserService {
   @Transactional
   public User updateUserProfile(Long id, UpdateUserProfileRequest request, Long currentUserId) {
     if (!id.equals(currentUserId)) {
-      throw new SecurityException("User not authorized to update this profile");
+      throw new UnauthorizedException("You are not authorized to update this profile");
     }
 
     User user = getUserById(id);
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.existsByUsername(request.username())) {
-        throw new IllegalArgumentException("Username already exists");
+        throw new DuplicateResourceException("User", "username", request.username());
       }
       user.setUsername(request.username());
     }
@@ -74,7 +77,7 @@ public class UserService {
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
 
     if (!id.equals(currentUserId)) {
-      throw new SecurityException("User not authorized to update this avatar");
+      throw new UnauthorizedException("You are not authorized to update this avatar");
     }
 
     User user = getUserById(id);
@@ -89,13 +92,13 @@ public class UserService {
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
 
     if (!id.equals(currentUserId)) {
-      throw new SecurityException("User not authorized to change this password");
+      throw new UnauthorizedException("You are not authorized to change this password");
     }
 
     User user = getUserById(id);
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-      throw new IllegalArgumentException("Old password is incorrect");
+      throw new UnauthorizedException("Old password is incorrect");
     }
 
     user.setPassword(passwordEncoder.encode(newPassword));

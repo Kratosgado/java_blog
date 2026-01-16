@@ -5,6 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.exceptions.DuplicateResourceException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
@@ -24,7 +26,7 @@ public class TagService {
     String slug = generateSlug(request.name());
 
     if (tagRepository.existsBySlug(slug)) {
-      throw new IllegalArgumentException("Tag with slug '" + slug + "' already exists");
+      throw new DuplicateResourceException("Tag", "slug", slug);
     }
 
     Tag tag = new Tag(request.name(), slug, request.description());
@@ -37,12 +39,12 @@ public class TagService {
   public Tag updateTag(Long id, UpdateTagRequest request) {
 
     Tag tag = tagRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Tag not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Tag", "id", id));
 
     if (request.name() != null && !request.name().equals(tag.getName())) {
       String newSlug = generateSlug(request.name());
       if (tagRepository.existsBySlug(newSlug) && !newSlug.equals(tag.getSlug())) {
-        throw new IllegalArgumentException("Tag with slug '" + newSlug + "' already exists");
+        throw new DuplicateResourceException("Tag", "slug", newSlug);
       }
       tag.setName(request.name());
       tag.setSlug(newSlug);
@@ -61,7 +63,7 @@ public class TagService {
   public void deleteTag(Long id) {
 
     if (!tagRepository.existsById(id)) {
-      throw new IllegalArgumentException("Tag not found with id: " + id);
+      throw new ResourceNotFoundException("Tag", "id", id);
     }
 
     tagRepository.deleteById(id);
@@ -71,13 +73,13 @@ public class TagService {
   public Tag getTagById(Long id) {
 
     return tagRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("Tag not found with id: " + id));
+        .orElseThrow(() -> new ResourceNotFoundException("Tag", "id", id));
   }
 
   public Tag getTagBySlug(String slug) {
 
     return tagRepository.findBySlug(slug)
-        .orElseThrow(() -> new IllegalArgumentException("Tag not found with slug: " + slug));
+        .orElseThrow(() -> new ResourceNotFoundException("Tag", "slug", slug));
   }
 
   public Page<Tag> getAllTags(Pageable pageable) {
