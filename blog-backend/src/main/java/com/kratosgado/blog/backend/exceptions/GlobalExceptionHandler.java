@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
   private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(BlogException.class)
-  public ResponseEntity<ResponseDto<?>> handleResourceNotFound(
+  public ResponseEntity<ResponseDto<?>> handleBlogException(
       BlogException ex) {
     logger.error("Blog exception: {}", ex.getMessage());
     return ResponseEntity
@@ -54,33 +54,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
         .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), "Constraint violation: " + errors));
-  }
-
-  @ExceptionHandler(ResourceNotFoundException.class)
-  public ResponseEntity<ResponseDto<?>> handleResourceNotFound(
-      ResourceNotFoundException ex) {
-    logger.error("Resource not found: {}", ex.getMessage());
-    return ResponseEntity
-        .status(HttpStatus.NOT_FOUND)
-        .body(ResponseDto.error(HttpStatus.NOT_FOUND.getReasonPhrase(), ex.getMessage()));
-  }
-
-  @ExceptionHandler(DuplicateResourceException.class)
-  public ResponseEntity<ResponseDto<?>> handleDuplicateResource(
-      DuplicateResourceException ex) {
-    logger.error("Duplicate resource: {}", ex.getMessage());
-    return ResponseEntity
-        .status(HttpStatus.CONFLICT)
-        .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
-  }
-
-  @ExceptionHandler(UnauthorizedException.class)
-  public ResponseEntity<ResponseDto<?>> handleUnauthorized(
-      UnauthorizedException ex) {
-    logger.error("Unauthorized access: {}", ex.getMessage());
-    return ResponseEntity
-        .status(HttpStatus.UNAUTHORIZED)
-        .body(ResponseDto.error(HttpStatus.UNAUTHORIZED.getReasonPhrase(), ex.getMessage()));
   }
 
   @ExceptionHandler(AuthenticationException.class)

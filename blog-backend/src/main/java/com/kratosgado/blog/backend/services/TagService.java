@@ -5,8 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.DuplicateResourceException;
-import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
@@ -26,7 +25,7 @@ public class TagService {
     String slug = generateSlug(request.name());
 
     if (tagRepository.existsBySlug(slug)) {
-      throw new DuplicateResourceException("Tag", "slug", slug);
+      throw BlogException.duplicateResource("Tag", "slug", slug);
     }
 
     Tag tag = new Tag(request.name(), slug, request.description());
@@ -39,12 +38,12 @@ public class TagService {
   public Tag updateTag(Long id, UpdateTagRequest request) {
 
     Tag tag = tagRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Tag", "id", id));
+        .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
 
     if (request.name() != null && !request.name().equals(tag.getName())) {
       String newSlug = generateSlug(request.name());
       if (tagRepository.existsBySlug(newSlug) && !newSlug.equals(tag.getSlug())) {
-        throw new DuplicateResourceException("Tag", "slug", newSlug);
+        throw BlogException.duplicateResource("Tag", "slug", newSlug);
       }
       tag.setName(request.name());
       tag.setSlug(newSlug);
@@ -63,7 +62,7 @@ public class TagService {
   public void deleteTag(Long id) {
 
     if (!tagRepository.existsById(id)) {
-      throw new ResourceNotFoundException("Tag", "id", id);
+      throw BlogException.notFound("Tag", "id", id);
     }
 
     tagRepository.deleteById(id);
@@ -73,13 +72,13 @@ public class TagService {
   public Tag getTagById(Long id) {
 
     return tagRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Tag", "id", id));
+        .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
   }
 
   public Tag getTagBySlug(String slug) {
 
     return tagRepository.findBySlug(slug)
-        .orElseThrow(() -> new ResourceNotFoundException("Tag", "slug", slug));
+        .orElseThrow(() -> BlogException.notFound("Tag", "slug", slug));
   }
 
   public Page<Tag> getAllTags(Pageable pageable) {
