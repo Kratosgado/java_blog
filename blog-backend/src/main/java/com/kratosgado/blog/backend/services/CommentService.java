@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.CommentRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.CommentStatus;
@@ -24,14 +24,13 @@ public class CommentService {
   public Comment createComment(CreateCommentRequest request, Long userId) {
     Comment comment = new Comment(request.postId(), userId, request.content());
     comment.setStatus(CommentStatus.PENDING);
-
     comment = commentRepository.save(comment);
 
     return comment;
   }
 
   @Transactional
-  public Comment approveComment(Long commentId) {
+  public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
@@ -42,7 +41,7 @@ public class CommentService {
   }
 
   @Transactional
-  public Comment rejectComment(Long commentId) {
+  public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
@@ -53,7 +52,7 @@ public class CommentService {
   }
 
   @Transactional
-  public void deleteComment(Long commentId, Long userId) {
+  public void deleteComment(String commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 

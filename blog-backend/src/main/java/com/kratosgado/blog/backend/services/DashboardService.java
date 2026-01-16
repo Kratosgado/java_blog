@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.repositories.jpa.CommentRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.jpa.ReviewRepository;
+import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.models.Post;

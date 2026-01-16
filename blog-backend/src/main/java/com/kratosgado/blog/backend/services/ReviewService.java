@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.jpa.ReviewRepository;
+import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
@@ -48,7 +48,7 @@ public class ReviewService {
   }
 
   @Transactional
-  public Review updateReview(Long id, UpdateReviewRequest request, Long userId) {
+  public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -76,7 +76,7 @@ public class ReviewService {
   }
 
   @Transactional
-  public void deleteReview(Long id, Long userId) {
+  public void deleteReview(String id, Long userId) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -89,7 +89,7 @@ public class ReviewService {
 
   }
 
-  public Review getReviewById(Long id) {
+  public Review getReviewById(String id) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -113,7 +113,11 @@ public class ReviewService {
 
   public Double getAverageRating(Long postId) {
 
-    Double average = reviewRepository.getAverageRatingByPostId(postId);
+    var results = reviewRepository.getAverageRatingByPostId(postId);
+    if (results.isEmpty()) {
+      return 0.0;
+    }
+    Double average = results.get(0).getAvgRating();
     return average != null ? average : 0.0;
   }
 
