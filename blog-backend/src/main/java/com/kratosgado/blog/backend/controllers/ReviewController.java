@@ -57,7 +57,7 @@ public class ReviewController {
   @Operation(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
   public ResponseEntity<ResponseDto<Review>> updateReview(
-      @PathVariable @Parameter(description = "Review ID") Long id,
+      @PathVariable @Parameter(description = "Review ID") String id,
       @Valid @RequestBody @Parameter(description = "Review update request") UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     Review review = reviewService.updateReview(id, request, userId);
@@ -68,7 +68,7 @@ public class ReviewController {
   @Operation(summary = "Delete a review", description = "Deletes a review by ID. Only the review author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
   public ResponseEntity<ResponseDto<Void>> deleteReview(
-      @PathVariable @Parameter(description = "Review ID") Long id) {
+      @PathVariable @Parameter(description = "Review ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     reviewService.deleteReview(id, userId);
     return ResponseEntity.ok(ResponseDto.success("Review deleted successfully", null));
@@ -78,7 +78,7 @@ public class ReviewController {
   @Operation(summary = "Get a review by ID", description = "Retrieves a single review by its ID. Public access.")
   @GetEnpoint
   public Review getReview(
-      @PathVariable @Parameter(description = "Review ID") Long id) {
+      @PathVariable @Parameter(description = "Review ID") String id) {
     return reviewService.getReviewById(id);
   }
 
