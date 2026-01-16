@@ -1,144 +1,203 @@
 ### Users API Tests
+
+
 ### Base URL
+
 @host = http://localhost:8080/api
 @token = {{adminAuth}}
 
+
 ### Get user by ID
+
 # @name getUser
+
 GET {{host}}/users/1 HTTP/1.1
 
-###
+
+### 
+
 
 ### Get all users (Admin only, with pagination)
+
 # @name getAllUsers
+
 GET {{host}}/users?page=0&size=10 HTTP/1.1
 Authorization: {{token}}
 
-###
+
+### 
+
 
 ### Update user profile
+
 # @name updateProfile
+
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
+  "avatarUrl": "https://example.com/avatar.jpg",
   "bio": "Full-stack developer passionate about Spring Boot and React",
-  "website": "https://example.com",
   "location": "San Francisco, CA",
-  "avatarUrl": "https://example.com/avatar.jpg"
+  "website": "https://example.com"
 }
 
-###
+
+### 
+
 
 ### Change password
+
 # @name changePassword
+
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
+  "confirmPassword": "newPassword456!",
   "currentPassword": "oldPassword123",
-  "newPassword": "newPassword456!",
-  "confirmPassword": "newPassword456!"
+  "newPassword": "newPassword456!"
 }
 
-###
+
+### 
+
 
 ### Update avatar
+
 # @name updateAvatar
+
 PUT {{host}}/users/1/avatar HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
   "avatarUrl": "https://example.com/new-avatar.jpg"
 }
 
-###
+
+### 
+
 
 ### Get user's posts
+
 # @name getUserPosts
+
 GET {{host}}/users/1/posts?page=0&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Get user's comments
+
 # @name getUserComments
+
 GET {{host}}/users/1/comments?page=0&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Delete user account (should be restricted)
-# @name deleteUser
-DELETE {{host}}/users/1 HTTP/1.1
-X-User-Id: 1
 
-###
+# @name deleteUser
+
+DELETE {{host}}/users/1 HTTP/1.1
+Authorization: {{token}}
+
+
+### 
+
 
 ### Search users by username
+
 # @name searchUsers
+
 GET {{host}}/users/search?q=john&page=0&size=10 HTTP/1.1
 Authorization: {{token}}
 
-###
+
+### 
+
 
 ### Test update profile with invalid data
+
 # @name updateInvalidProfile
+
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
   "bio": "",
-  "website": "not-a-valid-url",
-  "location": ""
+  "location": "",
+  "website": "not-a-valid-url"
 }
 
-###
+
+### 
+
 
 ### Test unauthorized profile update
+
 # @name updateProfileUnauthorized
+
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-X-User-Id: 999
+Authorization: {{token}}
 
 {
   "bio": "Trying to update someone else's profile"
 }
 
-###
+
+### 
+
 
 ### Test password change with wrong current password
+
 # @name changePasswordWrong
+
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
+  "confirmPassword": "newPassword456!",
   "currentPassword": "wrongPassword",
-  "newPassword": "newPassword456!",
-  "confirmPassword": "newPassword456!"
+  "newPassword": "newPassword456!"
 }
 
-###
+
+### 
+
 
 ### Test password change with mismatched confirmation
+
 # @name changePasswordMismatch
+
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-X-User-Id: 1
+Authorization: {{token}}
 
 {
+  "confirmPassword": "differentPassword!",
   "currentPassword": "oldPassword123",
-  "newPassword": "newPassword456!",
-  "confirmPassword": "differentPassword!"
+  "newPassword": "newPassword456!"
 }
 
-###
+
+### 
+
 
 ### Get user statistics
+
 # @name getUserStats
+
 GET {{host}}/users/1/stats HTTP/1.1
 
-###
+
+### 

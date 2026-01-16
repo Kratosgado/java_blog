@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
+import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
 
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,10 @@ public class UserService {
   private final BCryptPasswordEncoder passwordEncoder;
 
   public User getUserById(Long id) {
-    return userRepository.findById(id)
+    User user = userRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("User", "id", id));
+    user.setPassword(null);
+    return user;
   }
 
   public User getUserByEmail(String email) {
@@ -35,8 +38,8 @@ public class UserService {
         .orElseThrow(() -> BlogException.notFound("User", "username", username));
   }
 
-  public Page<User> getAllUsers(Pageable pageable) {
-    return userRepository.findAll(pageable);
+  public Page<UserResponse> getAllUsers(Pageable pageable) {
+    return userRepository.findAllUsers(pageable);
   }
 
   @Transactional

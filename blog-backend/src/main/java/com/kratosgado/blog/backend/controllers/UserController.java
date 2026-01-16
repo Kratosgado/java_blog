@@ -20,6 +20,7 @@ import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
+import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -64,10 +65,10 @@ public class UserController {
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
-  public PageResponse<User> getUsers(@ParameterObject Pageable pageable) {
-    Page<User> users = userService.getAllUsers(pageable);
+  public PageResponse<UserResponse> getUsers(@ParameterObject Pageable pageable) {
+    var users = userService.getAllUsers(pageable);
 
-    return new PageResponse<User>(users.getContent(),
+    return new PageResponse<>(users.getContent(),
         pageable.getPageNumber() + 1,
         users.getNumber(),
         users.getTotalElements(),
