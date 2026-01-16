@@ -4,6 +4,7 @@ import com.kratosgado.blog.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,8 +39,8 @@ public class SecurityConfig {
             .requestMatchers("/graphiql/**", "/graphql").permitAll()
 
             // Public read access to content
-            .requestMatchers("GET", "/posts/**", "/categories/**", "/comments/**").permitAll()
-            .requestMatchers("GET", "/users/{id}").permitAll()
+            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/users/{id}").permitAll()
 
             // Admin-only endpoints
             .requestMatchers("/admin/**").hasRole("ADMIN")
