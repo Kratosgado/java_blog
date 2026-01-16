@@ -18,8 +18,29 @@ public abstract class BaseApiClient {
   protected final Gson gson;
   protected String authToken;
 
+  // Singleton shared HttpClient instance
+  private static HttpClient sharedHttpClient;
+
+  /**
+   * Get or create shared HttpClient instance
+   */
+  private static synchronized HttpClient getSharedHttpClient(String baseUrl) {
+    if (sharedHttpClient == null) {
+      sharedHttpClient = new HttpClient(baseUrl);
+    }
+    return sharedHttpClient;
+  }
+
   protected BaseApiClient(String baseUrl) {
-    this.httpClient = new HttpClient(baseUrl);
+    this(baseUrl, true);
+  }
+
+  protected BaseApiClient(String baseUrl, boolean useSharedClient) {
+    if (useSharedClient) {
+      this.httpClient = getSharedHttpClient(baseUrl);
+    } else {
+      this.httpClient = new HttpClient(baseUrl);
+    }
     this.gson = new Gson();
   }
 

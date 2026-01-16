@@ -116,22 +116,25 @@ public class CategoryService {
 
   // Stub methods for backward compatibility - to be implemented when needed
   public List<com.kratosgado.blog.models.Category> getCategoriesByPostId(Long postId) {
-    logger.warn("getCategoriesByPostId() not yet implemented via API");
-    throw new UnsupportedOperationException("getCategoriesByPostId not yet implemented via API");
+    logger.warn("getCategoriesByPostId() not yet implemented via API - returning empty list");
+    // Return empty list for now - this would need a new backend endpoint
+    return List.of();
   }
 
   public boolean addCategoryToPost(Long postId, Long categoryId) {
-    logger.warn("addCategoryToPost() not yet implemented via API");
-    throw new UnsupportedOperationException("addCategoryToPost not yet implemented via API");
+    logger.warn("addCategoryToPost() not yet implemented via API - returning false");
+    // Return false for now - this would need a new backend endpoint
+    return false;
   }
 
   public boolean removeCategoryFromPost(Long postId, Long categoryId) {
-    logger.warn("removeCategoryFromPost() not yet implemented via API");
-    throw new UnsupportedOperationException("removeCategoryFromPost not yet implemented via API");
+    logger.warn("removeCategoryFromPost() not yet implemented via API - returning false");
+    // Return false for now - this would need a new backend endpoint
+    return false;
   }
 
   public int getCategoryCount() {
-    logger.warn("getCategoryCount() not yet implemented via API");
+    logger.debug("getCategoryCount() using getAllCategories().size() as workaround");
     return getAllCategories().size(); // Temporary workaround
   }
 }

@@ -402,7 +402,7 @@ public class PostViewController implements Initializable {
     return commentBox;
   }
 
-  private void deleteComment(Long commentId) {
+  private void deleteComment(String commentId) {
     try {
       javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
           javafx.scene.control.Alert.AlertType.CONFIRMATION);

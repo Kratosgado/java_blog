@@ -54,15 +54,15 @@ public class PostApiClient extends BaseApiClient {
   }
 
   /**
-   * Get posts by author
+   * Get posts by user
    */
-  public PageResponse<PostResponse> getPostsByAuthor(Long authorId, int page, int size) throws IOException {
-    logger.info("Fetching posts by author: {}", authorId);
+  public PageResponse<PostResponse> getPostsByUser(Long userId, int page, int size) throws IOException {
+    logger.info("Fetching posts by user: {}", userId);
     
-    String endpoint = String.format("/posts/author/%d?page=%d&size=%d", authorId, page, size);
+    String endpoint = String.format("/posts/user/%d?page=%d&size=%d", userId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
     
-    return handleResponse(response, PageResponse.class, "Get posts by author");
+    return handleResponse(response, PageResponse.class, "Get posts by user");
   }
 
   /**

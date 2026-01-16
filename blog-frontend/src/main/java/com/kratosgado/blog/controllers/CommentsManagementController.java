@@ -161,7 +161,7 @@ public class CommentsManagementController {
     }
   }
 
-  private void approveComment(Long commentId) {
+  private void approveComment(String commentId) {
     try {
       Comment approved = commentService.approveComment(commentId);
       if (approved != null) {
@@ -174,7 +174,7 @@ public class CommentsManagementController {
     }
   }
 
-  private void rejectComment(Long commentId) {
+  private void rejectComment(String commentId) {
     try {
       Comment rejected = commentService.rejectComment(commentId);
       if (rejected != null) {
@@ -187,7 +187,7 @@ public class CommentsManagementController {
     }
   }
 
-  private void deleteComment(Long commentId) {
+  private void deleteComment(String commentId) {
     try {
       if (com.kratosgado.blog.utils.DialogUtils.showConfirmation(
           "Delete Comment",
