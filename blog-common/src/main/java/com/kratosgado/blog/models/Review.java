@@ -2,15 +2,10 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,32 +13,27 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "reviews")
+@Document(collection = "reviews")
 public class Review {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private String id;
 
-  @Column(nullable = false)
+  @Field("post_id")
   private Long postId;
 
-  @Column(nullable = false)
+  @Field("user_id")
   private Long userId;
 
-  @Column(nullable = false)
   private int rating; // 1-5 stars
 
-  @Column(nullable = false)
   private String title;
 
-  @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
-  @Column(nullable = false)
+  @Field("created_at")
   private LocalDateTime createdAt;
 
-  @Column(nullable = false)
+  @Field("updated_at")
   private LocalDateTime updatedAt;
 
   @Transient
@@ -52,7 +42,6 @@ public class Review {
   @Transient
   private String authorAvatarUrl;
 
-  @Column(nullable = false)
   private boolean helpful = false;
 
   public Review(Long postId, Long userId, int rating, String title, String content) {
@@ -61,20 +50,11 @@ public class Review {
     this.rating = rating;
     this.title = title;
     this.content = content;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
   }
 
-  @PrePersist
-  protected void onCreate() {
-    if (createdAt == null) {
-      createdAt = LocalDateTime.now();
-    }
-    if (updatedAt == null) {
-      updatedAt = LocalDateTime.now();
-    }
-  }
-
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
+  public void setUpdatedAt() {
+    this.updatedAt = LocalDateTime.now();
   }
 }

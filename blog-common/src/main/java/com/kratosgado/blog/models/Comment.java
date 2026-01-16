@@ -1,36 +1,34 @@
 package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Entity
-@Table(name = "comments")
+@Document(collection = "comments")
 public class Comment {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private String id;
   
-  @Column(name = "post_id", nullable = false)
+  @Field("post_id")
   private Long postId;
   
-  @Column(name = "user_id", nullable = false)
+  @Field("user_id")
   private Long userId;
   
-  @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
   
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
   private CommentStatus status;
   
-  @Column(name = "created_at")
+  @Field("created_at")
   private LocalDateTime createdAt;
   
-  @Column(name = "updated_at")
+  @Field("updated_at")
   private LocalDateTime updatedAt;
   
   @Transient
@@ -44,16 +42,11 @@ public class Comment {
     this.userId = userId;
     this.content = content;
     this.status = CommentStatus.PENDING;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
   }
   
-  @PrePersist
-  protected void onCreate() {
-    createdAt = LocalDateTime.now();
-    updatedAt = LocalDateTime.now();
-  }
-  
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
+  public void setUpdatedAt() {
+    this.updatedAt = LocalDateTime.now();
   }
 }
