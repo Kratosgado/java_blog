@@ -60,7 +60,7 @@ GET {{host}}/posts/1 HTTP/1.1
 
 # @name getPosts
 
-GET {{host}}/posts?page=0&size=10&sortBy=createdAt&sortDir=DESC HTTP/1.1
+GET {{host}}/posts?page=0&size=10&sort=id,desc HTTP/1.1
 
 
 ### 
