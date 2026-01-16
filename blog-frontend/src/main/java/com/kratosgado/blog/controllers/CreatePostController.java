@@ -86,7 +86,7 @@ public class CreatePostController {
   private final UploadService uploadService;
   private final CategoryService categoryService;
   private List<String> postTags; // Track selected tag names
-  private List<Integer> postTagIds; // Track selected tag IDs
+  private List<Long> postTagIds; // Track selected tag IDs
 
   @Inject
   public CreatePostController(PostService postService, TagService tagService, UploadService uploadService,
@@ -271,7 +271,7 @@ public class CreatePostController {
       var tags = tagService.getAllTags();
       for (var tag : tags) {
         if (tag.getName().equals(selectedTagName)) {
-          int tagId = tag.getId();
+          Long tagId = tag.getId();
 
           // Add to tracking lists
           postTags.add(selectedTagName);
@@ -290,7 +290,7 @@ public class CreatePostController {
     }
   }
 
-  private HBox createTagChip(String tagName, int tagId) {
+  private HBox createTagChip(String tagName, Long tagId) {
     HBox tagChip = new HBox(5);
     tagChip.setAlignment(Pos.CENTER);
     tagChip.setStyle(
@@ -300,7 +300,7 @@ public class CreatePostController {
     tagLabel.setStyle("-fx-text-fill: white; -fx-cursor: hand;");
     tagLabel.setOnMouseClicked(e -> {
       postTags.remove(tagName);
-      postTagIds.remove(Integer.valueOf(tagId));
+      postTagIds.remove(tagId);
       tagsFlowPane.getChildren().remove(tagChip);
     });
 

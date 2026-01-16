@@ -62,10 +62,10 @@ public class UserService {
     }
   }
 
-  public User updateUserProfile(UpdateUserProfileRequest request) {
+  public User updateUserProfile(Long userId, UpdateUserProfileRequest request) {
     ensureAuthToken();
     try {
-      return userApiClient.updateUserProfile(request.userId(), request);
+      return userApiClient.updateUserProfile(userId, request);
     } catch (IOException e) {
       logger.error("Failed to update user profile due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);

@@ -204,9 +204,9 @@ public class TagsManagementController {
     logger.info("Editing tag: {}", tag.getId());
   }
 
-  private void deleteTag(int tagId) {
+  private void deleteTag(Long tagId) {
     try {
-      tagService.deleteTag(Long.valueOf(tagId));
+      tagService.deleteTag(tagId);
       logger.info("Deleting tag: {}", tagId);
       loadTags();
     } catch (Exception ex) {
