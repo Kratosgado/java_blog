@@ -128,6 +128,8 @@ Database Layer (Hybrid)
 
 ## Database Schema
 
+**For detailed database models (Conceptual, Logical, Physical), see [DATABASE_MODELS.md](DATABASE_MODELS.md)**
+
 ### Hybrid Architecture
 
 The platform uses a **hybrid database architecture**:
@@ -801,6 +803,7 @@ Based on project specifications:
 
 ## Additional Resources
 
+- **Database Models (ERD)**: See [DATABASE_MODELS.md](DATABASE_MODELS.md) - Conceptual, Logical, and Physical models
 - **Database Schema Diagram**: See [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md#erd-diagrams)
 - **NoSQL Architecture**: See [docs/NOSQL_DESIGN.md](docs/NOSQL_DESIGN.md)
 - **Performance Analysis**: See [docs/PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md)
