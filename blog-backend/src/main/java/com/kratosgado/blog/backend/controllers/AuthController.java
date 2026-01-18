@@ -1,19 +1,25 @@
 package com.kratosgado.blog.backend.controllers;
 
-import com.kratosgado.blog.dtos.request.LoginRequest;
-import com.kratosgado.blog.dtos.request.RegisterRequest;
-import com.kratosgado.blog.dtos.response.ResponseDto;
-import com.kratosgado.blog.dtos.response.AuthResponse;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.kratosgado.blog.backend.annotations.OpenApi.CreateEndpoint;
 import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.backend.services.AuthService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.kratosgado.blog.dtos.request.LoginRequest;
+import com.kratosgado.blog.dtos.request.RegisterRequest;
+import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
 
 import jakarta.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
@@ -63,7 +69,7 @@ public class AuthController {
   }
 
   @GetMapping("/validate")
-  public ResponseEntity<ResponseDto<Map<String, Object>>> validateToken(
+  public ResponseDto<Map<String, Object>> validateToken(
       @RequestHeader("Authorization") String authHeader) {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
@@ -71,9 +77,9 @@ public class AuthController {
 
       if (jwtUtil.validateToken(token, username)) {
         Map<String, Object> data = Map.of("valid", true, "username", username);
-        return ResponseEntity.ok(ResponseDto.success(data));
+        return ResponseDto.success(data);
       }
     }
-    return ResponseEntity.ok(ResponseDto.success(Map.of("valid", false)));
+    return ResponseDto.success(Map.of("valid", false));
   }
 }

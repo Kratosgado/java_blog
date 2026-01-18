@@ -2,7 +2,6 @@
 package com.kratosgado.blog.backend.annotations;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -21,7 +20,6 @@ public class OpenApi {
       @ApiResponse(responseCode = "401", description = "Unauthorized"),
       @ApiResponse(responseCode = "403", description = "Forbidden")
   })
-  @Inherited
   public @interface SecuredEndpoint {
   }
 

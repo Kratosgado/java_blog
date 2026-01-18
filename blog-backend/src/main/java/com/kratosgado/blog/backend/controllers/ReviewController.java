@@ -44,34 +44,32 @@ public class ReviewController {
   @PostMapping
   @Operation(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
-  public ResponseEntity<ResponseDto<Review>> createReview(
+  public ResponseDto<Review> createReview(
       @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     Review review = reviewService.createReview(request, userId);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(ResponseDto.success("Review created successfully", review));
+    return ResponseDto.success("Review created successfully", review);
   }
 
   @PutMapping("/{id}")
   @Operation(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseEntity<ResponseDto<Review>> updateReview(
+  public ResponseDto<Review> updateReview(
       @PathVariable @Parameter(description = "Review ID") String id,
       @Valid @RequestBody @Parameter(description = "Review update request") UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     Review review = reviewService.updateReview(id, request, userId);
-    return ResponseEntity.ok(ResponseDto.success("Review updated successfully", review));
+    return ResponseDto.success("Review updated successfully", review);
   }
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Delete a review", description = "Deletes a review by ID. Only the review author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
-  public ResponseEntity<ResponseDto<Void>> deleteReview(
+  public ResponseDto<Void> deleteReview(
       @PathVariable @Parameter(description = "Review ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     reviewService.deleteReview(id, userId);
-    return ResponseEntity.ok(ResponseDto.success("Review deleted successfully", null));
+    return ResponseDto.success("Review deleted successfully", null);
   }
 
   @GetMapping("/{id}")

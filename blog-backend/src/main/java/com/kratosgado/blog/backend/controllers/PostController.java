@@ -57,22 +57,22 @@ public class PostController {
   @PutMapping("/{id}")
   @Operation(summary = "Update a post", description = "Updates an existing blog post. Only the post author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseEntity<ResponseDto<Post>> updatePost(
+  public ResponseDto<Post> updatePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @Valid @RequestBody @Parameter(description = "Post update request") UpdatePostRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     Post post = postService.updatePost(id, request, userId);
-    return ResponseEntity.ok(ResponseDto.success("Post updated successfully", post));
+    return ResponseDto.success("Post updated successfully", post);
   }
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Delete a post", description = "Deletes a blog post by ID. Only the post author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
-  public ResponseEntity<ResponseDto<Void>> deletePost(
+  public ResponseDto<Void> deletePost(
       @PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     postService.deletePost(id, userId);
-    return ResponseEntity.ok(ResponseDto.success("Post deleted successfully", null));
+    return ResponseDto.success("Post deleted successfully", null);
   }
 
   @GetMapping("/{id}")
