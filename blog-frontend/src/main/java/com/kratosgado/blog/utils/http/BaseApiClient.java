@@ -41,7 +41,7 @@ public abstract class BaseApiClient {
     } else {
       this.httpClient = new HttpClient(baseUrl);
     }
-    this.gson = new Gson();
+    this.gson = GsonFactory.getGson();
   }
 
   /**

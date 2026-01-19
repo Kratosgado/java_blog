@@ -21,7 +21,7 @@ public class HttpClient {
 
   public HttpClient(String baseUrl) {
     this.baseUrl = baseUrl;
-    this.gson = new Gson();
+    this.gson = GsonFactory.getGson();
     this.client = new OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
