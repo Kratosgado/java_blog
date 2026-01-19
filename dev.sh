@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ================================================================
 # Smart Blogging Platform - Development Script

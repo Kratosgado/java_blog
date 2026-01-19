@@ -57,10 +57,10 @@ public class LoginController {
       // Call new REST API-based login
       User user = authService.login(email, password);
       String token = authService.getCurrentToken();
-      
+
       // Store authentication in context
       AuthContext.getInstance().setAuthentication(user, token);
-      
+
       ToastNotification.success("Login successful! Welcome back.");
       logger.info("User logged in successfully: {}", email);
       Navigator.getInstance().goTo(Routes.HOME);

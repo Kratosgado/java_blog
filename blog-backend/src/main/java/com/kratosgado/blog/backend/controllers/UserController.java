@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,14 +53,6 @@ public class UserController {
     return userService.getUserByEmail(email);
   }
 
-  @GetMapping("/username/{username}")
-  @Operation(summary = "Get a user by username", description = "Retrieves a user profile by username. Public access.")
-  @GetEnpoint
-  public User getUserByUsername(
-      @PathVariable @Parameter(description = "Username") String username) {
-    return userService.getUserByUsername(username);
-  }
-
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
@@ -80,12 +71,10 @@ public class UserController {
   @PutMapping("/{id}/profile")
   @Operation(summary = "Update user profile", description = "Updates a user's profile information. Only the user can update their own profile.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseEntity<ResponseDto<User>> updateProfile(
-      @PathVariable @Parameter(description = "User ID") Long id,
+  public User updateProfile(
       @Valid @RequestBody @Parameter(description = "Profile update request") UpdateUserProfileRequest request) {
-    Long currentUserId = SecurityUtils.getCurrentUserId();
-    User user = userService.updateUserProfile(id, request, currentUserId);
-    return ResponseEntity.ok(ResponseDto.success("Profile updated successfully", user));
+    Long id = SecurityUtils.getCurrentUserId();
+    return userService.updateUserProfile(request, id);
   }
 
   @PutMapping("/{id}/avatar")

@@ -4,7 +4,6 @@
 ### Base URL
 
 @host = http://localhost:8080/api
-@token = {{adminAuth}}
 
 
 ### Get user by ID
@@ -22,7 +21,7 @@ GET {{host}}/users/1 HTTP/1.1
 # @name getAllUsers
 
 GET {{host}}/users?page=0&size=10 HTTP/1.1
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 
 ### 
@@ -32,9 +31,9 @@ Authorization: {{token}}
 
 # @name updateProfile
 
-PUT {{host}}/users/1/profile HTTP/1.1
+PUT {{host}}/users/9/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "avatarUrl": "https://example.com/avatar.jpg",
@@ -53,7 +52,7 @@ Authorization: {{token}}
 
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "confirmPassword": "newPassword456!",
@@ -69,9 +68,9 @@ Authorization: {{token}}
 
 # @name updateAvatar
 
-PUT {{host}}/users/1/avatar HTTP/1.1
+PUT {{host}}/users/9/avatar HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "avatarUrl": "https://example.com/new-avatar.jpg"
@@ -86,6 +85,7 @@ Authorization: {{token}}
 # @name getUserPosts
 
 GET {{host}}/users/1/posts?page=0&size=10 HTTP/1.1
+Authorization: {{userAuth}}
 
 
 ### 
@@ -96,6 +96,7 @@ GET {{host}}/users/1/posts?page=0&size=10 HTTP/1.1
 # @name getUserComments
 
 GET {{host}}/users/1/comments?page=0&size=10 HTTP/1.1
+Authorization: {{userAuth}}
 
 
 ### 
@@ -106,7 +107,7 @@ GET {{host}}/users/1/comments?page=0&size=10 HTTP/1.1
 # @name deleteUser
 
 DELETE {{host}}/users/1 HTTP/1.1
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 
 ### 
@@ -117,7 +118,7 @@ Authorization: {{token}}
 # @name searchUsers
 
 GET {{host}}/users/search?q=john&page=0&size=10 HTTP/1.1
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 
 ### 
@@ -129,7 +130,7 @@ Authorization: {{token}}
 
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "bio": "",
@@ -147,7 +148,7 @@ Authorization: {{token}}
 
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "bio": "Trying to update someone else's profile"
@@ -163,7 +164,7 @@ Authorization: {{token}}
 
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "confirmPassword": "newPassword456!",
@@ -181,7 +182,7 @@ Authorization: {{token}}
 
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{token}}
+Authorization: {{userAuth}}
 
 {
   "confirmPassword": "differentPassword!",

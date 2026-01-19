@@ -22,9 +22,15 @@ public class UserService {
   private final BCryptPasswordEncoder passwordEncoder;
 
   public User getUserById(Long id) {
+    return getUserById(id, false);
+  }
+
+  public User getUserById(Long id, boolean withPassword) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("User", "id", id));
-    user.setPassword(null);
+    if (!withPassword) {
+      user.setPassword(null);
+    }
     return user;
   }
 
@@ -43,12 +49,8 @@ public class UserService {
   }
 
   @Transactional
-  public User updateUserProfile(Long id, UpdateUserProfileRequest request, Long currentUserId) {
-    if (!id.equals(currentUserId)) {
-      throw BlogException.unauthorized("You are not authorized to update this profile");
-    }
-
-    User user = getUserById(id);
+  public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
+    User user = getUserById(id, true);
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.existsByUsername(request.username())) {
@@ -70,6 +72,7 @@ public class UserService {
     }
 
     User updatedUser = userRepository.save(user);
+    updatedUser.setPassword(null);
 
     return updatedUser;
   }
@@ -85,6 +88,7 @@ public class UserService {
     user.setAvatarUrl(avatarUrl);
 
     User updatedUser = userRepository.save(user);
+    updatedUser.setPassword(null);
 
     return updatedUser;
   }

@@ -41,7 +41,7 @@ Content-Type: application/json
 
 > {%
   var token = response.body.data.token;
-  client.global.set("adminAuth", "Bearer " + token);
+  client.global.set("userAuth", "Bearer " + token);
 %}
 
 
@@ -51,4 +51,4 @@ Content-Type: application/json
 ### Validate token
 
 GET {{host}}/auth/validate HTTP/1.1
-Authorization: {{adminAuth}}
+Authorization: {{userAuth}}

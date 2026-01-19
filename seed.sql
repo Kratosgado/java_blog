@@ -12,15 +12,15 @@ TRUNCATE TABLE post_categories, reviews, post_tags, comments, tags, categories, 
 -- SEED DATA: Users
 -- Password for all users: "password123" (BCrypt hashed)
 -- ================================================================
-INSERT INTO users (username, email, password, avatar_url, bio, website, location) VALUES
-('john_doe', 'john.doe@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=1', 'Full-stack developer passionate about Java and JavaFX', 'https://johndoe.dev', 'San Francisco, CA'),
-('jane_smith', 'jane.smith@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=2', 'Database enthusiast and PostgreSQL expert', 'https://janesmith.io', 'Seattle, WA'),
-('bob_wilson', 'bob.wilson@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=3', 'Backend developer specializing in REST APIs', 'https://bobwilson.com', 'Austin, TX'),
-('alice_johnson', 'alice.johnson@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=4', 'Software architect and design patterns advocate', 'https://alicejohnson.net', 'Boston, MA'),
-('charlie_brown', 'charlie.brown@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=5', 'DevOps engineer and cloud infrastructure specialist', 'https://charliebrown.dev', 'Denver, CO'),
-('diana_prince', 'diana.prince@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=6', 'Security researcher and penetration tester', 'https://dianaprince.security', 'New York, NY'),
-('ethan_hunt', 'ethan.hunt@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=7', 'Java performance tuning and JVM optimization expert', 'https://ethanhunt.tech', 'Chicago, IL'),
-('fiona_gallagher', 'fiona.gallagher@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=8', 'Tech blogger and software development educator', 'https://fionagallagher.blog', 'Portland, OR');
+INSERT INTO users (role, username, email, password, avatar_url, bio, website, location) VALUES
+('USER','john_doe', 'john.doe@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=1', 'Full-stack developer passionate about Java and JavaFX', 'https://johndoe.dev', 'San Francisco, CA'),
+('USER','jane_smith', 'jane.smith@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=2', 'Database enthusiast and PostgreSQL expert', 'https://janesmith.io', 'Seattle, WA'),
+('USER','bob_wilson', 'bob.wilson@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=3', 'Backend developer specializing in REST APIs', 'https://bobwilson.com', 'Austin, TX'),
+('USER','alice_johnson', 'alice.johnson@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=4', 'Software architect and design patterns advocate', 'https://alicejohnson.net', 'Boston, MA'),
+('USER','charlie_brown', 'charlie.brown@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=5', 'DevOps engineer and cloud infrastructure specialist', 'https://charliebrown.dev', 'Denver, CO'),
+('USER','diana_prince', 'diana.prince@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=6', 'Security researcher and penetration tester', 'https://dianaprince.security', 'New York, NY'),
+('USER','ethan_hunt', 'ethan.hunt@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=7', 'Java performance tuning and JVM optimization expert', 'https://ethanhunt.tech', 'Chicago, IL'),
+('USER','fiona_gallagher', 'fiona.gallagher@example.com', '$2a$10$rF8kqGBqVqKGfqQYBqJqHeQtYGYqKqKQqKqKqKqKqKqKqKqKqKqKq', 'https://i.pravatar.cc/150?img=8', 'Tech blogger and software development educator', 'https://fionagallagher.blog', 'Portland, OR');
 
 -- ================================================================
 -- SEED DATA: Categories

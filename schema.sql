@@ -7,9 +7,7 @@
 
 -- Drop tables if they exist (for clean setup)
 DROP TABLE IF EXISTS post_categories CASCADE;
-DROP TABLE IF EXISTS reviews CASCADE;
 DROP TABLE IF EXISTS post_tags CASCADE;
-DROP TABLE IF EXISTS comments CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
 DROP TABLE IF EXISTS posts CASCADE;
@@ -29,6 +27,7 @@ CREATE TABLE users (
   website VARCHAR(255),
   location VARCHAR(100),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  role VARCHAR(5) DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN')),
   
   CONSTRAINT chk_username_length CHECK (LENGTH(username) >= 3),
   CONSTRAINT chk_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
