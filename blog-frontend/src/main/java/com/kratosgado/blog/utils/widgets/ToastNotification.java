@@ -1,4 +1,4 @@
-package com.kratosgado.blog.utils.notifications;
+package com.kratosgado.blog.utils.widgets;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,13 +72,13 @@ public class ToastNotification {
       try {
         Stage toastStage = createToast(message, type, duration);
         positionToast(toastStage);
-        
+
         // Show with animation
         FadeTransition fadeIn = new FadeTransition(ANIMATION_DURATION, toastStage.getScene().getRoot());
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
         fadeIn.play();
-        
+
         toastStage.show();
         activeToasts.add(toastStage);
 
@@ -102,39 +102,36 @@ public class ToastNotification {
     toastContainer.setPrefWidth(TOAST_WIDTH);
     toastContainer.setMinHeight(TOAST_HEIGHT);
     toastContainer.setMaxHeight(TOAST_HEIGHT);
-    
+
     // Apply styles based on type
     String bgColor = type.color;
     String textColor = "WHITE";
-    
+
     toastContainer.setStyle(
         "-fx-background-color: " + bgColor + ";" +
-        "-fx-background-radius: 8px;" +
-        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 4);" +
-        "-fx-border-radius: 8px;"
-    );
+            "-fx-background-radius: 8px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 4);" +
+            "-fx-border-radius: 8px;");
 
     // Create header with icon and close button
     HBox header = new HBox();
     header.setAlignment(Pos.CENTER_LEFT);
     header.setSpacing(10);
-    
+
     // Icon label
     Label iconLabel = new Label(type.icon);
     iconLabel.setStyle(
         "-fx-font-size: 18px;" +
-        "-fx-font-weight: bold;" +
-        "-fx-text-fill: " + textColor + ";"
-    );
-    
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: " + textColor + ";");
+
     // Message label
     Label messageLabel = new Label(message);
     messageLabel.setStyle(
         "-fx-font-size: 14px;" +
-        "-fx-font-family: 'Segoe UI', 'Roboto', sans-serif;" +
-        "-fx-text-fill: " + textColor + ";" +
-        "-fx-wrap-text: true;"
-    );
+            "-fx-font-family: 'Segoe UI', 'Roboto', sans-serif;" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-wrap-text: true;");
     messageLabel.setMaxWidth(Double.MAX_VALUE);
     HBox.setHgrow(messageLabel, Priority.ALWAYS);
 
@@ -142,28 +139,25 @@ public class ToastNotification {
     Button closeButton = new Button("✕");
     closeButton.setStyle(
         "-fx-background-color: transparent;" +
-        "-fx-text-fill: " + textColor + ";" +
-        "-fx-font-size: 12px;" +
-        "-fx-cursor: hand;" +
-        "-fx-padding: 2px 6px;" +
-        "-fx-background-radius: 3px;"
-    );
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-font-size: 12px;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 2px 6px;" +
+            "-fx-background-radius: 3px;");
     closeButton.setOnMouseEntered(e -> closeButton.setStyle(
         "-fx-background-color: rgba(255,255,255,0.2);" +
-        "-fx-text-fill: " + textColor + ";" +
-        "-fx-font-size: 12px;" +
-        "-fx-cursor: hand;" +
-        "-fx-padding: 2px 6px;" +
-        "-fx-background-radius: 3px;"
-    ));
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-font-size: 12px;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 2px 6px;" +
+            "-fx-background-radius: 3px;"));
     closeButton.setOnMouseExited(e -> closeButton.setStyle(
         "-fx-background-color: transparent;" +
-        "-fx-text-fill: " + textColor + ";" +
-        "-fx-font-size: 12px;" +
-        "-fx-cursor: hand;" +
-        "-fx-padding: 2px 6px;" +
-        "-fx-background-radius: 3px;"
-    ));
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-font-size: 12px;" +
+            "-fx-cursor: hand;" +
+            "-fx-padding: 2px 6px;" +
+            "-fx-background-radius: 3px;"));
     closeButton.setOnAction(e -> closeToast(stage));
 
     header.getChildren().addAll(iconLabel, messageLabel, closeButton);
@@ -189,14 +183,14 @@ public class ToastNotification {
   private void positionToast(Stage stage) {
     double screenHeight = javafx.stage.Screen.getPrimary().getVisualBounds().getHeight();
     double screenWidth = javafx.stage.Screen.getPrimary().getVisualBounds().getWidth();
-    
+
     // Position in top-right corner
     double xOffset = screenWidth - TOAST_WIDTH - 20;
     double yOffset = 20;
-    
+
     // Stack toasts vertically
     yOffset += activeToasts.size() * (TOAST_HEIGHT + 10);
-    
+
     stage.setX(xOffset);
     stage.setY(yOffset);
   }
@@ -206,10 +200,10 @@ public class ToastNotification {
       Stage toast = activeToasts.get(i);
       double screenHeight = javafx.stage.Screen.getPrimary().getVisualBounds().getHeight();
       double screenWidth = javafx.stage.Screen.getPrimary().getVisualBounds().getWidth();
-      
+
       double xOffset = screenWidth - TOAST_WIDTH - 20;
       double yOffset = 20 + i * (TOAST_HEIGHT + 10);
-      
+
       toast.setX(xOffset);
       toast.setY(yOffset);
     }

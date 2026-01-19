@@ -11,6 +11,7 @@ import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.context.AuthContext;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -235,7 +236,7 @@ public class AnalyticsController {
 
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
 
-      // Benchmark post listing  
+      // Benchmark post listing
       long listStart = System.currentTimeMillis();
       // TODO: Implement getPostsByUserId() in PostService
       var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
@@ -314,11 +315,11 @@ public class AnalyticsController {
       if (file != null) {
         java.nio.file.Files.writeString(file.toPath(), report.toString());
         logger.info("Analytics report exported successfully to: {}", file.getAbsolutePath());
-        com.kratosgado.blog.utils.notifications.ToastNotification.success("Report exported successfully!");
+        ToastNotification.success("Report exported successfully!");
       }
     } catch (Exception e) {
       logger.error("Failed to export analytics report", e);
-      com.kratosgado.blog.utils.notifications.ToastNotification.error("Failed to export report");
+      ToastNotification.error("Failed to export report");
     }
   }
 }

@@ -19,7 +19,7 @@ import com.kratosgado.blog.utils.ImageUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.interfaces.Initializable;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

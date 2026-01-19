@@ -12,7 +12,7 @@ import com.kratosgado.blog.services.UploadService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;

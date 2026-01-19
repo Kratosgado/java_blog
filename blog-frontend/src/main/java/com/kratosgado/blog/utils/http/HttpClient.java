@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class HttpClient {
   private static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
   private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-  
+
   private final OkHttpClient client;
   private final Gson gson;
   private final String baseUrl;
@@ -23,10 +23,10 @@ public class HttpClient {
     this.baseUrl = baseUrl;
     this.gson = new Gson();
     this.client = new OkHttpClient.Builder()
-      .connectTimeout(10, TimeUnit.SECONDS)
-      .readTimeout(30, TimeUnit.SECONDS)
-      .writeTimeout(30, TimeUnit.SECONDS)
-      .build();
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build();
   }
 
   /**
@@ -41,9 +41,9 @@ public class HttpClient {
    */
   public <T> HttpResponse<T> get(String endpoint, String token, Class<T> responseType) throws IOException {
     Request.Builder requestBuilder = new Request.Builder()
-      .url(baseUrl + endpoint)
-      .get();
-    
+        .url(baseUrl + endpoint)
+        .get();
+
     if (token != null && !token.isEmpty()) {
       requestBuilder.header("Authorization", "Bearer " + token);
     }
@@ -61,13 +61,14 @@ public class HttpClient {
   /**
    * Make a POST request with JSON body and authorization token
    */
-  public <T> HttpResponse<T> post(String endpoint, Object body, String token, Class<T> responseType) throws IOException {
+  public <T> HttpResponse<T> post(String endpoint, Object body, String token, Class<T> responseType)
+      throws IOException {
     String json = gson.toJson(body);
     RequestBody requestBody = RequestBody.create(json, JSON);
 
     Request.Builder requestBuilder = new Request.Builder()
-      .url(baseUrl + endpoint)
-      .post(requestBody);
+        .url(baseUrl + endpoint)
+        .post(requestBody);
 
     if (token != null && !token.isEmpty()) {
       requestBuilder.header("Authorization", "Bearer " + token);
@@ -84,8 +85,8 @@ public class HttpClient {
     RequestBody requestBody = RequestBody.create(json, JSON);
 
     Request.Builder requestBuilder = new Request.Builder()
-      .url(baseUrl + endpoint)
-      .put(requestBody);
+        .url(baseUrl + endpoint)
+        .put(requestBody);
 
     if (token != null && !token.isEmpty()) {
       requestBuilder.header("Authorization", "Bearer " + token);
@@ -99,8 +100,8 @@ public class HttpClient {
    */
   public <T> HttpResponse<T> delete(String endpoint, String token, Class<T> responseType) throws IOException {
     Request.Builder requestBuilder = new Request.Builder()
-      .url(baseUrl + endpoint)
-      .delete();
+        .url(baseUrl + endpoint)
+        .delete();
 
     if (token != null && !token.isEmpty()) {
       requestBuilder.header("Authorization", "Bearer " + token);
@@ -114,24 +115,28 @@ public class HttpClient {
    */
   private <T> HttpResponse<T> executeRequest(Request request, Class<T> responseType) throws IOException {
     logger.debug("Making request: {} {}", request.method(), request.url());
-    
+
     try (Response response = client.newCall(request).execute()) {
       String responseBody = response.body() != null ? response.body().string() : null;
-      
+
       logger.debug("Response status: {}", response.code());
       logger.debug("Response body: {}", responseBody);
 
       T data = null;
       if (responseBody != null && !responseBody.isEmpty() && responseType != Void.class) {
-        data = gson.fromJson(responseBody, responseType);
+        // For String.class, return the raw body instead of trying to parse it
+        if (responseType == String.class) {
+          data = responseType.cast(responseBody);
+        } else {
+          data = gson.fromJson(responseBody, responseType);
+        }
       }
 
       return new HttpResponse<>(
-        response.code(),
-        response.isSuccessful(),
-        data,
-        responseBody
-      );
+          response.code(),
+          response.isSuccessful(),
+          data,
+          responseBody);
     }
   }
 

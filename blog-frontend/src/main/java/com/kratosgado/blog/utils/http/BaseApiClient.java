@@ -97,7 +97,27 @@ public abstract class BaseApiClient {
 
     ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
 
-    if (!"success".equals(apiResponse.status())) {
+    if (!"OK".equals(apiResponse.status())) {
+      throw new ApiException(apiResponse.message(), response.getStatusCode());
+    }
+
+    return apiResponse.data();
+  }
+
+  /**
+   * Handle response with parameterized type and throw exception if not successful
+   */
+  protected <T> T handleResponse(HttpClient.HttpResponse<String> response, Type dataType, String operation)
+      throws IOException {
+    if (!response.isSuccessful()) {
+      String errorMessage = extractErrorMessage(response.getRawBody());
+      logger.error("{} failed: {}", operation, errorMessage);
+      throw new ApiException(operation + " failed: " + errorMessage, response.getStatusCode());
+    }
+
+    ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
+
+    if (!"OK".equals(apiResponse.status())) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 
