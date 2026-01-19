@@ -18,6 +18,7 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Comment;
 
 import jakarta.validation.Valid;
@@ -71,12 +72,12 @@ public class CommentController {
 
   @GetMapping("/post/{postId}")
   @GetEnpoint
-  public com.kratosgado.blog.dtos.response.PageResponse<Comment> getPostComments(
+  public PageResponse<Comment> getPostComments(
       @PathVariable Long postId,
       @ParameterObject Pageable pageable) {
     Page<Comment> comments = commentService.getPostComments(postId, pageable);
 
-    return new com.kratosgado.blog.dtos.response.PageResponse<Comment>(comments.getContent(),
+    return new PageResponse<Comment>(comments.getContent(),
         pageable.getPageNumber() + 1,
         comments.getNumber(),
         comments.getTotalElements(),
@@ -87,12 +88,12 @@ public class CommentController {
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
-  public com.kratosgado.blog.dtos.response.PageResponse<Comment> getUserComments(
+  public PageResponse<Comment> getUserComments(
       @PathVariable Long userId,
-      @org.springdoc.core.annotations.ParameterObject org.springframework.data.domain.Pageable pageable) {
+      @ParameterObject org.springframework.data.domain.Pageable pageable) {
     Page<Comment> comments = commentService.getUserComments(userId, pageable);
 
-    return new com.kratosgado.blog.dtos.response.PageResponse<Comment>(comments.getContent(),
+    return new PageResponse<Comment>(comments.getContent(),
         pageable.getPageNumber() + 1,
         comments.getNumber(),
         comments.getTotalElements(),
