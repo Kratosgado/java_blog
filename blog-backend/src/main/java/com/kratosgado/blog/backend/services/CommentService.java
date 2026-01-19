@@ -23,7 +23,7 @@ public class CommentService {
   @Transactional
   public Comment createComment(CreateCommentRequest request, Long userId) {
     Comment comment = new Comment(request.postId(), userId, request.content());
-    comment.setStatus(CommentStatus.PENDING);
+    comment.setStatus(CommentStatus.pending);
     comment = commentRepository.save(comment);
 
     return comment;
@@ -34,7 +34,7 @@ public class CommentService {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
-    comment.setStatus(CommentStatus.APPROVED);
+    comment.setStatus(CommentStatus.approved);
     comment = commentRepository.save(comment);
 
     return comment;
@@ -45,7 +45,7 @@ public class CommentService {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
-    comment.setStatus(CommentStatus.REJECTED);
+    comment.setStatus(CommentStatus.rejected);
     comment = commentRepository.save(comment);
 
     return comment;
@@ -66,7 +66,7 @@ public class CommentService {
   }
 
   public Page<Comment> getPostComments(Long postId, Pageable pageable) {
-    return commentRepository.findByPostIdAndStatus(postId, CommentStatus.APPROVED, pageable);
+    return commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
   }
 
   public Page<Comment> getAllPostComments(Long postId, Pageable pageable) {
@@ -78,6 +78,6 @@ public class CommentService {
   }
 
   public Long getPostCommentCount(Long postId) {
-    return commentRepository.countByPostIdAndStatus(postId, CommentStatus.APPROVED);
+    return commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
   }
 }

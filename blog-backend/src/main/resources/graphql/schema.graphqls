@@ -136,36 +136,44 @@ type Review {
 # Pagination types
 type UserPage {
   content: [User!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 type PostPage {
   content: [Post!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 type CommentPage {
   content: [Comment!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 # Enums
 enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  draft
+  published
 }
 
 enum CommentStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  pending
+  approved
+  rejected
 }
 
 # Input types

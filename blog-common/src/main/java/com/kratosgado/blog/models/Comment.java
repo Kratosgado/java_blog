@@ -14,26 +14,26 @@ import lombok.NoArgsConstructor;
 public class Comment {
   @Id
   private String id;
-  
+
   @Field("post_id")
   private Long postId;
-  
+
   @Field("user_id")
   private Long userId;
-  
+
   private String content;
-  
+
   private CommentStatus status;
-  
+
   @Field("created_at")
   private LocalDateTime createdAt;
-  
+
   @Field("updated_at")
   private LocalDateTime updatedAt;
-  
+
   @Transient
   private String authorName;
-  
+
   @Transient
   private String authorAvatarUrl;
 
@@ -41,11 +41,11 @@ public class Comment {
     this.postId = postId;
     this.userId = userId;
     this.content = content;
-    this.status = CommentStatus.PENDING;
+    this.status = CommentStatus.pending;
     this.createdAt = LocalDateTime.now();
     this.updatedAt = LocalDateTime.now();
   }
-  
+
   public void setUpdatedAt() {
     this.updatedAt = LocalDateTime.now();
   }

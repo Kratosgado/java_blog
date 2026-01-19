@@ -1,7 +1,11 @@
 
 package com.kratosgado.blog.models;
 
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -24,6 +28,7 @@ public class User {
   private String username;
 
   @Column(nullable = false)
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
 
   @Column(unique = true, nullable = false)
@@ -37,4 +42,9 @@ public class User {
   @Column(nullable = false)
   @Builder.Default
   private String role = "USER";
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  @Builder.Default
+  private List<Post> posts = new ArrayList<>();
 }

@@ -7,6 +7,9 @@ module com.kratosgado.blog.common {
   requires spring.data.commons;
   requires spring.data.mongodb;
 
+  // Jackson
+  requires com.fasterxml.jackson.annotation;
+
   // Lombok
   requires static lombok;
 

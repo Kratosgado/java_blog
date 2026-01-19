@@ -1,7 +1,7 @@
 package com.kratosgado.blog.models;
 
 public enum CommentStatus {
-  APPROVED,
-  PENDING,
-  REJECTED
+  approved,
+  pending,
+  rejected
 }
