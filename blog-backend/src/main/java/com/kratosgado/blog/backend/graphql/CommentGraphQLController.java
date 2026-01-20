@@ -1,5 +1,8 @@
 package com.kratosgado.blog.backend.graphql;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,12 +17,9 @@ import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
-
-import java.util.Collections;
-import java.util.List;
 
 @Controller
 public class CommentGraphQLController {
@@ -59,20 +59,19 @@ public class CommentGraphQLController {
         commentsPage.getTotalElements(),
         commentsPage.getTotalPages(),
         commentsPage.isFirst(),
-        commentsPage.isLast()
-    );
+        commentsPage.isLast());
   }
 
   @MutationMapping
   public Comment createComment(@Argument CreateCommentRequest input) {
-    // This would need userId from authentication context
+
     Long userId = 1L; // TODO: Get from SecurityContext
     return commentService.createComment(input, userId);
   }
 
   @MutationMapping
   public boolean deleteComment(@Argument String id) {
-    // This would need userId from authentication context
+
     Long userId = 1L; // TODO: Get from SecurityContext
     commentService.deleteComment(id, userId);
     return true;
@@ -80,8 +79,6 @@ public class CommentGraphQLController {
 
   @MutationMapping
   public Comment updateComment(@Argument String id, @Argument String content) {
-    // This would need a service method to update comment
-    // For now, returning a placeholder
     throw new UnsupportedOperationException("Update comment not implemented");
   }
 
@@ -92,7 +89,7 @@ public class CommentGraphQLController {
   }
 
   @SchemaMapping(typeName = "Comment", field = "post")
-  public Post post(Comment comment) {
+  public PostResponse post(Comment comment) {
     return postService.getPostById(comment.getPostId());
   }
 

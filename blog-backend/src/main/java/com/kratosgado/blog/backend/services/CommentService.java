@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.CommentStatus;
 
 @Service
 public class CommentService {

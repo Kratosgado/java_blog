@@ -33,9 +33,6 @@ public class Category {
   @Column(name = "created_at")
   private LocalDateTime createdAt;
 
-  @Transient
-  private Integer postCount;
-
   @OneToMany(mappedBy = "category")
   @JsonIgnore
   @Builder.Default

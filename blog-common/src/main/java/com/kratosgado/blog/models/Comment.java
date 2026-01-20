@@ -5,6 +5,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.kratosgado.blog.enums.CommentStatus;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

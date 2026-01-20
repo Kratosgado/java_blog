@@ -2,7 +2,6 @@ package com.kratosgado.blog.services;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,8 @@ public class CommentService {
   }
 
   /**
-   * Get comments by post ID (convenience method for controllers - returns all as list)
+   * Get comments by post ID (convenience method for controllers - returns all as
+   * list)
    */
   public List<Comment> getCommentsByPostId(Long postId) {
     ensureAuthToken();
@@ -102,13 +102,14 @@ public class CommentService {
   public List<Comment> getAllComments() {
     ensureAuthToken();
     try {
-      // Get current user to fetch their comments (for now, admin should see all via backend)
+      // Get current user to fetch their comments (for now, admin should see all via
+      // backend)
       User currentUser = AuthContext.getInstance().getCurrentUser();
       if (currentUser == null) {
         logger.warn("No current user found");
         return List.of();
       }
-      
+
       // Fetch a large page to get all comments
       PageResponse<Comment> response = commentApiClient.getCommentsByUserId(currentUser.getId(), 0, 10000);
       return response.content();

@@ -1,4 +1,4 @@
-package com.kratosgado.blog.models;
+package com.kratosgado.blog.enums;
 
 public enum CommentStatus {
   approved,

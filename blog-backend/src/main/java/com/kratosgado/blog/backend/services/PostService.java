@@ -7,8 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Post;
 
 @Service
@@ -20,7 +23,7 @@ public class PostService {
   }
 
   @Transactional
-  public Post createPost(CreatePostRequest request, Long userId) {
+  public PostResponse createPost(CreatePostRequest request, Long userId) {
     Post post = new Post();
     post.setUserId(userId);
     post.setTitle(request.title());
@@ -30,12 +33,11 @@ public class PostService {
     post.setCoverImage(request.coverImage());
     post.setStatus(request.status());
 
-    post = postRepository.save(post);
-    return post;
+    return DtoMapper.toPostResponse(postRepository.save(post));
   }
 
   @Transactional
-  public Post updatePost(Long postId, UpdatePostRequest request, Long userId) {
+  public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findByIdAndUserId(postId, userId)
         .orElseThrow(() -> BlogException.notFound("Post not found or you don't have permission"));
 
@@ -52,8 +54,7 @@ public class PostService {
     if (request.status() != null)
       post.setStatus(request.status());
 
-    post = postRepository.save(post);
-    return post;
+    return DtoMapper.toPostResponse(postRepository.save(post));
   }
 
   @Transactional
@@ -64,24 +65,62 @@ public class PostService {
     postRepository.delete(post);
   }
 
-  public Post getPostById(Long postId) {
-    return postRepository.findById(postId)
+  public PostResponse getPostById(Long postId) {
+    var post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
+    return DtoMapper.toPostResponse(post);
   }
 
-  public Page<Post> getPublishedPosts(Pageable pageable) {
-    return postRepository.findPublishedPosts(pageable);
+  public PageResponse<PostResponse> getPublishedPosts(Pageable pageable) {
+    final Page<Post> posts = postRepository.findPublishedPosts(pageable);
+    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
+
+    return new PageResponse<>(content,
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 
-  public Page<Post> searchPosts(String keyword, Pageable pageable) {
-    return postRepository.searchPublishedPosts(keyword, pageable);
+  public PageResponse<PostResponse> searchPosts(String keyword, Pageable pageable) {
+    final Page<Post> posts = postRepository.searchPublishedPosts(keyword, pageable);
+    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
+
+    return new PageResponse<>(content,
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 
-  public Page<Post> getUserPosts(Long userId, Pageable pageable) {
-    return postRepository.findByUserId(userId, pageable);
+  public PageResponse<PostResponse> getUserPosts(Long userId, Pageable pageable) {
+    final Page<Post> posts = postRepository.findByUserId(userId, pageable);
+    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
+
+    return new PageResponse<>(content,
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
 
-  public Page<Post> getPostsByCategory(Long categoryId, Pageable pageable) {
-    return postRepository.findByCategoryId(categoryId, pageable);
+  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, Pageable pageable) {
+    final Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
+    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
+
+    return new PageResponse<>(content,
+        pageable.getPageNumber() + 1,
+        posts.getNumber(),
+        posts.getTotalElements(),
+        posts.getTotalPages(),
+        posts.isFirst(),
+        posts.isLast());
   }
+
 }

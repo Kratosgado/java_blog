@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +23,8 @@ import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
-import com.kratosgado.blog.models.Post;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,10 +44,10 @@ public class PostController {
   @PostMapping
   @Operation(summary = "Create a new post", description = "Creates a new blog post with the provided details. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
-  public ResponseEntity<ResponseDto<Post>> createPost(
+  public ResponseEntity<ResponseDto<PostResponse>> createPost(
       @Valid @RequestBody @Parameter(description = "Post creation request") CreatePostRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    Post post = postService.createPost(request, userId);
+    var post = postService.createPost(request, userId);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(ResponseDto.success("Post created successfully", post));
@@ -57,12 +56,11 @@ public class PostController {
   @PutMapping("/{id}")
   @Operation(summary = "Update a post", description = "Updates an existing blog post. Only the post author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseDto<Post> updatePost(
+  public PostResponse updatePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @Valid @RequestBody @Parameter(description = "Post update request") UpdatePostRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    Post post = postService.updatePost(id, request, userId);
-    return ResponseDto.success("Post updated successfully", post);
+    return postService.updatePost(id, request, userId);
   }
 
   @DeleteMapping("/{id}")
@@ -78,7 +76,7 @@ public class PostController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a post by ID", description = "Retrieves a single blog post by its ID. Public access.")
   @GetEnpoint
-  public Post getPost(
+  public PostResponse getPost(
       @PathVariable @Parameter(description = "Post ID") Long id) {
     return postService.getPostById(id);
   }
@@ -86,66 +84,37 @@ public class PostController {
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
-  public PageResponse<Post> getPosts(@ParameterObject Pageable pageable) {
-    Page<Post> posts = postService.getPublishedPosts(pageable);
-
-    return new PageResponse<Post>(posts.getContent(),
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
+  public PageResponse<PostResponse> getPosts(@ParameterObject Pageable pageable) {
+    return postService.getPublishedPosts(pageable);
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search posts", description = "Searches for posts by keyword in title and content")
   @GetEnpoint
-  public PageResponse<Post> searchPosts(
+  public PageResponse<PostResponse> searchPosts(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
       @ParameterObject Pageable pageable) {
-    Page<Post> posts = postService.searchPosts(keyword, pageable);
+    return postService.searchPosts(keyword, pageable);
 
-    return new PageResponse<Post>(posts.getContent(),
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
   }
 
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get posts by user", description = "Retrieves all posts created by a specific user")
   @GetEnpoint
-  public PageResponse<Post> getUserPosts(
+  public PageResponse<PostResponse> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject Pageable pageable) {
-    Page<Post> posts = postService.getUserPosts(userId, pageable);
+    return postService.getUserPosts(userId, pageable);
 
-    return new PageResponse<Post>(posts.getContent(),
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
   }
 
   @GetMapping("/category/{categoryId}")
   @Operation(summary = "Get posts by category", description = "Retrieves all posts in a specific category")
   @GetEnpoint
-  public PageResponse<Post> getCategoryPosts(
+  public PageResponse<PostResponse> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
       @ParameterObject Pageable pageable) {
-    Page<Post> posts = postService.getPostsByCategory(categoryId, pageable);
+    return postService.getPostsByCategory(categoryId, pageable);
 
-    return new PageResponse<Post>(posts.getContent(),
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
   }
 }

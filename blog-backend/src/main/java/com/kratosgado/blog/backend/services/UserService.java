@@ -100,7 +100,7 @@ public class UserService {
       throw BlogException.unauthorized("You are not authorized to change this password");
     }
 
-    User user = getUserById(id);
+    User user = getUserById(id, true);
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
       throw BlogException.unauthorized("Old password is incorrect");

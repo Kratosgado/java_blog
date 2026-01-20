@@ -1,18 +1,7 @@
 package com.kratosgado.blog.backend.graphql;
 
-import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.User;
-import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.Review;
-import com.kratosgado.blog.backend.services.PostService;
-import com.kratosgado.blog.backend.services.UserService;
-import com.kratosgado.blog.backend.services.CommentService;
-import com.kratosgado.blog.backend.services.ReviewService;
-import com.kratosgado.blog.dtos.request.CreatePostRequest;
-import com.kratosgado.blog.dtos.request.UpdatePostRequest;
-import com.kratosgado.blog.dtos.response.PageResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import java.util.List;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -21,9 +10,19 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.kratosgado.blog.backend.security.SecurityUtils;
+import com.kratosgado.blog.backend.services.CommentService;
+import com.kratosgado.blog.backend.services.PostService;
+import com.kratosgado.blog.backend.services.ReviewService;
+import com.kratosgado.blog.backend.services.UserService;
+import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.UpdatePostRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.models.User;
 
 @Controller
 public class PostGraphQLController {
@@ -33,8 +32,8 @@ public class PostGraphQLController {
   private final CommentService commentService;
   private final ReviewService reviewService;
 
-  public PostGraphQLController(PostService postService, UserService userService, 
-                               CommentService commentService, ReviewService reviewService) {
+  public PostGraphQLController(PostService postService, UserService userService,
+      CommentService commentService, ReviewService reviewService) {
     this.postService = postService;
     this.userService = userService;
     this.commentService = commentService;
@@ -42,12 +41,12 @@ public class PostGraphQLController {
   }
 
   @QueryMapping
-  public Post post(@Argument Long id) {
+  public PostResponse post(@Argument Long id) {
     return postService.getPostById(id);
   }
 
   @QueryMapping
-  public PageResponse<Post> posts(
+  public PageResponse<PostResponse> posts(
       @Argument(name = "page") int page,
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
@@ -57,108 +56,68 @@ public class PostGraphQLController {
         : Sort.by(sortBy).descending();
 
     PageRequest pageRequest = PageRequest.of(page, size, sort);
-    Page<Post> postsPage = postService.getPublishedPosts(pageRequest);
+    return postService.getPublishedPosts(pageRequest);
 
-    return new PageResponse<>(
-        postsPage.getContent(),
-        postsPage.getNumber(),
-        postsPage.getSize(),
-        postsPage.getTotalElements(),
-        postsPage.getTotalPages(),
-        postsPage.isFirst(),
-        postsPage.isLast()
-    );
   }
 
   @QueryMapping
-  public PageResponse<Post> searchPosts(
+  public PageResponse<PostResponse> searchPosts(
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
     PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> postsPage = postService.searchPosts(keyword, pageRequest);
+    return postService.searchPosts(keyword, pageRequest);
 
-    return new PageResponse<>(
-        postsPage.getContent(),
-        postsPage.getNumber(),
-        postsPage.getSize(),
-        postsPage.getTotalElements(),
-        postsPage.getTotalPages(),
-        postsPage.isFirst(),
-        postsPage.isLast()
-    );
   }
 
   @QueryMapping
-  public PageResponse<Post> postsByCategory(
+  public PageResponse<PostResponse> postsByCategory(
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
     PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> postsPage = postService.getPostsByCategory(categoryId, pageRequest);
+    return postService.getPostsByCategory(categoryId, pageRequest);
 
-    return new PageResponse<>(
-        postsPage.getContent(),
-        postsPage.getNumber(),
-        postsPage.getSize(),
-        postsPage.getTotalElements(),
-        postsPage.getTotalPages(),
-        postsPage.isFirst(),
-        postsPage.isLast()
-    );
   }
 
   @QueryMapping
-  public PageResponse<Post> postsByUser(
+  public PageResponse<PostResponse> postsByUser(
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
     PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Post> postsPage = postService.getUserPosts(userId, pageRequest);
-
-    return new PageResponse<>(
-        postsPage.getContent(),
-        postsPage.getNumber(),
-        postsPage.getSize(),
-        postsPage.getTotalElements(),
-        postsPage.getTotalPages(),
-        postsPage.isFirst(),
-        postsPage.isLast()
-    );
+    return postService.getUserPosts(userId, pageRequest);
   }
 
   // Mutations
   @MutationMapping
-  public Post createPost(@Argument CreatePostRequest input) {
-    // This would need userId from authentication context
-    Long userId = 1L; // TODO: Get from SecurityContext
+  public PostResponse createPost(@Argument CreatePostRequest input) {
+
+    Long userId = SecurityUtils.getCurrentUserId();
     return postService.createPost(input, userId);
   }
 
   @MutationMapping
-  public Post updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
-    // This would need userId from authentication context
-    Long userId = 1L; // TODO: Get from SecurityContext
+  public PostResponse updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
+
+    Long userId = SecurityUtils.getCurrentUserId();
     return postService.updatePost(id, input, userId);
   }
 
   @MutationMapping
   public boolean deletePost(@Argument Long id) {
-    // This would need userId from authentication context
-    Long userId = 1L; // TODO: Get from SecurityContext
-    postService.deletePost(id, userId);
+
+    postService.deletePost(id, SecurityUtils.getCurrentUserId());
     return true;
   }
 
   @MutationMapping
-  public Post publishPost(@Argument Long id) {
-    // This would need userId from authentication context
-    Long userId = 1L; // TODO: Get from SecurityContext
-    Post post = postService.getPostById(id);
+  public PostResponse publishPost(@Argument Long id) {
+    Long userId = SecurityUtils.getCurrentUserId();
+    var post = postService.getPostById(id);
     UpdatePostRequest updateRequest = new UpdatePostRequest(
-      post.getTitle(), post.getContent(), post.getExcerpt(), 
-      post.getCategoryId(), post.getCoverImage(), "PUBLISHED"
-    );
+        post.title(), post.content(), post.excerpt(),
+        post.category().id(), post.coverImage(), "PUBLISHED");
     return postService.updatePost(id, updateRequest, userId);
   }
 
