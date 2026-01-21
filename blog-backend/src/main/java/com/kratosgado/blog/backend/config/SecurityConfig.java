@@ -43,7 +43,8 @@ public class SecurityConfig {
             .requestMatchers("/graphiql/**", "/graphql").permitAll()
 
             // Public read access to content
-            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**", "/tags/**", "/users/**")
+            .permitAll()
             .requestMatchers(HttpMethod.GET, "/users/{id}").permitAll()
 
             // Admin-only endpoints

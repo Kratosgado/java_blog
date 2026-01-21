@@ -4,6 +4,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
+import com.kratosgado.blog.models.User;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,9 +47,9 @@ public class PostController {
   @Operation(summary = "Create a new post", description = "Creates a new blog post with the provided details. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
   public ResponseEntity<ResponseDto<PostResponse>> createPost(
-      @Valid @RequestBody @Parameter(description = "Post creation request") CreatePostRequest request) {
-    Long userId = SecurityUtils.getCurrentUserId();
-    var post = postService.createPost(request, userId);
+      @Valid @RequestBody @Parameter(description = "Post creation request") CreatePostRequest request,
+      @AuthenticationPrincipal User user) {
+    var post = postService.createPost(request, user);
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(ResponseDto.success("Post created successfully", post));

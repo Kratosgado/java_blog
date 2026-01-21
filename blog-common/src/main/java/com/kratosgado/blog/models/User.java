@@ -47,4 +47,18 @@ public class User {
   @JsonIgnore
   @Builder.Default
   private List<Post> posts = new ArrayList<>();
+
+  @Override
+  public String toString() {
+    return "User{" +
+        "id=" + id +
+        ", username='" + username + '\'' +
+        ", email='" + email + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", bio='" + bio + '\'' +
+        ", website='" + website + '\'' +
+        ", location='" + location + '\'' +
+        ", role='" + role + '\'' +
+        '}';
+  }
 }

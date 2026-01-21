@@ -44,6 +44,10 @@ setup)
   echo "Running complete database setup..."
   ./setup-databases.sh
   ;;
+test)
+  echo "Running all tests..."
+  cd blog-backend && mvn clean test
+  ;;
 reset)
   echo "⚠️  This will DELETE all data and recreate databases!"
   read -p "Are you sure? (y/N): " -n 1 -r

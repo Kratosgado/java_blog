@@ -100,7 +100,7 @@ GET {{host}}/posts/user/1?page=0&size=10 HTTP/1.1
 
 # @name getCategoryPosts
 
-GET {{host}}/posts/category/1?page=0&size=10 HTTP/1.1
+GET {{host}}/posts/category/3?page=0&size=10 HTTP/1.1
 
 
 ### 

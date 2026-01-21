@@ -224,7 +224,7 @@ public class PostsListController {
       }
     });
 
-    // Actions Column with buttons
+     ions Column with buttons
     TableColumn<Post, Void> actionsCol = new TableColumn<>("Actions");
     actionsCol.setPrefWidth(200);
     actionsCol.setSortable(false);

@@ -13,6 +13,9 @@ import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 public class PostService {
@@ -23,9 +26,9 @@ public class PostService {
   }
 
   @Transactional
-  public PostResponse createPost(CreatePostRequest request, Long userId) {
+  public PostResponse createPost(CreatePostRequest request, User user) {
     Post post = new Post();
-    post.setUserId(userId);
+    post.setUser(user);
     post.setTitle(request.title());
     post.setContent(request.content());
     post.setExcerpt(request.excerpt());
