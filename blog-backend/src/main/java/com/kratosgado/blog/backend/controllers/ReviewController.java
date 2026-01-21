@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +22,7 @@ import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
-import com.kratosgado.blog.dtos.response.ReviewResponse;
+import com.kratosgado.blog.models.Review;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,21 +42,21 @@ public class ReviewController {
   @PostMapping
   @Operation(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
-  public ResponseDto<ReviewResponse> createReview(
+  public ResponseDto<Review> createReview(
       @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    ReviewResponse review = reviewService.createReview(request, userId);
+    Review review = reviewService.createReview(request, userId);
     return ResponseDto.success("Review created successfully", review);
   }
 
   @PutMapping("/{id}")
   @Operation(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseDto<ReviewResponse> updateReview(
+  public ResponseDto<Review> updateReview(
       @PathVariable @Parameter(description = "Review ID") String id,
       @Valid @RequestBody @Parameter(description = "Review update request") UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    ReviewResponse review = reviewService.updateReview(id, request, userId);
+    Review review = reviewService.updateReview(id, request, userId);
     return ResponseDto.success("Review updated successfully", review);
   }
 
@@ -74,7 +73,7 @@ public class ReviewController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a review by ID", description = "Retrieves a single review by its ID. Public access.")
   @GetEnpoint
-  public ReviewResponse getReview(
+  public Review getReview(
       @PathVariable @Parameter(description = "Review ID") String id) {
     return reviewService.getReviewById(id);
   }
@@ -82,35 +81,20 @@ public class ReviewController {
   @GetMapping("/post/{postId}")
   @Operation(summary = "Get reviews for a post", description = "Retrieves all reviews for a specific post. Public access.")
   @GetEnpoint
-  public PageResponse<ReviewResponse> getPostReviews(
+  public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject Pageable pageable) {
-    Page<ReviewResponse> reviews = reviewService.getPostReviews(postId, pageable);
+    return reviewService.getPostReviews(postId, pageable);
 
-    return new PageResponse<ReviewResponse>(reviews.getContent(),
-        pageable.getPageNumber() + 1,
-        reviews.getNumber(),
-        reviews.getTotalElements(),
-        reviews.getTotalPages(),
-        reviews.isFirst(),
-        reviews.isLast());
   }
 
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get reviews by user", description = "Retrieves all reviews created by a specific user")
   @GetEnpoint
-  public PageResponse<ReviewResponse> getUserReviews(
+  public PageResponse<Review> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject Pageable pageable) {
-    Page<ReviewResponse> reviews = reviewService.getUserReviews(userId, pageable);
-
-    return new PageResponse<ReviewResponse>(reviews.getContent(),
-        pageable.getPageNumber() + 1,
-        reviews.getNumber(),
-        reviews.getTotalElements(),
-        reviews.getTotalPages(),
-        reviews.isFirst(),
-        reviews.isLast());
+    return reviewService.getUserReviews(userId, pageable);
   }
 
   @GetMapping("/post/{postId}/stats")

@@ -12,7 +12,7 @@ import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
-import com.kratosgado.blog.dtos.response.ReviewResponse;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
@@ -27,7 +27,7 @@ public class ReviewService {
   private final UserRepository userRepository;
 
   @Transactional
-  public ReviewResponse createReview(CreateReviewRequest request, Long userId) {
+  public Review createReview(CreateReviewRequest request, Long userId) {
 
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -46,18 +46,17 @@ public class ReviewService {
         request.rating(),
         request.title(),
         request.content());
-    
+
     // Populate author snapshot
     review.setAuthorName(user.getUsername());
     review.setAuthorAvatarUrl(user.getAvatarUrl());
 
-    Review savedReview = reviewRepository.save(review);
+    return reviewRepository.save(review);
 
-    return DtoMapper.toReviewResponse(savedReview);
   }
 
   @Transactional
-  public ReviewResponse updateReview(String id, UpdateReviewRequest request, Long userId) {
+  public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -77,10 +76,8 @@ public class ReviewService {
     if (request.content() != null) {
       review.setContent(request.content());
     }
+    return reviewRepository.save(review);
 
-    Review updatedReview = reviewRepository.save(review);
-
-    return DtoMapper.toReviewResponse(updatedReview);
   }
 
   @Transactional
@@ -97,24 +94,24 @@ public class ReviewService {
 
   }
 
-  public ReviewResponse getReviewById(String id) {
+  public Review getReviewById(String id) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+    return review;
 
-    return DtoMapper.toReviewResponse(review);
   }
 
-  public Page<ReviewResponse> getPostReviews(Long postId, Pageable pageable) {
+  public PageResponse<Review> getPostReviews(Long postId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
-    return reviews.map(DtoMapper::toReviewResponse);
+    return DtoMapper.toPageResponse(reviews, pageable);
   }
 
-  public Page<ReviewResponse> getUserReviews(Long userId, Pageable pageable) {
+  public PageResponse<Review> getUserReviews(Long userId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByUserId(userId, pageable);
-    return reviews.map(DtoMapper::toReviewResponse);
+    return DtoMapper.toPageResponse(reviews, pageable);
   }
 
   public Double getAverageRating(Long postId) {

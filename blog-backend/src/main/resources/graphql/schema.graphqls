@@ -97,7 +97,8 @@ type Comment {
   status: CommentStatus!
   createdAt: String!
   updatedAt: String
-  author: User!
+  authorName: String!
+  authorAvatarUrl: String!
   post: Post!
   parent: Comment
   replies: [Comment!]
@@ -129,7 +130,8 @@ type Review {
   content: String!
   createdAt: String!
   updatedAt: String
-  author: User!
+  authorName: String!
+  authorAvatarUrl: String!
   post: Post!
 }
 

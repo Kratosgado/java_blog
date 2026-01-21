@@ -1,16 +1,16 @@
 
 package com.kratosgado.blog.backend.utils;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
-import com.kratosgado.blog.dtos.response.CommentResponse;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.dtos.response.ReviewResponse;
 import com.kratosgado.blog.dtos.response.TagSummary;
 import com.kratosgado.blog.models.Category;
-import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
@@ -59,41 +59,9 @@ public class DtoMapper {
     return new CategorySummary(category.getId(), category.getName(), category.getSlug());
   }
 
-  public static CommentResponse toCommentResponse(Comment comment) {
-    if (comment == null) {
-      return null;
-    }
-    return new CommentResponse(
-        comment.getId(),
-        comment.getPostId(),
-        new AuthorSummary(
-            comment.getUserId(),
-            comment.getAuthorName(),
-            null, // email not stored in snapshot
-            comment.getAuthorAvatarUrl()),
-        comment.getContent(),
-        comment.getStatus().name(),
-        comment.getCreatedAt(),
-        comment.getUpdatedAt());
+  public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
+    return new PageResponse<>(page.getContent(), pageable.getPageNumber() + 1, page.getNumber(),
+        page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
   }
 
-  public static ReviewResponse toReviewResponse(Review review) {
-    if (review == null) {
-      return null;
-    }
-    return new ReviewResponse(
-        review.getId(),
-        review.getPostId(),
-        new AuthorSummary(
-            review.getUserId(),
-            review.getAuthorName(),
-            null, // email not stored in snapshot
-            review.getAuthorAvatarUrl()),
-        review.getRating(),
-        review.getTitle(),
-        review.getContent(),
-        review.getCreatedAt(),
-        review.getUpdatedAt(),
-        review.isHelpful());
-  }
 }

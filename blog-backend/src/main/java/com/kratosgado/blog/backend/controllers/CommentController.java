@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +17,8 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.models.Comment;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +32,7 @@ public class CommentController {
 
   @PostMapping
   @SecuredUpdateEndpoint
-  public CommentResponse createComment(
+  public Comment createComment(
       @Valid @RequestBody CreateCommentRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     return commentService.createComment(request, userId);
@@ -42,14 +41,14 @@ public class CommentController {
 
   @PutMapping("/{id}/approve")
   @SecuredUpdateEndpoint
-  public CommentResponse approveComment(@PathVariable String id) {
+  public Comment approveComment(@PathVariable String id) {
     return commentService.approveComment(id);
 
   }
 
   @PutMapping("/{id}/reject")
   @SecuredUpdateEndpoint
-  public CommentResponse rejectComment(@PathVariable String id) {
+  public Comment rejectComment(@PathVariable String id) {
     return commentService.rejectComment(id);
 
   }
@@ -72,34 +71,19 @@ public class CommentController {
 
   @GetMapping("/post/{postId}")
   @GetEnpoint
-  public PageResponse<CommentResponse> getPostComments(
+  public PageResponse<Comment> getPostComments(
       @PathVariable Long postId,
       @ParameterObject Pageable pageable) {
-    Page<CommentResponse> comments = commentService.getPostComments(postId, pageable);
+    return commentService.getPostComments(postId, pageable);
 
-    return new PageResponse<CommentResponse>(comments.getContent(),
-        pageable.getPageNumber() + 1,
-        comments.getNumber(),
-        comments.getTotalElements(),
-        comments.getTotalPages(),
-        comments.isFirst(),
-        comments.isLast());
   }
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
-  public PageResponse<CommentResponse> getUserComments(
+  public PageResponse<Comment> getUserComments(
       @PathVariable Long userId,
       @ParameterObject org.springframework.data.domain.Pageable pageable) {
-    Page<CommentResponse> comments = commentService.getUserComments(userId, pageable);
-
-    return new PageResponse<CommentResponse>(comments.getContent(),
-        pageable.getPageNumber() + 1,
-        comments.getNumber(),
-        comments.getTotalElements(),
-        comments.getTotalPages(),
-        comments.isFirst(),
-        comments.isLast());
+    return commentService.getUserComments(userId, pageable);
   }
 
   @GetMapping("/post/{postId}/count")

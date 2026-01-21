@@ -9,7 +9,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.response.CommentResponse;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -26,39 +26,36 @@ public class CommentService {
   }
 
   @Transactional
-  public CommentResponse createComment(CreateCommentRequest request, Long userId) {
+  public Comment createComment(CreateCommentRequest request, Long userId) {
     User user = userService.getUserById(userId);
-    
+
     Comment comment = new Comment(request.postId(), userId, request.content());
     comment.setStatus(CommentStatus.pending);
     // Populate author snapshot
     comment.setAuthorName(user.getUsername());
     comment.setAuthorAvatarUrl(user.getAvatarUrl());
-    comment = commentRepository.save(comment);
+    return commentRepository.save(comment);
 
-    return DtoMapper.toCommentResponse(comment);
   }
 
   @Transactional
-  public CommentResponse approveComment(String commentId) {
+  public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
     comment.setStatus(CommentStatus.approved);
-    comment = commentRepository.save(comment);
+    return commentRepository.save(comment);
 
-    return DtoMapper.toCommentResponse(comment);
   }
 
   @Transactional
-  public CommentResponse rejectComment(String commentId) {
+  public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment not found"));
 
     comment.setStatus(CommentStatus.rejected);
-    comment = commentRepository.save(comment);
+    return commentRepository.save(comment);
 
-    return DtoMapper.toCommentResponse(comment);
   }
 
   @Transactional
@@ -70,27 +67,32 @@ public class CommentService {
     if (!comment.getUserId().equals(userId)) {
       throw BlogException.unauthorized("You are not allowed to delete this comment");
     }
-
     commentRepository.delete(comment);
-
   }
 
-  public Page<CommentResponse> getPostComments(Long postId, Pageable pageable) {
+  public Comment getCommentById(String commentId) {
+    Comment comment = commentRepository.findById(commentId)
+        .orElseThrow(() -> BlogException.notFound("Comment not found"));
+    return comment;
+  }
+
+  public PageResponse<Comment> getPostComments(Long postId, Pageable pageable) {
     Page<Comment> comments = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
-    return comments.map(DtoMapper::toCommentResponse);
+    return DtoMapper.toPageResponse(comments, pageable);
   }
 
-  public Page<CommentResponse> getAllPostComments(Long postId, Pageable pageable) {
+  public PageResponse<Comment> getAllPostComments(Long postId, Pageable pageable) {
     Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
-    return comments.map(DtoMapper::toCommentResponse);
+    return DtoMapper.toPageResponse(comments, pageable);
   }
 
-  public Page<CommentResponse> getUserComments(Long userId, Pageable pageable) {
+  public PageResponse<Comment> getUserComments(Long userId, Pageable pageable) {
     Page<Comment> comments = commentRepository.findByUserId(userId, pageable);
-    return comments.map(DtoMapper::toCommentResponse);
+    return DtoMapper.toPageResponse(comments, pageable);
   }
 
   public Long getPostCommentCount(Long postId) {
     return commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
   }
+
 }

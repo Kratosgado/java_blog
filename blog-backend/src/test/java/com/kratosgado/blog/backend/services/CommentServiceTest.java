@@ -4,10 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -33,7 +30,7 @@ import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.response.CommentResponse;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -83,11 +80,11 @@ class CommentServiceTest {
     when(userService.getUserById(1L)).thenReturn(testUser);
 
     // Act
-    CommentResponse result = commentService.createComment(createRequest, 1L);
+    Comment result = commentService.createComment(createRequest, 1L);
 
     // Assert
     assertNotNull(result);
-    assertEquals("testuser", result.author().username());
+    assertEquals("testuser", result.getAuthorName());
   }
 
   @ParameterizedTest
@@ -100,7 +97,7 @@ class CommentServiceTest {
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
 
     // Act
-    CommentResponse result;
+    Comment result;
     if (method.equals("approve")) {
       result = commentService.approveComment("comment123");
     } else {
@@ -109,15 +106,14 @@ class CommentServiceTest {
 
     // Assert
     assertNotNull(result);
-    assertEquals(newStatus.name(), result.status());
-    assertEquals("testuser", result.author().username());
+    assertEquals(newStatus.name(), result.getStatus());
+    assertEquals("testuser", result.getAuthorName());
   }
 
   static Stream<Arguments> statusChangeTestCases() {
     return Stream.of(
         Arguments.of(CommentStatus.approved, "approve"),
-        Arguments.of(CommentStatus.rejected, "reject")
-    );
+        Arguments.of(CommentStatus.rejected, "reject"));
   }
 
   @ParameterizedTest
@@ -130,10 +126,10 @@ class CommentServiceTest {
     // Act & Assert
     BlogException exception;
     if (method.equals("approve")) {
-      exception = assertThrows(BlogException.class, 
+      exception = assertThrows(BlogException.class,
           () -> commentService.approveComment("comment123"));
     } else {
-      exception = assertThrows(BlogException.class, 
+      exception = assertThrows(BlogException.class,
           () -> commentService.rejectComment("comment123"));
     }
     assertEquals("Comment not found", exception.getMessage());
@@ -142,8 +138,7 @@ class CommentServiceTest {
   static Stream<Arguments> statusChangeNotFoundTestCases() {
     return Stream.of(
         Arguments.of("approve"),
-        Arguments.of("reject")
-    );
+        Arguments.of("reject"));
   }
 
   @Test
@@ -196,12 +191,12 @@ class CommentServiceTest {
         .thenReturn(commentPage);
 
     // Act
-    Page<CommentResponse> result = commentService.getPostComments(1L, pageable);
+    PageResponse<Comment> result = commentService.getPostComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals("testuser", result.getContent().get(0).author().username());
+    assertEquals(1, result.totalElements());
+    assertEquals("testuser", result.content().get(0).getAuthorName());
   }
 
   @Test
@@ -212,12 +207,12 @@ class CommentServiceTest {
     when(commentRepository.findByPostId(1L, pageable)).thenReturn(commentPage);
 
     // Act
-    Page<CommentResponse> result = commentService.getAllPostComments(1L, pageable);
+    PageResponse<Comment> result = commentService.getAllPostComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals("testuser", result.getContent().get(0).author().username());
+    assertEquals(1, result.totalElements());
+    assertEquals("testuser", result.content().get(0).getAuthorName());
   }
 
   @Test
@@ -228,12 +223,12 @@ class CommentServiceTest {
     when(commentRepository.findByUserId(1L, pageable)).thenReturn(commentPage);
 
     // Act
-    Page<CommentResponse> result = commentService.getUserComments(1L, pageable);
+    PageResponse<Comment> result = commentService.getUserComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
-    assertEquals("testuser", result.getContent().get(0).author().username());
+    assertEquals(1, result.totalElements());
+    assertEquals("testuser", result.content().get(0).getAuthorName());
   }
 
   @Test

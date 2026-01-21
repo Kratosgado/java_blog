@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -17,11 +15,11 @@ import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
-import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.dtos.response.ReviewResponse;
+import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
 @Controller
@@ -154,13 +152,13 @@ public class PostGraphQLController {
   }
 
   @SchemaMapping(typeName = "Post", field = "comments")
-  public List<CommentResponse> comments(Post post) {
-    return commentService.getPostComments(post.getId(), PageRequest.of(0, 100)).getContent();
+  public PageResponse<Comment> comments(Post post) {
+    return commentService.getPostComments(post.getId(), PageRequest.of(0, 100));
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
-  public List<ReviewResponse> reviews(Post post) {
-    return reviewService.getPostReviews(post.getId(), PageRequest.of(0, 100)).getContent();
+  public PageResponse<Review> reviews(Post post) {
+    return reviewService.getPostReviews(post.getId(), PageRequest.of(0, 100));
   }
 
 }
