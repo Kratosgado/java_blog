@@ -3,6 +3,8 @@ package com.kratosgado.blog.dtos.response;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.kratosgado.blog.enums.PostStatus;
+
 public record PostResponse(
     Long id,
     AuthorSummary author,
@@ -10,7 +12,7 @@ public record PostResponse(
     String title,
     String content,
     String excerpt,
-    String status,
+    PostStatus status,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     Integer views,

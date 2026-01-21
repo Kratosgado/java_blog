@@ -17,6 +17,7 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Review;
@@ -115,7 +116,7 @@ public class PostGraphQLController {
     var post = postService.getPostById(id);
     UpdatePostRequest updateRequest = new UpdatePostRequest(
         post.title(), post.content(), post.excerpt(),
-        post.category().id(), post.coverImage(), "PUBLISHED");
+        post.category().id(), post.coverImage(), PostStatus.published);
     return postService.updatePost(id, updateRequest, userId);
   }
 

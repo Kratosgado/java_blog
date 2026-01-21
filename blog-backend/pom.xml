@@ -63,6 +63,13 @@
       <artifactId>bcrypt</artifactId>
     </dependency>
 
+    <!-- DataFaker for realistic test data -->
+    <dependency>
+      <groupId>net.datafaker</groupId>
+      <artifactId>datafaker</artifactId>
+      <version>2.1.0</version>
+    </dependency>
+
     <!-- JWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>

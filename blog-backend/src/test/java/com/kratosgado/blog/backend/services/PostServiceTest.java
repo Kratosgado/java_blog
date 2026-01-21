@@ -33,6 +33,7 @@ import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 
@@ -69,7 +70,7 @@ class PostServiceTest {
     testPost.setTitle("Test Post");
     testPost.setContent("Test Content");
     testPost.setExcerpt("Test Excerpt");
-    testPost.setStatus("published");
+    testPost.setStatus(PostStatus.published);
     testPost.setCategoryId(1L);
     testPost.setCreatedAt(LocalDateTime.now());
 
@@ -81,7 +82,7 @@ class PostServiceTest {
         "Test Post",
         "Test Content",
         "Test Excerpt",
-        "published",
+        PostStatus.published,
         LocalDateTime.now(),
         LocalDateTime.now(),
         0,
@@ -94,16 +95,15 @@ class PostServiceTest {
         "New Content",
         "New Excerpt",
         1L,
-        "draft",
-        "cover.jpg");
+        "cover.jpg", PostStatus.draft);
 
     updateRequest = new UpdatePostRequest(
         "Updated Title",
         "Updated Content",
         "Updated Excerpt",
         2L,
-        "published",
-        "new-cover.jpg");
+        "new-cover.jpg",
+        PostStatus.published);
 
     pageable = PageRequest.of(0, 10);
   }
@@ -182,14 +182,14 @@ class PostServiceTest {
       case "update":
         exception = assertThrows(BlogException.class,
             () -> postService.updatePost(1L, updateRequest, 1L));
-        assertTrue(exception.getMessage().contains("not found") || 
-                   exception.getMessage().contains("permission"));
+        assertTrue(exception.getMessage().contains("not found") ||
+            exception.getMessage().contains("permission"));
         break;
       case "delete":
         exception = assertThrows(BlogException.class,
             () -> postService.deletePost(1L, 1L));
-        assertTrue(exception.getMessage().contains("not found") || 
-                   exception.getMessage().contains("permission"));
+        assertTrue(exception.getMessage().contains("not found") ||
+            exception.getMessage().contains("permission"));
         break;
       case "getById":
         exception = assertThrows(BlogException.class,
@@ -205,8 +205,7 @@ class PostServiceTest {
     return Stream.of(
         Arguments.of("update"),
         Arguments.of("delete"),
-        Arguments.of("getById")
-    );
+        Arguments.of("getById"));
   }
 
   @Test

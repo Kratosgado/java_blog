@@ -15,8 +15,6 @@ import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
 public class PostService {
   private final PostRepository postRepository;
