@@ -1,6 +1,13 @@
 package com.kratosgado.blog.backend.services;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,9 +16,12 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
+import com.kratosgado.blog.dtos.response.ReviewResponse;
 import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.models.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +34,7 @@ public class ReviewService {
   private final UserRepository userRepository;
 
   @Transactional
-  public Review createReview(CreateReviewRequest request, Long userId) {
+  public ReviewResponse createReview(CreateReviewRequest request, Long userId) {
 
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -42,13 +52,14 @@ public class ReviewService {
         request.content());
 
     Review savedReview = reviewRepository.save(review);
-    enrichReviewWithUserData(savedReview);
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> BlogException.notFound("User", "id", userId));
 
-    return savedReview;
+    return DtoMapper.toReviewResponse(savedReview, user);
   }
 
   @Transactional
-  public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
+  public ReviewResponse updateReview(String id, UpdateReviewRequest request, Long userId) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -70,9 +81,10 @@ public class ReviewService {
     }
 
     Review updatedReview = reviewRepository.save(review);
-    enrichReviewWithUserData(updatedReview);
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> BlogException.notFound("User", "id", userId));
 
-    return updatedReview;
+    return DtoMapper.toReviewResponse(updatedReview, user);
   }
 
   @Transactional
@@ -89,26 +101,26 @@ public class ReviewService {
 
   }
 
-  public Review getReviewById(String id) {
+  public ReviewResponse getReviewById(String id) {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
-    enrichReviewWithUserData(review);
-    return review;
+    User user = userRepository.findById(review.getUserId())
+        .orElseThrow(() -> BlogException.notFound("User", "id", review.getUserId()));
+
+    return DtoMapper.toReviewResponse(review, user);
   }
 
-  public Page<Review> getPostReviews(Long postId, Pageable pageable) {
+  public Page<ReviewResponse> getPostReviews(Long postId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
-    reviews.forEach(this::enrichReviewWithUserData);
-    return reviews;
+    return enrichReviewsWithUserData(reviews);
   }
 
-  public Page<Review> getUserReviews(Long userId, Pageable pageable) {
+  public Page<ReviewResponse> getUserReviews(Long userId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByUserId(userId, pageable);
-    reviews.forEach(this::enrichReviewWithUserData);
-    return reviews;
+    return enrichReviewsWithUserData(reviews);
   }
 
   public Double getAverageRating(Long postId) {
@@ -126,10 +138,33 @@ public class ReviewService {
     return reviewRepository.countByPostId(postId);
   }
 
-  private void enrichReviewWithUserData(Review review) {
-    userRepository.findById(review.getUserId()).ifPresent(user -> {
-      review.setAuthorName(user.getUsername());
-      review.setAuthorAvatarUrl(user.getAvatarUrl());
-    });
+  /**
+   * Enriches reviews with user data using batch fetching to avoid N+1 queries.
+   * Fetches all unique users in a single batch, then maps reviews to responses.
+   */
+  private Page<ReviewResponse> enrichReviewsWithUserData(Page<Review> reviews) {
+    if (reviews.isEmpty()) {
+      return new PageImpl<>(List.of(), reviews.getPageable(), 0);
+    }
+
+    // Extract unique userIds
+    Set<Long> userIds = reviews.getContent().stream()
+        .map(Review::getUserId)
+        .collect(Collectors.toSet());
+
+    // Batch fetch all users (1 query instead of N)
+    Map<Long, User> userMap = userIds.stream()
+        .map(id -> userRepository.findById(id).orElse(null))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(User::getId, user -> user));
+
+    // Map to responses
+    List<ReviewResponse> responses = reviews.getContent().stream()
+        .map(review -> DtoMapper.toReviewResponse(
+            review,
+            userMap.get(review.getUserId())))
+        .toList();
+
+    return new PageImpl<>(responses, reviews.getPageable(), reviews.getTotalElements());
   }
 }

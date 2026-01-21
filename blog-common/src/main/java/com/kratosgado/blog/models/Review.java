@@ -3,7 +3,6 @@ package com.kratosgado.blog.models;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
@@ -35,12 +34,6 @@ public class Review {
 
   @Field("updated_at")
   private LocalDateTime updatedAt;
-
-  @Transient
-  private String authorName;
-
-  @Transient
-  private String authorAvatarUrl;
 
   private boolean helpful = false;
 

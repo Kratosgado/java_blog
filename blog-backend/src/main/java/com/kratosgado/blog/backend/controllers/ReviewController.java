@@ -23,7 +23,7 @@ import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
-import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.dtos.response.ReviewResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,21 +43,21 @@ public class ReviewController {
   @PostMapping
   @Operation(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
-  public ResponseDto<Review> createReview(
+  public ResponseDto<ReviewResponse> createReview(
       @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    Review review = reviewService.createReview(request, userId);
+    ReviewResponse review = reviewService.createReview(request, userId);
     return ResponseDto.success("Review created successfully", review);
   }
 
   @PutMapping("/{id}")
   @Operation(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseDto<Review> updateReview(
+  public ResponseDto<ReviewResponse> updateReview(
       @PathVariable @Parameter(description = "Review ID") String id,
       @Valid @RequestBody @Parameter(description = "Review update request") UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    Review review = reviewService.updateReview(id, request, userId);
+    ReviewResponse review = reviewService.updateReview(id, request, userId);
     return ResponseDto.success("Review updated successfully", review);
   }
 
@@ -74,7 +74,7 @@ public class ReviewController {
   @GetMapping("/{id}")
   @Operation(summary = "Get a review by ID", description = "Retrieves a single review by its ID. Public access.")
   @GetEnpoint
-  public Review getReview(
+  public ReviewResponse getReview(
       @PathVariable @Parameter(description = "Review ID") String id) {
     return reviewService.getReviewById(id);
   }
@@ -82,12 +82,12 @@ public class ReviewController {
   @GetMapping("/post/{postId}")
   @Operation(summary = "Get reviews for a post", description = "Retrieves all reviews for a specific post. Public access.")
   @GetEnpoint
-  public PageResponse<Review> getPostReviews(
+  public PageResponse<ReviewResponse> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject Pageable pageable) {
-    Page<Review> reviews = reviewService.getPostReviews(postId, pageable);
+    Page<ReviewResponse> reviews = reviewService.getPostReviews(postId, pageable);
 
-    return new PageResponse<Review>(reviews.getContent(),
+    return new PageResponse<ReviewResponse>(reviews.getContent(),
         pageable.getPageNumber() + 1,
         reviews.getNumber(),
         reviews.getTotalElements(),
@@ -99,12 +99,12 @@ public class ReviewController {
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get reviews by user", description = "Retrieves all reviews created by a specific user")
   @GetEnpoint
-  public PageResponse<Review> getUserReviews(
+  public PageResponse<ReviewResponse> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject Pageable pageable) {
-    Page<Review> reviews = reviewService.getUserReviews(userId, pageable);
+    Page<ReviewResponse> reviews = reviewService.getUserReviews(userId, pageable);
 
-    return new PageResponse<Review>(reviews.getContent(),
+    return new PageResponse<ReviewResponse>(reviews.getContent(),
         pageable.getPageNumber() + 1,
         reviews.getNumber(),
         reviews.getTotalElements(),

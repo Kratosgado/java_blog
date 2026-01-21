@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -32,8 +33,10 @@ import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.models.User;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CommentService Tests")
@@ -42,10 +45,14 @@ class CommentServiceTest {
   @Mock
   private CommentRepository commentRepository;
 
+  @Mock
+  private UserService userService;
+
   @InjectMocks
   private CommentService commentService;
 
   private Comment testComment;
+  private User testUser;
   private CreateCommentRequest createRequest;
   private Pageable pageable;
 
@@ -56,6 +63,12 @@ class CommentServiceTest {
     testComment.setStatus(CommentStatus.approved);
     testComment.setCreatedAt(LocalDateTime.now());
 
+    testUser = new User();
+    testUser.setId(1L);
+    testUser.setUsername("testuser");
+    testUser.setEmail("test@example.com");
+    testUser.setAvatarUrl("http://example.com/avatar.jpg");
+
     createRequest = new CreateCommentRequest(1L, "New Comment");
     pageable = PageRequest.of(0, 10);
   }
@@ -65,12 +78,14 @@ class CommentServiceTest {
   void createComment_WithValidData_ShouldReturnPendingComment() {
     // Arrange
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
+    when(userService.getUserById(1L)).thenReturn(testUser);
 
     // Act
-    Comment result = commentService.createComment(createRequest, 1L);
+    CommentResponse result = commentService.createComment(createRequest, 1L);
 
     // Assert
     assertNotNull(result);
+    assertEquals("testuser", result.author().username());
   }
 
   @ParameterizedTest
@@ -81,9 +96,10 @@ class CommentServiceTest {
     testComment.setStatus(CommentStatus.pending);
     when(commentRepository.findById("comment123")).thenReturn(Optional.of(testComment));
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
+    when(userService.getUserById(1L)).thenReturn(testUser);
 
     // Act
-    Comment result;
+    CommentResponse result;
     if (method.equals("approve")) {
       result = commentService.approveComment("comment123");
     } else {
@@ -92,7 +108,8 @@ class CommentServiceTest {
 
     // Assert
     assertNotNull(result);
-    assertEquals(newStatus, testComment.getStatus());
+    assertEquals(newStatus.name(), result.status());
+    assertEquals("testuser", result.author().username());
   }
 
   static Stream<Arguments> statusChangeTestCases() {
@@ -176,13 +193,15 @@ class CommentServiceTest {
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByPostIdAndStatus(1L, CommentStatus.approved, pageable))
         .thenReturn(commentPage);
+    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
-    Page<Comment> result = commentService.getPostComments(1L, pageable);
+    Page<CommentResponse> result = commentService.getPostComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
+    assertEquals("testuser", result.getContent().get(0).author().username());
   }
 
   @Test
@@ -191,13 +210,15 @@ class CommentServiceTest {
     // Arrange
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByPostId(1L, pageable)).thenReturn(commentPage);
+    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
-    Page<Comment> result = commentService.getAllPostComments(1L, pageable);
+    Page<CommentResponse> result = commentService.getAllPostComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
+    assertEquals("testuser", result.getContent().get(0).author().username());
   }
 
   @Test
@@ -206,13 +227,15 @@ class CommentServiceTest {
     // Arrange
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByUserId(1L, pageable)).thenReturn(commentPage);
+    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
-    Page<Comment> result = commentService.getUserComments(1L, pageable);
+    Page<CommentResponse> result = commentService.getUserComments(1L, pageable);
 
     // Assert
     assertNotNull(result);
     assertEquals(1, result.getTotalElements());
+    assertEquals("testuser", result.getContent().get(0).author().username());
   }
 
   @Test

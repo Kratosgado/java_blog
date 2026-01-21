@@ -34,6 +34,7 @@ import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
 
 import java.util.List;
 
@@ -48,6 +49,7 @@ class PostServiceTest {
   private PostService postService;
 
   private Post testPost;
+  private User testUser;
   private PostResponse testPostResponse;
   private CreatePostRequest createRequest;
   private UpdatePostRequest updateRequest;
@@ -55,6 +57,12 @@ class PostServiceTest {
 
   @BeforeEach
   void setUp() {
+    testUser = new User();
+    testUser.setId(1L);
+    testUser.setUsername("testuser");
+    testUser.setEmail("test@example.com");
+    testUser.setAvatarUrl("avatar.jpg");
+
     testPost = new Post();
     testPost.setId(1L);
     testPost.setUserId(1L);
@@ -109,7 +117,7 @@ class PostServiceTest {
       dtoMapperMock.when(() -> DtoMapper.toPostResponse(testPost)).thenReturn(testPostResponse);
 
       // Act
-      PostResponse result = postService.createPost(createRequest, 1L);
+      PostResponse result = postService.createPost(createRequest, testUser);
 
       // Assert
       assertNotNull(result);

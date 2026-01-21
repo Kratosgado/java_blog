@@ -2,7 +2,6 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -33,12 +32,6 @@ public class Comment {
 
   @Field("updated_at")
   private LocalDateTime updatedAt;
-
-  @Transient
-  private String authorName;
-
-  @Transient
-  private String authorAvatarUrl;
 
   public Comment(Long postId, Long userId, String content) {
     this.postId = postId;

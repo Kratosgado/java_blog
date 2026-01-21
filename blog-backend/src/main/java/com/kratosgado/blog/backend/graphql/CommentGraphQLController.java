@@ -16,9 +16,9 @@ import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
 
 @Controller
@@ -35,22 +35,22 @@ public class CommentGraphQLController {
   }
 
   @QueryMapping
-  public Comment comment(@Argument String id) {
+  public CommentResponse comment(@Argument String id) {
     // Note: Comment uses String ID (MongoDB)
     return commentService.getPostComments(null, PageRequest.of(0, 1))
         .stream()
-        .filter(c -> c.getId().equals(id))
+        .filter(c -> c.id().equals(id))
         .findFirst()
         .orElse(null);
   }
 
   @QueryMapping
-  public PageResponse<Comment> commentsByPost(
+  public PageResponse<CommentResponse> commentsByPost(
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
     PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Comment> commentsPage = commentService.getPostComments(postId, pageRequest);
+    Page<CommentResponse> commentsPage = commentService.getPostComments(postId, pageRequest);
 
     return new PageResponse<>(
         commentsPage.getContent(),
@@ -63,7 +63,7 @@ public class CommentGraphQLController {
   }
 
   @MutationMapping
-  public Comment createComment(@Argument CreateCommentRequest input) {
+  public CommentResponse createComment(@Argument CreateCommentRequest input) {
 
     Long userId = 1L; // TODO: Get from SecurityContext
     return commentService.createComment(input, userId);
@@ -78,30 +78,30 @@ public class CommentGraphQLController {
   }
 
   @MutationMapping
-  public Comment updateComment(@Argument String id, @Argument String content) {
+  public CommentResponse updateComment(@Argument String id, @Argument String content) {
     throw new UnsupportedOperationException("Update comment not implemented");
   }
 
-  // Field resolvers for Comment type
+  // Field resolvers for CommentResponse type
   @SchemaMapping(typeName = "Comment", field = "author")
-  public User author(Comment comment) {
-    return userService.getUserById(comment.getUserId());
+  public User author(CommentResponse comment) {
+    return userService.getUserById(comment.author().id());
   }
 
   @SchemaMapping(typeName = "Comment", field = "post")
-  public PostResponse post(Comment comment) {
-    return postService.getPostById(comment.getPostId());
+  public PostResponse post(CommentResponse comment) {
+    return postService.getPostById(comment.postId());
   }
 
   @SchemaMapping(typeName = "Comment", field = "parent")
-  public Comment parent(Comment comment) {
+  public CommentResponse parent(CommentResponse comment) {
     // Comment model doesn't have parentId field currently
     // Return null for now
     return null;
   }
 
   @SchemaMapping(typeName = "Comment", field = "replies")
-  public List<Comment> replies(Comment comment) {
+  public List<CommentResponse> replies(CommentResponse comment) {
     // Comment model doesn't support replies currently
     // Return empty list for now
     return Collections.emptyList();

@@ -18,8 +18,8 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.models.Comment;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class CommentController {
 
   @PostMapping
   @SecuredUpdateEndpoint
-  public Comment createComment(
+  public CommentResponse createComment(
       @Valid @RequestBody CreateCommentRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     return commentService.createComment(request, userId);
@@ -42,14 +42,14 @@ public class CommentController {
 
   @PutMapping("/{id}/approve")
   @SecuredUpdateEndpoint
-  public Comment approveComment(@PathVariable String id) {
+  public CommentResponse approveComment(@PathVariable String id) {
     return commentService.approveComment(id);
 
   }
 
   @PutMapping("/{id}/reject")
   @SecuredUpdateEndpoint
-  public Comment rejectComment(@PathVariable String id) {
+  public CommentResponse rejectComment(@PathVariable String id) {
     return commentService.rejectComment(id);
 
   }
@@ -72,12 +72,12 @@ public class CommentController {
 
   @GetMapping("/post/{postId}")
   @GetEnpoint
-  public PageResponse<Comment> getPostComments(
+  public PageResponse<CommentResponse> getPostComments(
       @PathVariable Long postId,
       @ParameterObject Pageable pageable) {
-    Page<Comment> comments = commentService.getPostComments(postId, pageable);
+    Page<CommentResponse> comments = commentService.getPostComments(postId, pageable);
 
-    return new PageResponse<Comment>(comments.getContent(),
+    return new PageResponse<CommentResponse>(comments.getContent(),
         pageable.getPageNumber() + 1,
         comments.getNumber(),
         comments.getTotalElements(),
@@ -88,12 +88,12 @@ public class CommentController {
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
-  public PageResponse<Comment> getUserComments(
+  public PageResponse<CommentResponse> getUserComments(
       @PathVariable Long userId,
       @ParameterObject org.springframework.data.domain.Pageable pageable) {
-    Page<Comment> comments = commentService.getUserComments(userId, pageable);
+    Page<CommentResponse> comments = commentService.getUserComments(userId, pageable);
 
-    return new PageResponse<Comment>(comments.getContent(),
+    return new PageResponse<CommentResponse>(comments.getContent(),
         pageable.getPageNumber() + 1,
         comments.getNumber(),
         comments.getTotalElements(),

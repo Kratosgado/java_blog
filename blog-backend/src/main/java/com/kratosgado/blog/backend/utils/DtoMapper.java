@@ -3,10 +3,14 @@ package com.kratosgado.blog.backend.utils;
 
 import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
+import com.kratosgado.blog.dtos.response.CommentResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.ReviewResponse;
 import com.kratosgado.blog.dtos.response.TagSummary;
 import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
@@ -53,5 +57,35 @@ public class DtoMapper {
       return null;
     }
     return new CategorySummary(category.getId(), category.getName(), category.getSlug());
+  }
+
+  public static CommentResponse toCommentResponse(Comment comment, User user) {
+    if (comment == null) {
+      return null;
+    }
+    return new CommentResponse(
+        comment.getId(),
+        comment.getPostId(),
+        toAuthorSummary(user),
+        comment.getContent(),
+        comment.getStatus().name(),
+        comment.getCreatedAt(),
+        comment.getUpdatedAt());
+  }
+
+  public static ReviewResponse toReviewResponse(Review review, User user) {
+    if (review == null) {
+      return null;
+    }
+    return new ReviewResponse(
+        review.getId(),
+        review.getPostId(),
+        toAuthorSummary(user),
+        review.getRating(),
+        review.getTitle(),
+        review.getContent(),
+        review.getCreatedAt(),
+        review.getUpdatedAt(),
+        review.isHelpful());
   }
 }
