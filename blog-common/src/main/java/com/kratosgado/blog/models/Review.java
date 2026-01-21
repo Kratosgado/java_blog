@@ -23,6 +23,12 @@ public class Review {
   @Field("user_id")
   private Long userId;
 
+  @Field("author_name")
+  private String authorName;
+
+  @Field("author_avatar_url")
+  private String authorAvatarUrl;
+
   private int rating; // 1-5 stars
 
   private String title;

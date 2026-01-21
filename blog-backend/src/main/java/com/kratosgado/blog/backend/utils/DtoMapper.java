@@ -59,28 +59,36 @@ public class DtoMapper {
     return new CategorySummary(category.getId(), category.getName(), category.getSlug());
   }
 
-  public static CommentResponse toCommentResponse(Comment comment, User user) {
+  public static CommentResponse toCommentResponse(Comment comment) {
     if (comment == null) {
       return null;
     }
     return new CommentResponse(
         comment.getId(),
         comment.getPostId(),
-        toAuthorSummary(user),
+        new AuthorSummary(
+            comment.getUserId(),
+            comment.getAuthorName(),
+            null, // email not stored in snapshot
+            comment.getAuthorAvatarUrl()),
         comment.getContent(),
         comment.getStatus().name(),
         comment.getCreatedAt(),
         comment.getUpdatedAt());
   }
 
-  public static ReviewResponse toReviewResponse(Review review, User user) {
+  public static ReviewResponse toReviewResponse(Review review) {
     if (review == null) {
       return null;
     }
     return new ReviewResponse(
         review.getId(),
         review.getPostId(),
-        toAuthorSummary(user),
+        new AuthorSummary(
+            review.getUserId(),
+            review.getAuthorName(),
+            null, // email not stored in snapshot
+            review.getAuthorAvatarUrl()),
         review.getRating(),
         review.getTitle(),
         review.getContent(),

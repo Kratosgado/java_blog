@@ -62,6 +62,8 @@ class CommentServiceTest {
     testComment.setId("comment123");
     testComment.setStatus(CommentStatus.approved);
     testComment.setCreatedAt(LocalDateTime.now());
+    testComment.setAuthorName("testuser");
+    testComment.setAuthorAvatarUrl("http://example.com/avatar.jpg");
 
     testUser = new User();
     testUser.setId(1L);
@@ -96,7 +98,6 @@ class CommentServiceTest {
     testComment.setStatus(CommentStatus.pending);
     when(commentRepository.findById("comment123")).thenReturn(Optional.of(testComment));
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
-    when(userService.getUserById(1L)).thenReturn(testUser);
 
     // Act
     CommentResponse result;
@@ -193,7 +194,6 @@ class CommentServiceTest {
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByPostIdAndStatus(1L, CommentStatus.approved, pageable))
         .thenReturn(commentPage);
-    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
     Page<CommentResponse> result = commentService.getPostComments(1L, pageable);
@@ -210,7 +210,6 @@ class CommentServiceTest {
     // Arrange
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByPostId(1L, pageable)).thenReturn(commentPage);
-    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
     Page<CommentResponse> result = commentService.getAllPostComments(1L, pageable);
@@ -227,7 +226,6 @@ class CommentServiceTest {
     // Arrange
     Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
     when(commentRepository.findByUserId(1L, pageable)).thenReturn(commentPage);
-    when(userService.getUserById(anyLong())).thenReturn(testUser);
 
     // Act
     Page<CommentResponse> result = commentService.getUserComments(1L, pageable);

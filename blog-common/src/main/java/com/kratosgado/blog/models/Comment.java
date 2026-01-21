@@ -23,6 +23,12 @@ public class Comment {
   @Field("user_id")
   private Long userId;
 
+  @Field("author_name")
+  private String authorName;
+
+  @Field("author_avatar_url")
+  private String authorAvatarUrl;
+
   private String content;
 
   private CommentStatus status;

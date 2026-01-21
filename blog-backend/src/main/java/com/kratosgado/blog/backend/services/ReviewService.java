@@ -1,13 +1,6 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,18 +37,23 @@ public class ReviewService {
       throw BlogException.duplicateResource("You have already reviewed this post");
     }
 
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> BlogException.notFound("User", "id", userId));
+
     Review review = new Review(
         request.postId(),
         userId,
         request.rating(),
         request.title(),
         request.content());
+    
+    // Populate author snapshot
+    review.setAuthorName(user.getUsername());
+    review.setAuthorAvatarUrl(user.getAvatarUrl());
 
     Review savedReview = reviewRepository.save(review);
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> BlogException.notFound("User", "id", userId));
 
-    return DtoMapper.toReviewResponse(savedReview, user);
+    return DtoMapper.toReviewResponse(savedReview);
   }
 
   @Transactional
@@ -81,10 +79,8 @@ public class ReviewService {
     }
 
     Review updatedReview = reviewRepository.save(review);
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> BlogException.notFound("User", "id", userId));
 
-    return DtoMapper.toReviewResponse(updatedReview, user);
+    return DtoMapper.toReviewResponse(updatedReview);
   }
 
   @Transactional
@@ -105,22 +101,20 @@ public class ReviewService {
 
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
-    User user = userRepository.findById(review.getUserId())
-        .orElseThrow(() -> BlogException.notFound("User", "id", review.getUserId()));
 
-    return DtoMapper.toReviewResponse(review, user);
+    return DtoMapper.toReviewResponse(review);
   }
 
   public Page<ReviewResponse> getPostReviews(Long postId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
-    return enrichReviewsWithUserData(reviews);
+    return reviews.map(DtoMapper::toReviewResponse);
   }
 
   public Page<ReviewResponse> getUserReviews(Long userId, Pageable pageable) {
 
     Page<Review> reviews = reviewRepository.findByUserId(userId, pageable);
-    return enrichReviewsWithUserData(reviews);
+    return reviews.map(DtoMapper::toReviewResponse);
   }
 
   public Double getAverageRating(Long postId) {
@@ -136,35 +130,5 @@ public class ReviewService {
   public Long getReviewCount(Long postId) {
 
     return reviewRepository.countByPostId(postId);
-  }
-
-  /**
-   * Enriches reviews with user data using batch fetching to avoid N+1 queries.
-   * Fetches all unique users in a single batch, then maps reviews to responses.
-   */
-  private Page<ReviewResponse> enrichReviewsWithUserData(Page<Review> reviews) {
-    if (reviews.isEmpty()) {
-      return new PageImpl<>(List.of(), reviews.getPageable(), 0);
-    }
-
-    // Extract unique userIds
-    Set<Long> userIds = reviews.getContent().stream()
-        .map(Review::getUserId)
-        .collect(Collectors.toSet());
-
-    // Batch fetch all users (1 query instead of N)
-    Map<Long, User> userMap = userIds.stream()
-        .map(id -> userRepository.findById(id).orElse(null))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(User::getId, user -> user));
-
-    // Map to responses
-    List<ReviewResponse> responses = reviews.getContent().stream()
-        .map(review -> DtoMapper.toReviewResponse(
-            review,
-            userMap.get(review.getUserId())))
-        .toList();
-
-    return new PageImpl<>(responses, reviews.getPageable(), reviews.getTotalElements());
   }
 }
