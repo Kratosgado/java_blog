@@ -50,7 +50,7 @@ Authorization: {{userAuth}}
 
 # @name getPost
 
-GET {{host}}/posts/1 HTTP/1.1
+GET {{host}}/posts/101 HTTP/1.1
 
 
 ### 
@@ -60,7 +60,7 @@ GET {{host}}/posts/1 HTTP/1.1
 
 # @name getPosts
 
-GET {{host}}/posts?page=0&size=10&sort=id,asc HTTP/1.1
+GET {{host}}/posts?page=1&size=10&sort=id,asc HTTP/1.1
 
 
 ### 
@@ -70,7 +70,7 @@ GET {{host}}/posts?page=0&size=10&sort=id,asc HTTP/1.1
 
 # @name getPostsSortedByTitle
 
-GET {{host}}/posts?page=0&size=10&sortBy=title&sortDir=ASC HTTP/1.1
+GET {{host}}/posts?page=1&size=10&sortBy=title&sortDir=ASC HTTP/1.1
 
 
 ### 
@@ -80,7 +80,7 @@ GET {{host}}/posts?page=0&size=10&sortBy=title&sortDir=ASC HTTP/1.1
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=Getting&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=what&page=0&size=10 HTTP/1.1
 
 
 ### 
@@ -90,7 +90,7 @@ GET {{host}}/posts/search?keyword=Getting&page=0&size=10 HTTP/1.1
 
 # @name getUserPosts
 
-GET {{host}}/posts/user/1?page=0&size=10 HTTP/1.1
+GET {{host}}/posts/user/1?page=1&size=10 HTTP/1.1
 
 
 ### 
@@ -100,7 +100,7 @@ GET {{host}}/posts/user/1?page=0&size=10 HTTP/1.1
 
 # @name getCategoryPosts
 
-GET {{host}}/posts/category/3?page=0&size=10 HTTP/1.1
+GET {{host}}/posts/category/3?page=1&size=10 HTTP/1.1
 
 
 ### 

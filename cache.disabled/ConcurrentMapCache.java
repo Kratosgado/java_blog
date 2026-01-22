@@ -33,11 +33,6 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   private final long ttlMillis;
   private final String cacheName;
   
-  // Metrics tracking
-  private long hits = 0;
-  private long misses = 0;
-  private long evictions = 0;
-  
   /**
    * Constructor with TTL support.
    * 
@@ -80,19 +75,12 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
       if (ageMillis > ttlMillis) {
         evict(key);
         log.debug("Cache [{}]: Entry expired for key {}", cacheName, key);
-        misses++;
         return Optional.empty();
       }
     }
     
     V value = cache.get(key);
-    if (value != null) {
-      hits++;
-      log.debug("Cache [{}]: Get key {} - HIT", cacheName, key);
-    } else {
-      misses++;
-      log.debug("Cache [{}]: Get key {} - MISS", cacheName, key);
-    }
+    log.debug("Cache [{}]: Get key {} - {}", cacheName, key, value != null ? "HIT" : "MISS");
     return Optional.ofNullable(value);
   }
   
@@ -100,7 +88,6 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   public void evict(K key) {
     cache.remove(key);
     cacheTimestamps.remove(key);
-    evictions++;
     log.debug("Cache [{}]: Evicted key {}", cacheName, key);
   }
   
@@ -109,7 +96,6 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
     int size = cache.size();
     cache.clear();
     cacheTimestamps.clear();
-    evictions += size;
     log.info("Cache [{}]: Cleared {} entries", cacheName, size);
   }
   
@@ -354,35 +340,11 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
    * Get cache statistics.
    */
   public CacheStats getStats() {
-    long totalRequests = hits + misses;
-    double hitRate = totalRequests > 0 ? (double) hits / totalRequests * 100 : 0.0;
-    return new CacheStats(cacheName, cache.size(), ttlMillis, hits, misses, evictions, hitRate);
-  }
-  
-  /**
-   * Reset cache metrics.
-   */
-  public void resetMetrics() {
-    hits = 0;
-    misses = 0;
-    evictions = 0;
-    log.info("Cache [{}]: Metrics reset", cacheName);
+    return new CacheStats(cacheName, cache.size(), ttlMillis);
   }
   
   /**
    * Cache statistics record.
    */
-  public record CacheStats(
-      String name, 
-      int size, 
-      long ttlMillis, 
-      long hits, 
-      long misses, 
-      long evictions,
-      double hitRate
-  ) {
-    public long totalRequests() {
-      return hits + misses;
-    }
-  }
+  public record CacheStats(String name, int size, long ttlMillis) {}
 }

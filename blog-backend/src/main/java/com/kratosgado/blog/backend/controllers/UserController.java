@@ -1,13 +1,12 @@
 package com.kratosgado.blog.backend.controllers;
 
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
@@ -56,16 +55,10 @@ public class UserController {
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
-  public PageResponse<UserResponse> getUsers(@ParameterObject Pageable pageable) {
-    var users = userService.getAllUsers(pageable);
-
-    return new PageResponse<>(users.getContent(),
-        pageable.getPageNumber() + 1,
-        users.getNumber(),
-        users.getTotalElements(),
-        users.getTotalPages(),
-        users.isFirst(),
-        users.isLast());
+  public PageResponse<UserResponse> getUsers(
+      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
+      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
+    return userService.getAllUsers(page, size);
   }
 
   @PutMapping("/{id}/profile")

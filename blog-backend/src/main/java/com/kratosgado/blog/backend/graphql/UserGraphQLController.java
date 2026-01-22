@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -31,17 +29,7 @@ public class UserGraphQLController {
   public PageResponse<UserResponse> users(
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size);
-    Page<UserResponse> usersPage = userService.getAllUsers(pageRequest);
-
-    return new PageResponse<>(
-        usersPage.getContent(),
-        usersPage.getNumber(),
-        usersPage.getSize(),
-        usersPage.getTotalElements(),
-        usersPage.getTotalPages(),
-        usersPage.isFirst(),
-        usersPage.isLast());
+    return userService.getAllUsers(page, size);
   }
 
   @MutationMapping

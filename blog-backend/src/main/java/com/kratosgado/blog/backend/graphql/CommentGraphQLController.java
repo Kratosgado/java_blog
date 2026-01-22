@@ -3,8 +3,6 @@ package com.kratosgado.blog.backend.graphql;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -41,21 +39,20 @@ public class CommentGraphQLController {
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return commentService.getPostComments(postId, pageRequest);
+    return commentService.getPostComments(postId, page, size);
 
   }
 
   @MutationMapping
   public Comment createComment(@Argument CreateCommentRequest input, @AuthenticationPrincipal User user) {
 
-    return commentService.createComment(input, user.getId());
+    return commentService.createComment(input, user);
   }
 
   @MutationMapping
   public boolean deleteComment(@Argument String id, @AuthenticationPrincipal User user) {
 
-    commentService.deleteComment(id, user.getId());
+    commentService.deleteComment(id, Long.valueOf(user.getId()));
     return true;
   }
 

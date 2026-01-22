@@ -6,15 +6,15 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
-import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
+import com.kratosgado.blog.backend.dao.PostDAO;
+import com.kratosgado.blog.backend.dao.TagDAO;
+import com.kratosgado.blog.backend.dao.UserDAO;
+import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
+import com.kratosgado.blog.backend.dao.nosql.ReviewMongoDAO;
 import com.kratosgado.blog.dtos.response.AnalyticsResponse;
 import com.kratosgado.blog.dtos.response.PostDistributionResponse;
 import com.kratosgado.blog.dtos.response.StatCountResponse;
 import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.models.Post;
 
 import lombok.RequiredArgsConstructor;
@@ -23,43 +23,50 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DashboardService {
 
-  private final PostRepository postRepository;
-  private final CommentRepository commentRepository;
-  private final UserRepository userRepository;
-  private final TagRepository tagRepository;
-  private final ReviewRepository reviewRepository;
+  private final PostDAO postDAO;
+  private final UserDAO userDAO;
+  private final TagDAO tagDAO;
+  private final CommentMongoDAO commentDAO;
+  private final ReviewMongoDAO reviewDAO;
 
   public StatCountResponse getDashboardStats() {
+    
+    List<Post> allPosts = postDAO.getAllPosts();
+    List<com.kratosgado.blog.models.User> allUsers = userDAO.getAllUsers();
+    List<com.kratosgado.blog.models.Tag> allTags = tagDAO.getAllTags();
+    long commentCount = commentDAO.getTotalCommentCount();
+    long reviewCount = reviewDAO.getTotalReviewCount();
 
     StatCountResponse stats = new StatCountResponse(
-        postRepository.count(),
-        userRepository.count(),
-        commentRepository.count(),
-        tagRepository.count(),
-        reviewRepository.count());
+        (long) allPosts.size(),
+        (long) allUsers.size(),
+        commentCount,
+        (long) allTags.size(),
+        reviewCount);
 
     return stats;
   }
 
   public UserDashboardStatsResponse getUserDashboardStats(Long userId) {
 
-    long userPosts = postRepository.count();
-    long userComments = commentRepository.count();
-    long userReviews = reviewRepository.count();
+    List<Post> userPosts = postDAO.getPostsByUserId(userId.intValue());
+    long userPostsCount = userPosts.size();
+    
+    long userCommentCount = commentDAO.getCommentsByUserId(userId).size();
+    long userReviewCount = reviewDAO.getReviewsByUserId(userId).size();
 
     // Calculate total views across all user's posts
-    List<Post> userPostsList = postRepository.findAll();
-    long totalViews = userPostsList.stream()
+    long totalViews = userPosts.stream()
         .mapToLong(Post::getViews)
         .sum();
 
-    return new UserDashboardStatsResponse(userPosts, userComments, userReviews, totalViews);
+    return new UserDashboardStatsResponse(userPostsCount, userCommentCount, userReviewCount, totalViews);
   }
 
   public AnalyticsResponse getAnalytics(LocalDateTime startDate, LocalDateTime endDate) {
 
     // Get all posts (in real implementation, filter by date)
-    List<Post> posts = postRepository.findAll();
+    List<Post> posts = postDAO.getAllPosts();
 
     int totalPosts = posts.size();
     long totalViews = posts.stream().mapToLong(Post::getViews).sum();
@@ -70,7 +77,7 @@ public class DashboardService {
         .sorted((p1, p2) -> Long.compare(p2.getViews(), p1.getViews()))
         .limit(10)
         .map(post -> new AnalyticsResponse.TopPostData(
-            post.getId(),
+            post.getId().longValue(),
             post.getTitle(),
             post.getViews(),
             post.getLikesCount()))
@@ -81,7 +88,7 @@ public class DashboardService {
 
   public PostDistributionResponse getPostStatusDistribution() {
 
-    List<Post> posts = postRepository.findAll();
+    List<Post> posts = postDAO.getAllPosts();
     long published = posts.stream().filter(p -> "PUBLISHED".equals(p.getStatus())).count();
     long draft = posts.stream().filter(p -> "DRAFT".equals(p.getStatus())).count();
     long privateCount = posts.stream().filter(p -> "PRIVATE".equals(p.getStatus())).count();

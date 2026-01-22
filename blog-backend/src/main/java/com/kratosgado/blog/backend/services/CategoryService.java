@@ -3,11 +3,10 @@ package com.kratosgado.blog.backend.services;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
+import com.kratosgado.blog.backend.dao.CategoryDAO;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
 
@@ -16,19 +15,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class CategoryService {
-  private final CategoryRepository categoryRepository;
+  private final CategoryDAO categoryDAO;
   private final CategoryCache categoryCache;
 
-  public CategoryService(CategoryRepository categoryRepository, CategoryCache categoryCache) {
-    this.categoryRepository = categoryRepository;
+  public CategoryService(CategoryDAO categoryDAO, CategoryCache categoryCache) {
+    this.categoryDAO = categoryDAO;
     this.categoryCache = categoryCache;
   }
 
-  @Transactional
   public Category createCategory(CreateCategoryRequest request) {
     String slug = generateSlug(request.name());
 
-    if (categoryRepository.existsBySlug(slug)) {
+    if (categoryDAO.getCategoryBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
     }
 
@@ -38,23 +36,17 @@ public class CategoryService {
         .description(request.description())
         .build();
 
-    Category saved = categoryRepository.save(category);
-    
-    // Add to cache
-    categoryCache.put(saved.getId(), saved);
-    log.debug("Created category with ID: {} and added to cache", saved.getId());
-    
-    return saved;
+    return categoryDAO.createCategory(category)
+        .orElseThrow(() -> BlogException.internal("Failed to create category"));
   }
 
-  @Transactional
   public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
-    Category category = categoryRepository.findById(categoryId)
+    Category category = categoryDAO.getCategoryById(categoryId.intValue())
         .orElseThrow(() -> BlogException.notFound("Category not found"));
 
     String slug = generateSlug(request.name());
 
-    if (!category.getSlug().equals(slug) && categoryRepository.existsBySlug(slug)) {
+    if (!category.getSlug().equals(slug) && categoryDAO.getCategoryBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
     }
 
@@ -62,58 +54,38 @@ public class CategoryService {
     category.setSlug(slug);
     category.setDescription(request.description());
 
-    Category updated = categoryRepository.save(category);
-    
-    // Update cache
-    categoryCache.put(updated.getId(), updated);
-    log.debug("Updated category with ID: {} in cache", updated.getId());
-    
-    return updated;
+    return categoryDAO.updateCategory(category)
+        .orElseThrow(() -> BlogException.internal("Failed to update category"));
   }
 
-  @Transactional
   public void deleteCategory(Long categoryId) {
-    categoryRepository.deleteById(categoryId);
-    
-    // Evict from cache
-    categoryCache.evict(categoryId);
-    log.debug("Deleted category with ID: {} and evicted from cache", categoryId);
+    if (!categoryDAO.deleteCategory(categoryId.intValue())) {
+      throw BlogException.internal("Failed to delete category");
+    }
   }
 
   public Category getCategoryById(Long categoryId) {
     // Try to get from cache first
     return categoryCache.get(categoryId).orElseGet(() -> {
       log.debug("Cache miss for category ID: {}, fetching from database", categoryId);
-      Category category = categoryRepository.findById(categoryId)
+      
+      Category category = categoryDAO.getCategoryById(categoryId.intValue())
           .orElseThrow(() -> BlogException.notFound("Category not found"));
       
-      // Add to cache
+      // Cache the result
       categoryCache.put(categoryId, category);
+      
       return category;
     });
   }
 
   public Category getCategoryBySlug(String slug) {
-    log.debug("Searching for category by slug: {} in cache", slug);
-    
-    // Search cache for category with matching slug
-    return categoryCache.getAll().stream()
-        .filter(cat -> cat.getSlug().equals(slug))
-        .findFirst()
-        .orElseGet(() -> {
-          log.debug("Cache miss for category slug: {}, fetching from database", slug);
-          Category category = categoryRepository.findBySlug(slug)
-              .orElseThrow(() -> BlogException.notFound("Category not found"));
-          
-          // Add to cache
-          categoryCache.put(category.getId(), category);
-          return category;
-        });
+    return categoryDAO.getCategoryBySlug(slug)
+        .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
   public List<Category> getAllCategories() {
-    log.debug("Getting all categories from cache");
-    return categoryCache.getAll();
+    return categoryDAO.getAllCategories();
   }
 
   private String generateSlug(String name) {
@@ -124,3 +96,4 @@ public class CategoryService {
         .trim();
   }
 }
+

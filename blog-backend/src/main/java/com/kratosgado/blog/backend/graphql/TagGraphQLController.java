@@ -2,7 +2,6 @@ package com.kratosgado.blog.backend.graphql;
 
 import java.util.List;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -26,6 +25,6 @@ public class TagGraphQLController {
 
   @QueryMapping
   public List<Tag> tags() {
-    return tagService.getAllTags(PageRequest.of(0, 100)).content();
+    return tagService.getAllTags(1, 100).content();
   }
 }

@@ -20,7 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.dao.CategoryDAO;
+import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
 
@@ -29,7 +30,10 @@ import com.kratosgado.blog.models.Category;
 class CategoryServiceTest {
 
   @Mock
-  private CategoryRepository categoryRepository;
+  private CategoryDAO categoryDAO;
+
+  @Mock
+  private CategoryCache categoryCache;
 
   @InjectMocks
   private CategoryService categoryService;
@@ -40,7 +44,7 @@ class CategoryServiceTest {
   @BeforeEach
   void setUp() {
     testCategory = Category.builder()
-        .id(1L)
+        .id(1)
         .name("Technology")
         .slug("technology")
         .description("Tech related posts")
@@ -53,8 +57,8 @@ class CategoryServiceTest {
   @DisplayName("Should successfully create a category")
   void createCategory_WithValidData_ShouldReturnCategory() {
     // Arrange
-    when(categoryRepository.existsBySlug("technology")).thenReturn(false);
-    when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
+    when(categoryDAO.getCategoryBySlug("technology")).thenReturn(Optional.empty());
+    when(categoryDAO.createCategory(any(Category.class))).thenReturn(Optional.of(testCategory));
 
     // Act
     Category result = categoryService.createCategory(createRequest);
@@ -67,7 +71,7 @@ class CategoryServiceTest {
   @DisplayName("Should throw exception when creating duplicate category")
   void createCategory_WithExistingSlug_ShouldThrowException() {
     // Arrange
-    when(categoryRepository.existsBySlug("technology")).thenReturn(true);
+    when(categoryDAO.getCategoryBySlug("technology")).thenReturn(Optional.of(testCategory));
 
     // Act
     BlogException exception = assertThrows(BlogException.class,
@@ -83,11 +87,11 @@ class CategoryServiceTest {
   void createCategory_ShouldGenerateCorrectSlug(String name, String expectedSlug) {
     // Arrange
     CreateCategoryRequest request = new CreateCategoryRequest(name, "Description");
-    when(categoryRepository.existsBySlug(anyString())).thenReturn(false);
-    when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> {
+    when(categoryDAO.getCategoryBySlug(anyString())).thenReturn(Optional.empty());
+    when(categoryDAO.createCategory(any(Category.class))).thenAnswer(invocation -> {
       Category category = invocation.getArgument(0);
       assertEquals(expectedSlug, category.getSlug());
-      return category;
+      return Optional.of(category);
     });
 
     // Act
@@ -109,9 +113,9 @@ class CategoryServiceTest {
     CreateCategoryRequest updateRequest = new CreateCategoryRequest(
         "Updated Tech",
         "Updated description");
-    when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-    when(categoryRepository.existsBySlug("updated-tech")).thenReturn(false);
-    when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
+    when(categoryDAO.getCategoryById(1)).thenReturn(Optional.of(testCategory));
+    when(categoryDAO.getCategoryBySlug("updated-tech")).thenReturn(Optional.empty());
+    when(categoryDAO.updateCategory(any(Category.class))).thenReturn(Optional.of(testCategory));
 
     // Act
     Category result = categoryService.updateCategory(1L, updateRequest);
@@ -129,15 +133,15 @@ class CategoryServiceTest {
     CreateCategoryRequest sameNameRequest = new CreateCategoryRequest(
         "Technology",
         "Updated description");
-    when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-    when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
+    when(categoryDAO.getCategoryById(1)).thenReturn(Optional.of(testCategory));
+    when(categoryDAO.updateCategory(any(Category.class))).thenReturn(Optional.of(testCategory));
 
     // Act
     Category result = categoryService.updateCategory(1L, sameNameRequest);
 
     // Assert
     assertNotNull(result);
-    verify(categoryRepository, never()).existsBySlug(anyString());
+    verify(categoryDAO, never()).getCategoryBySlug(anyString());
   }
 
   @Test
@@ -147,8 +151,8 @@ class CategoryServiceTest {
     CreateCategoryRequest updateRequest = new CreateCategoryRequest(
         "Programming",
         "Programming posts");
-    when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-    when(categoryRepository.existsBySlug("programming")).thenReturn(true);
+    when(categoryDAO.getCategoryById(1)).thenReturn(Optional.of(testCategory));
+    when(categoryDAO.getCategoryBySlug("programming")).thenReturn(Optional.of(new Category()));
 
     // Act
     BlogException exception = assertThrows(BlogException.class,
@@ -166,10 +170,11 @@ class CategoryServiceTest {
     switch (operation) {
       case "updateCategory":
       case "getCategoryById":
-        when(categoryRepository.findById(1L)).thenReturn(Optional.empty());
+        when(categoryDAO.getCategoryById(1)).thenReturn(Optional.empty());
+        when(categoryCache.get(1L)).thenReturn(Optional.empty());
         break;
       case "getCategoryBySlug":
-        when(categoryRepository.findBySlug("nonexistent")).thenReturn(Optional.empty());
+        when(categoryDAO.getCategoryBySlug("nonexistent")).thenReturn(Optional.empty());
         break;
     }
 
@@ -205,7 +210,7 @@ class CategoryServiceTest {
   @DisplayName("Should successfully delete a category")
   void deleteCategory_WithValidId_ShouldDeleteCategory() {
     // Arrange
-    doNothing().when(categoryRepository).deleteById(1L);
+    when(categoryDAO.deleteCategory(1)).thenReturn(true);
 
     // Act
     categoryService.deleteCategory(1L);
@@ -217,7 +222,8 @@ class CategoryServiceTest {
   @DisplayName("Should successfully get category by ID")
   void getCategoryById_WithValidId_ShouldReturnCategory() {
     // Arrange
-    when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
+    when(categoryCache.get(1L)).thenReturn(Optional.empty()); // Cache miss
+    when(categoryDAO.getCategoryById(1)).thenReturn(Optional.of(testCategory));
 
     // Act
     Category result = categoryService.getCategoryById(1L);
@@ -225,13 +231,14 @@ class CategoryServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testCategory.getId(), result.getId());
+    verify(categoryCache).put(1L, testCategory); // Verify caching
   }
 
   @Test
   @DisplayName("Should successfully get category by slug")
   void getCategoryBySlug_WithValidSlug_ShouldReturnCategory() {
     // Arrange
-    when(categoryRepository.findBySlug("technology")).thenReturn(Optional.of(testCategory));
+    when(categoryDAO.getCategoryBySlug("technology")).thenReturn(Optional.of(testCategory));
 
     // Act
     Category result = categoryService.getCategoryBySlug("technology");
@@ -246,7 +253,7 @@ class CategoryServiceTest {
   void getAllCategories_ShouldReturnListOfCategories() {
     // Arrange
     List<Category> categories = List.of(testCategory);
-    when(categoryRepository.findAll()).thenReturn(categories);
+    when(categoryDAO.getAllCategories()).thenReturn(categories);
 
     // Act
     List<Category> result = categoryService.getAllCategories();

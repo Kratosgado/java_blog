@@ -17,13 +17,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.dao.TagDAO;
+import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.models.Tag;
@@ -35,19 +32,20 @@ import java.util.List;
 class TagServiceTest {
 
   @Mock
-  private TagRepository tagRepository;
+  private TagDAO tagDAO;
+
+  @Mock
+  private TagCache tagCache;
 
   @InjectMocks
   private TagService tagService;
 
   private Tag testTag;
-  private Pageable pageable;
 
   @BeforeEach
   void setUp() {
     testTag = new Tag("Java", "java", "Java programming language");
-    testTag.setId(1L);
-    pageable = PageRequest.of(0, 10);
+    testTag.setId(1);
   }
 
   @Test
@@ -55,8 +53,8 @@ class TagServiceTest {
   void createTag_WithValidData_ShouldReturnTag() {
     // Arrange
     CreateTagRequest request = new CreateTagRequest("Java", "Java programming");
-    when(tagRepository.existsBySlug("java")).thenReturn(false);
-    when(tagRepository.save(any(Tag.class))).thenReturn(testTag);
+    when(tagDAO.getTagBySlug("java")).thenReturn(Optional.empty());
+    when(tagDAO.createTag(any(Tag.class))).thenReturn(Optional.of(testTag));
 
     // Act
     Tag result = tagService.createTag(request);
@@ -70,7 +68,7 @@ class TagServiceTest {
   void createTag_WithExistingSlug_ShouldThrowException() {
     // Arrange
     CreateTagRequest request = new CreateTagRequest("Java", "Java programming");
-    when(tagRepository.existsBySlug("java")).thenReturn(true);
+    when(tagDAO.getTagBySlug("java")).thenReturn(Optional.of(testTag));
 
     // Act
     BlogException exception = assertThrows(BlogException.class, 
@@ -86,11 +84,11 @@ class TagServiceTest {
   void createTag_ShouldGenerateCorrectSlug(String name, String expectedSlug) {
     // Arrange
     CreateTagRequest request = new CreateTagRequest(name, "Description");
-    when(tagRepository.existsBySlug(anyString())).thenReturn(false);
-    when(tagRepository.save(any(Tag.class))).thenAnswer(invocation -> {
+    when(tagDAO.getTagBySlug(anyString())).thenReturn(Optional.empty());
+    when(tagDAO.createTag(any(Tag.class))).thenAnswer(invocation -> {
       Tag tag = invocation.getArgument(0);
       assertEquals(expectedSlug, tag.getSlug());
-      return tag;
+      return Optional.of(tag);
     });
 
     // Act
@@ -111,9 +109,9 @@ class TagServiceTest {
   void updateTag_WithValidData_ShouldReturnUpdatedTag() {
     // Arrange
     UpdateTagRequest request = new UpdateTagRequest("Java SE", "Java Standard Edition");
-    when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
-    when(tagRepository.existsBySlug("java-se")).thenReturn(false);
-    when(tagRepository.save(any(Tag.class))).thenReturn(testTag);
+    when(tagDAO.getTagById(1)).thenReturn(Optional.of(testTag));
+    when(tagDAO.getTagBySlug("java-se")).thenReturn(Optional.empty());
+    when(tagDAO.updateTag(any(Tag.class))).thenReturn(true);
 
     // Act
     Tag result = tagService.updateTag(1L, request);
@@ -130,8 +128,8 @@ class TagServiceTest {
     // Arrange
     UpdateTagRequest request = new UpdateTagRequest(null, "Updated description");
     String originalName = testTag.getName();
-    when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
-    when(tagRepository.save(any(Tag.class))).thenReturn(testTag);
+    when(tagDAO.getTagById(1)).thenReturn(Optional.of(testTag));
+    when(tagDAO.updateTag(any(Tag.class))).thenReturn(true);
 
     // Act
     Tag result = tagService.updateTag(1L, request);
@@ -150,13 +148,14 @@ class TagServiceTest {
     switch (operation) {
       case "update":
       case "getById":
-        when(tagRepository.findById(1L)).thenReturn(Optional.empty());
+        when(tagDAO.getTagById(1)).thenReturn(Optional.empty());
+        when(tagCache.get(1L)).thenReturn(Optional.empty());
         break;
       case "delete":
-        when(tagRepository.existsById(1L)).thenReturn(false);
+        when(tagDAO.deleteTag(1)).thenReturn(false);
         break;
       case "getBySlug":
-        when(tagRepository.findBySlug("nonexistent")).thenReturn(Optional.empty());
+        when(tagDAO.getTagBySlug("nonexistent")).thenReturn(Optional.empty());
         break;
     }
 
@@ -199,8 +198,8 @@ class TagServiceTest {
   void updateTag_WithSameName_ShouldSucceed() {
     // Arrange
     UpdateTagRequest request = new UpdateTagRequest("Java", "Updated description");
-    when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
-    when(tagRepository.save(any(Tag.class))).thenReturn(testTag);
+    when(tagDAO.getTagById(1)).thenReturn(Optional.of(testTag));
+    when(tagDAO.updateTag(any(Tag.class))).thenReturn(true);
 
     // Act
     Tag result = tagService.updateTag(1L, request);
@@ -214,8 +213,8 @@ class TagServiceTest {
   void updateTag_WithExistingSlug_ShouldThrowException() {
     // Arrange
     UpdateTagRequest request = new UpdateTagRequest("Python", "Python language");
-    when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
-    when(tagRepository.existsBySlug("python")).thenReturn(true);
+    when(tagDAO.getTagById(1)).thenReturn(Optional.of(testTag));
+    when(tagDAO.getTagBySlug("python")).thenReturn(Optional.of(new Tag()));
 
     // Act
     BlogException exception = assertThrows(BlogException.class, 
@@ -229,8 +228,7 @@ class TagServiceTest {
   @DisplayName("Should successfully delete a tag")
   void deleteTag_WithValidId_ShouldDeleteTag() {
     // Arrange
-    when(tagRepository.existsById(1L)).thenReturn(true);
-    doNothing().when(tagRepository).deleteById(1L);
+    when(tagDAO.deleteTag(1)).thenReturn(true);
 
     // Act
     tagService.deleteTag(1L);
@@ -242,7 +240,8 @@ class TagServiceTest {
   @DisplayName("Should successfully get tag by ID")
   void getTagById_WithValidId_ShouldReturnTag() {
     // Arrange
-    when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
+    when(tagCache.get(1L)).thenReturn(Optional.empty()); // Cache miss
+    when(tagDAO.getTagById(1)).thenReturn(Optional.of(testTag));
 
     // Act
     Tag result = tagService.getTagById(1L);
@@ -250,13 +249,14 @@ class TagServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testTag.getId(), result.getId());
+    verify(tagCache).put(1L, testTag); // Verify caching
   }
 
   @Test
   @DisplayName("Should successfully get tag by slug")
   void getTagBySlug_WithValidSlug_ShouldReturnTag() {
     // Arrange
-    when(tagRepository.findBySlug("java")).thenReturn(Optional.of(testTag));
+    when(tagDAO.getTagBySlug("java")).thenReturn(Optional.of(testTag));
 
     // Act
     Tag result = tagService.getTagBySlug("java");
@@ -270,15 +270,15 @@ class TagServiceTest {
   @DisplayName("Should get all tags with pagination")
   void getAllTags_ShouldReturnPageOfTags() {
     // Arrange
-    Page<Tag> tagPage = new PageImpl<>(List.of(testTag));
-    when(tagRepository.findAllOrderByCreatedAtDesc(pageable)).thenReturn(tagPage);
+    List<Tag> tags = List.of(testTag);
+    when(tagDAO.getAllTags()).thenReturn(tags);
 
     // Act
-    Page<Tag> result = tagService.getAllTags(pageable);
+    var result = tagService.getAllTags(1, 10);
 
     // Assert
     assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
+    assertEquals(1, result.totalElements());
   }
 
   @Test
@@ -286,14 +286,14 @@ class TagServiceTest {
   void searchTags_WithKeyword_ShouldReturnPageOfTags() {
     // Arrange
     String keyword = "java";
-    Page<Tag> tagPage = new PageImpl<>(List.of(testTag));
-    when(tagRepository.searchByName(keyword, pageable)).thenReturn(tagPage);
+    List<Tag> tags = List.of(testTag);
+    when(tagDAO.getAllTags()).thenReturn(tags);
 
     // Act
-    Page<Tag> result = tagService.searchTags(keyword, pageable);
+    var result = tagService.searchTags(keyword, 1, 10);
 
     // Assert
     assertNotNull(result);
-    assertEquals(1, result.getTotalElements());
+    assertEquals(1, result.totalElements());
   }
 }

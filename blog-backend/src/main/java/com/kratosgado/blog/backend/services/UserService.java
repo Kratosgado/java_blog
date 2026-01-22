@@ -1,14 +1,14 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.dao.UserDAO;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
 
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final UserRepository userRepository;
+  private final UserDAO userDAO;
   private final BCryptPasswordEncoder passwordEncoder;
 
   public User getUserById(Long id) {
@@ -26,7 +26,7 @@ public class UserService {
   }
 
   public User getUserById(Long id, boolean withPassword) {
-    User user = userRepository.findById(id)
+    User user = userDAO.getUserById(id)
         .orElseThrow(() -> BlogException.notFound("User", "id", id));
     if (!withPassword) {
       user.setPassword(null);
@@ -35,25 +35,20 @@ public class UserService {
   }
 
   public User getUserByEmail(String email) {
-    return userRepository.findByEmail(email)
+    return userDAO.getUserByEmail(email)
         .orElseThrow(() -> BlogException.notFound("User", "email", email));
   }
 
   public User getUserByUsername(String username) {
-    return userRepository.findByUsername(username)
+    return userDAO.getUserByUsername(username)
         .orElseThrow(() -> BlogException.notFound("User", "username", username));
   }
 
-  public Page<UserResponse> getAllUsers(Pageable pageable) {
-    return userRepository.findAllUsers(pageable);
-  }
-
-  @Transactional
   public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
     User user = getUserById(id, true);
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
-      if (userRepository.existsByUsername(request.username())) {
+      if (userDAO.getUserByUsername(request.username()).isPresent()) {
         throw BlogException.duplicateResource("User", "username", request.username());
       }
       user.setUsername(request.username());
@@ -71,13 +66,14 @@ public class UserService {
       user.setLocation(request.location());
     }
 
-    User updatedUser = userRepository.save(user);
-    updatedUser.setPassword(null);
-
-    return updatedUser;
+    if (!userDAO.updateUserProfile(user.getId(), user.getBio(), user.getWebsite(), user.getLocation())) {
+      throw BlogException.internal("Failed to update user profile");
+    }
+    
+    user.setPassword(null);
+    return user;
   }
 
-  @Transactional
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
 
     if (!id.equals(currentUserId)) {
@@ -85,15 +81,17 @@ public class UserService {
     }
 
     User user = getUserById(id);
+    
+    if (!userDAO.updateUserAvatar(id.intValue(), avatarUrl)) {
+      throw BlogException.internal("Failed to update user avatar");
+    }
+    
     user.setAvatarUrl(avatarUrl);
+    user.setPassword(null);
 
-    User updatedUser = userRepository.save(user);
-    updatedUser.setPassword(null);
-
-    return updatedUser;
+    return user;
   }
 
-  @Transactional
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
 
     if (!id.equals(currentUserId)) {
@@ -106,8 +104,40 @@ public class UserService {
       throw BlogException.unauthorized("Old password is incorrect");
     }
 
-    user.setPassword(passwordEncoder.encode(newPassword));
-    userRepository.save(user);
+    if (!userDAO.setUserPassword(id, passwordEncoder.encode(newPassword))) {
+      throw BlogException.internal("Failed to change password");
+    }
+  }
 
+  public PageResponse<UserResponse> getAllUsers(int page, int size) {
+    List<User> allUsers = userDAO.getAllUsers();
+    int totalElements = allUsers.size();
+    int totalPages = (int) Math.ceil((double) totalElements / size);
+    
+    int offset = (page - 1) * size;
+    int endIndex = Math.min(offset + size, totalElements);
+    
+    List<UserResponse> pagedUsers = allUsers.subList(offset, endIndex).stream()
+        .map(user -> new UserResponse(
+            user.getId().longValue(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getAvatarUrl(),
+            user.getBio(),
+            user.getWebsite(),
+            user.getLocation(),
+            user.getRole()
+        ))
+        .toList();
+    
+    return new PageResponse<>(
+        pagedUsers,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        page < totalPages,
+        page > 1
+    );
   }
 }

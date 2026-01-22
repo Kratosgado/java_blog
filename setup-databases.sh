@@ -36,8 +36,8 @@ echo -e "${GREEN}Creating PostgreSQL container...${NC}"
 docker run -d \
   --name postgis \
   -e POSTGRES_DB=blog_db \
-  -e POSTGRES_USER=blog_user \
-  -e POSTGRES_PASSWORD=blog_password \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
   -p 5432:5432 \
   postgres:17
 
@@ -46,7 +46,7 @@ echo -e "${GREEN}Waiting for PostgreSQL to be ready...${NC}"
 sleep 5
 
 # Test connection
-until docker exec postgis pg_isready -U blog_user -d blog_db >/dev/null 2>&1; do
+until docker exec postgis pg_isready -U postgres -d blog_db >/dev/null 2>&1; do
   echo -e "${YELLOW}Waiting for PostgreSQL...${NC}"
   sleep 2
 done
@@ -84,28 +84,6 @@ until docker exec mongodb mongosh --eval "db.adminCommand('ping')" >/dev/null 2>
 done
 
 echo -e "${GREEN}✓ MongoDB is ready!${NC}"
-echo ""
-
-# ================================================================
-# 3. Initialize PostgreSQL Schema
-# ================================================================
-echo -e "${YELLOW}[3/5] Initializing PostgreSQL schema...${NC}"
-
-# Copy schema file to container and execute
-docker exec postgis psql -U blog_user -d blog_db -f ./schema.sql
-
-echo -e "${GREEN}✓ PostgreSQL schema created!${NC}"
-echo ""
-
-# ================================================================
-# 4. Seed PostgreSQL Data
-# ================================================================
-echo -e "${YELLOW}[4/5] Seeding PostgreSQL data...${NC}"
-
-# Create modified seed file without comments and reviews (they go to MongoDB)
-docker exec postgis psql -U blog_user -d blog_db -f ./seed.sql
-
-echo -e "${GREEN}✓ PostgreSQL data seeded!${NC}"
 echo ""
 
 # ================================================================
@@ -306,8 +284,8 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 echo -e "${GREEN}✓ PostgreSQL running on localhost:5432${NC}"
 echo -e "  Database: blog_db"
-echo -e "  User: blog_user"
-echo -e "  Password: blog_password"
+echo -e "  User: postgres"
+echo -e "  Password: posgres"
 echo ""
 echo -e "${GREEN}✓ MongoDB running on localhost:27017${NC}"
 echo -e "  Database: blog_nosql"
@@ -320,7 +298,7 @@ echo -e "${YELLOW}To start databases:${NC}"
 echo -e "  ./dev.sh start"
 echo ""
 echo -e "${YELLOW}To connect to PostgreSQL:${NC}"
-echo -e "  docker exec -it postgis psql -U blog_user -d blog_db"
+echo -e "  docker exec -it postgis psql -U postgres -d blog_db"
 echo ""
 echo -e "${YELLOW}To connect to MongoDB:${NC}"
 echo -e "  docker exec -it mongodb mongosh blog_nosql"

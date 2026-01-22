@@ -25,14 +25,14 @@ public class AuthGraphQLController {
   @MutationMapping
   public AuthPayload register(@Argument RegisterRequest input) {
     User user = authService.register(input);
-    String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+    String token = jwtUtil.generateToken(user.getEmail(), Long.valueOf(user.getId()));
     return new AuthPayload(token, user);
   }
 
   @MutationMapping
   public AuthPayload login(@Argument LoginRequest input) {
     User user = authService.login(input);
-    String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+    String token = jwtUtil.generateToken(user.getEmail(), Long.valueOf(user.getId()));
     return new AuthPayload(token, user);
   }
 }

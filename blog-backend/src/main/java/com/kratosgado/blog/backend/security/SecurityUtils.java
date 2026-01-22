@@ -44,7 +44,7 @@ public class SecurityUtils {
   }
 
   public static Long getCurrentUserId() {
-    return getCurrentUser().getId();
+    return getCurrentUser().getId().longValue();
   }
 
   public static String getCurrentUsername() {

@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import com.kratosgado.blog.backend.dao.CategoryDAO;
-import com.kratosgado.blog.backend.dao.PostDAO;
-import com.kratosgado.blog.backend.dao.TagDAO;
-import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Category;
@@ -30,10 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CacheConfig {
   
-  private final PostDAO postDAO;
-  private final CategoryDAO categoryDAO;
-  private final TagDAO tagDAO;
-  private final CommentMongoDAO commentDAO;
+  private final PostRepository postRepository;
+  private final CategoryRepository categoryRepository;
+  private final TagRepository tagRepository;
+  private final CommentRepository commentRepository;
   
   // Cache TTL constants (in milliseconds)
   private static final long POST_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -50,7 +50,9 @@ public class CacheConfig {
     log.info("Initializing Post cache");
     PostCache cache = new PostCache(
         "PostCache",
-        this::loadAllPosts,
+        () -> postRepository.findAll().stream()
+            .map(DtoMapper::toPostResponse)
+            .toList(),
         POST_CACHE_TTL
     );
     
@@ -67,7 +69,7 @@ public class CacheConfig {
     log.info("Initializing Category cache");
     CategoryCache cache = new CategoryCache(
         "CategoryCache",
-        () -> categoryDAO.getAllCategories(),
+        () -> categoryRepository.findAll(),
         CATEGORY_CACHE_TTL
     );
     
@@ -84,7 +86,7 @@ public class CacheConfig {
     log.info("Initializing Tag cache");
     TagCache cache = new TagCache(
         "TagCache",
-        () -> tagDAO.getAllTags(),
+        () -> tagRepository.findAll(),
         TAG_CACHE_TTL
     );
     
@@ -101,7 +103,7 @@ public class CacheConfig {
     log.info("Initializing Comment cache");
     CommentCache cache = new CommentCache(
         "CommentCache",
-        () -> commentDAO.getAllComments(),
+        () -> commentRepository.findAll(),
         COMMENT_CACHE_TTL
     );
     
@@ -111,23 +113,13 @@ public class CacheConfig {
   }
   
   /**
-   * Load all posts with full details (author, category, tags)
-   */
-  private List<PostResponse> loadAllPosts() {
-    return postDAO.getAllPosts().stream()
-        .map(post -> {
-          List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-          return DtoMapper.toPostResponse(post, tags);
-        })
-        .toList();
-  }
-  
-  /**
    * Load initial data into post cache.
    */
   private void loadPostCache(PostCache cache) {
     try {
-      List<PostResponse> posts = loadAllPosts();
+      List<PostResponse> posts = postRepository.findAll().stream()
+          .map(DtoMapper::toPostResponse)
+          .toList();
       
       posts.forEach(post -> cache.put(post.id(), post));
       log.info("Loaded {} posts into cache", posts.size());
@@ -141,8 +133,8 @@ public class CacheConfig {
    */
   private void loadCategoryCache(CategoryCache cache) {
     try {
-      List<Category> categories = categoryDAO.getAllCategories();
-      categories.forEach(category -> cache.put(category.getId().longValue(), category));
+      List<Category> categories = categoryRepository.findAll();
+      categories.forEach(category -> cache.put(category.getId(), category));
       log.info("Loaded {} categories into cache", categories.size());
     } catch (Exception e) {
       log.error("Error loading category cache", e);
@@ -154,8 +146,8 @@ public class CacheConfig {
    */
   private void loadTagCache(TagCache cache) {
     try {
-      List<Tag> tags = tagDAO.getAllTags();
-      tags.forEach(tag -> cache.put(tag.getId().longValue(), tag));
+      List<Tag> tags = tagRepository.findAll();
+      tags.forEach(tag -> cache.put(tag.getId(), tag));
       log.info("Loaded {} tags into cache", tags.size());
     } catch (Exception e) {
       log.error("Error loading tag cache", e);
@@ -167,7 +159,7 @@ public class CacheConfig {
    */
   private void loadCommentCache(CommentCache cache) {
     try {
-      List<Comment> comments = commentDAO.getAllComments();
+      List<Comment> comments = commentRepository.findAll();
       
       comments.forEach(comment -> cache.put(comment.getId(), comment));
       log.info("Loaded {} comments into cache", comments.size());

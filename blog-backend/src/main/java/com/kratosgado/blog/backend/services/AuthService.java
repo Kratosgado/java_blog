@@ -3,24 +3,24 @@ package com.kratosgado.blog.backend.services;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.kratosgado.blog.backend.dao.UserDAO;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
 
 @Service
 public class AuthService {
-  private final UserRepository userRepository;
+  private final UserDAO userDAO;
   private final PasswordEncoder passwordEncoder;
 
-  public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
+  public AuthService(UserDAO userDAO, PasswordEncoder passwordEncoder) {
+    this.userDAO = userDAO;
     this.passwordEncoder = passwordEncoder;
   }
 
   public User login(LoginRequest request) {
-    var user = userRepository.findByEmail(request.email())
+    var user = userDAO.getUserByEmail(request.email())
         .orElseThrow(() -> BlogException.unauthorized("Invalid email or password"));
 
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -30,7 +30,7 @@ public class AuthService {
   }
 
   public User register(RegisterRequest request) {
-    if (userRepository.findByEmail(request.email()).isPresent()) {
+    if (userDAO.getUserByEmail(request.email()).isPresent()) {
       throw BlogException.conflict("Email already exists");
     }
 
@@ -38,10 +38,8 @@ public class AuthService {
     user.setEmail(request.email());
     user.setUsername(request.username());
     user.setPassword(passwordEncoder.encode(request.password()));
-    user.setRole("USER");
 
-    user = userRepository.save(user);
-
-    return user;
+    return userDAO.createUser(user)
+        .orElseThrow(() -> BlogException.internal("Failed to create user"));
   }
 }

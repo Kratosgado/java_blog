@@ -41,7 +41,7 @@ public class AuthController {
 
     return new AuthResponse(
         token,
-        user.getId(),
+        user.getId().longValue(),
         user.getUsername(),
         user.getEmail(),
         user.getRole());
@@ -61,7 +61,7 @@ public class AuthController {
 
     return new AuthResponse(
         token,
-        user.getId(),
+        user.getId().longValue(),
         user.getUsername(),
         user.getEmail(),
         user.getRole());

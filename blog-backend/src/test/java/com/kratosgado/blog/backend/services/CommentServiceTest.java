@@ -4,7 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -22,15 +23,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
+import com.kratosgado.blog.backend.cache.CacheConfig.CommentCache;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -40,10 +37,10 @@ import com.kratosgado.blog.models.User;
 class CommentServiceTest {
 
   @Mock
-  private CommentRepository commentRepository;
+  private CommentMongoDAO commentDAO;
 
   @Mock
-  private UserService userService;
+  private CommentCache commentCache;
 
   @InjectMocks
   private CommentService commentService;
@@ -51,7 +48,6 @@ class CommentServiceTest {
   private Comment testComment;
   private User testUser;
   private CreateCommentRequest createRequest;
-  private Pageable pageable;
 
   @BeforeEach
   void setUp() {
@@ -69,18 +65,16 @@ class CommentServiceTest {
     testUser.setAvatarUrl("http://example.com/avatar.jpg");
 
     createRequest = new CreateCommentRequest(1L, "New Comment");
-    pageable = PageRequest.of(0, 10);
   }
 
   @Test
   @DisplayName("Should successfully create a comment with pending status")
   void createComment_WithValidData_ShouldReturnPendingComment() {
     // Arrange
-    when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
-    when(userService.getUserById(1L)).thenReturn(testUser);
+    when(commentDAO.createComment(any(Comment.class))).thenReturn(Optional.of(testComment));
 
     // Act
-    Comment result = commentService.createComment(createRequest, 1L);
+    Comment result = commentService.createComment(createRequest, testUser);
 
     // Assert
     assertNotNull(result);
@@ -93,8 +87,8 @@ class CommentServiceTest {
   void changeCommentStatus_WithValidId_ShouldUpdateStatus(CommentStatus newStatus, String method) throws Exception {
     // Arrange
     testComment.setStatus(CommentStatus.pending);
-    when(commentRepository.findById("comment123")).thenReturn(Optional.of(testComment));
-    when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
+    when(commentDAO.getCommentById("comment123")).thenReturn(Optional.of(testComment));
+    when(commentDAO.updateComment(anyString(), any(Comment.class))).thenReturn(true);
 
     // Act
     Comment result;
@@ -121,7 +115,7 @@ class CommentServiceTest {
   @DisplayName("Should throw exception when approving or rejecting non-existent comment")
   void changeCommentStatus_WithNonExistentId_ShouldThrowException(String method) {
     // Arrange
-    when(commentRepository.findById("comment123")).thenReturn(Optional.empty());
+    when(commentDAO.getCommentById("comment123")).thenReturn(Optional.empty());
 
     // Act & Assert
     BlogException exception;
@@ -145,8 +139,8 @@ class CommentServiceTest {
   @DisplayName("Should successfully delete own comment")
   void deleteComment_AsOwner_ShouldDeleteComment() {
     // Arrange
-    when(commentRepository.findById("comment123")).thenReturn(Optional.of(testComment));
-    doNothing().when(commentRepository).delete(testComment);
+    when(commentDAO.getCommentById("comment123")).thenReturn(Optional.of(testComment));
+    when(commentDAO.deleteComment("comment123")).thenReturn(true);
 
     // Act
     commentService.deleteComment("comment123", 1L);
@@ -158,7 +152,7 @@ class CommentServiceTest {
   @DisplayName("Should throw exception when deleting someone else's comment")
   void deleteComment_AsNonOwner_ShouldThrowException() {
     // Arrange
-    when(commentRepository.findById("comment123")).thenReturn(Optional.of(testComment));
+    when(commentDAO.getCommentById("comment123")).thenReturn(Optional.of(testComment));
 
     // Act
     BlogException exception = assertThrows(BlogException.class,
@@ -172,7 +166,7 @@ class CommentServiceTest {
   @DisplayName("Should throw exception when deleting non-existent comment")
   void deleteComment_WithNonExistentId_ShouldThrowException() {
     // Arrange
-    when(commentRepository.findById("comment123")).thenReturn(Optional.empty());
+    when(commentDAO.getCommentById("comment123")).thenReturn(Optional.empty());
 
     // Act
     BlogException exception = assertThrows(BlogException.class,
@@ -186,12 +180,11 @@ class CommentServiceTest {
   @DisplayName("Should get only approved comments for a post")
   void getPostComments_ShouldReturnOnlyApprovedComments() {
     // Arrange
-    Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByPostIdAndStatus(1L, CommentStatus.approved, pageable))
-        .thenReturn(commentPage);
+    List<Comment> comments = List.of(testComment);
+    when(commentDAO.getCommentsByPostId(1L)).thenReturn(comments);
 
     // Act
-    PageResponse<Comment> result = commentService.getPostComments(1L, pageable);
+    var result = commentService.getPostComments(1L, 1, 10);
 
     // Assert
     assertNotNull(result);
@@ -203,11 +196,11 @@ class CommentServiceTest {
   @DisplayName("Should get all comments for a post regardless of status")
   void getAllPostComments_ShouldReturnAllComments() {
     // Arrange
-    Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByPostId(1L, pageable)).thenReturn(commentPage);
+    List<Comment> comments = List.of(testComment);
+    when(commentDAO.getCommentsByPostId(1L)).thenReturn(comments);
 
     // Act
-    PageResponse<Comment> result = commentService.getAllPostComments(1L, pageable);
+    var result = commentService.getAllPostComments(1L, 1, 10);
 
     // Assert
     assertNotNull(result);
@@ -219,11 +212,11 @@ class CommentServiceTest {
   @DisplayName("Should get user comments")
   void getUserComments_WithUserId_ShouldReturnPageOfComments() {
     // Arrange
-    Page<Comment> commentPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByUserId(1L, pageable)).thenReturn(commentPage);
+    List<Comment> comments = List.of(testComment);
+    when(commentDAO.getCommentsByUserId(1L)).thenReturn(comments);
 
     // Act
-    PageResponse<Comment> result = commentService.getUserComments(1L, pageable);
+    var result = commentService.getUserComments(1L, 1, 10);
 
     // Assert
     assertNotNull(result);
@@ -235,7 +228,7 @@ class CommentServiceTest {
   @DisplayName("Should get approved comment count for a post")
   void getPostCommentCount_ShouldReturnCount() {
     // Arrange
-    when(commentRepository.countByPostIdAndStatus(1L, CommentStatus.approved)).thenReturn(5L);
+    when(commentDAO.getCommentCountForPost(1L)).thenReturn(5L);
 
     // Act
     Long count = commentService.getPostCommentCount(1L);

@@ -1,6 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -36,12 +35,12 @@ public class ReviewGraphQLController {
 
   @QueryMapping
   public PageResponse<Review> reviewsByPost(@Argument Long postId) {
-    return reviewService.getPostReviews(postId, PageRequest.of(0, 100));
+    return reviewService.getPostReviews(postId, 1, 100);
   }
 
   @MutationMapping
   public Review createReview(@Argument CreateReviewRequest input, @AuthenticationPrincipal User user) {
-    return reviewService.createReview(input, user.getId());
+    return reviewService.createReview(input, Long.valueOf(user.getId()));
   }
 
   @MutationMapping

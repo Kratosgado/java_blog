@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -50,12 +48,8 @@ public class PostGraphQLController {
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
       @Argument(name = "sortDir") String sortDir) {
-    Sort sort = sortDir.equalsIgnoreCase("asc")
-        ? Sort.by(sortBy).ascending()
-        : Sort.by(sortBy).descending();
-
-    PageRequest pageRequest = PageRequest.of(page, size, sort);
-    return postService.getPublishedPosts(pageRequest);
+    // Note: sortBy and sortDir are currently ignored as DAO doesn't support dynamic sorting
+    return postService.getPublishedPosts(page, size);
 
   }
 
@@ -64,8 +58,7 @@ public class PostGraphQLController {
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return postService.searchPosts(keyword, pageRequest);
+    return postService.searchPosts(keyword, page, size);
 
   }
 
@@ -74,8 +67,7 @@ public class PostGraphQLController {
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return postService.getPostsByCategory(categoryId, pageRequest);
+    return postService.getPostsByCategory(categoryId, page, size);
 
   }
 
@@ -84,8 +76,7 @@ public class PostGraphQLController {
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
-    PageRequest pageRequest = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    return postService.getUserPosts(userId, pageRequest);
+    return postService.getUserPosts(userId, page, size);
   }
 
   // Mutations
@@ -149,17 +140,17 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "author")
   public User author(Post post) {
-    return userService.getUserById(post.getUserId());
+    return userService.getUserById(Long.valueOf(post.getUserId()));
   }
 
   @SchemaMapping(typeName = "Post", field = "comments")
   public PageResponse<Comment> comments(Post post) {
-    return commentService.getPostComments(post.getId(), PageRequest.of(0, 100));
+    return commentService.getPostComments(Long.valueOf(post.getId()), 1, 100);
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
   public PageResponse<Review> reviews(Post post) {
-    return reviewService.getPostReviews(post.getId(), PageRequest.of(0, 100));
+    return reviewService.getPostReviews(Long.valueOf(post.getId()), 1, 100);
   }
 
 }

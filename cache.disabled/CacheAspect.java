@@ -76,7 +76,7 @@ public class CacheAspect {
   )
   public void afterCreateCategory(Category result) {
     log.debug("Aspect: Adding newly created category to cache: {}", result.getId());
-    categoryCache.put(result.getId().longValue(), result);
+    categoryCache.put(result.getId(), result);
   }
   
   /**
@@ -88,7 +88,7 @@ public class CacheAspect {
   )
   public void afterUpdateCategory(Category result) {
     log.debug("Aspect: Updating category in cache: {}", result.getId());
-    categoryCache.put(result.getId().longValue(), result);
+    categoryCache.put(result.getId(), result);
   }
   
   /**
@@ -112,7 +112,7 @@ public class CacheAspect {
   )
   public void afterCreateTag(Tag result) {
     log.debug("Aspect: Adding newly created tag to cache: {}", result.getId());
-    tagCache.put(result.getId().longValue(), result);
+    tagCache.put(result.getId(), result);
   }
   
   /**
@@ -124,7 +124,7 @@ public class CacheAspect {
   )
   public void afterUpdateTag(Tag result) {
     log.debug("Aspect: Updating tag in cache: {}", result.getId());
-    tagCache.put(result.getId().longValue(), result);
+    tagCache.put(result.getId(), result);
   }
   
   /**

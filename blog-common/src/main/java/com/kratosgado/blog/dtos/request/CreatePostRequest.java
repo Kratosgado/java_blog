@@ -1,9 +1,8 @@
 package com.kratosgado.blog.dtos.request;
 
-import com.kratosgado.blog.enums.PostStatus;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreatePostRequest(
@@ -12,5 +11,5 @@ public record CreatePostRequest(
     String excerpt,
     @NotNull(message = "Category is required") Long categoryId,
     String coverImage,
-    @NotBlank(message = "Status is required") PostStatus status) {
+    @Pattern(regexp = "draft|published", message = "Status must be either 'draft' or 'published'") String status) {
 }
