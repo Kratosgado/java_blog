@@ -50,7 +50,7 @@ Authorization: {{userAuth}}
 
 # @name getPost
 
-GET {{host}}/posts/101 HTTP/1.1
+GET {{host}}/posts/8 HTTP/1.1
 
 
 ### 

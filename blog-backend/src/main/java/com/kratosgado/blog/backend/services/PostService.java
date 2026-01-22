@@ -118,32 +118,35 @@ public class PostService {
     }
   }
 
-  // TODO: get post by slug should increment views
-  public PostResponse getPostById(Long postId) {
-    // Try to get from cache first
-    return postCache.get(postId).orElseGet(() -> {
-      log.debug("Cache miss for post ID: {}, fetching from database", postId);
+  @Transactional
+  public PostResponse getPostBySlug(String slug) {
+    return postCache.get(slug).orElseGet(() -> {
+      log.debug("Cache miss for post slug: {}, fetching from database", slug);
 
-      Post post = postDAO.getPostById(postId.intValue())
+      Post post = postDAO.getPostBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
-
-      // Increment views
       postDAO.incrementViews(post.getId());
-
-      // Fetch related data
       List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-
-      // Use simplified mapper since post already has joined author/category info
       PostResponse response = DtoMapper.toPostResponse(post, tags);
 
       // Cache the result
-      postCache.put(postId, response);
+      postCache.put(post.getSlug(), response);
 
       return response;
     });
   }
 
-  @Transactional
+  @Transactional(readOnly = true)
+  public PostResponse getPostById(Long postId) {
+    Post post = postDAO.getPostById(postId.intValue())
+        .orElseThrow(() -> BlogException.notFound("Post not found"));
+
+    postDAO.incrementViews(post.getId());
+    List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
+    return DtoMapper.toPostResponse(post, tags);
+  }
+
+  @Transactional(readOnly = true)
   public PageResponse<PostResponse> getPublishedPosts(int page, int size) {
     List<Post> posts = postDAO.getPostsPaginated(page, size);
     int totalElements = postDAO.getPublishedPostCount();

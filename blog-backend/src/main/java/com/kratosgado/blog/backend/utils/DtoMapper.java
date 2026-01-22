@@ -22,13 +22,15 @@ public class DtoMapper {
 
   /**
    * Convert Post model to PostResponse DTO
-   * Note: This now requires tags to be passed in since Post no longer has entity relationships
+   * Note: This now requires tags to be passed in since Post no longer has entity
+   * relationships
    */
   public static PostResponse toPostResponse(Post post, User author, Category category, List<Tag> tags) {
     return new PostResponse(
         post.getId().longValue(),
         toAuthorSummary(author),
         toCategorySummary(category),
+        post.getSlug(),
         post.getTitle(),
         post.getContent(),
         post.getExcerpt(),
@@ -54,7 +56,7 @@ public class DtoMapper {
           null, // email not included in simple joins
           post.getAuthorAvatarUrl());
     }
-    
+
     // Create CategorySummary from fields that may be populated by JOIN
     CategorySummary category = null;
     if (post.getCategoryName() != null && post.getCategoryId() != null) {
@@ -68,6 +70,7 @@ public class DtoMapper {
         post.getId().longValue(),
         author,
         category,
+        post.getSlug(),
         post.getTitle(),
         post.getContent(),
         post.getExcerpt(),
@@ -105,9 +108,8 @@ public class DtoMapper {
     int totalPages = (int) Math.ceil((double) totalElements / size);
     boolean isFirst = page == 1;
     boolean isLast = page >= totalPages;
-    
+
     return new PageResponse<>(content, page, page - 1, totalElements, totalPages, isFirst, isLast);
   }
 
 }
-

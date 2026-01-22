@@ -9,6 +9,7 @@ public record PostResponse(
     Long id,
     AuthorSummary author,
     CategorySummary category,
+    String slug,
     String title,
     String content,
     String excerpt,

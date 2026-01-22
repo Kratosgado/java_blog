@@ -25,8 +25,8 @@ public class LoggingAspect {
   public void serviceLayer() {
   }
 
-  @Pointcut("within(com.kratosgado.blog.backend.repositories..*)")
-  public void repositoryLayer() {
+  @Pointcut("within(com.kratosgado.blog.backend.dao..*)")
+  public void daoLayer() {
   }
 
   @Before("controllerLayer()")
@@ -56,13 +56,13 @@ public class LoggingAspect {
     Instant start = Instant.now();
     String methodName = joinPoint.getSignature().toShortString();
 
-    logger.debug("==> Executing service method: {}", methodName);
+    logger.info("==> Executing service method: {}", methodName);
 
     try {
       Object result = joinPoint.proceed();
       Duration duration = Duration.between(start, Instant.now());
 
-      logger.debug("<== Completed service method: {} in {} ms",
+      logger.info("<== Completed service method: {} in {} ms",
           methodName,
           duration.toMillis());
 
@@ -79,10 +79,40 @@ public class LoggingAspect {
     }
   }
 
-  @Before("repositoryLayer()")
-  public void logBeforeRepository(JoinPoint joinPoint) {
+  @Around("daoLayer()")
+  public Object logAroundDao(ProceedingJoinPoint joinPoint) throws Throwable {
+    Instant start = Instant.now();
+    String methodName = joinPoint.getSignature().toShortString();
+
     logger.debug(">>> Database operation: {} with parameters: {}",
-        joinPoint.getSignature().toShortString(),
+        methodName,
         Arrays.toString(joinPoint.getArgs()));
+
+    try {
+      Object result = joinPoint.proceed();
+      Duration duration = Duration.between(start, Instant.now());
+
+      logger.debug("<<< Completed database operation: {} in {} ms",
+          methodName,
+          duration.toMillis());
+
+      // Warn about slow queries (> 100ms)
+      if (duration.toMillis() > 100) {
+        logger.warn("!!! Slow database operation detected: {} took {} ms",
+            methodName,
+            duration.toMillis());
+      }
+
+      return result;
+    } catch (Exception e) {
+      Duration duration = Duration.between(start, Instant.now());
+
+      logger.error("<<< Failed database operation: {} after {} ms - Error: {}",
+          methodName,
+          duration.toMillis(),
+          e.getMessage(),
+          e);
+      throw e;
+    }
   }
 }

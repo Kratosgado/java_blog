@@ -107,6 +107,7 @@ class PostServiceTest {
         1L,
         new AuthorSummary(1L, "testuser", "test@example.com", "avatar.jpg"),
         new CategorySummary(1L, "Test Category", "test-category"),
+        "test-post", // slug
         "Test Post",
         "Test Content",
         "Test Excerpt",
@@ -172,6 +173,7 @@ class PostServiceTest {
         1L,
         testPostResponse.author(),
         testPostResponse.category(),
+        testPostResponse.slug(),
         updateRequest.title(),
         updateRequest.content(),
         updateRequest.excerpt(),
@@ -209,7 +211,6 @@ class PostServiceTest {
         when(postDAO.getPostById(1)).thenReturn(Optional.empty());
         break;
       case "getById":
-        when(postCache.get(1L)).thenReturn(Optional.empty());
         when(postDAO.getPostById(1)).thenReturn(Optional.empty());
         break;
     }
@@ -261,26 +262,53 @@ class PostServiceTest {
   }
 
   @Test
-  @DisplayName("Should successfully get post by ID from cache")
-  void getPostById_WithValidId_ShouldReturnPostResponseFromCache() {
+  @DisplayName("Should successfully get post by slug from cache")
+  void getPostBySlug_WithValidSlug_ShouldReturnPostResponseFromCache() {
     // Arrange
-    when(postCache.get(1L)).thenReturn(Optional.of(testPostResponse));
+    String slug = "test-post";
+    when(postCache.get(slug)).thenReturn(Optional.of(testPostResponse));
 
     // Act
-    PostResponse result = postService.getPostById(1L);
+    PostResponse result = postService.getPostBySlug(slug);
 
     // Assert
     assertNotNull(result);
     assertEquals(testPostResponse.id(), result.id());
+    assertEquals(testPostResponse.slug(), result.slug());
     assertEquals(testPostResponse.title(), result.title());
-    verify(postDAO, never()).getPostById(anyInt());
+    verify(postDAO, never()).getPostBySlug(slug);
   }
 
   @Test
-  @DisplayName("Should successfully get post by ID from database on cache miss")
-  void getPostById_OnCacheMiss_ShouldFetchFromDatabase() {
+  @DisplayName("Should successfully get post by slug from database on cache miss")
+  void getPostBySlug_OnCacheMiss_ShouldFetchFromDatabase() {
     // Arrange
-    when(postCache.get(1L)).thenReturn(Optional.empty());
+    String slug = "test-post";
+    testPost.setSlug(slug);
+    when(postCache.get(slug)).thenReturn(Optional.empty());
+    when(postDAO.getPostBySlug(slug)).thenReturn(Optional.of(testPost));
+    when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
+    doNothing().when(postDAO).incrementViews(anyInt());
+
+    try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+          .thenReturn(testPostResponse);
+
+      // Act
+      PostResponse result = postService.getPostBySlug(slug);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(testPostResponse.id(), result.id());
+      assertEquals(testPostResponse.slug(), result.slug());
+      verify(postCache).put(slug, testPostResponse);
+    }
+  }
+
+  @Test
+  @DisplayName("Should successfully get post by ID from database without cache")
+  void getPostById_WithValidId_ShouldReturnPostResponseFromDatabase() {
+    // Arrange
     when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
     when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
     doNothing().when(postDAO).incrementViews(anyInt());
@@ -295,7 +323,7 @@ class PostServiceTest {
       // Assert
       assertNotNull(result);
       assertEquals(testPostResponse.id(), result.id());
-      verify(postCache).put(1L, testPostResponse);
+      verify(postDAO).getPostById(1);
     }
   }
 
@@ -415,6 +443,7 @@ class PostServiceTest {
         1L,
         testPostResponse.author(),
         testPostResponse.category(),
+        "updated-title-only", // slug
         "Updated Title Only",
         originalContent,
         testPostResponse.excerpt(),
