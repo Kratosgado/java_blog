@@ -26,6 +26,6 @@ public class TagGraphQLController {
 
   @QueryMapping
   public List<Tag> tags() {
-    return tagService.getAllTags(PageRequest.of(0, 100)).getContent();
+    return tagService.getAllTags(PageRequest.of(0, 100)).content();
   }
 }

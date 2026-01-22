@@ -90,15 +90,7 @@ public class TagController {
   @Operation(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   @GetEnpoint
   public PageResponse<Tag> getTags(@ParameterObject Pageable pageable) {
-    Page<Tag> tags = tagService.getAllTags(pageable);
-
-    return new PageResponse<Tag>(tags.getContent(),
-        pageable.getPageNumber() + 1,
-        tags.getNumber(),
-        tags.getTotalElements(),
-        tags.getTotalPages(),
-        tags.isFirst(),
-        tags.isLast());
+    return tagService.getAllTags(pageable);
   }
 
   @GetMapping("/search")
@@ -107,14 +99,6 @@ public class TagController {
   public PageResponse<Tag> searchTags(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
       @ParameterObject Pageable pageable) {
-    Page<Tag> tags = tagService.searchTags(keyword, pageable);
-
-    return new PageResponse<Tag>(tags.getContent(),
-        pageable.getPageNumber() + 1,
-        tags.getNumber(),
-        tags.getTotalElements(),
-        tags.getTotalPages(),
-        tags.isFirst(),
-        tags.isLast());
+    return tagService.searchTags(keyword, pageable);
   }
 }
