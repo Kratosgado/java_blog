@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
@@ -12,15 +13,21 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class PostService {
   private final PostRepository postRepository;
+  private final PostCache postCache;
 
-  public PostService(PostRepository postRepository) {
+  public PostService(PostRepository postRepository, PostCache postCache) {
     this.postRepository = postRepository;
+    this.postCache = postCache;
   }
 
   @Transactional
@@ -34,7 +41,13 @@ public class PostService {
     post.setCoverImage(request.coverImage());
     post.setStatus(request.status());
 
-    return DtoMapper.toPostResponse(postRepository.save(post));
+    PostResponse response = DtoMapper.toPostResponse(postRepository.save(post));
+    
+    // Add to cache
+    postCache.put(response.id(), response);
+    log.debug("Created post with ID: {} and added to cache", response.id());
+    
+    return response;
   }
 
   @Transactional
@@ -55,7 +68,13 @@ public class PostService {
     if (request.status() != null)
       post.setStatus(request.status());
 
-    return DtoMapper.toPostResponse(postRepository.save(post));
+    PostResponse response = DtoMapper.toPostResponse(postRepository.save(post));
+    
+    // Update cache
+    postCache.put(response.id(), response);
+    log.debug("Updated post with ID: {} in cache", response.id());
+    
+    return response;
   }
 
   @Transactional
@@ -64,64 +83,108 @@ public class PostService {
         .orElseThrow(() -> BlogException.notFound("Post not found or you don't have permission"));
 
     postRepository.delete(post);
+    
+    // Evict from cache
+    postCache.evict(postId);
+    log.debug("Deleted post with ID: {} and evicted from cache", postId);
   }
 
   public PostResponse getPostById(Long postId) {
-    var post = postRepository.findById(postId)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
-    return DtoMapper.toPostResponse(post);
+    // Try to get from cache first
+    return postCache.get(postId).orElseGet(() -> {
+      log.debug("Cache miss for post ID: {}, fetching from database", postId);
+      var post = postRepository.findById(postId)
+          .orElseThrow(() -> BlogException.notFound("Post not found"));
+      PostResponse response = DtoMapper.toPostResponse(post);
+      
+      // Add to cache
+      postCache.put(postId, response);
+      return response;
+    });
   }
 
   public PageResponse<PostResponse> getPublishedPosts(Pageable pageable) {
-    final Page<Post> posts = postRepository.findPublishedPosts(pageable);
-    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
-
-    return new PageResponse<>(content,
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
+    log.debug("Getting published posts from cache - page: {}, size: {}", 
+        pageable.getPageNumber(), pageable.getPageSize());
+    
+    // Use cache with search predicate for published posts
+    String sortField = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().getProperty() 
+        : "createdAt";
+    boolean ascending = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().isAscending() 
+        : false;
+    
+    return postCache.search(
+        post -> post.status() == PostStatus.published,
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        sortField,
+        ascending
+    );
   }
 
   public PageResponse<PostResponse> searchPosts(String keyword, Pageable pageable) {
-    final Page<Post> posts = postRepository.searchPublishedPosts(keyword, pageable);
-    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
-
-    return new PageResponse<>(content,
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
+    log.debug("Searching posts in cache with keyword: '{}', page: {}, size: {}", 
+        keyword, pageable.getPageNumber(), pageable.getPageSize());
+    
+    // Use cache with search predicate for keyword matching
+    String sortField = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().getProperty() 
+        : "createdAt";
+    boolean ascending = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().isAscending() 
+        : false;
+    
+    String lowerKeyword = keyword.toLowerCase();
+    return postCache.search(
+        post -> post.status() == PostStatus.published && 
+                (post.title().toLowerCase().contains(lowerKeyword) || 
+                 post.content().toLowerCase().contains(lowerKeyword) ||
+                 post.excerpt().toLowerCase().contains(lowerKeyword)),
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        sortField,
+        ascending
+    );
   }
 
   public PageResponse<PostResponse> getUserPosts(Long userId, Pageable pageable) {
-    final Page<Post> posts = postRepository.findByUserId(userId, pageable);
-    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
-
-    return new PageResponse<>(content,
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
+    log.debug("Getting posts for user ID: {} from cache", userId);
+    
+    String sortField = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().getProperty() 
+        : "createdAt";
+    boolean ascending = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().isAscending() 
+        : false;
+    
+    return postCache.search(
+        post -> post.author().id().equals(userId),
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        sortField,
+        ascending
+    );
   }
 
   public PageResponse<PostResponse> getPostsByCategory(Long categoryId, Pageable pageable) {
-    final Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
-    var content = posts.getContent().stream().map(DtoMapper::toPostResponse).toList();
-
-    return new PageResponse<>(content,
-        pageable.getPageNumber() + 1,
-        posts.getNumber(),
-        posts.getTotalElements(),
-        posts.getTotalPages(),
-        posts.isFirst(),
-        posts.isLast());
+    log.debug("Getting posts for category ID: {} from cache", categoryId);
+    
+    String sortField = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().getProperty() 
+        : "createdAt";
+    boolean ascending = pageable.getSort().isSorted() 
+        ? pageable.getSort().iterator().next().isAscending() 
+        : false;
+    
+    return postCache.search(
+        post -> post.category() != null && post.category().id().equals(categoryId),
+        pageable.getPageNumber(),
+        pageable.getPageSize(),
+        sortField,
+        ascending
+    );
   }
 
 }

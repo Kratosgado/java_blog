@@ -5,17 +5,23 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.models.Category;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CategoryService {
   private final CategoryRepository categoryRepository;
+  private final CategoryCache categoryCache;
 
-  public CategoryService(CategoryRepository categoryRepository) {
+  public CategoryService(CategoryRepository categoryRepository, CategoryCache categoryCache) {
     this.categoryRepository = categoryRepository;
+    this.categoryCache = categoryCache;
   }
 
   @Transactional
@@ -32,7 +38,13 @@ public class CategoryService {
         .description(request.description())
         .build();
 
-    return categoryRepository.save(category);
+    Category saved = categoryRepository.save(category);
+    
+    // Add to cache
+    categoryCache.put(saved.getId(), saved);
+    log.debug("Created category with ID: {} and added to cache", saved.getId());
+    
+    return saved;
   }
 
   @Transactional
@@ -50,26 +62,58 @@ public class CategoryService {
     category.setSlug(slug);
     category.setDescription(request.description());
 
-    return categoryRepository.save(category);
+    Category updated = categoryRepository.save(category);
+    
+    // Update cache
+    categoryCache.put(updated.getId(), updated);
+    log.debug("Updated category with ID: {} in cache", updated.getId());
+    
+    return updated;
   }
 
   @Transactional
   public void deleteCategory(Long categoryId) {
     categoryRepository.deleteById(categoryId);
+    
+    // Evict from cache
+    categoryCache.evict(categoryId);
+    log.debug("Deleted category with ID: {} and evicted from cache", categoryId);
   }
 
   public Category getCategoryById(Long categoryId) {
-    return categoryRepository.findById(categoryId)
-        .orElseThrow(() -> BlogException.notFound("Category not found"));
+    // Try to get from cache first
+    return categoryCache.get(categoryId).orElseGet(() -> {
+      log.debug("Cache miss for category ID: {}, fetching from database", categoryId);
+      Category category = categoryRepository.findById(categoryId)
+          .orElseThrow(() -> BlogException.notFound("Category not found"));
+      
+      // Add to cache
+      categoryCache.put(categoryId, category);
+      return category;
+    });
   }
 
   public Category getCategoryBySlug(String slug) {
-    return categoryRepository.findBySlug(slug)
-        .orElseThrow(() -> BlogException.notFound("Category not found"));
+    log.debug("Searching for category by slug: {} in cache", slug);
+    
+    // Search cache for category with matching slug
+    return categoryCache.getAll().stream()
+        .filter(cat -> cat.getSlug().equals(slug))
+        .findFirst()
+        .orElseGet(() -> {
+          log.debug("Cache miss for category slug: {}, fetching from database", slug);
+          Category category = categoryRepository.findBySlug(slug)
+              .orElseThrow(() -> BlogException.notFound("Category not found"));
+          
+          // Add to cache
+          categoryCache.put(category.getId(), category);
+          return category;
+        });
   }
 
   public List<Category> getAllCategories() {
-    return categoryRepository.findAll();
+    log.debug("Getting all categories from cache");
+    return categoryCache.getAll();
   }
 
   private String generateSlug(String name) {
