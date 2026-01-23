@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -82,9 +84,8 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return reviewService.getPostReviews(postId, page, size);
+      @ParameterObject Pageable pageable) {
+    return reviewService.getPostReviews(postId, pageable);
 
   }
 
@@ -93,9 +94,8 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<Review> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return reviewService.getUserReviews(userId, page, size);
+      @ParameterObject Pageable pageable) {
+    return reviewService.getUserReviews(userId, pageable);
   }
 
   @GetMapping("/post/{postId}/stats")
