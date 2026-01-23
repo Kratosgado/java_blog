@@ -2,12 +2,16 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
-import com.kratosgado.blog.backend.dao.CategoryDAO;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
 
 import lombok.extern.slf4j.Slf4j;
@@ -15,18 +19,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class CategoryService {
-  private final CategoryDAO categoryDAO;
+  private final CategoryRepository categoryRepository;
   private final CategoryCache categoryCache;
 
-  public CategoryService(CategoryDAO categoryDAO, CategoryCache categoryCache) {
-    this.categoryDAO = categoryDAO;
+  public CategoryService(CategoryRepository categoryRepository, CategoryCache categoryCache) {
+    this.categoryRepository = categoryRepository;
     this.categoryCache = categoryCache;
   }
 
   public Category createCategory(CreateCategoryRequest request) {
     String slug = generateSlug(request.name());
 
-    if (categoryDAO.getCategoryBySlug(slug).isPresent()) {
+    if (categoryRepository.findBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
     }
 
@@ -36,17 +40,16 @@ public class CategoryService {
         .description(request.description())
         .build();
 
-    return categoryDAO.createCategory(category)
-        .orElseThrow(() -> BlogException.internal("Failed to create category"));
+    return categoryRepository.save(category);
   }
 
   public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
-    Category category = categoryDAO.getCategoryById(categoryId.intValue())
+    Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
 
     String slug = generateSlug(request.name());
 
-    if (!category.getSlug().equals(slug) && categoryDAO.getCategoryBySlug(slug).isPresent()) {
+    if (!category.getSlug().equals(slug) && categoryRepository.findBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
     }
 
@@ -54,14 +57,11 @@ public class CategoryService {
     category.setSlug(slug);
     category.setDescription(request.description());
 
-    return categoryDAO.updateCategory(category)
-        .orElseThrow(() -> BlogException.internal("Failed to update category"));
+    return categoryRepository.save(category);
   }
 
   public void deleteCategory(Long categoryId) {
-    if (!categoryDAO.deleteCategory(categoryId.intValue())) {
-      throw BlogException.internal("Failed to delete category");
-    }
+    categoryRepository.deleteById(categoryId);
   }
 
   public Category getCategoryById(Long categoryId) {
@@ -69,7 +69,7 @@ public class CategoryService {
     return categoryCache.get(categoryId).orElseGet(() -> {
       log.debug("Cache miss for category ID: {}, fetching from database", categoryId);
       
-      Category category = categoryDAO.getCategoryById(categoryId.intValue())
+      Category category = categoryRepository.findById(categoryId)
           .orElseThrow(() -> BlogException.notFound("Category not found"));
       
       // Cache the result
@@ -80,12 +80,17 @@ public class CategoryService {
   }
 
   public Category getCategoryBySlug(String slug) {
-    return categoryDAO.getCategoryBySlug(slug)
+    return categoryRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
+  public PageResponse<Category> getAllCategories(Pageable pageable) {
+    Page<Category> categoryPage = categoryRepository.findAll(pageable);
+    return DtoMapper.toPageResponse(categoryPage, pageable);
+  }
+
   public List<Category> getAllCategories() {
-    return categoryDAO.getAllCategories();
+    return categoryRepository.findAll();
   }
 
   private String generateSlug(String name) {
