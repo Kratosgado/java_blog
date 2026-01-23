@@ -1,59 +1,54 @@
 package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.kratosgado.blog.enums.CommentStatus;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Entity
-@Table(name = "comments")
+@Document(collection = "comments")
 public class Comment {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-  
-  @Column(name = "post_id", nullable = false)
+  private String id;
+
+  @Field("post_id")
   private Long postId;
-  
-  @Column(name = "user_id", nullable = false)
+
+  @Field("user_id")
   private Long userId;
-  
-  @Column(columnDefinition = "TEXT", nullable = false)
-  private String content;
-  
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private CommentStatus status;
-  
-  @Column(name = "created_at")
-  private LocalDateTime createdAt;
-  
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
-  
-  @Transient
+
+  @Field("author_name")
   private String authorName;
-  
-  @Transient
+
+  @Field("author_avatar_url")
   private String authorAvatarUrl;
+
+  private String content;
+
+  private CommentStatus status;
+
+  @Field("created_at")
+  private LocalDateTime createdAt;
+
+  @Field("updated_at")
+  private LocalDateTime updatedAt;
 
   public Comment(Long postId, Long userId, String content) {
     this.postId = postId;
     this.userId = userId;
     this.content = content;
-    this.status = CommentStatus.PENDING;
+    this.status = CommentStatus.pending;
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = LocalDateTime.now();
   }
-  
-  @PrePersist
-  protected void onCreate() {
-    createdAt = LocalDateTime.now();
-    updatedAt = LocalDateTime.now();
-  }
-  
-  @PreUpdate
-  protected void onUpdate() {
-    updatedAt = LocalDateTime.now();
+
+  public void setUpdatedAt() {
+    this.updatedAt = LocalDateTime.now();
   }
 }

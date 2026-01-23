@@ -1,26 +1,23 @@
 package com.kratosgado.blog.dtos.response;
 
-import com.kratosgado.blog.models.PostStatus;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.kratosgado.blog.enums.PostStatus;
+
 public record PostResponse(
     Long id,
-    String title,
+    AuthorSummary author,
+    CategorySummary category,
     String slug,
-    String excerpt,
+    String title,
     String content,
-    String coverImage,
+    String excerpt,
     PostStatus status,
-    Long authorId,
-    String authorName,
-    String authorAvatarUrl,
-    Long categoryId,
-    String categoryName,
-    List<String> tags,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
-    int views,
-    int likesCount) {
+    Integer views,
+    Integer likesCount,
+    String coverImage,
+    List<TagSummary> tags) {
 }

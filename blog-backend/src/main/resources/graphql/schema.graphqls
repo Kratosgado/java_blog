@@ -5,6 +5,7 @@ type Query {
 
   # Post queries
   post(id: ID!): Post
+  postBySlug(slug: String!): Post
   posts(
     page: Int = 0
     size: Int = 10
@@ -21,15 +22,17 @@ type Query {
 
   # Category queries
   category(id: ID!): Category
-  categories: [Category!]!
+  categories(page: Int = 0, size: Int = 10): CategoryPage!
 
   # Tag queries
   tag(id: ID!): Tag
-  tags: [Tag!]!
+  tags(page: Int = 0, size: Int = 10): TagPage!
+  searchTags(keyword: String!, page: Int = 0, size: Int = 10): TagPage!
 
   # Review queries
   review(id: ID!): Review
-  reviewsByPost(postId: ID!): [Review!]!
+  reviewsByPost(postId: ID!, page: Int = 0, size: Int = 10): ReviewPage!
+  reviewsByUser(userId: ID!, page: Int = 0, size: Int = 10): ReviewPage!
 }
 
 type Mutation {
@@ -97,7 +100,8 @@ type Comment {
   status: CommentStatus!
   createdAt: String!
   updatedAt: String
-  author: User!
+  authorName: String!
+  authorAvatarUrl: String!
   post: Post!
   parent: Comment
   replies: [Comment!]
@@ -129,43 +133,82 @@ type Review {
   content: String!
   createdAt: String!
   updatedAt: String
-  author: User!
+  authorName: String!
+  authorAvatarUrl: String!
   post: Post!
 }
 
 # Pagination types
 type UserPage {
   content: [User!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 type PostPage {
   content: [Post!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 type CommentPage {
   content: [Comment!]!
-  totalPages: Int!
+  page: Int!
+  size: Int!
   totalElements: Int!
-  currentPage: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type CategoryPage {
+  content: [Category!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type TagPage {
+  content: [Tag!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type ReviewPage {
+  content: [Review!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
 }
 
 # Enums
 enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  draft
+  published
 }
 
 enum CommentStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  pending
+  approved
+  rejected
 }
 
 # Input types

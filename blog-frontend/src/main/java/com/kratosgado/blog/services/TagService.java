@@ -2,12 +2,16 @@ package com.kratosgado.blog.services;
 
 import java.io.IOException;
 import java.util.List;
+
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kratosgado.blog.config.ApiConfig;
+import com.kratosgado.blog.dtos.request.CreateTagRequest;
+import com.kratosgado.blog.dtos.request.UpdateTagRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
@@ -60,10 +64,10 @@ public class TagService {
     }
   }
 
-  public List<Tag> getAllTags() {
+  public PageResponse<Tag> getAllTags(int page, int size) {
     ensureAuthToken();
     try {
-      return tagApiClient.getAllTags();
+      return tagApiClient.getAllTags(page, size);
     } catch (IOException e) {
       logger.error("Failed to get tags due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -73,24 +77,99 @@ public class TagService {
     }
   }
 
-  // Stub methods for backward compatibility - to be implemented when needed
-  public List<com.kratosgado.blog.models.Tag> getTagsByPostId(Long postId) {
-    logger.warn("getTagsByPostId() not yet implemented via API");
-    throw new UnsupportedOperationException("getTagsByPostId not yet implemented via API");
+  public PageResponse<Tag> searchTags(String keyword, int page, int size) {
+    ensureAuthToken();
+    try {
+      return tagApiClient.searchTags(keyword, page, size);
+    } catch (IOException e) {
+      logger.error("Failed to search tags due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to search tags: {}", e.getMessage());
+      throw new RuntimeException("Failed to search tags: " + e.getMessage(), e);
+    }
   }
 
-  public boolean addTagToPost(Long postId, Long tagId) {
+  public Tag createTag(CreateTagRequest request) {
+    ensureAuthToken();
+    try {
+      return tagApiClient.createTag(request);
+    } catch (IOException e) {
+      logger.error("Failed to create tag due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to create tag: {}", e.getMessage());
+      throw new RuntimeException("Failed to create tag: " + e.getMessage(), e);
+    }
+  }
+
+  public Tag updateTag(Long id, UpdateTagRequest request) {
+    ensureAuthToken();
+    try {
+      return tagApiClient.updateTag(id, request);
+    } catch (IOException e) {
+      logger.error("Failed to update tag due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to update tag: {}", e.getMessage());
+      throw new RuntimeException("Failed to update tag: " + e.getMessage(), e);
+    }
+  }
+
+  public void deleteTag(Long id) {
+    ensureAuthToken();
+    try {
+      tagApiClient.deleteTag(id);
+    } catch (IOException e) {
+      logger.error("Failed to delete tag due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to delete tag: {}", e.getMessage());
+      throw new RuntimeException("Failed to delete tag: " + e.getMessage(), e);
+    }
+  }
+
+  // Convenience methods for controllers that expect List<Tag> instead of PageResponse
+
+  /**
+   * Get all tags as a list (for controllers)
+   */
+  public List<Tag> getAllTags() {
+    ensureAuthToken();
+    try {
+      PageResponse<Tag> response = tagApiClient.getAllTags(0, 1000);
+      return response.content();
+    } catch (IOException e) {
+      logger.error("Failed to get all tags due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get all tags: {}", e.getMessage());
+      throw new RuntimeException("Failed to get all tags: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Get tags by post ID (stub - not yet implemented in backend)
+   */
+  public List<Tag> getTagsByPostId(Long postId) {
+    logger.warn("getTagsByPostId() not yet implemented via API");
+    // Return empty list for now - this would need a new backend endpoint
+    return List.of();
+  }
+
+  /**
+   * Add tag to post (stub - not yet implemented in backend)
+   */
+  public void addTagToPost(Long postId, Long tagId) {
     logger.warn("addTagToPost() not yet implemented via API");
     throw new UnsupportedOperationException("addTagToPost not yet implemented via API");
   }
 
-  public boolean removeTagFromPost(Long postId, Long tagId) {
+  /**
+   * Remove tag from post (stub - not yet implemented in backend)
+   */
+  public void removeTagFromPost(Long postId, Long tagId) {
     logger.warn("removeTagFromPost() not yet implemented via API");
     throw new UnsupportedOperationException("removeTagFromPost not yet implemented via API");
-  }
-
-  public void deleteTag(Long id) {
-    logger.warn("deleteTag() not yet implemented via API");
-    throw new UnsupportedOperationException("deleteTag not yet implemented via API");
   }
 }

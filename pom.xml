@@ -3,21 +3,21 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <groupId>com.kratosgado.blog</groupId>
   <artifactId>blog-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
+
   <name>Blog Application Parent</name>
   <description>Multi-module blog application with JavaFX frontend and Spring Boot backend</description>
-  
+
   <modules>
     <module>blog-common</module>
     <module>blog-backend</module>
     <module>blog-frontend</module>
   </modules>
-  
+
   <properties>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
@@ -30,7 +30,7 @@
     <bcrypt.version>0.10.2</bcrypt.version>
     <slf4j.version>2.0.7</slf4j.version>
   </properties>
-  
+
   <dependencyManagement>
     <dependencies>
       <!-- Spring Boot BOM -->
@@ -41,14 +41,14 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      
+
       <!-- Internal modules -->
       <dependency>
         <groupId>com.kratosgado.blog</groupId>
         <artifactId>blog-common</artifactId>
         <version>${project.version}</version>
       </dependency>
-      
+
       <!-- Common dependencies -->
       <dependency>
         <groupId>org.projectlombok</groupId>
@@ -56,25 +56,25 @@
         <version>${lombok.version}</version>
         <scope>provided</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>${postgresql.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>${gson.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>at.favre.lib</groupId>
         <artifactId>bcrypt</artifactId>
         <version>${bcrypt.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
@@ -82,7 +82,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  
+
   <build>
     <pluginManagement>
       <plugins>
@@ -101,7 +101,7 @@
             <release>21</release>
           </configuration>
         </plugin>
-        
+
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>

@@ -1,9 +1,12 @@
 package com.kratosgado.blog.backend.config;
 
+import com.kratosgado.blog.backend.security.JwtAccessDeniedHandler;
+import com.kratosgado.blog.backend.security.JwtAuthenticationEntryPoint;
 import com.kratosgado.blog.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,6 +27,8 @@ import java.util.List;
 public class SecurityConfig {
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+  private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -38,14 +43,18 @@ public class SecurityConfig {
             .requestMatchers("/graphiql/**", "/graphql").permitAll()
 
             // Public read access to content
-            .requestMatchers("GET", "/posts/**", "/categories/**", "/comments/**").permitAll()
-            .requestMatchers("GET", "/users/{id}").permitAll()
+            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**", "/tags/**", "/users/**")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET, "/users/{id}").permitAll()
 
             // Admin-only endpoints
             .requestMatchers("/admin/**").hasRole("ADMIN")
 
             // All other endpoints require authentication
             .anyRequest().authenticated())
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            .accessDeniedHandler(jwtAccessDeniedHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -54,7 +63,8 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
+    configuration.setAllowedOrigins(
+        List.of("http://localhost:8080", "http://localhost:3000", "https://studio.apollographql.com"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

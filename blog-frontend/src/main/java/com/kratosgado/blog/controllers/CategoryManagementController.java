@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.utils.UiUtils;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 import com.kratosgado.blog.utils.widgets.CustomButton;
 import com.kratosgado.blog.utils.widgets.CustomButton.ButtonType;
 

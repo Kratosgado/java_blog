@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- Property definitions -->
+  <property name="LOG_PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{36}) - %msg%n" />
+  <property name="LOG_FILE_PATTERN"
+    value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n" />
+
+  <!-- Console Appender -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>${LOG_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+  </appender>
+
+  <!-- File Appender for all logs -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/blog-backend.log</file>
+    <encoder>
+      <pattern>${LOG_FILE_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/blog-backend.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>30</maxHistory>
+      <totalSizeCap>1GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <!-- File Appender for error logs only -->
+  <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/blog-backend-error.log</file>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+    <encoder>
+      <pattern>${LOG_FILE_PATTERN}</pattern>
+      <charset>UTF-8</charset>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>logs/blog-backend-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>90</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Development profile configuration -->
+  <springProfile name="dev">
+    <!-- Application loggers -->
+    <logger name="com.kratosgado.blog" level="INFO" additivity="false">
+      <appender-ref ref="CONSOLE" />
+      <appender-ref ref="FILE" />
+    </logger>
+
+    <!-- Spring Framework loggers -->
+    <logger name="org.springframework.web" level="INFO" />
+    <logger name="org.springframework.security" level="INFO" />
+    <logger name="org.springframework.data" level="INFO" />
+
+    <!-- Hibernate loggers -->
+    <logger name="org.hibernate.SQL" level="DEBUG" />
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="INFO" />
+
+    <!-- MongoDB loggers -->
+    <logger name="org.mongodb.driver" level="INFO" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+      <appender-ref ref="CONSOLE" />
+      <appender-ref ref="FILE" />
+      <appender-ref ref="ERROR_FILE" />
+    </root>
+  </springProfile>
+
+  <!-- Production profile configuration -->
+  <springProfile name="prod">
+    <!-- Application loggers -->
+    <logger name="com.kratosgado.blog" level="INFO" additivity="false">
+      <appender-ref ref="FILE" />
+    </logger>
+
+    <!-- Spring Framework loggers -->
+    <logger name="org.springframework" level="WARN" />
+
+    <!-- Hibernate loggers -->
+    <logger name="org.hibernate" level="WARN" />
+
+    <!-- MongoDB loggers -->
+    <logger name="org.mongodb.driver" level="WARN" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+      <appender-ref ref="FILE" />
+      <appender-ref ref="ERROR_FILE" />
+    </root>
+  </springProfile>
+
+  <!-- Test profile configuration -->
+  <springProfile name="test">
+    <!-- Application loggers -->
+    <logger name="com.kratosgado.blog" level="DEBUG" additivity="false">
+      <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Spring Framework loggers -->
+    <logger name="org.springframework" level="WARN" />
+
+    <!-- Hibernate loggers -->
+    <logger name="org.hibernate" level="WARN" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+      <appender-ref ref="CONSOLE" />
+    </root>
+  </springProfile>
+</configuration>

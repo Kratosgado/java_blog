@@ -177,9 +177,9 @@ public class ProfileController {
       String website = websiteField.getText();
       String location = locationField.getText();
 
-      UpdateUserProfileRequest dto = new UpdateUserProfileRequest(user.getId(), bio, website, location);
+      UpdateUserProfileRequest dto = new UpdateUserProfileRequest(null, bio, website, location);
       try {
-        User updatedUser = userService.updateUserProfile(dto);
+        User updatedUser = userService.updateUserProfile(user.getId(), dto);
         // Update user object
         user.setBio(bio);
         user.setWebsite(website);

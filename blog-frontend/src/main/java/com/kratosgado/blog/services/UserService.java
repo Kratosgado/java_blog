@@ -7,6 +7,8 @@ import com.kratosgado.blog.config.ApiConfig;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
@@ -62,10 +64,36 @@ public class UserService {
     }
   }
 
-  public User updateUserProfile(UpdateUserProfileRequest request) {
+  public User getUserByUsername(String username) {
     ensureAuthToken();
     try {
-      return userApiClient.updateUserProfile(request.userId(), request);
+      return userApiClient.getUserByUsername(username);
+    } catch (IOException e) {
+      logger.error("Failed to get user by username due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get user by username: {}", e.getMessage());
+      throw new RuntimeException("Failed to get user by username: " + e.getMessage(), e);
+    }
+  }
+
+  public PageResponse<UserResponse> getAllUsers(int page, int size) {
+    ensureAuthToken();
+    try {
+      return userApiClient.getAllUsers(page, size);
+    } catch (IOException e) {
+      logger.error("Failed to get users due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get users: {}", e.getMessage());
+      throw new RuntimeException("Failed to get users: " + e.getMessage(), e);
+    }
+  }
+
+  public User updateUserProfile(Long userId, UpdateUserProfileRequest request) {
+    ensureAuthToken();
+    try {
+      return userApiClient.updateUserProfile(userId, request);
     } catch (IOException e) {
       logger.error("Failed to update user profile due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);

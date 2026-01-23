@@ -18,9 +18,30 @@ public abstract class BaseApiClient {
   protected final Gson gson;
   protected String authToken;
 
+  // Singleton shared HttpClient instance
+  private static HttpClient sharedHttpClient;
+
+  /**
+   * Get or create shared HttpClient instance
+   */
+  private static synchronized HttpClient getSharedHttpClient(String baseUrl) {
+    if (sharedHttpClient == null) {
+      sharedHttpClient = new HttpClient(baseUrl);
+    }
+    return sharedHttpClient;
+  }
+
   protected BaseApiClient(String baseUrl) {
-    this.httpClient = new HttpClient(baseUrl);
-    this.gson = new Gson();
+    this(baseUrl, true);
+  }
+
+  protected BaseApiClient(String baseUrl, boolean useSharedClient) {
+    if (useSharedClient) {
+      this.httpClient = getSharedHttpClient(baseUrl);
+    } else {
+      this.httpClient = new HttpClient(baseUrl);
+    }
+    this.gson = GsonFactory.getGson();
   }
 
   /**
@@ -76,7 +97,27 @@ public abstract class BaseApiClient {
 
     ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
 
-    if (!"success".equals(apiResponse.status())) {
+    if (!"OK".equals(apiResponse.status())) {
+      throw new ApiException(apiResponse.message(), response.getStatusCode());
+    }
+
+    return apiResponse.data();
+  }
+
+  /**
+   * Handle response with parameterized type and throw exception if not successful
+   */
+  protected <T> T handleResponse(HttpClient.HttpResponse<String> response, Type dataType, String operation)
+      throws IOException {
+    if (!response.isSuccessful()) {
+      String errorMessage = extractErrorMessage(response.getRawBody());
+      logger.error("{} failed: {}", operation, errorMessage);
+      throw new ApiException(operation + " failed: " + errorMessage, response.getStatusCode());
+    }
+
+    ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
+
+    if (!"OK".equals(apiResponse.status())) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 

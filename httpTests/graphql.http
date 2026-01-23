@@ -56,7 +56,7 @@ Accept: application/json
 {
   "query": "query SearchPosts($keyword: String!, $page: Int, $size: Int) { searchPosts(keyword: $keyword, page: $page, size: $size) { content { id title excerpt } totalElements } }",
   "variables": {
-    "keyword": "Spring",
+    "keyword": "getting",
     "page": 0,
     "size": 10
   }
@@ -76,7 +76,7 @@ Accept: application/json
 {
   "query": "query GetPostsByCategory($categoryId: ID!, $page: Int, $size: Int) { postsByCategory(categoryId: $categoryId, page: $page, size: $size) { content { id title slug category { name } } totalElements } }",
   "variables": {
-    "categoryId": "1",
+    "categoryId": "4",
     "page": 0,
     "size": 10
   }

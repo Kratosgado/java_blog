@@ -1,5 +1,6 @@
 package com.kratosgado.blog.utils.http;
 
+import com.google.gson.reflect.TypeToken;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -7,6 +8,7 @@ import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Post;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -27,7 +29,8 @@ public class PostApiClient extends BaseApiClient {
     String endpoint = String.format("/posts?page=%d&size=%d", page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
     
-    return handleResponse(response, PageResponse.class, "Get posts");
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, PostResponse.class).getType();
+    return handleResponse(response, pageResponseType, "Get posts");
   }
 
   /**
@@ -50,19 +53,21 @@ public class PostApiClient extends BaseApiClient {
     String endpoint = String.format("/posts/category/%d?page=%d&size=%d", categoryId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
     
-    return handleResponse(response, PageResponse.class, "Get posts by category");
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, PostResponse.class).getType();
+    return handleResponse(response, pageResponseType, "Get posts by category");
   }
 
   /**
-   * Get posts by author
+   * Get posts by user
    */
-  public PageResponse<PostResponse> getPostsByAuthor(Long authorId, int page, int size) throws IOException {
-    logger.info("Fetching posts by author: {}", authorId);
+  public PageResponse<PostResponse> getPostsByUser(Long userId, int page, int size) throws IOException {
+    logger.info("Fetching posts by user: {}", userId);
     
-    String endpoint = String.format("/posts/author/%d?page=%d&size=%d", authorId, page, size);
+    String endpoint = String.format("/posts/user/%d?page=%d&size=%d", userId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
     
-    return handleResponse(response, PageResponse.class, "Get posts by author");
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, PostResponse.class).getType();
+    return handleResponse(response, pageResponseType, "Get posts by user");
   }
 
   /**
@@ -74,7 +79,8 @@ public class PostApiClient extends BaseApiClient {
     String endpoint = String.format("/posts/search?keyword=%s&page=%d&size=%d", keyword, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
     
-    return handleResponse(response, PageResponse.class, "Search posts");
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, PostResponse.class).getType();
+    return handleResponse(response, pageResponseType, "Search posts");
   }
 
   /**

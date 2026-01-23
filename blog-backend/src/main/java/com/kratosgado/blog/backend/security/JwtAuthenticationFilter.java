@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
   private final JwtUtil jwtUtil;
   private final UserRepository userRepository;
 
@@ -31,7 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request,
       HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    logger.info("Calling JwtAuthenticationFilter");
 
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
@@ -42,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
       return;
     }
-    logger.info("Authorization header found");
 
     // Extract JWT token
     jwt = authHeader.substring(7);
@@ -53,15 +50,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       // If username is not null and no authentication is set in the context
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        // Load user from database
-        Optional<User> userOptional = userRepository.findByUsername(username);
-
+        Optional<User> userOptional = userRepository.findByEmail(username);
         if (userOptional.isPresent()) {
           User user = userOptional.get();
 
           // Validate token
           if (jwtUtil.validateToken(jwt, username)) {
-            // Create authentication token
+
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 user,
                 null,
@@ -73,9 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           }
         }
       }
+
     } catch (Exception e) {
-      // Log the exception but continue with the filter chain
-      logger.error("JWT authentication failed", e);
     }
 
     filterChain.doFilter(request, response);

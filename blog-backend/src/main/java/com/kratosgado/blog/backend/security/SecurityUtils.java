@@ -1,11 +1,15 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.models.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtils {
+
+  private static final Logger log = LoggerFactory.getLogger(SecurityUtils.class);
 
   private SecurityUtils() {
     // Utility class
@@ -14,21 +18,33 @@ public class SecurityUtils {
   public static User getCurrentUser() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     
+    log.debug("Getting current user. Authentication: {}", authentication);
+    
     if (authentication == null || !authentication.isAuthenticated()) {
-      throw new UnauthorizedException("User not authenticated");
+      log.warn("User not authenticated. Authentication is null: {}, Is authenticated: {}", 
+          authentication == null, 
+          authentication != null ? authentication.isAuthenticated() : "N/A");
+      throw BlogException.unauthorized("User not authenticated");
     }
     
     Object principal = authentication.getPrincipal();
+    log.debug("Principal type: {}, Value: {}", 
+        principal != null ? principal.getClass().getName() : "null", 
+        principal);
     
     if (principal instanceof User) {
-      return (User) principal;
+      User user = (User) principal;
+      log.debug("Current user retrieved: {} (ID: {})", user.getUsername(), user.getId());
+      return user;
     }
     
-    throw new UnauthorizedException("Invalid authentication principal");
+    log.warn("Invalid authentication principal. Expected User but got: {}", 
+        principal != null ? principal.getClass().getName() : "null");
+    throw BlogException.unauthorized("Invalid authentication principal");
   }
 
   public static Long getCurrentUserId() {
-    return getCurrentUser().getId();
+    return getCurrentUser().getId().longValue();
   }
 
   public static String getCurrentUsername() {
@@ -37,7 +53,9 @@ public class SecurityUtils {
 
   public static boolean isAuthenticated() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return authentication != null && authentication.isAuthenticated() 
+    boolean authenticated = authentication != null && authentication.isAuthenticated() 
         && !(authentication.getPrincipal() instanceof String);
+    log.debug("Is authenticated check: {}", authenticated);
+    return authenticated;
   }
 }

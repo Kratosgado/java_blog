@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;

@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
@@ -291,7 +293,7 @@ public class HomeController {
       // TODO: Need to look up category ID from category name
       logger.warn("Category filtering not yet fully implemented - needs category ID lookup");
       posts = getAllPostsFallback();
-      
+
       // Apply search term filter if present
       if (!searchTerm.isEmpty()) {
         posts = posts.stream()
@@ -352,8 +354,8 @@ public class HomeController {
    */
   private List<Post> getAllPostsFallback() {
     try {
-      com.kratosgado.blog.dtos.response.PageResponse<com.kratosgado.blog.dtos.response.PostResponse> pageResponse = 
-          postService.getAllPosts(0, 100);
+      PageResponse<PostResponse> pageResponse = postService
+          .getAllPosts(0, 10);
       // Convert PostResponse list to Post list
       return pageResponse.content().stream().map(pr -> {
         Post p = new Post();
@@ -361,7 +363,7 @@ public class HomeController {
         p.setTitle(pr.title());
         p.setContent(pr.content());
         p.setExcerpt(pr.excerpt());
-        p.setStatus(pr.status().name().toLowerCase());
+        p.setStatus("published");
         p.setCoverImage(pr.coverImage());
         p.setUserId(pr.authorId());
         p.setCategoryId(pr.categoryId());

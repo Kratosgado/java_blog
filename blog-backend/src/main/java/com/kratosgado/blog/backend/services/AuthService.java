@@ -1,21 +1,16 @@
 package com.kratosgado.blog.backend.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
 
 @Service
 public class AuthService {
-
-  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
@@ -31,8 +26,6 @@ public class AuthService {
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       throw BlogException.unauthorized("Invalid email or password");
     }
-
-    logger.info("User logged in successfully: {}", user.getEmail());
     return user;
   }
 
@@ -45,11 +38,7 @@ public class AuthService {
     user.setEmail(request.email());
     user.setUsername(request.username());
     user.setPassword(passwordEncoder.encode(request.password()));
-    user.setRole("USER");
 
-    user = userRepository.save(user);
-
-    logger.info("User registered successfully: {}", user.getEmail());
-    return user;
+    return userRepository.save(user);
   }
 }

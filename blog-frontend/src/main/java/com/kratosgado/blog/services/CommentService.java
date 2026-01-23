@@ -9,8 +9,9 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.kratosgado.blog.config.ApiConfig;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.CommentStatus;
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
 import com.kratosgado.blog.utils.http.CommentApiClient;
@@ -50,10 +51,10 @@ public class CommentService {
     }
   }
 
-  public List<Comment> getCommentsByPostId(Long postId) {
+  public PageResponse<Comment> getCommentsByPostId(Long postId, int page, int size) {
     ensureAuthToken();
     try {
-      return commentApiClient.getCommentsByPostId(postId);
+      return commentApiClient.getCommentsByPostId(postId, page, size);
     } catch (IOException e) {
       logger.error("Failed to get comments by post due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -63,10 +64,29 @@ public class CommentService {
     }
   }
 
-  public List<Comment> getCommentsByUserId(Long userId) {
+  /**
+   * Get comments by post ID (convenience method for controllers - returns all as
+   * list)
+   */
+  public List<Comment> getCommentsByPostId(Long postId) {
     ensureAuthToken();
     try {
-      return commentApiClient.getCommentsByUserId(userId);
+      // Fetch a large page to get all comments
+      PageResponse<Comment> response = commentApiClient.getCommentsByPostId(postId, 0, 1000);
+      return response.content();
+    } catch (IOException e) {
+      logger.error("Failed to get comments by post due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get comments by post: {}", e.getMessage());
+      throw new RuntimeException("Failed to get comments by post: " + e.getMessage(), e);
+    }
+  }
+
+  public PageResponse<Comment> getCommentsByUserId(Long userId, int page, int size) {
+    ensureAuthToken();
+    try {
+      return commentApiClient.getCommentsByUserId(userId, page, size);
     } catch (IOException e) {
       logger.error("Failed to get comments by user due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -76,32 +96,50 @@ public class CommentService {
     }
   }
 
-  public List<Comment> getCommentsByStatus(CommentStatus status) {
+  /**
+   * Get all comments (for admin management)
+   */
+  public List<Comment> getAllComments() {
     ensureAuthToken();
     try {
-      return commentApiClient.getCommentsByStatus(status);
+      // Get current user to fetch their comments (for now, admin should see all via
+      // backend)
+      User currentUser = AuthContext.getInstance().getCurrentUser();
+      if (currentUser == null) {
+        logger.warn("No current user found");
+        return List.of();
+      }
+
+      // Fetch a large page to get all comments
+      PageResponse<Comment> response = commentApiClient.getCommentsByUserId(currentUser.getId(), 0, 10000);
+      return response.content();
     } catch (IOException e) {
-      logger.error("Failed to get comments by status due to network error", e);
+      logger.error("Failed to get all comments due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
     } catch (ApiException e) {
-      logger.error("Failed to get comments by status: {}", e.getMessage());
-      throw new RuntimeException("Failed to get comments by status: " + e.getMessage(), e);
+      logger.error("Failed to get all comments: {}", e.getMessage());
+      throw new RuntimeException("Failed to get all comments: " + e.getMessage(), e);
     }
   }
 
-  public List<Comment> getPendingComments() {
-    return getCommentsByStatus(CommentStatus.PENDING);
+  /**
+   * Get comment count for a post
+   */
+  public int getCommentCountForPost(Long postId) {
+    ensureAuthToken();
+    try {
+      Long count = commentApiClient.getPostCommentCount(postId);
+      return count != null ? count.intValue() : 0;
+    } catch (IOException e) {
+      logger.error("Failed to get comment count due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get comment count: {}", e.getMessage());
+      throw new RuntimeException("Failed to get comment count: " + e.getMessage(), e);
+    }
   }
 
-  public List<Comment> getApprovedComments() {
-    return getCommentsByStatus(CommentStatus.APPROVED);
-  }
-
-  public List<Comment> getRejectedComments() {
-    return getCommentsByStatus(CommentStatus.REJECTED);
-  }
-
-  public Comment approveComment(Long commentId) {
+  public Comment approveComment(String commentId) {
     ensureAuthToken();
     try {
       return commentApiClient.approveComment(commentId);
@@ -114,7 +152,7 @@ public class CommentService {
     }
   }
 
-  public Comment rejectComment(Long commentId) {
+  public Comment rejectComment(String commentId) {
     ensureAuthToken();
     try {
       return commentApiClient.rejectComment(commentId);
@@ -127,7 +165,7 @@ public class CommentService {
     }
   }
 
-  public void deleteComment(Long commentId) {
+  public void deleteComment(String commentId) {
     ensureAuthToken();
     try {
       commentApiClient.deleteComment(commentId);
@@ -138,23 +176,5 @@ public class CommentService {
       logger.error("Failed to delete comment: {}", e.getMessage());
       throw new RuntimeException("Failed to delete comment: " + e.getMessage(), e);
     }
-  }
-
-  // Stub methods for backward compatibility - to be implemented when API is ready
-  public List<Comment> getAllComments() {
-    logger.warn("getAllComments() not yet implemented via API");
-    throw new UnsupportedOperationException("getAllComments not yet implemented via API");
-  }
-
-  public int getCommentCountForPost(Long postId) {
-    logger.warn("getCommentCountForPost() not yet implemented via API");
-    return getCommentsByPostId(postId).size(); // Temporary workaround
-  }
-
-  public int getApprovedCommentCountForPost(Long postId) {
-    logger.warn("getApprovedCommentCountForPost() not yet implemented via API");
-    return (int) getCommentsByPostId(postId).stream()
-        .filter(c -> c.getStatus() == CommentStatus.APPROVED)
-        .count(); // Temporary workaround
   }
 }

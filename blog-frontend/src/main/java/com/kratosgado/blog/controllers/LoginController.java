@@ -9,7 +9,7 @@ import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.Routes;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -57,10 +57,10 @@ public class LoginController {
       // Call new REST API-based login
       User user = authService.login(email, password);
       String token = authService.getCurrentToken();
-      
+
       // Store authentication in context
       AuthContext.getInstance().setAuthentication(user, token);
-      
+
       ToastNotification.success("Login successful! Welcome back.");
       logger.info("User logged in successfully: {}", email);
       Navigator.getInstance().goTo(Routes.HOME);

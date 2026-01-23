@@ -5,6 +5,7 @@ This project uses a **hybrid database architecture** with PostgreSQL (structured
 ## Quick Start
 
 ### Initial Setup
+
 ```bash
 # Complete setup (creates containers and seeds data)
 ./setup-databases.sh
@@ -13,12 +14,14 @@ This project uses a **hybrid database architecture** with PostgreSQL (structured
 ## Database Credentials
 
 ### PostgreSQL
+
 - **Host**: localhost:5432
 - **Database**: blog_db
-- **User**: blog_user
-- **Password**: blog_password
+- **User**: postgres
+- **Password**: postgres
 
 ### MongoDB
+
 - **Host**: localhost:27017
 - **Database**: blog_nosql
 

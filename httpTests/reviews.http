@@ -1,0 +1,270 @@
+### Reviews API Tests
+
+
+### Base URL
+
+@host = http://localhost:8080/api
+
+
+### 
+
+
+### IMPORTANT: Run auth.http login test first to set the userAuth token
+
+
+### 
+
+
+### Create a New Review
+
+# @name createReview
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "This is a very well-written and informative article. I learned a lot from it and would highly recommend it to others.",
+  "postId": 1,
+  "rating": 5,
+  "title": "Excellent Article!"
+}
+
+
+### 
+
+
+### Create Another Review (4 stars)
+
+# @name createReview4Stars
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "Pretty good article overall. Could use a bit more detail in some sections, but generally helpful.",
+  "postId": 1,
+  "rating": 4,
+  "title": "Good Content"
+}
+
+
+### 
+
+
+### Get a Review by ID
+
+# @name getReview
+
+GET {{host}}/reviews/{{reviewId}} HTTP/1.1
+
+
+### 
+
+
+### Update a Review
+
+# @name updateReview
+
+PUT {{host}}/reviews/{{reviewId}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "After re-reading, I appreciate this even more. The examples are very clear and practical. Definitely a 5-star article!",
+  "rating": 5,
+  "title": "Updated: Excellent Article!"
+}
+
+
+### 
+
+
+### Delete a Review
+
+# @name deleteReview
+
+DELETE {{host}}/reviews/{{reviewId}} HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
+
+### Get Reviews for a Post (with pagination)
+
+# @name getPostReviews
+
+GET {{host}}/reviews/post/1?page=0&size=10&sort=createdAt,desc HTTP/1.1
+
+
+### 
+
+
+### Get Reviews for a Post - Page 2
+
+# @name getPostReviewsPage2
+
+GET {{host}}/reviews/post/1?page=1&size=5 HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
+
+### Get Reviews by User
+
+# @name getUserReviews
+
+GET {{host}}/reviews/user/1?page=0&size=10 HTTP/1.1
+
+
+### 
+
+
+### Get Review Statistics for a Post
+
+# @name getPostReviewStats
+
+GET {{host}}/reviews/post/1/stats HTTP/1.1
+
+
+### 
+
+
+### Test Create Review with Invalid Rating (validation error)
+
+# @name createInvalidReview
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "Rating should be between 1-5",
+  "postId": 1,
+  "rating": 6,
+  "title": "Invalid"
+}
+
+
+### 
+
+
+### Test Create Review with Missing Required Fields
+
+# @name createReviewMissingFields
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "postId": 1,
+  "rating": 5
+}
+
+
+### 
+
+
+### Test Create Review for Non-existent Post
+
+# @name createReviewInvalidPost
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "Post does not exist",
+  "postId": 99999,
+  "rating": 5,
+  "title": "This should fail"
+}
+
+
+### 
+
+
+### Test Create Duplicate Review (should fail if already reviewed)
+
+# @name createDuplicateReview
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "User already reviewed this post",
+  "postId": 1,
+  "rating": 5,
+  "title": "Duplicate"
+}
+
+
+### 
+
+
+### Test Create Review without Authentication (should return 401)
+
+# @name createReviewUnauthorized
+
+POST {{host}}/reviews HTTP/1.1
+Content-Type: application/json
+
+{
+  "content": "This should fail - no auth token",
+  "postId": 1,
+  "rating": 5,
+  "title": "Unauthorized"
+}
+
+
+### 
+
+
+### Test Update Review without Authentication (should return 401)
+
+# @name updateReviewUnauthorized
+
+PUT {{host}}/reviews/{{reviewId}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "content": "This should fail",
+  "rating": 4,
+  "title": "Unauthorized Update"
+}
+
+
+### 
+
+
+### Test Delete Review without Authentication (should return 401)
+
+# @name deleteReviewUnauthorized
+
+DELETE {{host}}/reviews/{{reviewId}} HTTP/1.1
+
+
+### 
+
+
+### Test Update Another User's Review (should return 403 or error)
+
+# @name updateOtherUserReview
+
+PUT {{host}}/reviews/some_other_user_review_id HTTP/1.1
+Content-Type: application/json
+Authorization: {{userAuth}}
+
+{
+  "content": "This should fail",
+  "rating": 1,
+  "title": "Trying to modify someone else's review"
+}
+
+
+### 

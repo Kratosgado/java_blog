@@ -6,3 +6,5 @@ target
 .env
 .idea
 uploads
+logs
+AGENTS.md

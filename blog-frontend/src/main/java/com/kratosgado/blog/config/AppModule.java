@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.kratosgado.blog.services.AuthService;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.services.CommentService;
+import com.kratosgado.blog.services.DashboardService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.ReviewService;
 import com.kratosgado.blog.services.TagService;
@@ -29,5 +30,6 @@ public class AppModule extends AbstractModule {
     bind(TagService.class).in(Singleton.class);
     bind(UploadService.class).in(Singleton.class);
     bind(ReviewService.class).in(Singleton.class);
+    bind(DashboardService.class).in(Singleton.class);
   }
 }

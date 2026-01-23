@@ -17,7 +17,7 @@ start)
 run)
   if [ "$2" == "all" ]; then
     echo "Running all applications..."
-    cd blog-backend && mvn clean spring-boot:run
+    cd blog-backend && mvn clean spring-boot:run &
     cd blog-frontend && mvn clean javafx:run
   elif [ "$2" == "backend" ] || [ "$2" == "api" ]; then
     echo "Running Spring Boot backend..."
@@ -43,6 +43,10 @@ stop | exit)
 setup)
   echo "Running complete database setup..."
   ./setup-databases.sh
+  ;;
+test)
+  echo "Running all tests..."
+  cd blog-backend && mvn clean test
   ;;
 reset)
   echo "⚠️  This will DELETE all data and recreate databases!"

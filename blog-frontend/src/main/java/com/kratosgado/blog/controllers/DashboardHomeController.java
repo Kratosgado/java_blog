@@ -10,7 +10,7 @@ import com.kratosgado.blog.services.CommentService;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.services.TagService;
 import com.kratosgado.blog.utils.context.AuthContext;
-import com.kratosgado.blog.utils.notifications.ToastNotification;
+import com.kratosgado.blog.utils.widgets.ToastNotification;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;

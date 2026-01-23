@@ -2,6 +2,7 @@ package com.kratosgado.blog.services;
 
 import java.io.IOException;
 import java.util.List;
+
 import com.google.inject.Inject;
 
 import org.slf4j.Logger;
@@ -90,16 +91,16 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse> getPostsByAuthor(Long authorId, int page, int size) {
+  public PageResponse<PostResponse> getPostsByUser(Long userId, int page, int size) {
     ensureAuthToken();
     try {
-      return postApiClient.getPostsByAuthor(authorId, page, size);
+      return postApiClient.getPostsByUser(userId, page, size);
     } catch (IOException e) {
-      logger.error("Failed to get posts by author due to network error", e);
+      logger.error("Failed to get posts by user due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
     } catch (ApiException e) {
-      logger.error("Failed to get posts by author: {}", e.getMessage());
-      throw new RuntimeException("Failed to get posts by author: " + e.getMessage(), e);
+      logger.error("Failed to get posts by user: {}", e.getMessage());
+      throw new RuntimeException("Failed to get posts by user: " + e.getMessage(), e);
     }
   }
 
@@ -142,25 +143,96 @@ public class PostService {
     }
   }
 
-  // Stub methods for backward compatibility - to be implemented when needed
-  public List<com.kratosgado.blog.models.Post> getPostsByUserId(Long userId) {
-    logger.warn("getPostsByUserId() not yet implemented via API");
-    throw new UnsupportedOperationException("getPostsByUserId not yet implemented via API");
+  // Convenience methods for controllers that expect List<Post> instead of PageResponse
+  
+  /**
+   * Get all published posts as a list (for controllers)
+   */
+  public List<Post> getPublishedPosts() {
+    ensureAuthToken();
+    try {
+      PageResponse<PostResponse> response = postApiClient.getAllPosts(0, 1000);
+      // Convert PostResponse to Post (they should be compatible or you need mapping)
+      return response.content().stream()
+          .map(this::convertToPost)
+          .toList();
+    } catch (IOException e) {
+      logger.error("Failed to get published posts due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get published posts: {}", e.getMessage());
+      throw new RuntimeException("Failed to get published posts: " + e.getMessage(), e);
+    }
   }
 
-  public List<com.kratosgado.blog.models.Post> getPublishedPosts() {
-    logger.warn("getPublishedPosts() not yet implemented via API - use getAllPosts with pagination");
-    throw new UnsupportedOperationException("getPublishedPosts not yet implemented via API");
+  /**
+   * Get posts by user ID as a list (for controllers)
+   */
+  public List<Post> getPostsByUserId(Long userId) {
+    ensureAuthToken();
+    try {
+      PageResponse<PostResponse> response = postApiClient.getPostsByUser(userId, 0, 1000);
+      return response.content().stream()
+          .map(this::convertToPost)
+          .toList();
+    } catch (IOException e) {
+      logger.error("Failed to get posts by user due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get posts by user: {}", e.getMessage());
+      throw new RuntimeException("Failed to get posts by user: " + e.getMessage(), e);
+    }
   }
 
-  public List<com.kratosgado.blog.models.Post> searchPostsByKeyword(String keyword) {
-    logger.warn("searchPostsByKeyword() returns PageResponse - use searchPosts() with pagination");
-    throw new UnsupportedOperationException("searchPostsByKeyword not implemented - use searchPosts()");
+  /**
+   * Search posts by keyword as a list (for controllers)
+   */
+  public List<Post> searchPostsByKeyword(String keyword) {
+    ensureAuthToken();
+    try {
+      PageResponse<PostResponse> response = postApiClient.searchPosts(keyword, 0, 1000);
+      return response.content().stream()
+          .map(this::convertToPost)
+          .toList();
+    } catch (IOException e) {
+      logger.error("Failed to search posts due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to search posts: {}", e.getMessage());
+      throw new RuntimeException("Failed to search posts: " + e.getMessage(), e);
+    }
   }
 
-  public List<com.kratosgado.blog.models.Post> getPostsByTag(String tagName) {
-    logger.warn("getPostsByTag() not yet implemented via API");
-    throw new UnsupportedOperationException("getPostsByTag not yet implemented via API");
+  /**
+   * Get posts by tag name (stub - not yet implemented in backend)
+   */
+  public List<Post> getPostsByTag(String tagName) {
+    logger.warn("getPostsByTag() not yet fully implemented via API");
+    // Return empty list for now - this would need a new backend endpoint
+    return List.of();
+  }
+
+  /**
+   * Convert PostResponse to Post model
+   * This is a temporary mapping until we unify the models
+   */
+  private Post convertToPost(PostResponse response) {
+    Post post = new Post();
+    post.setId(response.id());
+    post.setTitle(response.title());
+    post.setContent(response.content());
+    post.setExcerpt(response.excerpt());
+    post.setCoverImage(response.coverImage());
+    post.setStatus(response.status() != null ? response.status().toString() : "DRAFT");
+    post.setUserId(response.authorId()); // PostResponse uses authorId, Post uses userId
+    post.setCategoryId(response.categoryId());
+    post.setCreatedAt(response.createdAt());
+    post.setUpdatedAt(response.updatedAt());
+    post.setViews(response.views());
+    post.setLikesCount(response.likesCount());
+    post.setAuthorName(response.authorName());
+    post.setAuthorAvatarUrl(response.authorAvatarUrl());
+    return post;
   }
 
   public boolean incrementViews(Long postId) {
