@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -37,11 +35,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
-import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
@@ -268,7 +266,7 @@ class PostServiceTest {
     when(postCache.get(slug)).thenReturn(Optional.of(testPostResponse));
 
     // Act
-      PostResponse result = postService.getPostBySlug(slug);
+    PostResponse result = postService.getPostBySlug(slug);
 
     // Assert
     assertNotNull(result);
@@ -294,7 +292,7 @@ class PostServiceTest {
           .thenReturn(testPostResponse);
 
       // Act
-    PostResponse result = postService.getPostBySlug(slug);
+      PostResponse result = postService.getPostBySlug(slug);
 
       // Assert
       assertNotNull(result);

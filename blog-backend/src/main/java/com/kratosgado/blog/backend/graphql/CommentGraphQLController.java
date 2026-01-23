@@ -3,6 +3,8 @@ package com.kratosgado.blog.backend.graphql;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -39,8 +41,8 @@ public class CommentGraphQLController {
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return commentService.getPostComments(postId, page, size);
-
+    Pageable pageable = PageRequest.of(page - 1, size);
+    return commentService.getPostComments(postId, pageable);
   }
 
   @MutationMapping

@@ -5,6 +5,7 @@ type Query {
 
   # Post queries
   post(id: ID!): Post
+  postBySlug(slug: String!): Post
   posts(
     page: Int = 0
     size: Int = 10
