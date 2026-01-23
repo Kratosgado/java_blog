@@ -3,12 +3,14 @@ package com.kratosgado.blog.backend.utils;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.dtos.response.TagSummary;
-import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
@@ -16,71 +18,23 @@ import com.kratosgado.blog.models.User;
 
 public class DtoMapper {
 
-  public static <T> T map(Object source, Class<T> targetClass) {
-    return targetClass.cast(source);
-  }
-
-  /**
-   * Convert Post model to PostResponse DTO
-   * Note: This now requires tags to be passed in since Post no longer has entity
-   * relationships
-   */
-  public static PostResponse toPostResponse(Post post, User author, Category category, List<Tag> tags) {
+  public static PostResponse toPostResponse(Post post) {
     return new PostResponse(
-        post.getId().longValue(),
-        toAuthorSummary(author),
-        toCategorySummary(category),
+        post.getId(),
+        toAuthorSummary(post.getUser()),
+        toCategorySummary(post.getCategory()),
         post.getSlug(),
         post.getTitle(),
         post.getContent(),
         post.getExcerpt(),
-        PostStatus.valueOf(post.getStatus()),
+        post.getStatus(),
         post.getCreatedAt(),
         post.getUpdatedAt(),
         post.getViews(),
         post.getLikesCount(),
         post.getCoverImage(),
-        tags != null ? tags.stream().map(DtoMapper::toTagSummary).toList() : List.of());
-  }
+        post.getTags().stream().map(DtoMapper::toTagSummary).toList());
 
-  /**
-   * Simplified version when you already have user info in the Post (from JOIN)
-   */
-  public static PostResponse toPostResponse(Post post, List<Tag> tags) {
-    // Create AuthorSummary from fields that may be populated by JOIN
-    AuthorSummary author = null;
-    if (post.getAuthorName() != null) {
-      author = new AuthorSummary(
-          post.getUserId().longValue(),
-          post.getAuthorName(),
-          null, // email not included in simple joins
-          post.getAuthorAvatarUrl());
-    }
-
-    // Create CategorySummary from fields that may be populated by JOIN
-    CategorySummary category = null;
-    if (post.getCategoryName() != null && post.getCategoryId() != null) {
-      category = new CategorySummary(
-          post.getCategoryId().longValue(),
-          post.getCategoryName(),
-          null); // slug not included in simple joins
-    }
-
-    return new PostResponse(
-        post.getId().longValue(),
-        author,
-        category,
-        post.getSlug(),
-        post.getTitle(),
-        post.getContent(),
-        post.getExcerpt(),
-        PostStatus.valueOf(post.getStatus()),
-        post.getCreatedAt(),
-        post.getUpdatedAt(),
-        post.getViews(),
-        post.getLikesCount(),
-        post.getCoverImage(),
-        tags != null ? tags.stream().map(DtoMapper::toTagSummary).toList() : List.of());
   }
 
   public static AuthorSummary toAuthorSummary(User user) {
@@ -104,12 +58,22 @@ public class DtoMapper {
     return new CategorySummary(category.getId().longValue(), category.getName(), category.getSlug());
   }
 
-  public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, long totalElements) {
+  public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
+    return new PageResponse<>(
+        page.getContent(),
+        pageable.getPageNumber() + 1,
+        pageable.getPageSize(),
+        page.getTotalElements(),
+        page.getTotalPages(),
+        page.isFirst(),
+        page.isLast());
+  }
+
+  public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, int totalElements) {
     int totalPages = (int) Math.ceil((double) totalElements / size);
     boolean isFirst = page == 1;
     boolean isLast = page >= totalPages;
-
-    return new PageResponse<>(content, page, page - 1, totalElements, totalPages, isFirst, isLast);
+    return new PageResponse<>(content, page, size, totalElements, totalPages, isFirst, isLast);
   }
 
 }
