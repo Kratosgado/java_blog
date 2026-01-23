@@ -1,23 +1,26 @@
 package com.kratosgado.blog.backend.services;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
-import com.kratosgado.blog.backend.dao.PostDAO;
-import com.kratosgado.blog.backend.dao.TagDAO;
-import com.kratosgado.blog.backend.dao.UserDAO;
-import com.kratosgado.blog.backend.dao.CategoryDAO;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
@@ -27,17 +30,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class PostService {
-  private final PostDAO postDAO;
-  private final TagDAO tagDAO;
-  private final UserDAO userDAO;
-  private final CategoryDAO categoryDAO;
+  private final PostRepository postRepository;
+  private final TagRepository tagRepository;
+  private final UserRepository userRepository;
+  private final CategoryRepository categoryRepository;
   private final PostCache postCache;
 
-  public PostService(PostDAO postDAO, TagDAO tagDAO, UserDAO userDAO, CategoryDAO categoryDAO, PostCache postCache) {
-    this.postDAO = postDAO;
-    this.tagDAO = tagDAO;
-    this.userDAO = userDAO;
-    this.categoryDAO = categoryDAO;
+  public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository,
+      CategoryRepository categoryRepository, PostCache postCache) {
+    this.postRepository = postRepository;
+    this.tagRepository = tagRepository;
+    this.userRepository = userRepository;
+    this.categoryRepository = categoryRepository;
     this.postCache = postCache;
   }
 
@@ -48,27 +52,16 @@ public class PostService {
     post.setSlug(generateSlug(request.title()));
     post.setContent(request.content());
     post.setExcerpt(request.excerpt());
-    post.setCategoryId(request.categoryId() != null ? request.categoryId().intValue() : null);
+    post.setCategoryId(request.categoryId());
     post.setCoverImage(request.coverImage());
-    post.setStatus(request.status());
+    post.setStatus(PostStatus.valueOf(request.status()));
 
-    Post savedPost = postDAO.createPost(post)
-        .orElseThrow(() -> BlogException.internal("Failed to create post"));
-
-    // Fetch tags for this post
-    List<Tag> tags = tagDAO.getTagsByPostId(savedPost.getId());
-
-    // Fetch related entities for response
-    Category category = savedPost.getCategoryId() != null
-        ? categoryDAO.getCategoryById(savedPost.getCategoryId()).orElse(null)
-        : null;
-
-    PostResponse response = DtoMapper.toPostResponse(savedPost, user, category, tags);
-    return response;
+    Post savedPost = postRepository.save(post);
+    return DtoMapper.toPostResponse(savedPost);
   }
 
   public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
-    Post post = postDAO.getPostById(postId.intValue())
+    Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
     if (!post.getUserId().equals(userId)) {
@@ -84,38 +77,26 @@ public class PostService {
     if (request.excerpt() != null)
       post.setExcerpt(request.excerpt());
     if (request.categoryId() != null)
-      post.setCategoryId(request.categoryId().intValue());
+      post.setCategoryId(request.categoryId());
     if (request.coverImage() != null)
       post.setCoverImage(request.coverImage());
     if (request.status() != null)
-      post.setStatus(request.status().name());
+      post.setStatus(request.status());
 
-    Post updatedPost = postDAO.updatePost(post)
-        .orElseThrow(() -> BlogException.internal("Failed to update post"));
+    Post updatedPost = postRepository.save(post);
+    return DtoMapper.toPostResponse(updatedPost);
 
-    // Fetch tags and related entities
-    List<Tag> tags = tagDAO.getTagsByPostId(updatedPost.getId());
-    User author = userDAO.getUserById(Long.valueOf(updatedPost.getUserId())).orElse(null);
-    Category category = updatedPost.getCategoryId() != null
-        ? categoryDAO.getCategoryById(updatedPost.getCategoryId()).orElse(null)
-        : null;
-
-    PostResponse response = DtoMapper.toPostResponse(updatedPost, author, category, tags);
-
-    return response;
   }
 
   public void deletePost(Long postId, Long userId) {
-    Post post = postDAO.getPostById(postId.intValue())
+    Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    if (!post.getUserId().equals(userId.intValue())) {
+    if (!post.getUserId().equals(userId)) {
       throw BlogException.forbidden("You don't have permission to delete this post");
     }
 
-    if (!postDAO.deletePost(postId.intValue())) {
-      throw BlogException.internal("Failed to delete post");
-    }
+    postRepository.deleteById(postId);
   }
 
   @Transactional
@@ -123,92 +104,65 @@ public class PostService {
     var postResponse = postCache.get(slug).orElseGet(() -> {
       log.debug("Cache miss for post slug: {}, fetching from database", slug);
 
-      Post post = postDAO.getPostBySlug(slug)
+      Post post = postRepository.findBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
-      List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-      PostResponse response = DtoMapper.toPostResponse(post, tags);
-
-      // Cache the result
+      List<Tag> tags = tagRepository.findByPostId(post.getId());
+      PostResponse response = DtoMapper.toPostResponse(post);
       postCache.put(post.getSlug(), response);
-
       return response;
     });
-    postDAO.incrementViews(postResponse.id());
+    postRepository.incrementViews(postResponse.id());
     return postResponse;
   }
 
   @Transactional(readOnly = true)
   public PostResponse getPostById(Long postId) {
-    Post post = postDAO.getPostById(postId.intValue())
+    Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-    return DtoMapper.toPostResponse(post, tags);
+    return DtoMapper.toPostResponse(post);
+  }
+
+  @Transactional(readOnly = true)
+  public PageResponse<PostResponse> getPublishedPosts(Pageable pageable) {
+    Page<Post> postPage = postRepository.findPublishedPosts(pageable);
+    Page<PostResponse> responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
+    return DtoMapper.toPageResponse(responsePage, pageable);
   }
 
   @Transactional(readOnly = true)
   public PageResponse<PostResponse> getPublishedPosts(int page, int size) {
-    List<Post> posts = postDAO.getPostsPaginated(page, size);
-    int totalElements = postDAO.getPublishedPostCount();
+    return getPublishedPosts(PageRequest.of(page - 1, size));
+  }
 
-    List<PostResponse> responses = posts.stream()
-        .map(post -> {
-          List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-          return DtoMapper.toPostResponse(post, tags);
-        })
-        .collect(Collectors.toList());
-
-    return DtoMapper.toPageResponse(responses, page, size, totalElements);
+  public PageResponse<PostResponse> searchPosts(String keyword, Pageable pageable) {
+    Page<Post> postPage = postRepository.searchPublishedPosts(keyword, pageable);
+    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
+    return DtoMapper.toPageResponse(responsePage, pageable);
   }
 
   public PageResponse<PostResponse> searchPosts(String keyword, int page, int size) {
-    List<Post> posts = postDAO.searchPostsByKeyword(keyword);
+    return searchPosts(keyword, PageRequest.of(page - 1, size));
+  }
 
-    // Manual pagination
-    int startIndex = (page - 1) * size;
-    int endIndex = Math.min(startIndex + size, posts.size());
-    List<Post> paginatedPosts = posts.subList(Math.max(0, startIndex), Math.max(0, endIndex));
-
-    List<PostResponse> responses = paginatedPosts.stream()
-        .map(post -> {
-          List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-          return DtoMapper.toPostResponse(post, tags);
-        })
-        .collect(Collectors.toList());
-
-    return DtoMapper.toPageResponse(responses, page, size, posts.size());
+  public PageResponse<PostResponse> getUserPosts(Long userId, Pageable pageable) {
+    Page<Post> postPage = postRepository.findByUserId(userId, pageable);
+    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
+    return DtoMapper.toPageResponse(responsePage, pageable);
   }
 
   public PageResponse<PostResponse> getUserPosts(Long userId, int page, int size) {
-    List<Post> posts = postDAO.getPostsByUserIdPaginated(userId.intValue(), page, size);
-    List<Post> allUserPosts = postDAO.getPostsByUserId(userId.intValue());
+    return getUserPosts(userId, PageRequest.of(page - 1, size));
+  }
 
-    List<PostResponse> responses = posts.stream()
-        .map(post -> {
-          List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-          return DtoMapper.toPostResponse(post, tags);
-        })
-        .collect(Collectors.toList());
-
-    return DtoMapper.toPageResponse(responses, page, size, allUserPosts.size());
+  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, Pageable pageable) {
+    Page<Post> postPage = postRepository.findByCategoryId(categoryId, pageable);
+    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
+    return DtoMapper.toPageResponse(responsePage, pageable);
   }
 
   public PageResponse<PostResponse> getPostsByCategory(Long categoryId, int page, int size) {
-    List<Post> posts = postDAO.getPostsByCategoryId(categoryId.intValue());
-
-    // Manual pagination
-    int startIndex = (page - 1) * size;
-    int endIndex = Math.min(startIndex + size, posts.size());
-    List<Post> paginatedPosts = posts.subList(Math.max(0, startIndex), Math.max(0, endIndex));
-
-    List<PostResponse> responses = paginatedPosts.stream()
-        .map(post -> {
-          List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
-          return DtoMapper.toPostResponse(post, tags);
-        })
-        .collect(Collectors.toList());
-
-    return DtoMapper.toPageResponse(responses, page, size, posts.size());
+    return getPostsByCategory(categoryId, PageRequest.of(page - 1, size));
   }
 
   private String generateSlug(String title) {
