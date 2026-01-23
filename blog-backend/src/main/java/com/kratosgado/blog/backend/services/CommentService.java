@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.cache.CacheConfig.CommentCache;
 import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
@@ -13,19 +12,15 @@ import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CommentService {
 
   private final CommentMongoDAO commentDAO;
-  private final CommentCache commentCache;
-
-  public CommentService(CommentMongoDAO commentDAO, CommentCache commentCache) {
-    this.commentDAO = commentDAO;
-    this.commentCache = commentCache;
-  }
 
   public Comment createComment(CreateCommentRequest request, User user) {
 
@@ -88,17 +83,11 @@ public class CommentService {
 
   public Comment getCommentById(String commentId) {
     // Try to get from cache first
-    return commentCache.get(commentId).orElseGet(() -> {
-      log.debug("Cache miss for comment ID: {}, fetching from database", commentId);
-      
-      Comment comment = commentDAO.getCommentById(commentId)
-          .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
-      
-      // Cache the result
-      commentCache.put(commentId, comment);
-      
-      return comment;
-    });
+    log.debug("Cache miss for comment ID: {}, fetching from database", commentId);
+
+    Comment comment = commentDAO.getCommentById(commentId)
+        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+    return comment;
   }
 
   public PageResponse<Comment> getPostComments(Long postId, int page, int size) {

@@ -120,12 +120,11 @@ public class PostService {
 
   @Transactional
   public PostResponse getPostBySlug(String slug) {
-    return postCache.get(slug).orElseGet(() -> {
+    var postResponse = postCache.get(slug).orElseGet(() -> {
       log.debug("Cache miss for post slug: {}, fetching from database", slug);
 
       Post post = postDAO.getPostBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
-      postDAO.incrementViews(post.getId());
       List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
       PostResponse response = DtoMapper.toPostResponse(post, tags);
 
@@ -134,6 +133,8 @@ public class PostService {
 
       return response;
     });
+    postDAO.incrementViews(postResponse.id());
+    return postResponse;
   }
 
   @Transactional(readOnly = true)
@@ -141,7 +142,6 @@ public class PostService {
     Post post = postDAO.getPostById(postId.intValue())
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    postDAO.incrementViews(post.getId());
     List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
     return DtoMapper.toPostResponse(post, tags);
   }

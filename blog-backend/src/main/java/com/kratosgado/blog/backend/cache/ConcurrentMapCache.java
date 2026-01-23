@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -29,7 +28,6 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
 
   private final ConcurrentHashMap<K, V> cache;
   private final ConcurrentHashMap<K, LocalDateTime> cacheTimestamps;
-  private final Supplier<List<V>> dataLoader;
   private final long ttlMillis;
   private final String cacheName;
 
@@ -41,14 +39,12 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   /**
    * Constructor with TTL support.
    * 
-   * @param cacheName  name of the cache for logging
-   * @param dataLoader supplier to reload cache data
-   * @param ttlMillis  time-to-live in milliseconds (0 for no expiration)
+   * @param cacheName name of the cache for logging
+   * @param ttlMillis time-to-live in milliseconds (0 for no expiration)
    */
-  public ConcurrentMapCache(String cacheName, Supplier<List<V>> dataLoader, long ttlMillis) {
+  public ConcurrentMapCache(String cacheName, long ttlMillis) {
     this.cache = new ConcurrentHashMap<>();
     this.cacheTimestamps = new ConcurrentHashMap<>();
-    this.dataLoader = dataLoader;
     this.ttlMillis = ttlMillis;
     this.cacheName = cacheName;
     log.info("Initialized cache: {} with TTL: {}ms", cacheName, ttlMillis);
@@ -57,11 +53,10 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   /**
    * Constructor without TTL.
    * 
-   * @param cacheName  name of the cache for logging
-   * @param dataLoader supplier to reload cache data
+   * @param cacheName name of the cache for logging
    */
-  public ConcurrentMapCache(String cacheName, Supplier<List<V>> dataLoader) {
-    this(cacheName, dataLoader, 0);
+  public ConcurrentMapCache(String cacheName) {
+    this(cacheName, 0);
   }
 
   @Override
@@ -193,17 +188,6 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   public void refresh() {
     log.info("Cache [{}]: Refreshing cache", cacheName);
     clear();
-
-    if (dataLoader != null) {
-      try {
-        List<V> data = dataLoader.get();
-        log.info("Cache [{}]: Loaded {} entries", cacheName, data.size());
-        // Note: This requires a way to extract keys from values
-        // Subclasses should override this method to properly map keys
-      } catch (Exception e) {
-        log.error("Cache [{}]: Error refreshing cache", cacheName, e);
-      }
-    }
   }
 
   /**

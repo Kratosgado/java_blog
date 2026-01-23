@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
-import com.kratosgado.blog.backend.cache.CacheConfig.CommentCache;
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.backend.cache.ConcurrentMapCache.CacheStats;
@@ -31,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
  * operations.
  */
 @RestController
-@RequestMapping("/api/cache")
+@RequestMapping("/cache")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Cache Management", description = "Cache monitoring and management APIs")
@@ -40,7 +39,6 @@ public class CacheController {
   private final PostCache postCache;
   private final CategoryCache categoryCache;
   private final TagCache tagCache;
-  private final CommentCache commentCache;
 
   /**
    * Get statistics for all caches.
@@ -55,7 +53,6 @@ public class CacheController {
     stats.put("posts", postCache.getStats());
     stats.put("categories", categoryCache.getStats());
     stats.put("tags", tagCache.getStats());
-    stats.put("comments", commentCache.getStats());
 
     return ResponseEntity.ok(ResponseDto.success("Cache statistics retrieved successfully", stats));
   }
@@ -79,9 +76,6 @@ public class CacheController {
       case "tags":
         tagCache.clear();
         break;
-      case "comments":
-        commentCache.clear();
-        break;
       default:
         return ResponseEntity.badRequest()
             .body(ResponseDto.error("Invalid cache name. Valid options: posts, categories, tags, comments"));
@@ -102,7 +96,6 @@ public class CacheController {
     postCache.clear();
     categoryCache.clear();
     tagCache.clear();
-    commentCache.clear();
 
     return ResponseEntity.ok(ResponseDto.success("All caches cleared successfully", "all"));
   }
@@ -125,9 +118,6 @@ public class CacheController {
         break;
       case "tags":
         tagCache.refresh();
-        break;
-      case "comments":
-        commentCache.refresh();
         break;
       default:
         return ResponseEntity.badRequest()
@@ -162,9 +152,6 @@ public class CacheController {
           } else {
             tagCache.evict(longKey);
           }
-          break;
-        case "comments":
-          commentCache.evict(key);
           break;
         default:
           return ResponseEntity.badRequest()

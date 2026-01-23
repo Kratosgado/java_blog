@@ -288,7 +288,7 @@ class PostServiceTest {
     when(postCache.get(slug)).thenReturn(Optional.empty());
     when(postDAO.getPostBySlug(slug)).thenReturn(Optional.of(testPost));
     when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
-    doNothing().when(postDAO).incrementViews(anyInt());
+    doNothing().when(postDAO).incrementViews(anyLong());
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
@@ -311,7 +311,7 @@ class PostServiceTest {
     // Arrange
     when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
     when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
-    doNothing().when(postDAO).incrementViews(anyInt());
+    doNothing().when(postDAO).incrementViews(anyLong());
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))

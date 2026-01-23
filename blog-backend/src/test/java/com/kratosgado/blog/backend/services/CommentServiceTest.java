@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -24,9 +23,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
-import com.kratosgado.blog.backend.cache.CacheConfig.CommentCache;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
@@ -38,9 +36,6 @@ class CommentServiceTest {
 
   @Mock
   private CommentMongoDAO commentDAO;
-
-  @Mock
-  private CommentCache commentCache;
 
   @InjectMocks
   private CommentService commentService;

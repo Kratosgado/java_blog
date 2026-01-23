@@ -391,11 +391,11 @@ public class PostDAO extends BaseDAO {
     return posts;
   }
 
-  public boolean incrementViews(Integer postId) {
+  public boolean incrementViews(Long postId) {
     String sql = "UPDATE posts SET views = views + 1 WHERE id = ?";
     try (Connection conn = DatabaseConfig.getConnection();
         PreparedStatement stmt = conn.prepareStatement(sql);) {
-      stmt.setInt(1, postId);
+      stmt.setLong(1, postId);
       stmt.executeUpdate();
       logger.debug("Views incremented for post: {}", postId);
       return true;

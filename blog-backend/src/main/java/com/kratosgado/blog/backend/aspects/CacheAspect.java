@@ -5,12 +5,10 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
-import com.kratosgado.blog.backend.cache.CacheConfig.CommentCache;
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Category;
-import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Tag;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +27,6 @@ public class CacheAspect {
   private final PostCache postCache;
   private final CategoryCache categoryCache;
   private final TagCache tagCache;
-  private final CommentCache commentCache;
 
   /**
    * After updating a post, refresh it in cache.
@@ -83,32 +80,5 @@ public class CacheAspect {
   public void afterDeleteTag(Long tagId) {
     log.debug("Aspect: Evicting deleted tag from cache: {}", tagId);
     tagCache.evict(tagId);
-  }
-
-  /**
-   * After approving a comment, refresh it in cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.approveComment(..))", returning = "result")
-  public void afterApproveComment(Comment result) {
-    log.debug("Aspect: Updating approved comment in cache: {}", result.getId());
-    commentCache.put(result.getId(), result);
-  }
-
-  /**
-   * After rejecting a comment, refresh it in cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.rejectComment(..))", returning = "result")
-  public void afterRejectComment(Comment result) {
-    log.debug("Aspect: Updating rejected comment in cache: {}", result.getId());
-    commentCache.evict(result.getId());
-  }
-
-  /**
-   * After deleting a comment, evict it from cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.deleteComment(..)) && args(commentId,..)", argNames = "commentId")
-  public void afterDeleteComment(String commentId) {
-    log.debug("Aspect: Evicting deleted comment from cache: {}", commentId);
-    commentCache.evict(commentId);
   }
 }
