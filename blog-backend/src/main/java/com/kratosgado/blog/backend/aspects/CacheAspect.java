@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.cache;
+package com.kratosgado.blog.backend.aspects;
 
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -37,7 +37,7 @@ public class CacheAspect {
   @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.PostService.updatePost(..))", returning = "result")
   public void afterUpdatePost(PostResponse result) {
     log.debug("Aspect: Updating post in cache: {}", result.id());
-    postCache.put(result.slug(), result);
+    postCache.updateIfPresent(result.slug(), result);
   }
 
   /**
@@ -47,15 +47,6 @@ public class CacheAspect {
   public void afterDeletePost(String slug) {
     log.debug("Aspect: Evicting deleted post from cache: {}", slug);
     postCache.evict(slug);
-  }
-
-  /**
-   * After creating a category, add it to cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CategoryService.createCategory(..))", returning = "result")
-  public void afterCreateCategory(Category result) {
-    log.debug("Aspect: Adding newly created category to cache: {}", result.getId());
-    categoryCache.put(result.getId().longValue(), result);
   }
 
   /**
@@ -77,15 +68,6 @@ public class CacheAspect {
   }
 
   /**
-   * After creating a tag, add it to cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.TagService.createTag(..))", returning = "result")
-  public void afterCreateTag(Tag result) {
-    log.debug("Aspect: Adding newly created tag to cache: {}", result.getId());
-    tagCache.put(result.getId().longValue(), result);
-  }
-
-  /**
    * After updating a tag, refresh it in cache.
    */
   @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.TagService.updateTag(..))", returning = "result")
@@ -104,15 +86,6 @@ public class CacheAspect {
   }
 
   /**
-   * After creating a comment, add it to cache.
-   */
-  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.createComment(..))", returning = "result")
-  public void afterCreateComment(Comment result) {
-    log.debug("Aspect: Adding newly created comment to cache: {}", result.getId());
-    commentCache.put(result.getId(), result);
-  }
-
-  /**
    * After approving a comment, refresh it in cache.
    */
   @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.approveComment(..))", returning = "result")
@@ -127,7 +100,7 @@ public class CacheAspect {
   @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.CommentService.rejectComment(..))", returning = "result")
   public void afterRejectComment(Comment result) {
     log.debug("Aspect: Updating rejected comment in cache: {}", result.getId());
-    commentCache.put(result.getId(), result);
+    commentCache.evict(result.getId());
   }
 
   /**

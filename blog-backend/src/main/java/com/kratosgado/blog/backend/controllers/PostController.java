@@ -81,6 +81,14 @@ public class PostController {
     return postService.getPostById(id);
   }
 
+  @GetMapping("/slug/{slug}")
+  @Operation(summary = "Get a post by slug", description = "Retrieves a single blog post by its slug. Uses cache for better performance. Public access.")
+  @GetEnpoint
+  public PostResponse getPostBySlug(
+      @PathVariable @Parameter(description = "Post slug") String slug) {
+    return postService.getPostBySlug(slug);
+  }
+
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint

@@ -1,0 +1,125 @@
+### Cache Management API Tests
+
+### Base URL
+@host = http://localhost:8080/api
+@adminToken = Bearer {{$dotenv ADMIN_TOKEN}}
+
+###
+
+### Get cache statistics for all caches
+# @name getCacheStats
+GET {{host}}/cache/stats HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Clear a specific cache - posts cache
+# @name clearPostsCache
+DELETE {{host}}/cache/posts HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Clear a specific cache - categories cache
+# @name clearCategoriesCache
+DELETE {{host}}/cache/categories HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Clear a specific cache - tags cache
+# @name clearTagsCache
+DELETE {{host}}/cache/tags HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Clear a specific cache - comments cache
+# @name clearCommentsCache
+DELETE {{host}}/cache/comments HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Clear all caches
+# @name clearAllCaches
+DELETE {{host}}/cache HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Refresh posts cache
+# @name refreshPostsCache
+POST {{host}}/cache/posts/refresh HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Refresh categories cache
+# @name refreshCategoriesCache
+POST {{host}}/cache/categories/refresh HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Refresh tags cache
+# @name refreshTagsCache
+POST {{host}}/cache/tags/refresh HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Refresh comments cache
+# @name refreshCommentsCache
+POST {{host}}/cache/comments/refresh HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Evict a specific post from cache (by slug)
+# @name evictPostFromCache
+DELETE {{host}}/cache/posts/test-post-slug HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Evict a specific category from cache (by ID)
+# @name evictCategoryFromCache
+DELETE {{host}}/cache/categories/1 HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Evict a specific tag from cache (by ID)
+# @name evictTagFromCache
+DELETE {{host}}/cache/tags/1 HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Evict a specific comment from cache (by ID)
+# @name evictCommentFromCache
+DELETE {{host}}/cache/comments/comment-id-123 HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+
+### Test without authentication (should fail with 401)
+# @name getCacheStatsUnauthorized
+GET {{host}}/cache/stats HTTP/1.1
+
+###
+
+### Test with regular user token (should fail with 403)
+# @name getCacheStatsAsUser
+GET {{host}}/cache/stats HTTP/1.1
+Authorization: Bearer {{$dotenv USER_TOKEN}}
+
+###
+
+### Test clearing invalid cache name (should fail with 400)
+# @name clearInvalidCache
+DELETE {{host}}/cache/invalid-cache-name HTTP/1.1
+Authorization: {{adminToken}}
+
+###

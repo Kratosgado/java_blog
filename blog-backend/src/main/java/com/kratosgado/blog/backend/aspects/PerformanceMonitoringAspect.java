@@ -4,18 +4,18 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
 
 @Aspect
 @Component
+@Slf4j
 public class PerformanceMonitoringAspect {
 
-  private static final Logger logger = LoggerFactory.getLogger(PerformanceMonitoringAspect.class);
   private static final long SLOW_THRESHOLD_MS = 1000;
 
   @Pointcut("execution(* com.kratosgado.blog.backend.services..*(..))")
@@ -37,12 +37,12 @@ public class PerformanceMonitoringAspect {
       long executionTime = duration.toMillis();
 
       if (executionTime > SLOW_THRESHOLD_MS) {
-        logger.warn("SLOW OPERATION: {} took {} ms (threshold: {} ms)",
+        log.warn("SLOW OPERATION: {} took {} ms (threshold: {} ms)",
             methodName,
             executionTime,
             SLOW_THRESHOLD_MS);
       } else {
-        logger.debug("Performance: {} executed in {} ms",
+        log.debug("Performance: {} executed in {} ms",
             methodName,
             executionTime);
       }
@@ -50,7 +50,7 @@ public class PerformanceMonitoringAspect {
       return result;
     } catch (Exception e) {
       Duration duration = Duration.between(start, Instant.now());
-      logger.error("Failed operation: {} after {} ms",
+      log.error("Failed operation: {} after {} ms",
           methodName,
           duration.toMillis());
       throw e;

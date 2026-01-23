@@ -56,6 +56,16 @@ GET {{host}}/posts/8 HTTP/1.1
 ### 
 
 
+### Get a single post by slug (cached endpoint)
+
+# @name getPostBySlug
+
+GET {{host}}/posts/slug/getting-started-with-spring-boot-3 HTTP/1.1
+
+
+### 
+
+
 ### Get all published posts (with pagination and sorting)
 
 # @name getPosts
