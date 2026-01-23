@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -55,10 +57,8 @@ public class UserController {
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
-  public PageResponse<UserResponse> getUsers(
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return userService.getAllUsers(page, size);
+  public PageResponse<UserResponse> getUsers(@ParameterObject Pageable pageable) {
+    return userService.getAllUsers(pageable);
   }
 
   @PutMapping("/{id}/profile")
