@@ -34,8 +34,19 @@ public class ReviewGraphQLController {
   }
 
   @QueryMapping
-  public PageResponse<Review> reviewsByPost(@Argument Long postId) {
-    return reviewService.getPostReviews(postId, 1, 100);
+  public PageResponse<Review> reviewsByPost(
+      @Argument Long postId,
+      @Argument(name = "page") int page,
+      @Argument(name = "size") int size) {
+    return reviewService.getPostReviews(postId, page, size);
+  }
+
+  @QueryMapping
+  public PageResponse<Review> reviewsByUser(
+      @Argument Long userId,
+      @Argument(name = "page") int page,
+      @Argument(name = "size") int size) {
+    return reviewService.getUserReviews(userId, page, size);
   }
 
   @MutationMapping

@@ -2,6 +2,7 @@ package com.kratosgado.blog.backend.graphql;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -12,6 +13,7 @@ import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
 
 @Controller
 public class GraphCategoryConttroller {
@@ -29,8 +31,10 @@ public class GraphCategoryConttroller {
   }
 
   @QueryMapping
-  public List<Category> categories() {
-    return categoryService.getAllCategories();
+  public PageResponse<Category> categories(
+      @Argument(name = "page") int page,
+      @Argument(name = "size") int size) {
+    return categoryService.getAllCategories(PageRequest.of(page, size));
   }
 
   @QueryMapping
