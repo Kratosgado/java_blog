@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -92,10 +94,8 @@ public class PostController {
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
-  public PageResponse<PostResponse> getPosts(
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return postService.getPublishedPosts(page, size);
+  public PageResponse<PostResponse> getPosts(@ParameterObject Pageable pageable) {
+    return postService.getPublishedPosts(pageable);
   }
 
   @GetMapping("/search")
@@ -103,9 +103,8 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> searchPosts(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return postService.searchPosts(keyword, page, size);
+      @ParameterObject Pageable pageable) {
+    return postService.searchPosts(keyword, pageable);
 
   }
 
@@ -114,9 +113,8 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return postService.getUserPosts(userId, page, size);
+      @ParameterObject Pageable pageable) {
+    return postService.getUserPosts(userId, pageable);
 
   }
 
@@ -125,9 +123,8 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return postService.getPostsByCategory(categoryId, page, size);
+      @ParameterObject Pageable pageable) {
+    return postService.getPostsByCategory(categoryId, pageable);
 
   }
 }
