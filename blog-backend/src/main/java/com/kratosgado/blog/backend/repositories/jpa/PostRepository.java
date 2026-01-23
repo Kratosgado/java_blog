@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.models.Post;
 
+import jakarta.transaction.Transactional;
+
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
   Page<Post> findByStatus(String status, Pageable pageable);
@@ -35,8 +37,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Optional<Post> findByIdAndUserId(Long id, Long userId);
 
   @Modifying
-  @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.id = :id")
-  void incrementViews(@Param("id") Long id);
+  @Transactional
+  @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.slug = :slug")
+  void incrementViews(@Param("slug") String slug);
 
   @Query("SELECT COUNT(p) FROM Post p WHERE p.status = 'published'")
   long countPublishedPosts();

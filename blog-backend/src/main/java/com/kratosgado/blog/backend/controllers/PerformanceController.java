@@ -21,7 +21,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Controller for monitoring application performance metrics.
- * Provides endpoints to view performance statistics for DAO and service operations.
+ * Provides endpoints to view performance statistics for Repository and Service operations.
+ * 
+ * <p>Performance metrics are collected automatically via AOP aspects for all repository 
+ * and service layer operations. Statistics include execution time (avg, median, min, max) 
+ * and call counts.
+ * 
+ * <p>Endpoints:
+ * <ul>
+ *   <li>GET /api/performance/stats - Get all performance statistics as JSON</li>
+ *   <li>GET /api/performance/report - Get formatted text report</li>
+ *   <li>GET /api/performance/status - Get monitoring status</li>
+ *   <li>DELETE /api/performance/reset - Clear all metrics</li>
+ * </ul>
+ * 
+ * @see PerformanceMonitor
+ * @see PerformanceAspect
  */
 @RestController
 @RequestMapping("/api/performance")

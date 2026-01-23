@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.kratosgado.blog.backend.utils.performance.PerformanceMonitor;
 
 /**
- * Aspect for tracking performance metrics of DAO operations.
+ * Aspect for tracking performance metrics of Repository and Service operations.
  * Integrates with PerformanceMonitor to collect and report timing statistics.
  */
 @Aspect
@@ -18,8 +18,8 @@ public class PerformanceAspect {
   
   private final PerformanceMonitor performanceMonitor = PerformanceMonitor.getInstance();
   
-  @Pointcut("within(com.kratosgado.blog.backend.dao..*)")
-  public void daoLayer() {
+  @Pointcut("within(com.kratosgado.blog.backend.repositories..*)")
+  public void repositoryLayer() {
   }
   
   @Pointcut("within(com.kratosgado.blog.backend.services..*)")
@@ -27,13 +27,13 @@ public class PerformanceAspect {
   }
   
   /**
-   * Track performance of all DAO operations.
+   * Track performance of all Repository operations (JPA and MongoDB).
    */
-  @Around("daoLayer()")
-  public Object trackDaoPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
+  @Around("repositoryLayer()")
+  public Object trackRepositoryPerformance(ProceedingJoinPoint joinPoint) throws Throwable {
     String className = joinPoint.getTarget().getClass().getSimpleName();
     String methodName = joinPoint.getSignature().getName();
-    String operation = String.format("DAO.%s.%s", className, methodName);
+    String operation = String.format("Repository.%s.%s", className, methodName);
     
     return performanceMonitor.measure(operation, () -> {
       try {

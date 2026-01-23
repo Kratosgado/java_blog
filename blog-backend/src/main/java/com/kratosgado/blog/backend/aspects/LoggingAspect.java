@@ -1,20 +1,33 @@
 package com.kratosgado.blog.backend.aspects;
 
-import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.*;
-import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+
+import com.kratosgado.blog.backend.services.ViewTrackingService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Aspect
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class LoggingAspect {
+
+  private final ViewTrackingService viewTrackingService;
+
   @Pointcut("within(com.kratosgado.blog.backend.controllers..*)")
   public void controllerLayer() {
   }
@@ -23,8 +36,8 @@ public class LoggingAspect {
   public void serviceLayer() {
   }
 
-  @Pointcut("within(com.kratosgado.blog.backend.dao..*)")
-  public void daoLayer() {
+  @Pointcut("within(com.kratosgado.blog.backend.repositories..*)")
+  public void repositoryLayer() {
   }
 
   @Before("controllerLayer()")
@@ -77,8 +90,8 @@ public class LoggingAspect {
     }
   }
 
-  @Around("daoLayer()")
-  public Object logAroundDao(ProceedingJoinPoint joinPoint) throws Throwable {
+  @Around("repositoryLayer()")
+  public Object logAroundRepository(ProceedingJoinPoint joinPoint) throws Throwable {
     Instant start = Instant.now();
     String methodName = joinPoint.getSignature().toShortString();
 
@@ -112,5 +125,14 @@ public class LoggingAspect {
           e);
       throw e;
     }
+  }
+
+  /**
+   * After viewing a post, asynchronously increment its view count.
+   */
+  @Async
+  @AfterReturning(pointcut = "execution(* com.kratosgado.blog.backend.services.PostService.getPostBySlug(..)) && args(slug)", argNames = "slug")
+  public void afterViewingPost(String slug) {
+    viewTrackingService.incrementViews(slug);
   }
 }

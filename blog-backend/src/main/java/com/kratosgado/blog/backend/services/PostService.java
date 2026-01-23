@@ -25,10 +25,7 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class PostService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
@@ -101,8 +98,7 @@ public class PostService {
 
   @Transactional
   public PostResponse getPostBySlug(String slug) {
-    var postResponse = postCache.get(slug).orElseGet(() -> {
-      log.debug("Cache miss for post slug: {}, fetching from database", slug);
+    return postCache.get(slug).orElseGet(() -> {
 
       Post post = postRepository.findBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
@@ -111,8 +107,6 @@ public class PostService {
       postCache.put(post.getSlug(), response);
       return response;
     });
-    postRepository.incrementViews(postResponse.id());
-    return postResponse;
   }
 
   @Transactional(readOnly = true)
