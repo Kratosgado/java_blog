@@ -48,7 +48,8 @@ public class PostGraphQLController {
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
       @Argument(name = "sortDir") String sortDir) {
-    // Note: sortBy and sortDir are currently ignored as DAO doesn't support dynamic sorting
+    // Note: sortBy and sortDir are currently ignored as DAO doesn't support dynamic
+    // sorting
     return postService.getPublishedPosts(page, size);
 
   }

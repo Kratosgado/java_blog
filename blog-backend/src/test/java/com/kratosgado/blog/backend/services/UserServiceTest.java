@@ -20,7 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.dao.UserDAO;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.models.User;
 
@@ -29,7 +29,7 @@ import com.kratosgado.blog.models.User;
 class UserServiceTest {
 
   @Mock
-  private UserDAO userDAO;
+  private UserRepository userRepository;
 
   @Mock
   private BCryptPasswordEncoder passwordEncoder;
@@ -55,7 +55,7 @@ class UserServiceTest {
   @DisplayName("Should get user by ID with or without password")
   void getUserById_ShouldReturnUserBasedOnPasswordFlag(boolean includePassword, boolean expectPassword) {
     // Arrange
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
     // Act
     User result = includePassword ? userService.getUserById(1L, true) : userService.getUserById(1L);
@@ -84,13 +84,13 @@ class UserServiceTest {
     // Arrange
     switch (operation) {
       case "byId":
-        when(userDAO.getUserById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
         break;
       case "byEmail":
-        when(userDAO.getUserByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
         break;
       case "byUsername":
-        when(userDAO.getUserByUsername("nonexistent")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
         break;
     }
 
@@ -126,7 +126,7 @@ class UserServiceTest {
   @DisplayName("Should get user by email")
   void getUserByEmail_WithValidEmail_ShouldReturnUser() {
     // Arrange
-    when(userDAO.getUserByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
     // Act
     User result = userService.getUserByEmail("test@example.com");
@@ -140,7 +140,7 @@ class UserServiceTest {
   @DisplayName("Should get user by username")
   void getUserByUsername_WithValidUsername_ShouldReturnUser() {
     // Arrange
-    when(userDAO.getUserByUsername("testuser")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
     // Act
     User result = userService.getUserByUsername("testuser");
@@ -166,9 +166,9 @@ class UserServiceTest {
         "New bio", 
         "https://example.com", 
         "New York");
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
-    when(userDAO.getUserByUsername("newusername")).thenReturn(Optional.empty());
-    when(userDAO.updateUserProfile(anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.findByUsername("newusername")).thenReturn(Optional.empty());
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
     User result = userService.updateUserProfile(updateRequest, 1L);
@@ -189,8 +189,8 @@ class UserServiceTest {
         null, 
         null, 
         null);
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
-    when(userDAO.getUserByUsername("existinguser")).thenReturn(Optional.of(new User()));
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.findByUsername("existinguser")).thenReturn(Optional.of(new User()));
 
     // Act
     BlogException exception = assertThrows(BlogException.class, 
@@ -209,8 +209,8 @@ class UserServiceTest {
         "Updated bio", 
         null, 
         null);
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
-    when(userDAO.updateUserProfile(anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
     User result = userService.updateUserProfile(updateRequest, 1L);
@@ -218,7 +218,7 @@ class UserServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals("Updated bio", testUser.getBio());
-    verify(userDAO, never()).getUserByUsername(anyString());
+    verify(userRepository, never()).findByUsername(anyString());
   }
 
   @Test
@@ -231,8 +231,8 @@ class UserServiceTest {
         null, 
         null);
     String originalUsername = testUser.getUsername();
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
-    when(userDAO.updateUserProfile(anyLong(), anyString(), anyString(), anyString())).thenReturn(true);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
     User result = userService.updateUserProfile(partialUpdate, 1L);
@@ -267,7 +267,7 @@ class UserServiceTest {
         throw new IllegalArgumentException("Unknown operation: " + operation);
     }
     assertTrue(exception.getMessage().contains("not authorized"));
-    verifyNoInteractions(userDAO);
+    verifyNoInteractions(userRepository);
   }
 
   static Stream<Arguments> unauthorizedOperationTestCases() {
@@ -282,8 +282,8 @@ class UserServiceTest {
   void updateUserAvatar_AsOwner_ShouldUpdateAvatar() {
     // Arrange
     String newAvatarUrl = "https://example.com/avatar.jpg";
-    when(userDAO.getUserById(1L)).thenReturn(Optional.of(testUser));
-    when(userDAO.updateUserAvatar(1, newAvatarUrl)).thenReturn(true);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
     User result = userService.updateUserAvatar(1L, newAvatarUrl, 1L);

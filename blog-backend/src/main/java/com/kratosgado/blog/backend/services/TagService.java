@@ -2,10 +2,14 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
-import com.kratosgado.blog.backend.dao.TagDAO;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
@@ -18,11 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TagService {
 
-  private final TagDAO tagDAO;
+  private final TagRepository tagRepository;
   private final TagCache tagCache;
 
-  public TagService(TagDAO tagDAO, TagCache tagCache) {
-    this.tagDAO = tagDAO;
+  public TagService(TagRepository tagRepository, TagCache tagCache) {
+    this.tagRepository = tagRepository;
     this.tagCache = tagCache;
   }
 
@@ -30,24 +34,23 @@ public class TagService {
 
     String slug = generateSlug(request.name());
 
-    if (tagDAO.getTagBySlug(slug).isPresent()) {
+    if (tagRepository.findBySlug(slug).isPresent()) {
       throw BlogException.duplicateResource("Tag", "slug", slug);
     }
 
     Tag tag = new Tag(request.name(), slug, request.description());
-    
-    return tagDAO.createTag(tag)
-        .orElseThrow(() -> BlogException.internal("Failed to create tag"));
+
+    return tagRepository.save(tag);
   }
 
   public Tag updateTag(Long id, UpdateTagRequest request) {
 
-    Tag tag = tagDAO.getTagById(id.intValue())
+    Tag tag = tagRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
 
     if (request.name() != null && !request.name().equals(tag.getName())) {
       String newSlug = generateSlug(request.name());
-      if (tagDAO.getTagBySlug(newSlug).isPresent() && !newSlug.equals(tag.getSlug())) {
+      if (tagRepository.findBySlug(newSlug).isPresent() && !newSlug.equals(tag.getSlug())) {
         throw BlogException.duplicateResource("Tag", "slug", newSlug);
       }
       tag.setName(request.name());
@@ -58,95 +61,46 @@ public class TagService {
       tag.setDescription(request.description());
     }
 
-    if (!tagDAO.updateTag(tag)) {
-      throw BlogException.internal("Failed to update tag");
-    }
-
-    return tag;
+    return tagRepository.save(tag);
   }
 
   public void deleteTag(Long id) {
 
-    if (!tagDAO.getTagById(id.intValue()).isPresent()) {
+    if (!tagRepository.existsById(id)) {
       throw BlogException.notFound("Tag", "id", id);
     }
 
-    if (!tagDAO.deleteTag(id.intValue())) {
-      throw BlogException.internal("Failed to delete tag");
-    }
+    tagRepository.deleteById(id);
   }
 
   public Tag getTagById(Long id) {
     // Try to get from cache first
     return tagCache.get(id).orElseGet(() -> {
       log.debug("Cache miss for tag ID: {}, fetching from database", id);
-      
-      Tag tag = tagDAO.getTagById(id.intValue())
+
+      Tag tag = tagRepository.findById(id)
           .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
-      
+
       // Cache the result
       tagCache.put(id, tag);
-      
+
       return tag;
     });
   }
 
   public Tag getTagBySlug(String slug) {
-    return tagDAO.getTagBySlug(slug)
+    return tagRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Tag", "slug", slug));
   }
 
-  public List<Tag> getAllTags() {
-    return tagDAO.getAllTags();
+  public PageResponse<Tag> getAllTags(Pageable pageable) {
+    Page<Tag> tagPage = tagRepository.findAll(pageable);
+    return DtoMapper.toPageResponse(tagPage, pageable);
   }
 
-  public PageResponse<Tag> getAllTags(int page, int size) {
-    List<Tag> allTags = tagDAO.getAllTags();
-    int totalElements = allTags.size();
-    int totalPages = (int) Math.ceil((double) totalElements / size);
-    
-    int offset = (page - 1) * size;
-    int endIndex = Math.min(offset + size, totalElements);
-    
-    List<Tag> pagedTags = allTags.subList(offset, endIndex);
-    
-    return new PageResponse<>(
-        pagedTags,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        page < totalPages,
-        page > 1
-    );
-  }
-
-  public PageResponse<Tag> searchTags(String keyword, int page, int size) {
-    List<Tag> allTags = tagDAO.getAllTags();
-    
-    // Filter tags by keyword
-    List<Tag> filteredTags = allTags.stream()
-        .filter(tag -> tag.getName().toLowerCase().contains(keyword.toLowerCase()) ||
-                      (tag.getDescription() != null && tag.getDescription().toLowerCase().contains(keyword.toLowerCase())))
-        .toList();
-    
-    int totalElements = filteredTags.size();
-    int totalPages = (int) Math.ceil((double) totalElements / size);
-    
-    int offset = (page - 1) * size;
-    int endIndex = Math.min(offset + size, totalElements);
-    
-    List<Tag> pagedTags = filteredTags.subList(offset, endIndex);
-    
-    return new PageResponse<>(
-        pagedTags,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        page < totalPages,
-        page > 1
-    );
+  public PageResponse<Tag> searchTags(String keyword, Pageable pageable) {
+    Page<Tag> tagPage = tagRepository.searchByName(keyword, pageable);
+    return DtoMapper.toPageResponse(tagPage, pageable);
   }
 
   private String generateSlug(String name) {
@@ -155,4 +109,3 @@ public class TagService {
         .replaceAll("^-+|-+$", "");
   }
 }
-

@@ -11,12 +11,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import com.kratosgado.blog.backend.dao.CategoryDAO;
-import com.kratosgado.blog.backend.dao.PostDAO;
-import com.kratosgado.blog.backend.dao.TagDAO;
-import com.kratosgado.blog.backend.dao.UserDAO;
-import com.kratosgado.blog.backend.dao.nosql.CommentMongoDAO;
-import com.kratosgado.blog.backend.dao.nosql.ReviewMongoDAO;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
@@ -39,19 +39,19 @@ public class FakeDataSeeder implements CommandLineRunner {
 
   private final Faker faker = new Faker();
   private final Random random = new Random();
-  private final UserDAO userDAO;
-  private final PostDAO postDAO;
-  private final CategoryDAO categoryDAO;
-  private final TagDAO tagDAO;
-  private final CommentMongoDAO commentDAO;
-  private final ReviewMongoDAO reviewDAO;
+  private final UserRepository userRepository;
+  private final PostRepository postRepository;
+  private final CategoryRepository categoryRepository;
+  private final TagRepository tagRepository;
+  private final CommentRepository commentRepository;
+  private final ReviewRepository reviewRepository;
 
   @Override
   public void run(String... args) {
     log.info("Starting data seeding...");
 
     // Check if data already exists
-    if (!userDAO.getAllUsers().isEmpty()) {
+    if (!userRepository.findAll().isEmpty()) {
       log.info("Database already contains data. Skipping seeding.");
       return;
     }
@@ -83,11 +83,9 @@ public class FakeDataSeeder implements CommandLineRunner {
         .mapToObj(i -> createFakeUser(i))
         .collect(Collectors.toList());
 
-    List<User> savedUsers = new ArrayList<>();
-    for (User user : users) {
-      userDAO.createUser(user).ifPresent(savedUsers::add);
-    }
-    return savedUsers;
+    return users.stream()
+        .map(user -> userRepository.save(user))
+        .collect(Collectors.toList());
   }
 
   private User createFakeUser(int index) {
@@ -117,11 +115,9 @@ public class FakeDataSeeder implements CommandLineRunner {
         .map(this::createFakeCategory)
         .collect(Collectors.toList());
 
-    List<Category> savedCategories = new ArrayList<>();
-    for (Category category : categories) {
-      categoryDAO.createCategory(category).ifPresent(savedCategories::add);
-    }
-    return savedCategories;
+    return categories.stream()
+        .map(category -> categoryRepository.save(category))
+        .collect(Collectors.toList());
   }
 
   private Category createFakeCategory(String name) {
@@ -137,11 +133,9 @@ public class FakeDataSeeder implements CommandLineRunner {
         .mapToObj(i -> createFakeTag())
         .collect(Collectors.toList());
 
-    List<Tag> savedTags = new ArrayList<>();
-    for (Tag tag : tags) {
-      tagDAO.createTag(tag).ifPresent(savedTags::add);
-    }
-    return savedTags;
+    return tags.stream()
+        .map(tag -> tagRepository.save(tag))
+        .collect(Collectors.toList());
   }
 
   private Tag createFakeTag() {
@@ -165,14 +159,15 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     List<Post> savedPosts = new ArrayList<>();
     for (Post post : posts) {
-      postDAO.createPost(post).ifPresent(saved -> {
-        savedPosts.add(saved);
-        // Add random tags to post
-        int tagCount = faker.number().numberBetween(2, Math.min(6, tags.size() + 1));
-        for (int i = 0; i < tagCount && i < tags.size(); i++) {
-          postDAO.addTagToPost(saved.getId(), tags.get(i).getId());
-        }
-      });
+      Post saved = postRepository.save(post);
+      savedPosts.add(saved);
+      
+      // Add random tags to post
+      int tagCount = faker.number().numberBetween(2, Math.min(6, tags.size() + 1));
+      for (int i = 0; i < tagCount && i < tags.size(); i++) {
+        saved.getTags().add(tags.get(i));
+      }
+      postRepository.save(saved);
     }
     return savedPosts;
   }
@@ -185,7 +180,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     post.setTitle(title);
     post.setContent(generateBlogContent());
     post.setExcerpt(faker.lorem().sentence(20));
-    post.setStatus(faker.options().option(PostStatus.published.name(), PostStatus.draft.name()));
+    post.setStatus(faker.number().numberBetween(0, 2) == 0 ? PostStatus.published : PostStatus.draft);
     post.setViews(faker.number().numberBetween(0, 5000));
     post.setCoverImage(faker.internet().image());
 
@@ -215,13 +210,8 @@ public class FakeDataSeeder implements CommandLineRunner {
         .mapToObj(i -> createFakeComment(posts, users))
         .collect(Collectors.toList());
 
-    int saved = 0;
-    for (Comment comment : comments) {
-      if (commentDAO.createComment(comment).isPresent()) {
-        saved++;
-      }
-    }
-    return saved;
+    comments.forEach(comment -> commentRepository.save(comment));
+    return comments.size();
   }
 
   private Comment createFakeComment(List<Post> posts, List<User> users) {
@@ -229,8 +219,8 @@ public class FakeDataSeeder implements CommandLineRunner {
     User user = getRandomElement(users);
 
     Comment comment = new Comment();
-    comment.setPostId(Long.valueOf(post.getId()));
-    comment.setUserId(Long.valueOf(user.getId()));
+    comment.setPostId(post.getId());
+    comment.setUserId(user.getId());
     comment.setAuthorName(user.getUsername());
     comment.setAuthorAvatarUrl(user.getAvatarUrl());
     comment.setContent(faker.lorem().paragraph(faker.number().numberBetween(2, 5)));
@@ -250,13 +240,8 @@ public class FakeDataSeeder implements CommandLineRunner {
         .mapToObj(i -> createFakeReview(posts, users))
         .collect(Collectors.toList());
 
-    int saved = 0;
-    for (Review review : reviews) {
-      if (reviewDAO.createReview(review).isPresent()) {
-        saved++;
-      }
-    }
-    return saved;
+    reviews.forEach(review -> reviewRepository.save(review));
+    return reviews.size();
   }
 
   private Review createFakeReview(List<Post> posts, List<User> users) {
@@ -264,8 +249,8 @@ public class FakeDataSeeder implements CommandLineRunner {
     User user = getRandomElement(users);
 
     Review review = new Review();
-    review.setPostId(Long.valueOf(post.getId()));
-    review.setUserId(Long.valueOf(user.getId()));
+    review.setPostId(post.getId());
+    review.setUserId(user.getId());
     review.setAuthorName(user.getUsername());
     review.setAuthorAvatarUrl(user.getAvatarUrl());
     review.setRating(faker.number().numberBetween(1, 6)); // 1-5 stars

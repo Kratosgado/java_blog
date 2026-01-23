@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -31,12 +32,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
-import com.kratosgado.blog.backend.dao.CategoryDAO;
-import com.kratosgado.blog.backend.dao.PostDAO;
-import com.kratosgado.blog.backend.dao.TagDAO;
-import com.kratosgado.blog.backend.dao.UserDAO;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
@@ -55,16 +59,16 @@ import com.kratosgado.blog.models.User;
 class PostServiceTest {
 
   @Mock
-  private PostDAO postDAO;
+  private PostRepository postRepository;
 
   @Mock
-  private TagDAO tagDAO;
+  private TagRepository tagRepository;
 
   @Mock
-  private UserDAO userDAO;
+  private UserRepository userRepository;
 
   @Mock
-  private CategoryDAO categoryDAO;
+  private CategoryRepository categoryRepository;
 
   @Mock
   private PostCache postCache;
@@ -88,18 +92,18 @@ class PostServiceTest {
     testUser.setAvatarUrl("avatar.jpg");
 
     testCategory = new Category();
-    testCategory.setId(1);
+    testCategory.setId(1L);
     testCategory.setName("Test Category");
     testCategory.setSlug("test-category");
 
     testPost = new Post();
-    testPost.setId(1);
+    testPost.setId(1L);
     testPost.setUserId(1L);
     testPost.setTitle("Test Post");
     testPost.setContent("Test Content");
     testPost.setExcerpt("Test Excerpt");
-    testPost.setStatus("published");
-    testPost.setCategoryId(1);
+    testPost.setStatus(PostStatus.published);
+    testPost.setCategoryId(1L);
     testPost.setCreatedAt(LocalDateTime.now());
 
     // Create test PostResponse
@@ -140,13 +144,11 @@ class PostServiceTest {
   @DisplayName("Should successfully create a post")
   void createPost_WithValidData_ShouldReturnPostResponse() {
     // Arrange
-    when(postDAO.createPost(any(Post.class))).thenReturn(Optional.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
-    when(categoryDAO.getCategoryById(anyInt())).thenReturn(Optional.of(testCategory));
+    when(postRepository.save(any(Post.class))).thenReturn(testPost);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock
-          .when(() -> DtoMapper.toPostResponse(any(Post.class), any(User.class), any(Category.class), anyList()))
+          .when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
 
       // Act
@@ -163,11 +165,8 @@ class PostServiceTest {
   @DisplayName("Should successfully update a post")
   void updatePost_WithValidData_ShouldReturnUpdatedPostResponse() {
     // Arrange
-    when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
-    when(postDAO.updatePost(any(Post.class))).thenReturn(Optional.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
-    when(userDAO.getUserById(anyLong())).thenReturn(Optional.of(testUser));
-    when(categoryDAO.getCategoryById(anyInt())).thenReturn(Optional.of(testCategory));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
+    when(postRepository.save(any(Post.class))).thenReturn(testPost);
 
     PostResponse updatedResponse = new PostResponse(
         1L,
@@ -187,7 +186,7 @@ class PostServiceTest {
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock
-          .when(() -> DtoMapper.toPostResponse(any(Post.class), any(User.class), any(Category.class), anyList()))
+          .when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(updatedResponse);
 
       // Act
@@ -208,10 +207,10 @@ class PostServiceTest {
     switch (operation) {
       case "update":
       case "delete":
-        when(postDAO.getPostById(1)).thenReturn(Optional.empty());
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
         break;
       case "getById":
-        when(postDAO.getPostById(1)).thenReturn(Optional.empty());
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
         break;
     }
 
@@ -251,14 +250,14 @@ class PostServiceTest {
   @DisplayName("Should successfully delete a post")
   void deletePost_WithValidId_ShouldDeletePost() {
     // Arrange
-    when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
-    when(postDAO.deletePost(1)).thenReturn(true);
+    when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
+    doNothing().when(postRepository).deleteById(1L);
 
     // Act
     postService.deletePost(1L, 1L);
 
     // Assert
-    verify(postDAO).deletePost(1);
+    verify(postRepository).deleteById(1L);
   }
 
   @Test
@@ -269,14 +268,14 @@ class PostServiceTest {
     when(postCache.get(slug)).thenReturn(Optional.of(testPostResponse));
 
     // Act
-    PostResponse result = postService.getPostBySlug(slug);
+      PostResponse result = postService.getPostBySlug(slug);
 
     // Assert
     assertNotNull(result);
     assertEquals(testPostResponse.id(), result.id());
     assertEquals(testPostResponse.slug(), result.slug());
     assertEquals(testPostResponse.title(), result.title());
-    verify(postDAO, never()).getPostBySlug(slug);
+    verify(postRepository, never()).findBySlug(slug);
   }
 
   @Test
@@ -286,16 +285,16 @@ class PostServiceTest {
     String slug = "test-post";
     testPost.setSlug(slug);
     when(postCache.get(slug)).thenReturn(Optional.empty());
-    when(postDAO.getPostBySlug(slug)).thenReturn(Optional.of(testPost));
-    when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
-    doNothing().when(postDAO).incrementViews(anyLong());
+    when(postRepository.findBySlug(slug)).thenReturn(Optional.of(testPost));
+    when(tagRepository.findByPostId(1L)).thenReturn(new ArrayList<>());
+    doNothing().when(postRepository).incrementViews(anyLong());
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
 
       // Act
-      PostResponse result = postService.getPostBySlug(slug);
+    PostResponse result = postService.getPostBySlug(slug);
 
       // Assert
       assertNotNull(result);
@@ -309,12 +308,10 @@ class PostServiceTest {
   @DisplayName("Should successfully get post by ID from database without cache")
   void getPostById_WithValidId_ShouldReturnPostResponseFromDatabase() {
     // Arrange
-    when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
-    when(tagDAO.getTagsByPostId(1)).thenReturn(new ArrayList<>());
-    doNothing().when(postDAO).incrementViews(anyLong());
+    when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
 
       // Act
@@ -323,7 +320,7 @@ class PostServiceTest {
       // Assert
       assertNotNull(result);
       assertEquals(testPostResponse.id(), result.id());
-      verify(postDAO).getPostById(1);
+      verify(postRepository).findById(1L);
     }
   }
 
@@ -331,15 +328,15 @@ class PostServiceTest {
   @DisplayName("Should successfully get published posts")
   void getPublishedPosts_ShouldReturnPageOfPosts() {
     // Arrange
-    when(postDAO.getPostsPaginated(anyInt(), anyInt())).thenReturn(List.of(testPost));
-    when(postDAO.getPublishedPostCount()).thenReturn(1);
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
+    Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0, 10), 1);
+    Page<PostResponse> postResponsePage = new PageImpl<>(List.of(testPostResponse), PageRequest.of(0, 10), 1);
+    when(postRepository.findPublishedPosts(any(PageRequest.class))).thenReturn(postPage);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
-      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
-          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 1, 1, 1, true, false));
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
       // Act
       PageResponse<PostResponse> result = postService.getPublishedPosts(1, 10);
@@ -355,14 +352,14 @@ class PostServiceTest {
   void searchPosts_WithKeyword_ShouldReturnPageOfPosts() {
     // Arrange
     String keyword = "test";
-    when(postDAO.searchPostsByKeyword(keyword)).thenReturn(List.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
+    Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0, 10), 1);
+    when(postRepository.searchPublishedPosts(eq(keyword), any(PageRequest.class))).thenReturn(postPage);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
-      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
-          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 1, 1, 1, true, false));
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
       // Act
       var result = postService.searchPosts(keyword, 1, 10);
@@ -377,15 +374,14 @@ class PostServiceTest {
   @DisplayName("Should successfully get user posts")
   void getUserPosts_WithUserId_ShouldReturnPageOfPostResponses() {
     // Arrange
-    when(postDAO.getPostsByUserIdPaginated(1, 1, 10)).thenReturn(List.of(testPost));
-    when(postDAO.getPostsByUserId(1)).thenReturn(List.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
+    Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0, 10), 1);
+    when(postRepository.findByUserId(eq(1L), any(PageRequest.class))).thenReturn(postPage);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
-      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
-          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 1, 1, 1, true, false));
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
       // Act
       PageResponse<PostResponse> result = postService.getUserPosts(1L, 1, 10);
@@ -401,14 +397,14 @@ class PostServiceTest {
   @DisplayName("Should successfully get posts by category")
   void getPostsByCategory_WithCategoryId_ShouldReturnPageOfPostResponses() {
     // Arrange
-    when(postDAO.getPostsByCategoryId(1)).thenReturn(List.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
+    Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0, 10), 1);
+    when(postRepository.findByCategoryId(eq(1L), any(PageRequest.class))).thenReturn(postPage);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class), anyList()))
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(testPostResponse);
-      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
-          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 1, 1, 1, true, false));
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
       // Act
       PageResponse<PostResponse> result = postService.getPostsByCategory(1L, 1, 10);
@@ -433,11 +429,8 @@ class PostServiceTest {
         null);
 
     String originalContent = testPost.getContent();
-    when(postDAO.getPostById(1)).thenReturn(Optional.of(testPost));
-    when(postDAO.updatePost(any(Post.class))).thenReturn(Optional.of(testPost));
-    when(tagDAO.getTagsByPostId(anyInt())).thenReturn(new ArrayList<>());
-    when(userDAO.getUserById(anyLong())).thenReturn(Optional.of(testUser));
-    when(categoryDAO.getCategoryById(anyInt())).thenReturn(Optional.of(testCategory));
+    when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
+    when(postRepository.save(any(Post.class))).thenReturn(testPost);
 
     PostResponse partialUpdateResponse = new PostResponse(
         1L,
@@ -457,7 +450,7 @@ class PostServiceTest {
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock
-          .when(() -> DtoMapper.toPostResponse(any(Post.class), any(User.class), any(Category.class), anyList()))
+          .when(() -> DtoMapper.toPostResponse(any(Post.class)))
           .thenReturn(partialUpdateResponse);
 
       // Act

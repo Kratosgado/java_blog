@@ -18,11 +18,13 @@ import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth", description = "Authentication APIs")
 @RequiredArgsConstructor
 public class AuthController {
   private final AuthService authService;

@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -86,10 +88,8 @@ public class TagController {
   @GetMapping
   @Operation(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   @GetEnpoint
-  public PageResponse<Tag> getTags(
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return tagService.getAllTags(page, size);
+  public PageResponse<Tag> getTags(@ParameterObject Pageable pageable) {
+    return tagService.getAllTags(pageable);
   }
 
   @GetMapping("/search")
@@ -97,8 +97,7 @@ public class TagController {
   @GetEnpoint
   public PageResponse<Tag> searchTags(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @RequestParam(defaultValue = "1") @Parameter(description = "Page number (1-indexed)") int page,
-      @RequestParam(defaultValue = "10") @Parameter(description = "Page size") int size) {
-    return tagService.searchTags(keyword, page, size);
+      @ParameterObject Pageable pageable) {
+    return tagService.searchTags(keyword, pageable);
   }
 }

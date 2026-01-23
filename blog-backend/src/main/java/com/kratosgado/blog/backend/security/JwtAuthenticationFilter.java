@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.kratosgado.blog.backend.dao.UserDAO;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.models.User;
 
 import jakarta.servlet.FilterChain;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
-  private final UserDAO userDAO;
+  private final UserRepository userRepository;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
@@ -50,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       // If username is not null and no authentication is set in the context
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        Optional<User> userOptional = userDAO.getUserByEmail(username);
+        Optional<User> userOptional = userRepository.findByEmail(username);
         if (userOptional.isPresent()) {
           User user = userOptional.get();
 

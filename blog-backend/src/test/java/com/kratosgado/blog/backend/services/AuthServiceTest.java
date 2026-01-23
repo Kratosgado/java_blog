@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.dao.UserDAO;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
@@ -26,7 +26,7 @@ import com.kratosgado.blog.models.User;
 class AuthServiceTest {
 
   @Mock
-  private UserDAO userDAO;
+  private UserRepository userRepository;
 
   @Mock
   private PasswordEncoder passwordEncoder;
@@ -55,7 +55,7 @@ class AuthServiceTest {
   @DisplayName("Should successfully login with valid credentials")
   void login_WithValidCredentials_ShouldReturnUser() {
     // Arrange
-    when(userDAO.getUserByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(true);
 
     // Act
@@ -70,7 +70,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when user not found during login")
   void login_WithInvalidEmail_ShouldThrowException() {
     // Arrange
-    when(userDAO.getUserByEmail(loginRequest.email())).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.empty());
 
     // Act
     BlogException exception = assertThrows(BlogException.class, () -> authService.login(loginRequest));
@@ -84,7 +84,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when password is incorrect")
   void login_WithInvalidPassword_ShouldThrowException() {
     // Arrange
-    when(userDAO.getUserByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(false);
 
     // Act
@@ -98,9 +98,9 @@ class AuthServiceTest {
   @DisplayName("Should successfully register new user")
   void register_WithValidData_ShouldReturnUser() {
     // Arrange
-    when(userDAO.getUserByEmail(registerRequest.email())).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
     when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
-    when(userDAO.createUser(any(User.class))).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
     User result = authService.register(registerRequest);
@@ -114,7 +114,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when email already exists during registration")
   void register_WithExistingEmail_ShouldThrowException() {
     // Arrange
-    when(userDAO.getUserByEmail(registerRequest.email())).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(testUser));
 
     // Act
     BlogException exception = assertThrows(BlogException.class, () -> authService.register(registerRequest));
@@ -128,12 +128,12 @@ class AuthServiceTest {
   @DisplayName("Should set default role as USER during registration")
   void register_ShouldSetDefaultRole() {
     // Arrange
-    when(userDAO.getUserByEmail(registerRequest.email())).thenReturn(Optional.empty());
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
     when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
-    when(userDAO.createUser(any(User.class))).thenAnswer(invocation -> {
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
       User savedUser = invocation.getArgument(0);
       // The service doesn't set a role, so we can't test this behavior
-      return Optional.of(savedUser);
+      return savedUser;
     });
 
     // Act

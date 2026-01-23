@@ -70,7 +70,7 @@ GET {{host}}/posts/slug/getting-started-with-spring-boot-3 HTTP/1.1
 
 # @name getPosts
 
-GET {{host}}/posts?page=1&size=10&sort=id,asc HTTP/1.1
+GET {{host}}/posts?page=1&size=8&sort=id,asc HTTP/1.1
 
 
 ### 
