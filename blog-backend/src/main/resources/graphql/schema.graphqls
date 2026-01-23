@@ -21,15 +21,17 @@ type Query {
 
   # Category queries
   category(id: ID!): Category
-  categories: [Category!]!
+  categories(page: Int = 0, size: Int = 10): CategoryPage!
 
   # Tag queries
   tag(id: ID!): Tag
-  tags: [Tag!]!
+  tags(page: Int = 0, size: Int = 10): TagPage!
+  searchTags(keyword: String!, page: Int = 0, size: Int = 10): TagPage!
 
   # Review queries
   review(id: ID!): Review
-  reviewsByPost(postId: ID!): [Review!]!
+  reviewsByPost(postId: ID!, page: Int = 0, size: Int = 10): ReviewPage!
+  reviewsByUser(userId: ID!, page: Int = 0, size: Int = 10): ReviewPage!
 }
 
 type Mutation {
@@ -158,6 +160,36 @@ type PostPage {
 
 type CommentPage {
   content: [Comment!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type CategoryPage {
+  content: [Category!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type TagPage {
+  content: [Tag!]!
+  page: Int!
+  size: Int!
+  totalElements: Int!
+  totalPages: Int!
+  first: Boolean!
+  last: Boolean!
+}
+
+type ReviewPage {
+  content: [Review!]!
   page: Int!
   size: Int!
   totalElements: Int!
