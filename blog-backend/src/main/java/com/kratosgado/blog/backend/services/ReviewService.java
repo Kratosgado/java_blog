@@ -2,11 +2,15 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.dao.PostDAO;
-import com.kratosgado.blog.backend.dao.nosql.ReviewMongoDAO;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -21,22 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReviewService {
 
-  private final ReviewMongoDAO reviewDAO;
-  private final PostDAO postDAO;
+  private final ReviewRepository reviewRepository;
+  private final PostRepository postRepository;
   private final UserService userService;
 
   public Review createReview(CreateReviewRequest request, Long userId) {
 
-    if (!postDAO.getPostById(request.postId().intValue()).isPresent()) {
+    if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
     }
 
     // Check if user already reviewed this post
-    List<Review> existingReviews = reviewDAO.getReviewsByPostId(request.postId());
-    boolean alreadyReviewed = existingReviews.stream()
-        .anyMatch(review -> review.getUserId().equals(userId));
-    
-    if (alreadyReviewed) {
+    if (reviewRepository.existsByPostIdAndUserId(request.postId(), userId)) {
       throw BlogException.duplicateResource("You have already reviewed this post");
     }
 
@@ -53,8 +53,7 @@ public class ReviewService {
     review.setAuthorName(user.getUsername());
     review.setAuthorAvatarUrl(user.getAvatarUrl());
 
-    Review saved = reviewDAO.createReview(review)
-        .orElseThrow(() -> BlogException.internal("Failed to create review"));
+    Review saved = reviewRepository.save(review);
     
     log.debug("Created review with ID: {}", saved.getId());
     return saved;
@@ -62,7 +61,7 @@ public class ReviewService {
 
   public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
 
-    Review review = reviewDAO.getReviewById(id)
+    Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
@@ -81,9 +80,7 @@ public class ReviewService {
       review.setContent(request.content());
     }
     
-    if (!reviewDAO.updateReview(id, review)) {
-      throw BlogException.internal("Failed to update review");
-    }
+    review = reviewRepository.save(review);
     
     log.debug("Updated review with ID: {}", id);
     return review;
@@ -91,60 +88,47 @@ public class ReviewService {
 
   public void deleteReview(String id, Long userId) {
 
-    Review review = reviewDAO.getReviewById(id)
+    Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
       throw BlogException.unauthorized("You are not authorized to delete this review");
     }
 
-    if (!reviewDAO.deleteReview(id)) {
-      throw BlogException.internal("Failed to delete review");
-    }
+    reviewRepository.deleteById(id);
     
     log.debug("Deleted review with ID: {}", id);
   }
 
   public Review getReviewById(String id) {
-    return reviewDAO.getReviewById(id)
+    return reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
   }
 
+  public PageResponse<Review> getPostReviews(Long postId, Pageable pageable) {
+    Page<Review> reviewPage = reviewRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
+    return DtoMapper.toPageResponse(reviewPage, pageable);
+  }
+
   public PageResponse<Review> getPostReviews(Long postId, int page, int size) {
-    List<Review> reviews = reviewDAO.getReviewsByPostId(postId);
-    return paginateReviews(reviews, page, size);
+    return getPostReviews(postId, PageRequest.of(page - 1, size));
+  }
+
+  public PageResponse<Review> getUserReviews(Long userId, Pageable pageable) {
+    Page<Review> reviewPage = reviewRepository.findByUserId(userId, pageable);
+    return DtoMapper.toPageResponse(reviewPage, pageable);
   }
 
   public PageResponse<Review> getUserReviews(Long userId, int page, int size) {
-    List<Review> reviews = reviewDAO.getReviewsByUserId(userId);
-    return paginateReviews(reviews, page, size);
+    return getUserReviews(userId, PageRequest.of(page - 1, size));
   }
 
   public Double getAverageRating(Long postId) {
-    return reviewDAO.getAverageRatingForPost(postId);
+    var results = reviewRepository.getAverageRatingByPostId(postId);
+    return results.isEmpty() ? 0.0 : results.get(0).getAvgRating();
   }
 
   public Long getReviewCount(Long postId) {
-    return reviewDAO.getReviewCountForPost(postId);
-  }
-
-  private PageResponse<Review> paginateReviews(List<Review> reviews, int page, int size) {
-    int totalElements = reviews.size();
-    int totalPages = (int) Math.ceil((double) totalElements / size);
-    
-    int offset = (page - 1) * size;
-    int endIndex = Math.min(offset + size, totalElements);
-    
-    List<Review> pagedReviews = reviews.subList(Math.max(0, offset), Math.max(0, endIndex));
-    
-    return new PageResponse<>(
-        pagedReviews,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        page < totalPages,
-        page > 1
-    );
+    return reviewRepository.countByPostId(postId);
   }
 }
