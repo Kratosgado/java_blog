@@ -5,6 +5,7 @@ import com.kratosgado.blog.dtos.response.ResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -74,6 +75,15 @@ public class GlobalExceptionHandler {
         .status(HttpStatus.FORBIDDEN)
         .body(ResponseDto.error("Access denied: " + ex.getMessage()));
   }
+
+  // @ExceptionHandler(DataIntegrityViolationException.class)
+  // public ResponseEntity<ResponseDto<String>> handleDataIntegrityViolation(
+  //     DataIntegrityViolationException ex) {
+  //   logger.error("Data integrity violation: {}", ex.getMessage());
+  //   return ResponseEntity
+  //       .status(HttpStatus.CONFLICT)
+  //       .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
+  // }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<?> handleIllegalArgument(

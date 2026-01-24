@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.services.PostService;
 import com.kratosgado.blog.utils.Routes;
@@ -192,18 +193,18 @@ public class PostsListController {
     });
 
     // Status Column with badge styling
-    TableColumn<Post, String> statusCol = new TableColumn<>("Status");
+    TableColumn<Post, PostStatus> statusCol = new TableColumn<>("Status");
     statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
     statusCol.setPrefWidth(110);
-    statusCol.setCellFactory(column -> new TableCell<Post, String>() {
+    statusCol.setCellFactory(column -> new TableCell<Post, PostStatus>() {
       @Override
-      protected void updateItem(String item, boolean empty) {
+      protected void updateItem(PostStatus item, boolean empty) {
         super.updateItem(item, empty);
         if (empty || item == null) {
           setGraphic(null);
           setText(null);
         } else {
-          Label badge = new Label(item.toUpperCase());
+          Label badge = new Label(item.name().toUpperCase());
           badge.setStyle(getStatusStyle(item));
           badge.setAlignment(Pos.CENTER);
           badge.setMaxWidth(Double.MAX_VALUE);
@@ -212,19 +213,21 @@ public class PostsListController {
         }
       }
 
-      private String getStatusStyle(String status) {
-        return switch (status.toLowerCase()) {
-          case "published" -> "-fx-background-color: #d1fae5; -fx-text-fill: #065f46; " +
+      private String getStatusStyle(PostStatus status) {
+        if (status == PostStatus.published) {
+          return "-fx-background-color: #d1fae5; -fx-text-fill: #065f46; " +
               "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
-          case "draft" -> "-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
+        } else if (status == PostStatus.draft) {
+          return "-fx-background-color: #fef3c7; -fx-text-fill: #92400e; " +
               "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
-          default -> "-fx-background-color: #e5e7eb; -fx-text-fill: #374151; " +
+        } else {
+          return "-fx-background-color: #e5e7eb; -fx-text-fill: #374151; " +
               "-fx-padding: 4 12; -fx-background-radius: 12; -fx-font-size: 11px; -fx-font-weight: 700;";
-        };
+        }
       }
     });
 
-     ions Column with buttons
+    // Actions Column with buttons
     TableColumn<Post, Void> actionsCol = new TableColumn<>("Actions");
     actionsCol.setPrefWidth(200);
     actionsCol.setSortable(false);
@@ -302,7 +305,7 @@ public class PostsListController {
         p.setTitle(pr.title());
         p.setContent(pr.content());
         p.setExcerpt(pr.excerpt());
-        p.setStatus(pr.status().name().toLowerCase());
+        p.setStatus(pr.status());
         p.setCoverImage(pr.coverImage());
         p.setUserId(pr.authorId());
         p.setCategoryId(pr.categoryId());
@@ -343,8 +346,8 @@ public class PostsListController {
 
   private java.util.List<Post> filterPosts(java.util.List<Post> posts) {
     return switch (currentFilter) {
-      case "Published" -> posts.stream().filter(p -> "published".equals(p.getStatus())).toList();
-      case "Draft" -> posts.stream().filter(p -> "draft".equals(p.getStatus())).toList();
+      case "Published" -> posts.stream().filter(p -> p.getStatus() == PostStatus.published).toList();
+      case "Draft" -> posts.stream().filter(p -> p.getStatus() == PostStatus.draft).toList();
       default -> posts;
     };
   }
@@ -391,7 +394,7 @@ public class PostsListController {
           p.setTitle(pr.title());
           p.setContent(pr.content());
           p.setExcerpt(pr.excerpt());
-          p.setStatus(pr.status().name().toLowerCase());
+          p.setStatus(pr.status());
           p.setCoverImage(pr.coverImage());
           p.setUserId(pr.authorId());
           p.setCategoryId(pr.categoryId());

@@ -56,4 +56,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query("SELECT COUNT(p) FROM Post p WHERE p.status = 'published'")
   long countPublishedPosts();
+
+  @EntityGraph(value = "Post.withDetails", type = EntityGraph.EntityGraphType.LOAD)
+  Post save(Post post);
 }

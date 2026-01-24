@@ -15,13 +15,15 @@ Content-Type: application/json
 Authorization: {{userAuth}}
 
 {
-  "categoryId": 1,
+  "categoryId": 94,
   "content": "Spring Boot 3 brings many exciting features including native image support, improved observability, and Java 17+ baseline...",
   "excerpt": "Learn about the new features in Spring Boot 3",
   "featuredImage": "https://example.com/images/spring-boot-3.jpg",
-  "slug": "getting-started-with-spring-boot-3",
   "status": "draft",
-  "title": "Getting Started with Spring Boot 3"
+  "tagIds": [
+    59
+  ],
+  "title": "Gettig wht  is Started with Spring Boot 3"
 }
 
 
@@ -50,7 +52,7 @@ Authorization: {{userAuth}}
 
 # @name getPost
 
-GET {{host}}/posts/8 HTTP/1.1
+GET {{host}}/posts/466 HTTP/1.1
 
 
 ### 

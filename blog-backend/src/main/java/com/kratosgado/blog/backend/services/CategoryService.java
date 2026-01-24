@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
-import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
@@ -28,7 +29,7 @@ public class CategoryService {
   }
 
   public Category createCategory(CreateCategoryRequest request) {
-    String slug = generateSlug(request.name());
+    String slug = BlogUtils.toSlug(request.name());
 
     if (categoryRepository.findBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
@@ -47,7 +48,7 @@ public class CategoryService {
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
 
-    String slug = generateSlug(request.name());
+    String slug = BlogUtils.toSlug(request.name());
 
     if (!category.getSlug().equals(slug) && categoryRepository.findBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
@@ -68,13 +69,13 @@ public class CategoryService {
     // Try to get from cache first
     return categoryCache.get(categoryId).orElseGet(() -> {
       log.debug("Cache miss for category ID: {}, fetching from database", categoryId);
-      
+
       Category category = categoryRepository.findById(categoryId)
           .orElseThrow(() -> BlogException.notFound("Category not found"));
-      
+
       // Cache the result
       categoryCache.put(categoryId, category);
-      
+
       return category;
     });
   }
@@ -92,13 +93,4 @@ public class CategoryService {
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
   }
-
-  private String generateSlug(String name) {
-    return name.toLowerCase()
-        .replaceAll("[^a-z0-9\\s-]", "")
-        .replaceAll("\\s+", "-")
-        .replaceAll("-+", "-")
-        .trim();
-  }
 }
-

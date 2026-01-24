@@ -133,7 +133,7 @@ public class TagsManagementController {
     Label postCountLabel = new Label(tag.getPostCount() + " posts");
     postCountLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #9ca3af; -fx-font-style: italic;");
 
-     ions
+    // Actions
     HBox actionsBox = new HBox(8);
     actionsBox.setAlignment(Pos.CENTER);
 

@@ -13,7 +13,9 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
 import com.kratosgado.blog.utils.http.PostApiClient;
@@ -223,15 +225,20 @@ public class PostService {
     post.setContent(response.content());
     post.setExcerpt(response.excerpt());
     post.setCoverImage(response.coverImage());
-    post.setStatus(response.status() != null ? response.status().toString() : "DRAFT");
+    post.setStatus(response.status() != null ? response.status() : PostStatus.draft);
     post.setUserId(response.authorId()); // PostResponse uses authorId, Post uses userId
     post.setCategoryId(response.categoryId());
     post.setCreatedAt(response.createdAt());
     post.setUpdatedAt(response.updatedAt());
     post.setViews(response.views());
     post.setLikesCount(response.likesCount());
-    post.setAuthorName(response.authorName());
-    post.setAuthorAvatarUrl(response.authorAvatarUrl());
+    if (response.author() != null) {
+      User user = new User();
+      user.setUsername(response.author().username());
+      user.setAvatarUrl(response.author().avatarUrl());
+      user.setId(response.author().id());
+      post.setUser(user);
+    }
     return post;
   }
 

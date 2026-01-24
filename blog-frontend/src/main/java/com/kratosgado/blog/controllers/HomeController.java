@@ -36,6 +36,8 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import com.kratosgado.blog.enums.PostStatus;
+
 public class HomeController {
   private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
@@ -363,7 +365,7 @@ public class HomeController {
         p.setTitle(pr.title());
         p.setContent(pr.content());
         p.setExcerpt(pr.excerpt());
-        p.setStatus("published");
+        p.setStatus(PostStatus.published);
         p.setCoverImage(pr.coverImage());
         p.setUserId(pr.authorId());
         p.setCategoryId(pr.categoryId());
@@ -501,7 +503,7 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label metaLabel = new Label("By " + post.getAuthorName() + " • " + UiUtils.formatDate(post.getCreatedAt()));
+    Label metaLabel = new Label("By " + (post.getUser() != null ? post.getUser().getUsername() : "Unknown") + " • " + UiUtils.formatDate(post.getCreatedAt()));
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(imageView, titleLabel, metaLabel);
@@ -538,7 +540,7 @@ public class HomeController {
 
     HBox metaBox = new HBox(15);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label(post.getAuthorName());
+    Label authorLabel = new Label(post.getUser() != null ? post.getUser().getUsername() : "Unknown");
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
@@ -580,7 +582,7 @@ public class HomeController {
 
     HBox metaBox = new HBox(20);
     metaBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    Label authorLabel = new Label("By " + post.getAuthorName());
+    Label authorLabel = new Label("By " + (post.getUser() != null ? post.getUser().getUsername() : "Unknown"));
     authorLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");
     Label dateLabel = new Label(UiUtils.formatDate(post.getCreatedAt()));
     dateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #666;");

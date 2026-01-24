@@ -1,16 +1,14 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -32,7 +30,7 @@ public class TagService {
 
   public Tag createTag(CreateTagRequest request) {
 
-    String slug = generateSlug(request.name());
+    String slug = BlogUtils.toSlug(request.name());
 
     if (tagRepository.findBySlug(slug).isPresent()) {
       throw BlogException.duplicateResource("Tag", "slug", slug);
@@ -49,7 +47,7 @@ public class TagService {
         .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
 
     if (request.name() != null && !request.name().equals(tag.getName())) {
-      String newSlug = generateSlug(request.name());
+      String newSlug = BlogUtils.toSlug(request.name());
       if (tagRepository.findBySlug(newSlug).isPresent() && !newSlug.equals(tag.getSlug())) {
         throw BlogException.duplicateResource("Tag", "slug", newSlug);
       }
@@ -101,11 +99,5 @@ public class TagService {
   public PageResponse<Tag> searchTags(String keyword, Pageable pageable) {
     Page<Tag> tagPage = tagRepository.searchByName(keyword, pageable);
     return DtoMapper.toPageResponse(tagPage, pageable);
-  }
-
-  private String generateSlug(String name) {
-    return name.toLowerCase()
-        .replaceAll("[^a-z0-9]+", "-")
-        .replaceAll("^-+|-+$", "");
   }
 }

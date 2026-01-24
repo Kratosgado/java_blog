@@ -43,7 +43,7 @@ public class Icons {
     public static final String TAG = "🏷️";
     public static final String BOOKMARK = "🔖";
     
-     ions
+    // Actions
     public static final String SEARCH = "🔍";
     public static final String FILTER = "🔽";
     public static final String SORT = "⚡";

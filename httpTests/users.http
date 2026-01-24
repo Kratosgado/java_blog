@@ -20,7 +20,7 @@ GET {{host}}/users/1 HTTP/1.1
 
 # @name getAllUsers
 
-GET {{host}}/users?page=0&size=10 HTTP/1.1
+GET {{host}}/users?page=1&size=10 HTTP/1.1
 Authorization: {{userAuth}}
 
 

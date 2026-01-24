@@ -110,7 +110,7 @@ public class DashboardHomeController {
     VBox postInfo = new VBox(5);
     Label titleLabel = new Label(post.getTitle());
     titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14;");
-    Label statusLabel = new Label("Status: " + post.getStatus().toUpperCase());
+    Label statusLabel = new Label("Status: " + post.getStatus().toString().toUpperCase());
     statusLabel.setStyle("-fx-font-size: 12; -fx-text-fill: #666;");
     Label statsLabel = new Label("Views: " + post.getViews() + " | Date: " + post.getCreatedAt());
     statsLabel.setStyle("-fx-font-size: 11; -fx-text-fill: #999;");

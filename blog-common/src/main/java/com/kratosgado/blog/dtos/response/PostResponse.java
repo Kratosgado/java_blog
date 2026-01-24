@@ -20,4 +20,20 @@ public record PostResponse(
     Integer likesCount,
     String coverImage,
     List<TagSummary> tags) {
+
+  public Long authorId() {
+    return author != null ? author.id() : null;
+  }
+
+  public Long categoryId() {
+    return category != null ? category.id() : null;
+  }
+
+  public String authorName() {
+    return author != null ? author.username() : null;
+  }
+
+  public String authorAvatarUrl() {
+    return author != null ? author.avatarUrl() : null;
+  }
 }
