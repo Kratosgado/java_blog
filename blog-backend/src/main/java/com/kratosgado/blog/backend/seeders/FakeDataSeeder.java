@@ -17,6 +17,7 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
+import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
@@ -51,10 +52,11 @@ public class FakeDataSeeder implements CommandLineRunner {
     log.info("Starting data seeding...");
 
     // Check if data already exists
-    if (!userRepository.findAll().isEmpty()) {
+    if (!reviewRepository.findAll().isEmpty()) {
       log.info("Database already contains data. Skipping seeding.");
       return;
     }
+    clearDatabase();
 
     // Seed in order: Users -> Categories -> Tags -> Posts -> Comments -> Reviews
     List<User> users = seedUsers(20);
@@ -76,6 +78,17 @@ public class FakeDataSeeder implements CommandLineRunner {
     log.info("Seeded {} reviews", reviewCount);
 
     log.info("Data seeding completed successfully!");
+  }
+
+  private void clearDatabase() {
+    log.info("Clearing database...");
+    userRepository.deleteAll();
+    categoryRepository.deleteAll();
+    tagRepository.deleteAll();
+    postRepository.deleteAll();
+    commentRepository.deleteAll();
+    reviewRepository.deleteAll();
+    log.info("Database cleared successfully!");
   }
 
   private List<User> seedUsers(int count) {
@@ -123,7 +136,7 @@ public class FakeDataSeeder implements CommandLineRunner {
   private Category createFakeCategory(String name) {
     Category category = new Category();
     category.setName(name);
-    category.setSlug(slugify(name));
+    category.setSlug(BlogUtils.toSlug(name));
     category.setDescription(faker.lorem().sentence(20));
     return category;
   }
@@ -147,7 +160,7 @@ public class FakeDataSeeder implements CommandLineRunner {
         faker.color().name());
     Tag tag = new Tag();
     tag.setName(name);
-    tag.setSlug(slugify(name));
+    tag.setSlug(BlogUtils.toSlug(name));
     tag.setDescription(faker.lorem().sentence(10));
     return tag;
   }
@@ -161,7 +174,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     for (Post post : posts) {
       Post saved = postRepository.save(post);
       savedPosts.add(saved);
-      
+
       // Add random tags to post
       int tagCount = faker.number().numberBetween(2, Math.min(6, tags.size() + 1));
       for (int i = 0; i < tagCount && i < tags.size(); i++) {
@@ -176,11 +189,12 @@ public class FakeDataSeeder implements CommandLineRunner {
     Post post = new Post();
 
     // Basic fields
-    String title = faker.book().title();
+    String title = faker.lorem().sentence();
     post.setTitle(title);
+    post.setSlug(BlogUtils.toSlug(title));
     post.setContent(generateBlogContent());
     post.setExcerpt(faker.lorem().sentence(20));
-    post.setStatus(faker.number().numberBetween(0, 2) == 0 ? PostStatus.published : PostStatus.draft);
+    post.setStatus(faker.number().numberBetween(0, 1) == 0 ? PostStatus.draft : PostStatus.published);
     post.setViews(faker.number().numberBetween(0, 5000));
     post.setCoverImage(faker.internet().image());
 
@@ -267,11 +281,6 @@ public class FakeDataSeeder implements CommandLineRunner {
 
   private <T> T getRandomElement(List<T> list) {
     return list.get(random.nextInt(0, list.size()));
-  }
-
-  private String slugify(String name) {
-    return name.toLowerCase().replaceAll("[^a-z0-9\\s-]", "").replaceAll("\\s+", "-").replaceAll("-+", "-")
-        .replaceAll("^-|-$", "");
   }
 
   private LocalDateTime generateRandomPastDate() {

@@ -45,4 +45,8 @@ public class Tag {
     this.description = description;
   }
 
+  public int getPostCount() {
+    return posts.size();
+  }
+
 }

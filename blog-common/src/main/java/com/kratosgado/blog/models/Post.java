@@ -21,6 +21,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -32,6 +34,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@NamedEntityGraph(name = "Post.withDetails", attributeNodes = {
+    @NamedAttributeNode("user"),
+    @NamedAttributeNode("category"),
+    @NamedAttributeNode("tags")
+})
 @Table(name = "posts", indexes = {
     @Index(name = "idx_post_slug", columnList = "slug"),
     @Index(name = "idx_post_user", columnList = "user_id"),
@@ -88,20 +95,20 @@ public class Post {
 
   // relationships
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
+  @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
   @JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler", "bio", "location", "website",
       "createdAt", "role" })
   private User user;
 
-  @Column(name = "user_id", nullable = false, insertable = false, updatable = false)
+  @Column(name = "user_id", nullable = false)
   private Long userId;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "category_id")
+  @JoinColumn(name = "category_id", insertable = false, updatable = false)
   @JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler", "postCount", "description", "createdAt" })
   private Category category;
 
-  @Column(name = "category_id", insertable = false, updatable = false)
+  @Column(name = "category_id")
   private Long categoryId;
 
   @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })

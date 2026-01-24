@@ -42,4 +42,7 @@ public class Category {
   @Builder.Default
   private List<Post> posts = new ArrayList<>();
 
+  public int getPostCount() {
+    return posts.size();
+  }
 }
