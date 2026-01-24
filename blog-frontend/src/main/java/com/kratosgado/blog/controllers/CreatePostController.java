@@ -172,7 +172,8 @@ public class CreatePostController {
     Long categoryId = getSelectedCategoryId();
     String coverImage = coverImageField.getText();
     
-    return new CreatePostRequest(title, content, excerpt, categoryId, coverImage, status);
+    Long[] tagIds = postTagIds.toArray(new Long[0]);
+    return new CreatePostRequest(title, content, excerpt, categoryId, coverImage, status, tagIds);
   }
 
   private Long getSelectedCategoryId() {

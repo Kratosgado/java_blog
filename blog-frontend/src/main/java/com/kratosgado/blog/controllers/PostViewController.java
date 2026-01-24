@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
@@ -211,14 +212,19 @@ public class PostViewController implements Initializable {
       currentPost.setTitle(postResponse.title());
       currentPost.setContent(postResponse.content());
       currentPost.setExcerpt(postResponse.excerpt());
-      currentPost.setStatus(postResponse.status().name().toLowerCase());
+      currentPost.setStatus(postResponse.status());
       currentPost.setCreatedAt(postResponse.createdAt());
       currentPost.setUpdatedAt(postResponse.updatedAt());
       currentPost.setViews(Integer.valueOf(postResponse.views()));
       currentPost.setLikesCount(Integer.valueOf(postResponse.likesCount()));
       currentPost.setCoverImage(postResponse.coverImage());
-      currentPost.setAuthorName(postResponse.authorName());
-      currentPost.setAuthorAvatarUrl(postResponse.authorAvatarUrl());
+      if (postResponse.author() != null) {
+        User user = new User();
+        user.setUsername(postResponse.author().username());
+        user.setAvatarUrl(postResponse.author().avatarUrl());
+        user.setId(postResponse.author().id());
+        currentPost.setUser(user);
+      }
 
       logger.debug("Post loaded successfully: {}", id);
 
@@ -250,23 +256,24 @@ public class PostViewController implements Initializable {
       categoryLabel.setText("Uncategorized");
     }
 
-    authorLabel.setText(post.getAuthorName());
+    authorLabel.setText(post.getUser() != null ? post.getUser().getUsername() : "Unknown");
     dateLabel.setText(formatDate(post.getCreatedAt()));
     readTimeLabel.setText(calculateReadTime(post.getContent()));
 
     viewsLabel.setText("👁️ " + post.getViews() + " views");
 
     // Update author avatar with fallback
-    if (post.getAuthorAvatarUrl() != null && !post.getAuthorAvatarUrl().trim().isEmpty()) {
-      authorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
-      sidebarAuthorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getAuthorAvatarUrl()));
+    if (post.getUser() != null && post.getUser().getAvatarUrl() != null
+        && !post.getUser().getAvatarUrl().trim().isEmpty()) {
+      authorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getUser().getAvatarUrl()));
+      sidebarAuthorAvatar.setImage(ImageUtils.loadImageWithFallback(post.getUser().getAvatarUrl()));
     } else {
       authorAvatar.setImage(ImageUtils.loadDefaultAvatar());
       sidebarAuthorAvatar.setImage(ImageUtils.loadDefaultAvatar());
     }
 
     // Update sidebar author information
-    sidebarAuthorLabel.setText(post.getAuthorName());
+    sidebarAuthorLabel.setText(post.getUser() != null ? post.getUser().getUsername() : "Unknown");
 
     // Calculate total posts and views for author
     // TODO: Implement getTotalViews() and getPostsByUserId() in PostService
@@ -754,16 +761,17 @@ public class PostViewController implements Initializable {
     logger.info("Publishing post: {}", currentPost.getId());
     try {
       // Toggle publish/unpublish
-      if (currentPost.getStatus().equals("published")) {
+      if (currentPost.getStatus().equals(PostStatus.published)) {
         // Unpublish
-        currentPost.setStatus("draft");
+        currentPost.setStatus(PostStatus.draft);
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
             currentPost.getTitle(),
             currentPost.getContent(),
             currentPost.getExcerpt(),
             currentPost.getCategoryId(),
             currentPost.getCoverImage(),
-            "draft");
+            PostStatus.draft,
+            null);
 
         Post updated = postService.updatePost(currentPost.getId(), dto);
         if (updated != null) {
@@ -784,11 +792,12 @@ public class PostViewController implements Initializable {
             currentPost.getExcerpt(),
             currentPost.getCategoryId(),
             currentPost.getCoverImage(),
-            "published");
+            PostStatus.published,
+            null);
 
         Post published = postService.updatePost(currentPost.getId(), dto);
         if (published != null) {
-          currentPost.setStatus("published");
+          currentPost.setStatus(PostStatus.published);
           publishBtn.setText("Published");
           publishBtn.setStyle(
               "-fx-background-color: #4caf50; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10 20;");

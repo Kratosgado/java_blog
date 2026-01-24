@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
@@ -185,7 +186,7 @@ public class EditPostController implements Initializable {
       currentPost.setTitle(postResponse.title());
       currentPost.setContent(postResponse.content());
       currentPost.setExcerpt(postResponse.excerpt());
-      currentPost.setStatus(postResponse.status().name().toLowerCase());
+      currentPost.setStatus(postResponse.status());
       currentPost.setCoverImage(postResponse.coverImage());
       currentPost.setUserId(postResponse.authorId());
       currentPost.setCategoryId(postResponse.categoryId());
@@ -268,7 +269,7 @@ public class EditPostController implements Initializable {
     wordCountLabel.setText(wordCount + " words");
   }
 
-  private void updatePostFromForm(String status) {
+  private void updatePostFromForm(PostStatus status) {
     currentPost.setTitle(titleField.getText());
     currentPost.setContent(contentArea.getText());
     currentPost.setExcerpt(excerptArea.getText());
@@ -279,7 +280,7 @@ public class EditPostController implements Initializable {
   private void publishPost() {
     if (validateForm()) {
       try {
-        updatePostFromForm("published");
+        updatePostFromForm(PostStatus.published);
         
         // Get category ID from selected category
         Long categoryId = null;
@@ -300,7 +301,8 @@ public class EditPostController implements Initializable {
             currentPost.getExcerpt(),
             categoryId,
             currentPost.getCoverImage(),
-            currentPost.getStatus());
+            currentPost.getStatus(),
+            null);
 
         Post updatedPost = postService.updatePost(currentPost.getId(), dto);
         if (updatedPost != null) {
@@ -336,7 +338,7 @@ public class EditPostController implements Initializable {
   private void saveDraft() {
     if (!titleField.getText().isEmpty()) {
       try {
-        updatePostFromForm("draft");
+        updatePostFromForm(PostStatus.draft);
         
         // Get category ID from selected category
         Long categoryId = null;
@@ -357,7 +359,8 @@ public class EditPostController implements Initializable {
             currentPost.getExcerpt(),
             categoryId,
             currentPost.getCoverImage(),
-            currentPost.getStatus());
+            currentPost.getStatus(),
+            null);
 
         Post updatedPost = postService.updatePost(currentPost.getId(), dto);
         if (updatedPost != null) {
