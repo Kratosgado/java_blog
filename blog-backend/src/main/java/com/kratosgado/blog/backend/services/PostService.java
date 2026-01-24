@@ -14,7 +14,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
@@ -25,33 +25,35 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class PostService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
-  private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
   private final PostCache postCache;
-
-  public PostService(PostRepository postRepository, TagRepository tagRepository, UserRepository userRepository,
-      CategoryRepository categoryRepository, PostCache postCache) {
-    this.postRepository = postRepository;
-    this.tagRepository = tagRepository;
-    this.userRepository = userRepository;
-    this.categoryRepository = categoryRepository;
-    this.postCache = postCache;
-  }
 
   public PostResponse createPost(CreatePostRequest request, User user) {
     Post post = new Post();
     post.setUserId(user.getId());
+    post.setUser(user);
     post.setTitle(request.title());
-    post.setSlug(generateSlug(request.title()));
+    post.setSlug(BlogUtils.toSlug(request.title()));
     post.setContent(request.content());
     post.setExcerpt(request.excerpt());
     post.setCategoryId(request.categoryId());
+    if (request.categoryId() != null && !categoryRepository.existsById(request.categoryId())) {
+      throw BlogException.badRequest("Category not found");
+    }
     post.setCoverImage(request.coverImage());
-    post.setStatus(PostStatus.valueOf(request.status()));
+    post.setStatus(PostStatus.valueOf(request.status().toLowerCase()));
+
+    if (request.tagIds() != null && request.tagIds().length > 0) {
+      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
+      post.setTags(tags);
+    }
 
     Post savedPost = postRepository.save(post);
     return DtoMapper.toPostResponse(savedPost);
@@ -67,18 +69,25 @@ public class PostService {
 
     if (request.title() != null) {
       post.setTitle(request.title());
-      post.setSlug(generateSlug(request.title()));
+      post.setSlug(BlogUtils.toSlug(request.title()));
     }
     if (request.content() != null)
       post.setContent(request.content());
     if (request.excerpt() != null)
       post.setExcerpt(request.excerpt());
-    if (request.categoryId() != null)
+    if (request.categoryId() != null) {
       post.setCategoryId(request.categoryId());
+      categoryRepository.findById(request.categoryId()).ifPresent(post::setCategory);
+    }
     if (request.coverImage() != null)
       post.setCoverImage(request.coverImage());
     if (request.status() != null)
       post.setStatus(request.status());
+
+    if (request.tagIds() != null) {
+      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
+      post.setTags(tags);
+    }
 
     Post updatedPost = postRepository.save(post);
     return DtoMapper.toPostResponse(updatedPost);
@@ -157,14 +166,6 @@ public class PostService {
 
   public PageResponse<PostResponse> getPostsByCategory(Long categoryId, int page, int size) {
     return getPostsByCategory(categoryId, PageRequest.of(page - 1, size));
-  }
-
-  private String generateSlug(String title) {
-    return title.toLowerCase()
-        .replaceAll("[^a-z0-9\\s-]", "")
-        .replaceAll("\\s+", "-")
-        .replaceAll("-+", "-")
-        .replaceAll("^-|-$", "");
   }
 
 }

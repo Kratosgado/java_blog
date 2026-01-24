@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
@@ -127,7 +127,8 @@ class PostServiceTest {
         "New Excerpt",
         1L,
         "cover.jpg",
-        "draft");
+        "draft",
+        new Long[] { 1L, 2L });
 
     updateRequest = new UpdatePostRequest(
         "Updated Title",
@@ -135,7 +136,8 @@ class PostServiceTest {
         "Updated Excerpt",
         2L,
         "new-cover.jpg",
-        PostStatus.published);
+        PostStatus.published,
+        new Long[] { 3L });
   }
 
   @Test
@@ -285,7 +287,6 @@ class PostServiceTest {
     when(postCache.get(slug)).thenReturn(Optional.empty());
     when(postRepository.findBySlug(slug)).thenReturn(Optional.of(testPost));
     when(tagRepository.findByPostId(1L)).thenReturn(new ArrayList<>());
-    doNothing().when(postRepository).incrementViews(anyLong());
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
@@ -420,6 +421,7 @@ class PostServiceTest {
     // Arrange
     UpdatePostRequest partialUpdate = new UpdatePostRequest(
         "Updated Title Only",
+        null,
         null,
         null,
         null,

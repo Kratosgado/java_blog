@@ -117,7 +117,7 @@ public class PostGraphQLController {
     var post = postService.getPostById(id);
     UpdatePostRequest updateRequest = new UpdatePostRequest(
         post.title(), post.content(), post.excerpt(),
-        post.category().id(), post.coverImage(), PostStatus.published);
+        post.category().id(), post.coverImage(), PostStatus.published, null);
     return postService.updatePost(id, updateRequest, userId);
   }
 
