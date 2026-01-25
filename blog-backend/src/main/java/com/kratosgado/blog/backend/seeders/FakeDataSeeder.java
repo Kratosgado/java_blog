@@ -93,7 +93,7 @@ public class FakeDataSeeder implements CommandLineRunner {
 
   private List<User> seedUsers(int count) {
     List<User> users = IntStream.range(0, count)
-        .mapToObj(i -> createFakeUser(i)).toList();
+        .mapToObj(i -> createFakeUser(i)).collect(Collectors.toList());
     users.add(createRealUser());
 
     return users.stream()
@@ -104,7 +104,7 @@ public class FakeDataSeeder implements CommandLineRunner {
   private User createRealUser() {
     return User.builder()
         .username("kratos")
-        .email("kratos@example.com")
+        .email("kratos@gmail.com")
         .password("28935617Aa@")
         .avatarUrl("https://avatars.githubusercontent.com/u/10137?v=4")
         .role("USER")

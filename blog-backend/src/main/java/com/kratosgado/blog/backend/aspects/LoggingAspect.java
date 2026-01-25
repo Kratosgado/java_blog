@@ -32,6 +32,10 @@ public class LoggingAspect {
   public void controllerLayer() {
   }
 
+  @Pointcut("within(com.kratosgado.blog.backend.graphql..*)")
+  public void graphqlControllerLayer() {
+  }
+
   @Pointcut("within(com.kratosgado.blog.backend.services..*)")
   public void serviceLayer() {
   }
@@ -40,21 +44,21 @@ public class LoggingAspect {
   public void repositoryLayer() {
   }
 
-  @Before("controllerLayer()")
+  @Before("controllerLayer() || graphqlControllerLayer()")
   public void logBeforeController(JoinPoint joinPoint) {
     log.info(">>> Entering controller method: {} with arguments: {}",
         joinPoint.getSignature().toShortString(),
         Arrays.toString(joinPoint.getArgs()));
   }
 
-  @AfterReturning(pointcut = "controllerLayer()", returning = "result")
+  @AfterReturning(pointcut = "controllerLayer() || graphqlControllerLayer()", returning = "result")
   public void logAfterController(JoinPoint joinPoint, Object result) {
     log.info("<<< Completed controller method: {} with result: {}",
         joinPoint.getSignature().toShortString(),
         result != null ? result.getClass().getSimpleName() : "null");
   }
 
-  @AfterThrowing(pointcut = "controllerLayer()", throwing = "exception")
+  @AfterThrowing(pointcut = "controllerLayer() || graphqlControllerLayer()", throwing = "exception")
   public void logControllerException(JoinPoint joinPoint, Exception exception) {
     log.error("!!! Exception in controller method: {} - Message: {}",
         joinPoint.getSignature().toShortString(),

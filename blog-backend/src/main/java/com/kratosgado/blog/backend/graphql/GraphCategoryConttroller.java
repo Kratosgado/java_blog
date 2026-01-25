@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -9,11 +7,11 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
-import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.models.Category;
 
 @Controller
 public class GraphCategoryConttroller {
@@ -25,9 +23,8 @@ public class GraphCategoryConttroller {
   }
 
   @MutationMapping
-  public boolean createCategory(@Argument CreateCategoryRequest input) {
-    categoryService.createCategory(input);
-    return true;
+  public Category createCategory(@Argument CreateCategoryRequest input) {
+    return categoryService.createCategory(input);
   }
 
   @QueryMapping
@@ -57,8 +54,6 @@ public class GraphCategoryConttroller {
   // Field resolver for updatedAt
   @SchemaMapping(typeName = "Category", field = "updatedAt")
   public String updatedAt(Category category) {
-    // Category model doesn't have updatedAt, so we'll return null
-    // In a real application, you would add this field to the Category model
     return null;
   }
 }

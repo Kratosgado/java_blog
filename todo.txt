@@ -1,3 +1,0 @@
-
-wirte custom annotation for enum and arrays and register it in the application context
-
