@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +52,7 @@ public class ReviewService {
     review.setAuthorAvatarUrl(user.getAvatarUrl());
 
     Review saved = reviewRepository.save(review);
-    
+
     log.debug("Created review with ID: {}", saved.getId());
     return saved;
   }
@@ -79,9 +77,9 @@ public class ReviewService {
     if (request.content() != null) {
       review.setContent(request.content());
     }
-    
+
     review = reviewRepository.save(review);
-    
+
     log.debug("Updated review with ID: {}", id);
     return review;
   }
@@ -96,7 +94,7 @@ public class ReviewService {
     }
 
     reviewRepository.deleteById(id);
-    
+
     log.debug("Deleted review with ID: {}", id);
   }
 

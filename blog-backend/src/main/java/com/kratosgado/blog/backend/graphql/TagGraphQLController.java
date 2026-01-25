@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import java.util.List;
-
 import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;

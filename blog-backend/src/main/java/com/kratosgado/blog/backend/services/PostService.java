@@ -111,7 +111,6 @@ public class PostService {
 
       Post post = postRepository.findBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
-      List<Tag> tags = tagRepository.findByPostId(post.getId());
       PostResponse response = DtoMapper.toPostResponse(post);
       postCache.put(post.getSlug(), response);
       return response;

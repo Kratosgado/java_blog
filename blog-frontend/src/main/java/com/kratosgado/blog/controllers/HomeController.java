@@ -292,7 +292,6 @@ public class HomeController {
     }
     // Check if filtering by category
     else if (selectedCategory != null && !selectedCategory.equals("All Categories")) {
-      // TODO: Need to look up category ID from category name
       logger.warn("Category filtering not yet fully implemented - needs category ID lookup");
       posts = getAllPostsFallback();
 
@@ -503,7 +502,8 @@ public class HomeController {
     titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333;");
     titleLabel.setWrapText(true);
 
-    Label metaLabel = new Label("By " + (post.getUser() != null ? post.getUser().getUsername() : "Unknown") + " • " + UiUtils.formatDate(post.getCreatedAt()));
+    Label metaLabel = new Label("By " + (post.getUser() != null ? post.getUser().getUsername() : "Unknown") + " • "
+        + UiUtils.formatDate(post.getCreatedAt()));
     metaLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
 
     card.getChildren().addAll(imageView, titleLabel, metaLabel);
