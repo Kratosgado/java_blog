@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -29,8 +28,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;

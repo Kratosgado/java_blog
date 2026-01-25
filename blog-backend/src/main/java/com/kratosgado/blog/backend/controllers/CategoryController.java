@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.controllers;
 
-import java.util.List;
-
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,7 +36,8 @@ public class CategoryController {
   @SecuredCreateEndpoint
   @PostMapping
   @Operation(summary = "Create a new category", description = "Creates a new category. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
-  public Category createCategory(@Valid @RequestBody @Parameter(description = "Category creation request") CreateCategoryRequest request) {
+  public Category createCategory(
+      @Valid @RequestBody @Parameter(description = "Category creation request") CreateCategoryRequest request) {
     return categoryService.createCategory(request);
   }
 

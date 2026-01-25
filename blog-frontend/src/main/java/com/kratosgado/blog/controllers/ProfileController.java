@@ -105,7 +105,7 @@ public class ProfileController {
         if (avatarPath != null) {
           UpdateUserAvatarRequest dto = new UpdateUserAvatarRequest(user.getId(), avatarPath);
           try {
-            User updatedUser = userService.updateUserAvatar(dto);
+            userService.updateUserAvatar(dto);
             user.setAvatarUrl(avatarPath);
             avatarImageView.setImage(ImageUtils.loadImageWithFallback(avatarPath));
             messageLabel.setText("Avatar updated successfully");
@@ -179,7 +179,7 @@ public class ProfileController {
 
       UpdateUserProfileRequest dto = new UpdateUserProfileRequest(null, bio, website, location);
       try {
-        User updatedUser = userService.updateUserProfile(user.getId(), dto);
+        userService.updateUserProfile(user.getId(), dto);
         // Update user object
         user.setBio(bio);
         user.setWebsite(website);

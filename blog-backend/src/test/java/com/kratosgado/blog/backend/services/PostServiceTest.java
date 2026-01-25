@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mockStatic;
@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -145,6 +144,7 @@ class PostServiceTest {
   void createPost_WithValidData_ShouldReturnPostResponse() {
     // Arrange
     when(postRepository.save(any(Post.class))).thenReturn(testPost);
+    when(categoryRepository.existsById(anyLong())).thenReturn(true);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock
@@ -286,7 +286,7 @@ class PostServiceTest {
     testPost.setSlug(slug);
     when(postCache.get(slug)).thenReturn(Optional.empty());
     when(postRepository.findBySlug(slug)).thenReturn(Optional.of(testPost));
-    when(tagRepository.findByPostId(1L)).thenReturn(new ArrayList<>());
+    // when(tagRepository.findByPostId(1L)).thenReturn(new ArrayList<>());
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
       dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
@@ -328,7 +328,7 @@ class PostServiceTest {
   void getPublishedPosts_ShouldReturnPageOfPosts() {
     // Arrange
     Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0, 10), 1);
-    Page<PostResponse> postResponsePage = new PageImpl<>(List.of(testPostResponse), PageRequest.of(0, 10), 1);
+    new PageImpl<>(List.of(testPostResponse), PageRequest.of(0, 10), 1);
     when(postRepository.findPublishedPosts(any(PageRequest.class))).thenReturn(postPage);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
