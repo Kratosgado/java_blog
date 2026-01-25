@@ -17,6 +17,7 @@ POST {{host}}/auth/register HTTP/1.1
 Content-Type: application/json
 
 {
+  "avatarUrl": "https://avatars.githubusercontent.com/u/10137?v=4",
   "confirmPassword": "28935617Aa@",
   "email": "kratos@gmail.com",
   "password": "28935617Aa@",
@@ -35,8 +36,8 @@ POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "robertarussel17@yahoo.com",
-  "password": "password123"
+  "email": "kratos@gmail.com",
+  "password": "28935617Aa@"
 }
 
 > {%

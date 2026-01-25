@@ -93,27 +93,36 @@ public class FakeDataSeeder implements CommandLineRunner {
 
   private List<User> seedUsers(int count) {
     List<User> users = IntStream.range(0, count)
-        .mapToObj(i -> createFakeUser(i))
-        .collect(Collectors.toList());
+        .mapToObj(i -> createFakeUser(i)).toList();
+    users.add(createRealUser());
 
     return users.stream()
         .map(user -> userRepository.save(user))
         .collect(Collectors.toList());
   }
 
+  private User createRealUser() {
+    return User.builder()
+        .username("kratos")
+        .email("kratos@example.com")
+        .password("28935617Aa@")
+        .avatarUrl("https://avatars.githubusercontent.com/u/10137?v=4")
+        .role("USER")
+        .build();
+  }
+
   private User createFakeUser(int index) {
-    User user = new User();
     String firstName = faker.name().firstName();
     String lastName = faker.name().lastName();
     String username = (firstName + lastName + index).toLowerCase();
 
-    user.setUsername(username);
-    user.setEmail(faker.internet().emailAddress(username));
-    user.setPassword(BCrypt.withDefaults().hashToString(12, "password123".toCharArray()));
-    user.setAvatarUrl(faker.avatar().image());
-    user.setRole(index == 0 ? "ADMIN" : "USER"); // First user is admin
-
-    return user;
+    return User.builder()
+        .username(username)
+        .email(faker.internet().emailAddress(username))
+        .password(BCrypt.withDefaults().hashToString(12, "password123".toCharArray()))
+        .avatarUrl(faker.avatar().image())
+        .role(index == 0 ? "ADMIN" : "USER") // First user is admin
+        .build();
   }
 
   private List<Category> seedCategories(int count) {
@@ -134,11 +143,11 @@ public class FakeDataSeeder implements CommandLineRunner {
   }
 
   private Category createFakeCategory(String name) {
-    Category category = new Category();
-    category.setName(name);
-    category.setSlug(BlogUtils.toSlug(name));
-    category.setDescription(faker.lorem().sentence(20));
-    return category;
+    return Category.builder()
+        .name(name)
+        .slug(BlogUtils.toSlug(name))
+        .description(faker.lorem().sentence(20))
+        .build();
   }
 
   private List<Tag> seedTags(int count) {

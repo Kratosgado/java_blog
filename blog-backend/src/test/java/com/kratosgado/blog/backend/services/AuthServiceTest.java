@@ -48,7 +48,8 @@ class AuthServiceTest {
     testUser.setRole("USER");
 
     loginRequest = new LoginRequest("test@example.com", "password123");
-    registerRequest = new RegisterRequest("test@example.com", "testuser", "password123");
+    registerRequest = new RegisterRequest("test@example.com", "testuser", "https://example.com/avatar.png",
+        "password123", "password123");
   }
 
   @Test

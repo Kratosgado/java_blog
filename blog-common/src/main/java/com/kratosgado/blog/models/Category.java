@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+    @Index(name = "idx_category_slug", columnList = "slug")
+})
 public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

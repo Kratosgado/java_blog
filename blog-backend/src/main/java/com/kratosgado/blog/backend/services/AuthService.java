@@ -30,6 +30,9 @@ public class AuthService {
   }
 
   public User register(RegisterRequest request) {
+    if (!request.password().equals(request.confirmPassword())) {
+      throw BlogException.badRequest("Passwords do not match");
+    }
     if (userRepository.findByEmail(request.email()).isPresent()) {
       throw BlogException.conflict("Email already exists");
     }
@@ -38,6 +41,7 @@ public class AuthService {
     user.setEmail(request.email());
     user.setUsername(request.username());
     user.setPassword(passwordEncoder.encode(request.password()));
+    user.setAvatarUrl(request.avatarUrl());
 
     return userRepository.save(user);
   }

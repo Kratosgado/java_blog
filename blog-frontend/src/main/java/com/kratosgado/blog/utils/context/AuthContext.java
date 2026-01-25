@@ -1,9 +1,12 @@
 package com.kratosgado.blog.utils.context;
 
+import java.time.LocalDateTime;
 import java.util.prefs.Preferences;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.utils.LocalDateTimeAdapter;
 
 /**
  * Manages authentication context including user session and JWT token
@@ -65,7 +68,9 @@ public class AuthContext {
   }
 
   private void saveSession() {
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
     
     // Save user
     if (currentUser != null) {
@@ -84,7 +89,9 @@ public class AuthContext {
   }
 
   private void loadSession() {
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .create();
     
     // Load user
     String userJson = userPrefs.get("user", null);
