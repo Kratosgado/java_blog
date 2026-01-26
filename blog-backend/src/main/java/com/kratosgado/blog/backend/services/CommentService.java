@@ -10,6 +10,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -101,12 +102,12 @@ public class CommentService {
     return getAllPostComments(postId, PageRequest.of(page - 1, size));
   }
 
-  public PageResponse<Comment> getUserComments(Long userId, Pageable pageable) {
-    Page<Comment> commentPage = commentRepository.findByUserId(userId, pageable);
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId, Pageable pageable) {
+    var commentPage = commentRepository.findByUserId(userId, pageable);
     return DtoMapper.toPageResponse(commentPage, pageable);
   }
 
-  public PageResponse<Comment> getUserComments(Long userId, int page, int size) {
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId, int page, int size) {
     return getUserComments(userId, PageRequest.of(page - 1, size));
   }
 

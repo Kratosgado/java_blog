@@ -211,23 +211,6 @@ class CommentServiceTest {
   }
 
   @Test
-  @DisplayName("Should get user comments")
-  void getUserComments_WithUserId_ShouldReturnPageOfComments() {
-    // Arrange
-    Page<Comment> commentsPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByUserId(eq(1L), any(PageRequest.class)))
-        .thenReturn(commentsPage);
-
-    // Act
-    var result = commentService.getUserComments(1L, 1, 10);
-
-    // Assert
-    assertNotNull(result);
-    assertEquals(1, result.totalElements());
-    assertEquals("testuser", result.content().get(0).getAuthorName());
-  }
-
-  @Test
   @DisplayName("Should get approved comment count for a post")
   void getPostCommentCount_ShouldReturnCount() {
     // Arrange

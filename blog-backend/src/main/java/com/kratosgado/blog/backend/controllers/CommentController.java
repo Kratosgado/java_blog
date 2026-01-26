@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
@@ -19,6 +18,7 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -41,7 +41,7 @@ public class CommentController {
   @SecuredUpdateEndpoint
   @Operation(summary = "Create a new comment", description = "Creates a new comment on a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   public Comment createComment(
-      @Valid @RequestBody @Parameter(description = "Comment creation request") CreateCommentRequest request, 
+      @Valid @RequestBody @Parameter(description = "Comment creation request") CreateCommentRequest request,
       @AuthenticationPrincipal User user) {
     return commentService.createComment(request, user);
 
@@ -93,7 +93,7 @@ public class CommentController {
   @GetMapping("/user/{userId}")
   @GetEnpoint
   @Operation(summary = "Get comments by user", description = "Retrieves all comments created by a specific user")
-  public PageResponse<Comment> getUserComments(
+  public PageResponse<CommentWithoutUser> getUserComments(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject Pageable pageable) {
     return commentService.getUserComments(userId, pageable);

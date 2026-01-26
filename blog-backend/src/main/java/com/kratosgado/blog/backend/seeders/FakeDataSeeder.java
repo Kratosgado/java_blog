@@ -105,7 +105,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     return User.builder()
         .username("kratos")
         .email("kratos@gmail.com")
-        .password("28935617Aa@")
+        .password(BCrypt.withDefaults().hashToString(12, "28935617Aa@".toCharArray()))
         .avatarUrl("https://avatars.githubusercontent.com/u/10137?v=4")
         .role("USER")
         .build();
@@ -119,7 +119,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     return User.builder()
         .username(username)
         .email(faker.internet().emailAddress(username))
-        .password(BCrypt.withDefaults().hashToString(12, "password123".toCharArray()))
+        .password(BCrypt.withDefaults().hashToString(12, "password123@".toCharArray()))
         .avatarUrl(faker.avatar().image())
         .role(index == 0 ? "ADMIN" : "USER") // First user is admin
         .build();
