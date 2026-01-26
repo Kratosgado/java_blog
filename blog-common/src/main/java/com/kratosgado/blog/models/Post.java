@@ -64,7 +64,7 @@ public class Post {
   private String excerpt;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, length = 10)
   private PostStatus status;
 
   @Column(name = "created_at")

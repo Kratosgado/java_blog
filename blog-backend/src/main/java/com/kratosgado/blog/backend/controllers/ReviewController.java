@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
@@ -19,10 +18,12 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
 import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.ReviewService;
+import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -92,7 +93,7 @@ public class ReviewController {
   @GetMapping("/user/{userId}")
   @Operation(summary = "Get reviews by user", description = "Retrieves all reviews created by a specific user")
   @GetEnpoint
-  public PageResponse<Review> getUserReviews(
+  public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject Pageable pageable) {
     return reviewService.getUserReviews(userId, pageable);
@@ -107,7 +108,7 @@ public class ReviewController {
     Long reviewCount = reviewService.getReviewCount(postId);
 
     java.util.Map<String, Object> stats = java.util.Map.of(
-        "averageRating", averageRating,
+        "averageRating", BlogUtils.round(averageRating),
         "reviewCount", reviewCount);
 
     return ResponseEntity.ok(ResponseDto.success(stats));

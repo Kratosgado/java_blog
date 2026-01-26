@@ -16,6 +16,7 @@ import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
@@ -45,7 +46,7 @@ public class ReviewGraphQLController {
   }
 
   @QueryMapping
-  public PageResponse<Review> reviewsByUser(
+  public PageResponse<ReviewWithoutUser> reviewsByUser(
       @Argument Long userId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {

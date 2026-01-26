@@ -3,7 +3,6 @@ package com.kratosgado.blog.backend.utils;
 public class BlogUtils {
 
   private BlogUtils() {
-    // Private constructor to prevent instantiation
   }
 
   public static String toSlug(String input) {
@@ -15,5 +14,9 @@ public class BlogUtils {
         .replaceAll("\\s+", "-")
         .replaceAll("-+", "-")
         .replaceAll("^-|-$", "");
+  }
+
+  public static Double round(Double value) {
+    return Math.round(value * 100.0) / 100.0;
   }
 }

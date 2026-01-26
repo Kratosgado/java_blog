@@ -12,6 +12,7 @@ import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
@@ -112,18 +113,18 @@ public class ReviewService {
     return getPostReviews(postId, PageRequest.of(page - 1, size));
   }
 
-  public PageResponse<Review> getUserReviews(Long userId, Pageable pageable) {
-    Page<Review> reviewPage = reviewRepository.findByUserId(userId, pageable);
+  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId, Pageable pageable) {
+    var reviewPage = reviewRepository.findByUserId(userId, pageable);
     return DtoMapper.toPageResponse(reviewPage, pageable);
   }
 
-  public PageResponse<Review> getUserReviews(Long userId, int page, int size) {
+  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId, int page, int size) {
     return getUserReviews(userId, PageRequest.of(page - 1, size));
   }
 
   public Double getAverageRating(Long postId) {
     var results = reviewRepository.getAverageRatingByPostId(postId);
-    return results.isEmpty() ? 0.0 : results.get(0).getAvgRating();
+    return results.isEmpty() ? 0.0 : results.get(0).avgRating();
   }
 
   public Long getReviewCount(Long postId) {
