@@ -3,6 +3,7 @@ package com.kratosgado.blog.models;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
@@ -18,9 +19,11 @@ public class Review {
   private String id;
 
   @Field("post_id")
+  @Indexed
   private Long postId;
 
   @Field("user_id")
+  @Indexed
   private Long userId;
 
   @Field("author_name")
@@ -29,6 +32,7 @@ public class Review {
   @Field("author_avatar_url")
   private String authorAvatarUrl;
 
+  @Indexed
   private int rating; // 1-5 stars
 
   private String title;
@@ -36,6 +40,7 @@ public class Review {
   private String content;
 
   @Field("created_at")
+  @Indexed
   private LocalDateTime createdAt;
 
   @Field("updated_at")
