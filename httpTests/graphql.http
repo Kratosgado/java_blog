@@ -22,7 +22,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get paginated posts
@@ -43,7 +43,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Search posts
@@ -63,7 +63,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get posts by category
@@ -83,7 +83,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get posts by user
@@ -103,7 +103,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get user with posts
@@ -121,7 +121,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get all categories
@@ -136,7 +136,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get post with comments
@@ -154,7 +154,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get comments by post (paginated)
@@ -174,7 +174,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Query: Get reviews by post
@@ -192,7 +192,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Mutation: Create a post
@@ -216,7 +216,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Mutation: Update a post
@@ -239,7 +239,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Mutation: Create a comment
@@ -260,7 +260,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Mutation: Create a category
@@ -281,7 +281,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Mutation: Create a review
@@ -304,7 +304,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Complex Query: Get post with all related data
@@ -322,7 +322,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Test invalid query (should return error)
@@ -337,7 +337,7 @@ Accept: application/json
 }
 
 
-### 
+ 
 
 
 ### Test query with missing required variable
@@ -352,4 +352,4 @@ Accept: application/json
 }
 
 
-### 
+ 

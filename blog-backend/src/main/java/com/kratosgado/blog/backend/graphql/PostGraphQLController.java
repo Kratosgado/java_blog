@@ -1,8 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -56,10 +53,9 @@ public class PostGraphQLController {
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
       @Argument(name = "sortDir") String sortDir) {
-    Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
     String sortField = sortBy != null ? sortBy : "createdAt";
-    Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
-    return postService.getPublishedPosts(pageable);
+    String direction = sortDir != null ? sortDir : "desc";
+    return postService.getPublishedPosts(page, size);
   }
 
   @QueryMapping
@@ -67,8 +63,7 @@ public class PostGraphQLController {
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.searchPosts(keyword, pageable);
+    return postService.searchPosts(keyword, page, size);
   }
 
   @QueryMapping
@@ -76,8 +71,7 @@ public class PostGraphQLController {
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.getPostsByCategory(categoryId, pageable);
+    return postService.getPostsByCategory(categoryId, page, size);
   }
 
   @QueryMapping
@@ -85,8 +79,7 @@ public class PostGraphQLController {
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.getUserPosts(userId, pageable);
+    return postService.getUserPosts(userId, page, size);
   }
 
   // Mutations
@@ -155,14 +148,12 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "comments")
   public PageResponse<Comment> comments(Post post) {
-    Pageable pageable = PageRequest.of(0, 100);
-    return commentService.getPostComments(Long.valueOf(post.getId()), pageable);
+    return commentService.getPostComments(Long.valueOf(post.getId()), 0, 100);
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
   public PageResponse<Review> reviews(Post post) {
-    Pageable pageable = PageRequest.of(0, 100);
-    return reviewService.getPostReviews(Long.valueOf(post.getId()), pageable);
+    return reviewService.getPostReviews(Long.valueOf(post.getId()), 0, 100);
   }
 
 }

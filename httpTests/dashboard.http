@@ -3,9 +3,9 @@
 ### Base URL
 @host = http://localhost:8080/api
 
-### 
+ 
 ### IMPORTANT: Run auth.http login test first to set the adminAuth token
-### 
+ 
 
 ### Get Dashboard Statistics
 # @name getDashboardStats

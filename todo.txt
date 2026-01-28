@@ -1,0 +1,2 @@
+provide endpoints for minized data
+change function names to use find instead of get

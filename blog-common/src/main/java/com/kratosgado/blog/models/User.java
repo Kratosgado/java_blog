@@ -2,37 +2,32 @@ package com.kratosgado.blog.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.*;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.kratosgado.blog.interfaces.HasId;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email")
-})
-public class User {
+public class User implements HasId {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(unique = true, nullable = false)
   private String username;
 
-  @Column(nullable = false)
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
 
-  @Column(unique = true, nullable = false)
   private String email;
 
   private String avatarUrl;
@@ -40,11 +35,9 @@ public class User {
   private String website;
   private String location;
 
-  @Column(nullable = false)
   @Builder.Default
   private String role = "USER";
 
-  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   @Builder.Default
   private List<Post> posts = new ArrayList<>();

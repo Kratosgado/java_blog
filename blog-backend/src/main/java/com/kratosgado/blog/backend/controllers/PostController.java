@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,11 +36,14 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/posts")
-@RequiredArgsConstructor
 @Tag(name = "Posts", description = "Post management APIs")
 public class PostController {
 
-  private final PostService postService;
+  private PostService postService;
+
+  public PostController(PostService postService) {
+    this.postService = postService;
+  }
 
   @PostMapping
   @Operation(summary = "Create a new post", description = "Creates a new blog post with the provided details. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
@@ -94,8 +96,10 @@ public class PostController {
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
-  public PageResponse<PostResponse> getPosts(@ParameterObject Pageable pageable) {
-    return postService.getPublishedPosts(pageable);
+  public PageResponse<PostResponse> getPosts(
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return postService.getPublishedPosts(page, size);
   }
 
   @GetMapping("/search")
@@ -103,9 +107,9 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> searchPosts(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @ParameterObject Pageable pageable) {
-    return postService.searchPosts(keyword, pageable);
-
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return postService.searchPosts(keyword, page, size);
   }
 
   @GetMapping("/user/{userId}")
@@ -113,9 +117,9 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @ParameterObject Pageable pageable) {
-    return postService.getUserPosts(userId, pageable);
-
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return postService.getUserPosts(userId, page, size);
   }
 
   @GetMapping("/category/{categoryId}")
@@ -123,8 +127,8 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
-      @ParameterObject Pageable pageable) {
-    return postService.getPostsByCategory(categoryId, pageable);
-
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size) {
+    return postService.getPostsByCategory(categoryId, page, size);
   }
 }

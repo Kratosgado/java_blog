@@ -145,8 +145,9 @@ public class PostService {
     }
   }
 
-  // Convenience methods for controllers that expect List<Post> instead of PageResponse
-  
+  // Convenience methods for controllers that expect List<Post> instead of
+  // PageResponse
+
   /**
    * Get all published posts as a list (for controllers)
    */

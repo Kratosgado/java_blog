@@ -2,18 +2,14 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
-import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
@@ -22,18 +18,22 @@ import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class PostService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
   private final CategoryRepository categoryRepository;
   private final PostCache postCache;
+
+  public PostService(PostRepository postRepository, TagRepository tagRepository, CategoryRepository categoryRepository,
+      PostCache postCache) {
+    this.postRepository = postRepository;
+    this.tagRepository = tagRepository;
+    this.categoryRepository = categoryRepository;
+    this.postCache = postCache;
+  }
 
   public PostResponse createPost(CreatePostRequest request, User user) {
     Post post = new Post();
@@ -44,18 +44,17 @@ public class PostService {
     post.setContent(request.content());
     post.setExcerpt(request.excerpt());
     post.setCategoryId(request.categoryId());
-    if (request.categoryId() != null && !categoryRepository.existsById(request.categoryId())) {
+    if (request.categoryId() != null
+        && categoryRepository.findById(request.categoryId()).isEmpty()) {
       throw BlogException.badRequest("Category not found");
     }
     post.setCoverImage(request.coverImage());
     post.setStatus(PostStatus.valueOf(request.status().toLowerCase()));
 
-    if (request.tagIds() != null && request.tagIds().length > 0) {
-      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
-      post.setTags(tags);
-    }
-
     Post savedPost = postRepository.save(post);
+    if (request.tagIds() != null && request.tagIds().length > 0) {
+      tagRepository.savePostTags(savedPost.getId(), request.tagIds());
+    }
     return DtoMapper.toPostResponse(savedPost);
   }
 
@@ -77,7 +76,8 @@ public class PostService {
       post.setExcerpt(request.excerpt());
     if (request.categoryId() != null) {
       post.setCategoryId(request.categoryId());
-      categoryRepository.findById(request.categoryId()).ifPresent(post::setCategory);
+      categoryRepository.findById(request.categoryId())
+          .ifPresent(post::setCategory);
     }
     if (request.coverImage() != null)
       post.setCoverImage(request.coverImage());
@@ -85,13 +85,12 @@ public class PostService {
       post.setStatus(request.status());
 
     if (request.tagIds() != null) {
-      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
-      post.setTags(tags);
+      tagRepository.deletePostTags(postId);
+      tagRepository.savePostTags(postId, request.tagIds());
     }
 
-    Post updatedPost = postRepository.save(post);
+    Post updatedPost = postRepository.update(post);
     return DtoMapper.toPostResponse(updatedPost);
-
   }
 
   public void deletePost(Long postId, Long userId) {
@@ -108,7 +107,6 @@ public class PostService {
   @Transactional
   public PostResponse getPostBySlug(String slug) {
     return postCache.get(slug).orElseGet(() -> {
-
       Post post = postRepository.findBySlug(slug)
           .orElseThrow(() -> BlogException.notFound("Post not found"));
       PostResponse response = DtoMapper.toPostResponse(post);
@@ -117,54 +115,47 @@ public class PostService {
     });
   }
 
-  @Transactional(readOnly = true)
   public PostResponse getPostById(Long postId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
-
     return DtoMapper.toPostResponse(post);
+
   }
 
-  @Transactional(readOnly = true)
-  public PageResponse<PostResponse> getPublishedPosts(Pageable pageable) {
-    Page<Post> postPage = postRepository.findPublishedPosts(pageable);
-    Page<PostResponse> responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
-    return DtoMapper.toPageResponse(responsePage, pageable);
-  }
-
-  @Transactional(readOnly = true)
   public PageResponse<PostResponse> getPublishedPosts(int page, int size) {
-    return getPublishedPosts(PageRequest.of(page - 1, size));
-  }
-
-  public PageResponse<PostResponse> searchPosts(String keyword, Pageable pageable) {
-    Page<Post> postPage = postRepository.searchPublishedPosts(keyword, pageable);
-    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
-    return DtoMapper.toPageResponse(responsePage, pageable);
+    int offset = (page - 1) * size;
+    List<Post> posts = postRepository.findPublishedPosts(size, offset);
+    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
+    long totalElements;
+    try {
+      totalElements = postRepository.countPublishedPosts();
+    } catch (Exception e) {
+      totalElements = 0;
+    }
+    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
   }
 
   public PageResponse<PostResponse> searchPosts(String keyword, int page, int size) {
-    return searchPosts(keyword, PageRequest.of(page - 1, size));
-  }
-
-  public PageResponse<PostResponse> getUserPosts(Long userId, Pageable pageable) {
-    Page<Post> postPage = postRepository.findByUserId(userId, pageable);
-    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
-    return DtoMapper.toPageResponse(responsePage, pageable);
+    int offset = (page - 1) * size;
+    List<Post> posts = postRepository.searchPostsByKeyword(keyword, size, offset);
+    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
+    long totalElements = postRepository.countPostsByKeyword(keyword);
+    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
   }
 
   public PageResponse<PostResponse> getUserPosts(Long userId, int page, int size) {
-    return getUserPosts(userId, PageRequest.of(page - 1, size));
-  }
-
-  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, Pageable pageable) {
-    Page<Post> postPage = postRepository.findByCategoryId(categoryId, pageable);
-    var responsePage = new PageImpl<>(postPage.map(DtoMapper::toPostResponse).toList());
-    return DtoMapper.toPageResponse(responsePage, pageable);
+    int offset = (page - 1) * size;
+    List<Post> posts = postRepository.findPostsByUser(userId, size, offset);
+    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
+    long totalElements = postRepository.countPostsByUser(userId);
+    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
   }
 
   public PageResponse<PostResponse> getPostsByCategory(Long categoryId, int page, int size) {
-    return getPostsByCategory(categoryId, PageRequest.of(page - 1, size));
+    int offset = (page - 1) * size;
+    List<Post> posts = postRepository.findPostsByCategory(categoryId, size, offset);
+    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
+    long totalElements = postRepository.countPostsByCategory(categoryId);
+    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
   }
-
 }

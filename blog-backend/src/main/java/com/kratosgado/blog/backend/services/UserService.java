@@ -1,27 +1,27 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
-import lombok.RequiredArgsConstructor;
+import java.sql.SQLException;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
+
+  public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+  }
 
   public User getUserById(Long id) {
     return getUserById(id, false);
@@ -39,76 +39,40 @@ public class UserService {
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
         .orElseThrow(() -> BlogException.notFound("User", "email", email));
+
   }
 
   public User getUserByUsername(String username) {
-    return userRepository.findByUsername(username)
-        .orElseThrow(() -> BlogException.notFound("User", "username", username));
+    try {
+      return userRepository.findByUsername(username)
+          .orElseThrow(() -> BlogException.notFound("User", "username", username));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
-    User user = getUserById(id, true);
-
-    if (request.username() != null && !request.username().equals(user.getUsername())) {
-      if (userRepository.findByUsername(request.username()).isPresent()) {
-        throw BlogException.duplicateResource("User", "username", request.username());
-      }
-      user.setUsername(request.username());
-    }
-
-    if (request.bio() != null) {
-      user.setBio(request.bio());
-    }
-
-    if (request.website() != null) {
-      user.setWebsite(request.website());
-    }
-
-    if (request.location() != null) {
-      user.setLocation(request.location());
-    }
-
-    user = userRepository.save(user);
-    user.setPassword(null);
-    return user;
+    // TODO: Implement this method
+    return null;
   }
 
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
-
-    if (!id.equals(currentUserId)) {
-      throw BlogException.unauthorized("You are not authorized to update this avatar");
-    }
-
-    User user = getUserById(id, true);
-    user.setAvatarUrl(avatarUrl);
-    user = userRepository.save(user);
-    user.setPassword(null);
-
-    return user;
+    // TODO: Implement this method
+    return null;
   }
 
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
-
-    if (!id.equals(currentUserId)) {
-      throw BlogException.unauthorized("You are not authorized to change this password");
-    }
-
-    User user = getUserById(id, true);
-
-    if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-      throw BlogException.unauthorized("Old password is incorrect");
-    }
-
-    user.setPassword(passwordEncoder.encode(newPassword));
-    userRepository.save(user);
+    // TODO: Implement this method
   }
 
-  public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
-    Page<UserResponse> userPage = userRepository.findAllUsers(pageable);
-    return DtoMapper.toPageResponse(userPage, pageable);
-  }
+  // public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
+  // // TODO: Implement this method
+  // return null;
+  // }
 
-  public PageResponse<UserResponse> getAllUsers(int page, int size) {
-    return getAllUsers(PageRequest.of(page - 1, size));
+  public PageResponse<User> getAllUsers(int page, int size) {
+    var users = userRepository.findAll(size, page * size);
+    long totalItems = userRepository.count();
+    return DtoMapper.toPageResponse(users, page, size, (int) totalItems);
   }
 }

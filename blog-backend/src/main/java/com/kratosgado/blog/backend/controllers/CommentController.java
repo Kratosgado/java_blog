@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
-import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
+
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,11 +31,16 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/comments")
-@RequiredArgsConstructor
+
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Comments", description = "Comment management APIs")
 public class CommentController {
 
-  private final CommentService commentService;
+   private final CommentService commentService;
+
+   public CommentController(CommentService commentService) {
+     this.commentService = commentService;
+   }
+
 
   @PostMapping
   @SecuredUpdateEndpoint
@@ -83,21 +88,22 @@ public class CommentController {
   @GetMapping("/post/{postId}")
   @GetEnpoint
   @Operation(summary = "Get comments for a post", description = "Retrieves all approved comments for a specific post. Public access.")
-  public PageResponse<Comment> getPostComments(
-      @PathVariable @Parameter(description = "Post ID") Long postId,
-      @ParameterObject Pageable pageable) {
-    return commentService.getPostComments(postId, pageable);
-
-  }
+   public PageResponse<Comment> getPostComments(
+       @PathVariable @Parameter(description = "Post ID") Long postId,
+       @org.springframework.web.bind.annotation.RequestParam(value = "page", defaultValue = "0") int page,
+       @org.springframework.web.bind.annotation.RequestParam(value = "size", defaultValue = "20") int size) {
+     return commentService.getPostComments(postId, page, size);
+   }
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
   @Operation(summary = "Get comments by user", description = "Retrieves all comments created by a specific user")
-  public PageResponse<CommentWithoutUser> getUserComments(
-      @PathVariable @Parameter(description = "User ID") Long userId,
-      @ParameterObject Pageable pageable) {
-    return commentService.getUserComments(userId, pageable);
-  }
+   public PageResponse<CommentWithoutUser> getUserComments(
+       @PathVariable @Parameter(description = "User ID") Long userId,
+       @org.springframework.web.bind.annotation.RequestParam(value = "page", defaultValue = "0") int page,
+       @org.springframework.web.bind.annotation.RequestParam(value = "size", defaultValue = "20") int size) {
+     return commentService.getUserComments(userId, page, size);
+   }
 
   @GetMapping("/post/{postId}/count")
   @GetEnpoint

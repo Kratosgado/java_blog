@@ -1,6 +1,6 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
+
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -28,11 +28,11 @@ public class GraphCategoryConttroller {
   }
 
   @QueryMapping
-  public PageResponse<Category> categories(
-      @Argument(name = "page") int page,
-      @Argument(name = "size") int size) {
-    return categoryService.getAllCategories(PageRequest.of(page, size));
-  }
+   public PageResponse<Category> categories(
+       @Argument(name = "page") int page,
+       @Argument(name = "size") int size) {
+     return categoryService.getAllCategories(page, size);
+   }
 
   @QueryMapping
   public Category category(@Argument Long id) {

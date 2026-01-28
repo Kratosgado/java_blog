@@ -2,10 +2,6 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,37 +9,25 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "reviews")
 public class Review {
-  @Id
   private String id;
 
-  @Field("post_id")
-  @Indexed
   private Long postId;
 
-  @Field("user_id")
-  @Indexed
   private Long userId;
 
-  @Field("author_name")
   private String authorName;
 
-  @Field("author_avatar_url")
   private String authorAvatarUrl;
 
-  @Indexed
   private int rating; // 1-5 stars
 
   private String title;
 
   private String content;
 
-  @Field("created_at")
-  @Indexed
   private LocalDateTime createdAt;
 
-  @Field("updated_at")
   private LocalDateTime updatedAt;
 
   private boolean helpful = false;

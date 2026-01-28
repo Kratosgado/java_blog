@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +14,7 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -56,8 +56,8 @@ public class UserController {
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
-  public PageResponse<UserResponse> getUsers(@ParameterObject Pageable pageable) {
-    return userService.getAllUsers(pageable);
+  public PageResponse<User> getUsers(@ParameterObject PageRequest page) {
+    return userService.getAllUsers(page.page(), page.size());
   }
 
   @PutMapping("/{id}/profile")

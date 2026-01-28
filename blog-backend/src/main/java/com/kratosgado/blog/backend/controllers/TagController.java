@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,11 +32,15 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/tags")
-@RequiredArgsConstructor
+
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Tags", description = "Tag management APIs")
 public class TagController {
 
   private final TagService tagService;
+
+  public TagController(TagService tagService) {
+    this.tagService = tagService;
+  }
 
   @PostMapping
   @Operation(summary = "Create a new tag", description = "Creates a new tag. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
@@ -88,8 +91,8 @@ public class TagController {
   @GetMapping
   @Operation(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   @GetEnpoint
-  public PageResponse<Tag> getTags(@ParameterObject Pageable pageable) {
-    return tagService.getAllTags(pageable);
+  public PageResponse<Tag> getTags(@RequestParam int page, @RequestParam int size) {
+    return tagService.getAllTags(page, size);
   }
 
   @GetMapping("/search")
@@ -97,7 +100,8 @@ public class TagController {
   @GetEnpoint
   public PageResponse<Tag> searchTags(
       @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @ParameterObject Pageable pageable) {
-    return tagService.searchTags(keyword, pageable);
+      @RequestParam int page,
+      @RequestParam int size) {
+    return tagService.searchTags(keyword, page, size);
   }
 }

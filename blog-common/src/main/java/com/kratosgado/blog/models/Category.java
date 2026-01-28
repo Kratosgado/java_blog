@@ -1,51 +1,25 @@
 package com.kratosgado.blog.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.kratosgado.blog.interfaces.HasId;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Entity
-@Table(name = "categories", indexes = {
-    @Index(name = "idx_category_slug", columnList = "slug")
-})
-public class Category {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class Category implements HasId {
   private Long id;
 
-  @Column(nullable = false, unique = true)
   private String name;
 
-  @Column(nullable = false, unique = true)
   private String slug;
 
-  @Column(columnDefinition = "TEXT")
   private String description;
 
-  @OneToMany(mappedBy = "category")
-  @JsonIgnore
-  @Builder.Default
-  private List<Post> posts = new ArrayList<>();
-
-  public int getPostCount() {
-    return posts.size();
-  }
 }

@@ -3,9 +3,6 @@ package com.kratosgado.blog.backend.utils;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -33,7 +30,7 @@ public class DtoMapper {
         post.getViews(),
         post.getLikesCount(),
         post.getCoverImage(),
-        post.getTags().stream().map(DtoMapper::toTagSummary).toList());
+        post.getTags() != null ? post.getTags().stream().map(DtoMapper::toTagSummary).toList() : null);
 
   }
 
@@ -56,17 +53,6 @@ public class DtoMapper {
       return null;
     }
     return new CategorySummary(category.getId().longValue(), category.getName(), category.getSlug());
-  }
-
-  public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
-    return new PageResponse<>(
-        page.getContent(),
-        pageable.getPageNumber() + 1,
-        pageable.getPageSize(),
-        page.getTotalElements(),
-        page.getTotalPages(),
-        page.isFirst(),
-        page.isLast());
   }
 
   public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, int totalElements) {

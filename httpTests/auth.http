@@ -6,7 +6,7 @@
 @host = http://localhost:8080/api
 
 
-### 
+ 
 
 
 ### Register a new user
@@ -25,7 +25,7 @@ Content-Type: application/json
 }
 
 
-### 
+ 
 
 
 ### Login and capture token
@@ -46,7 +46,7 @@ Content-Type: application/json
 %}
 
 
-### 
+ 
 
 
 ### Validate token

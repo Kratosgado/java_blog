@@ -1,8 +1,8 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+
+
+
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
@@ -20,10 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
+
 public class CommentService {
 
   private final CommentRepository commentRepository;
+
+  public CommentService(CommentRepository commentRepository) {
+    this.commentRepository = commentRepository;
+  }
 
   public Comment createComment(CreateCommentRequest request, User user) {
 
@@ -84,31 +88,25 @@ public class CommentService {
     return comment;
   }
 
-  public PageResponse<Comment> getPostComments(Long postId, Pageable pageable) {
-    Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
-    return DtoMapper.toPageResponse(commentPage, pageable);
-  }
-
   public PageResponse<Comment> getPostComments(Long postId, int page, int size) {
-    return getPostComments(postId, PageRequest.of(page - 1, size));
-  }
-
-  public PageResponse<Comment> getAllPostComments(Long postId, Pageable pageable) {
-    Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
-    return DtoMapper.toPageResponse(commentPage, pageable);
+    int offset = page * size;
+    var comments = commentRepository.findByPostIdAndStatusManual(postId, CommentStatus.approved, size, offset);
+    long total = commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
+    return DtoMapper.toPageResponse(comments, page, size, (int) total);
   }
 
   public PageResponse<Comment> getAllPostComments(Long postId, int page, int size) {
-    return getAllPostComments(postId, PageRequest.of(page - 1, size));
-  }
-
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId, Pageable pageable) {
-    var commentPage = commentRepository.findByUserId(userId, pageable);
-    return DtoMapper.toPageResponse(commentPage, pageable);
+    int offset = page * size;
+    var comments = commentRepository.findByPostIdManual(postId, size, offset);
+    long total = commentRepository.countByPostId(postId);
+    return DtoMapper.toPageResponse(comments, page, size, (int) total);
   }
 
   public PageResponse<CommentWithoutUser> getUserComments(Long userId, int page, int size) {
-    return getUserComments(userId, PageRequest.of(page - 1, size));
+    int offset = page * size;
+    var comments = commentRepository.findCommentsByUserIdManual(userId, size, offset);
+    long total = commentRepository.countByUserId(userId);
+    return DtoMapper.toPageResponse(comments, page, size, (int) total);
   }
 
   public Long getPostCommentCount(Long postId) {

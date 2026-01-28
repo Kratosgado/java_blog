@@ -1,7 +1,8 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,11 +36,15 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/reviews")
-@RequiredArgsConstructor
+
 @Tag(name = "Reviews", description = "Review management APIs")
 public class ReviewController {
 
   private final ReviewService reviewService;
+
+  public ReviewController(ReviewService reviewService) {
+    this.reviewService = reviewService;
+  }
 
   @PostMapping
   @Operation(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
@@ -85,9 +90,9 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
-      @ParameterObject Pageable pageable) {
-    return reviewService.getPostReviews(postId, pageable);
-
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
+    return reviewService.getPostReviews(postId, page, size);
   }
 
   @GetMapping("/user/{userId}")
@@ -95,8 +100,9 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @ParameterObject Pageable pageable) {
-    return reviewService.getUserReviews(userId, pageable);
+      @RequestParam(name = "page", defaultValue = "0") int page,
+      @RequestParam(name = "size", defaultValue = "10") int size) {
+    return reviewService.getUserReviews(userId, page, size);
   }
 
   @GetMapping("/post/{postId}/stats")

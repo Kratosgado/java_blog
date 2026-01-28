@@ -1,13 +1,14 @@
 package com.kratosgado.blog.backend.config.database;
 
-import javax.sql.DataSource;
-
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.zaxxer.hikari.HikariDataSource;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @Configuration
 public class DataSourceConfig {
@@ -33,5 +34,10 @@ public class DataSourceConfig {
         .password(password)
         .driverClassName(driverClassName)
         .build();
+  }
+
+  @Bean
+  public Connection connection(DataSource dataSource) throws SQLException {
+    return dataSource.getConnection();
   }
 }

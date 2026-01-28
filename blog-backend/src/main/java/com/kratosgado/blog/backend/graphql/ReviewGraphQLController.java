@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -41,8 +39,7 @@ public class ReviewGraphQLController {
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return reviewService.getPostReviews(postId, pageable);
+    return reviewService.getPostReviews(postId, page, size);
   }
 
   @QueryMapping
@@ -50,8 +47,7 @@ public class ReviewGraphQLController {
       @Argument Long userId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return reviewService.getUserReviews(userId, pageable);
+    return reviewService.getUserReviews(userId, page, size);
   }
 
   @MutationMapping

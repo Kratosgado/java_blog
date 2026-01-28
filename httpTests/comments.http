@@ -20,9 +20,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Create a reply to a comment
 
 # @name createReply
@@ -38,9 +35,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Update a comment
 
 # @name updateComment
@@ -54,9 +48,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Get a single comment by ID
 
 # @name getComment
@@ -65,17 +56,18 @@ GET {{host}}/comments/1 HTTP/1.1
 Authorization: {{userAuth}}
 
 
-### 
-
-
 ### Get comments by post
 
 # @name getPostComments
 
-GET {{host}}/comments/post/1?page=0&size=10 HTTP/1.1
+GET {{host}}/comments/post/372?page=0&size=10 HTTP/1.1
 
 
-### 
+### Get comments by user
+
+# @name getUserComments
+
+GET {{host}}/comments/user/74?page=0&size=10 HTTP/1.1
 
 
 ### Get comments with pagination - Second page
@@ -85,18 +77,12 @@ GET {{host}}/comments/post/1?page=0&size=10 HTTP/1.1
 GET {{host}}/comments/post/1?page=1&size=5 HTTP/1.1
 
 
-### 
-
-
 ### Delete a comment
 
 # @name deleteComment
 
 DELETE {{host}}/comments/1 HTTP/1.1
 Authorization: {{userAuth}}
-
-
-### 
 
 
 ### Test create comment with empty content (validation)
@@ -113,9 +99,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Test create comment for non-existent post
 
 # @name createCommentInvalidPost
@@ -128,9 +111,6 @@ Authorization: {{userAuth}}
   "content": "This should fail",
   "postId": 99999
 }
-
-
-### 
 
 
 ### Test create comment without authentication (should fail)
@@ -146,9 +126,6 @@ Content-Type: application/json
 }
 
 
-### 
-
-
 ### Approve a comment (Admin only)
 
 # @name approveComment
@@ -157,15 +134,9 @@ PUT {{host}}/comments/1/approve HTTP/1.1
 Authorization: {{userAuth}}
 
 
-### 
-
-
 ### Reject a comment (Admin only)
 
 # @name rejectComment
 
-PUT {{host}}/comments/1/reject HTTP/1.1
+PUT {{host}}/comments/69773775a9461c6bf2d0b346/reject HTTP/1.1
 Authorization: {{userAuth}}
-
-
-### 
