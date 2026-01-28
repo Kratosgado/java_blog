@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.repositories.jdbc;
 
+import java.lang.System.Logger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
 // import org.springframework.data.domain.Page; // removed unused import
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +29,7 @@ public class PostRepository extends BaseRepository<Post> {
     this.tagRepository = tagRepository;
     registerRelationshipRepository("user", userRepository);
     registerRelationshipRepository("category", categoryRepository);
+    registerManyToManyRelationship("tags", tagRepository, "post_tags", "post_id", "tag_id");
   }
 
   @Override
@@ -49,25 +52,10 @@ public class PostRepository extends BaseRepository<Post> {
   }
 
   public List<Post> findPublishedPosts(int size, int offset) {
-    String query = "SELECT * FROM posts WHERE status = 'published' ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    List<Post> posts = new ArrayList<>();
-    safeExecuteQuery(query, rs -> {
-      try {
-        while (rs.next()) {
-          posts.add(toEntity(rs));
-        }
-      } catch (SQLException e) {
-        throw BlogException.internal("Failed to find published posts: " + e.getMessage());
-      }
-      return null;
-    }, size, offset);
-
-    List<Long> ids = posts.stream().map(Post::getId).toList();
-    List<Tag> tags = tagRepository.findByPostIds(ids);
-    return posts;
+    return executePagedSelect("WHERE t.status = 'published'", "ORDER BY t.created_at DESC", size, offset);
   }
 
-  public void incrementViews(String slug) throws SQLException {
+  public void incrementViews(String slug) {
     String query = "UPDATE posts SET views = views + 1 WHERE slug = ?";
     safeExecuteQuery(query, null, slug);
   }
@@ -84,20 +72,12 @@ public class PostRepository extends BaseRepository<Post> {
   }
 
   public List<Post> searchPostsByKeyword(String keyword, int size, int offset) {
-    String query = "SELECT * FROM posts WHERE (LOWER(title) LIKE ? OR LOWER(content) LIKE ?) AND status = 'published' ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    List<Post> posts = new ArrayList<>();
-    String keywordLike = "%-" + keyword.toLowerCase() + "-%";
-    safeExecuteQuery(query, rs -> {
-      try {
-        while (rs.next()) {
-          posts.add(toEntity(rs));
-        }
-      } catch (SQLException e) {
-        throw BlogException.internal("Failed to search posts: " + e.getMessage());
-      }
-      return null;
-    }, "%" + keyword.toLowerCase() + "%", "%" + keyword.toLowerCase() + "%", size, offset);
-    return posts;
+    String like = "%" + keyword.toLowerCase() + "%";
+    return executePagedSelect(
+        "WHERE (LOWER(t.title) LIKE ? OR LOWER(t.content) LIKE ?) AND t.status = 'published'",
+        "ORDER BY t.created_at DESC",
+        size, offset,
+        like, like);
   }
 
   public long countPostsByKeyword(String keyword) {
@@ -117,19 +97,7 @@ public class PostRepository extends BaseRepository<Post> {
   }
 
   public List<Post> findPostsByUser(Long userId, int size, int offset) {
-    String query = "SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    List<Post> posts = new ArrayList<>();
-    safeExecuteQuery(query, rs -> {
-      try {
-        while (rs.next()) {
-          posts.add(toEntity(rs));
-        }
-      } catch (SQLException e) {
-        throw BlogException.internal("Failed to find user posts: " + e.getMessage());
-      }
-      return null;
-    }, userId, size, offset);
-    return posts;
+    return executePagedSelect("WHERE t.user_id = ?", "ORDER BY t.created_at DESC", size, offset, userId);
   }
 
   public long countPostsByUser(Long userId) {
@@ -148,19 +116,8 @@ public class PostRepository extends BaseRepository<Post> {
   }
 
   public List<Post> findPostsByCategory(Long categoryId, int size, int offset) {
-    String query = "SELECT * FROM posts WHERE category_id = ? AND status = 'published' ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    List<Post> posts = new ArrayList<>();
-    safeExecuteQuery(query, rs -> {
-      try {
-        while (rs.next()) {
-          posts.add(toEntity(rs));
-        }
-      } catch (SQLException e) {
-        throw BlogException.internal("Failed to find category posts: " + e.getMessage());
-      }
-      return null;
-    }, categoryId, size, offset);
-    return posts;
+    return executePagedSelect("WHERE t.category_id = ? AND t.status = 'published'", "ORDER BY t.created_at DESC", size,
+        offset, categoryId);
   }
 
   public long countPostsByCategory(Long categoryId) {

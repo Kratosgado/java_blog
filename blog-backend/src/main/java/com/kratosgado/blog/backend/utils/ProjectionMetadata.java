@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ public class ProjectionMetadata {
   private final List<String> columns;
   private final Map<String, String> columnMappings; // field -> column
   private final List<Field> relationshipFields = new ArrayList<>(); // fields referencing entities
-  private final List<String> relationshipCols = new ArrayList<>(); // joins for relationships
 
   public ProjectionMetadata(Class<?> projectionType) {
     this.projectionType = projectionType;
@@ -70,13 +70,14 @@ public class ProjectionMetadata {
         // Detect relationship fields: referencing HasId or List of HasId
         Class<?> type = field.getType();
         if (HasId.class.isAssignableFrom(type)) {
-          extractRelationFromClass(field.getName(), type);
+          relationshipFields.add(field);
           continue;
         }
-        // if (List.class.isAssignableFrom(type)) {
-        // relationshipFields.add(field);
-        // continue;
-        // }
+
+        if (Collection.class.isAssignableFrom(type)) {
+          continue;
+        }
+
         String fieldName = field.getName();
         String columnName = toSnakeCase(fieldName);
         columns.add(columnName);
@@ -85,27 +86,8 @@ public class ProjectionMetadata {
     }
   }
 
-  private void extractRelationFromClass(String name, Class<?> projectionType) {
-    for (Field field : projectionType.getDeclaredFields()) {
-      if (field.getName().equals("id")) {
-        continue;
-      }
-      if (!Modifier.isStatic(field.getModifiers())) {
-        field.setAccessible(true);
-        String fieldName = field.getName();
-        String columnName = toSnakeCase(fieldName);
-        relationshipCols.add(name + "_" + columnName);
-        columnMappings.put(fieldName, columnName);
-      }
-    }
-  }
-
   public List<Field> getRelationshipFields() {
     return relationshipFields;
-  }
-
-  public List<String> getRelationshipCols() {
-    return relationshipCols;
   }
 
   public String getSelectClause() {

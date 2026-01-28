@@ -17,10 +17,7 @@ public class ViewTrackingService {
 
   @Async
   public void incrementViews(String slug) {
-      try {
-          postRepository.incrementViews(slug);
-      } catch (SQLException e) {
-          throw new RuntimeException(e);
-      }
+    postRepository.incrementViews(slug);
+
   }
 }
