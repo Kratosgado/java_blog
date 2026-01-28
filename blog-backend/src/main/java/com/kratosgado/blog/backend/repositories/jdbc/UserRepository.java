@@ -12,7 +12,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.models.User;
 
 @Repository
-public class UserRepository extends BaseRepository<User> {
+public class UserRepository extends CrudRepository<User> {
 
   public UserRepository(Connection connection) {
     super(connection, User.class);

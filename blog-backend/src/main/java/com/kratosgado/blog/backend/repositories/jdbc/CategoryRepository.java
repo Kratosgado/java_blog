@@ -12,7 +12,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.models.Category;
 
 @Repository
-public class CategoryRepository extends BaseRepository<Category> {
+public class CategoryRepository extends SluggableRepository<Category> {
 
   public CategoryRepository(Connection connection) {
     super(connection, Category.class);
@@ -27,21 +27,6 @@ public class CategoryRepository extends BaseRepository<Category> {
     category.setSlug(rs.getString("slug"));
     category.setDescription(rs.getString("description"));
     return category;
-  }
-
-  public Optional<Category> findBySlug(String slug) {
-    String query = "SELECT * FROM categories WHERE slug = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, slug);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return Optional.of(toEntity(rs));
-        }
-      }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to find by slug: " + slug + ": " + e.getMessage());
-    }
-    return Optional.empty();
   }
 
   public Optional<Category> findByName(String name) throws SQLException {
@@ -70,18 +55,4 @@ public class CategoryRepository extends BaseRepository<Category> {
     return false;
   }
 
-  @Override
-  public Long count() {
-    String query = "SELECT COUNT(*) FROM categories";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getLong(1);
-        }
-      }
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-    return 0L;
-  }
 }

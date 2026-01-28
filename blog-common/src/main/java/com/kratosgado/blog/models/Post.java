@@ -13,7 +13,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class Post implements HasId {
   private Long id;
@@ -38,13 +37,17 @@ public class Post implements HasId {
 
   private String coverImage;
 
+  public Post() {
+    onCreate();
+  }
+
   protected void onCreate() {
     createdAt = LocalDateTime.now();
     updatedAt = LocalDateTime.now();
     status = PostStatus.draft;
   }
 
-  protected void onUpdate() {
+  public void onUpdate() {
     updatedAt = LocalDateTime.now();
   }
 

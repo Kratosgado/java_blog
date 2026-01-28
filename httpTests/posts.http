@@ -15,15 +15,15 @@ Content-Type: application/json
 Authorization: {{userAuth}}
 
 {
-  "categoryId": 94,
+  "categoryId": 1,
   "content": "Spring Boot 3 brings many exciting features including native image support, improved observability, and Java 17+ baseline...",
   "excerpt": "Learn about the new features in Spring Boot 3",
   "featuredImage": "https://example.com/images/spring-boot-3.jpg",
   "status": "draft",
   "tagIds": [
-    59
+    3
   ],
-  "title": "Gettig wht  is Started with Spring Boot 3"
+  "title": "Gettig whtsjk is Started  Spring Boot 3"
 }
 
 
@@ -46,14 +46,14 @@ Authorization: {{userAuth}}
 
 # @name getPost
 
-GET {{host}}/posts/399 HTTP/1.1
+GET {{host}}/posts/106 HTTP/1.1
 
 
 ### Get a single post by slug (cached endpoint)
 
 # @name getPostBySlug
 
-GET {{host}}/posts/slug/dolor-harum-ut-mollitia-autem-velit-facilis HTTP/1.1
+GET {{host}}/posts/slug/gettig-whtsjk-is-started-spring-boot-3 HTTP/1.1
 
 
 ### Get all published posts (with pagination and sorting)

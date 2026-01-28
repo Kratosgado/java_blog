@@ -65,6 +65,7 @@ public class PostService {
     if (!post.getUserId().equals(userId)) {
       throw BlogException.forbidden("You don't have permission to update this post");
     }
+    post.onUpdate();
 
     if (request.title() != null) {
       post.setTitle(request.title());

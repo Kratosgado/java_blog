@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class TagRepository extends BaseRepository<Tag> {
+public class TagRepository extends SluggableRepository<Tag> {
 
   public TagRepository(Connection connection) {
     super(connection, Tag.class);
@@ -106,10 +106,24 @@ public class TagRepository extends BaseRepository<Tag> {
   // }
   // return tag;
   // }
-
   public void savePostTags(long postId, Long[] tagIds) {
-    String query = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
-    safeExecuteQuery(query, null, postId, (Object[]) tagIds);
+    String sql = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
+
+    try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+      connection.setAutoCommit(false); // Start transaction
+
+      for (Long tagId : tagIds) {
+        pstmt.setLong(1, postId);
+        pstmt.setLong(2, tagId);
+        pstmt.addBatch(); // Add to the local batch
+      }
+
+      pstmt.executeBatch(); // Send all at once
+      connection.commit(); // Commit transaction
+    } catch (SQLException e) {
+      // Handle rollback if necessary
+      throw new RuntimeException("Failed to batch insert tags", e);
+    }
   }
 
   public void deletePostTags(long postId) {

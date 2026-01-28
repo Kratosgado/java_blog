@@ -18,7 +18,7 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 
 @Repository
-public class PostRepository extends BaseRepository<Post> {
+public class PostRepository extends SluggableRepository<Post> {
 
   final TagRepository tagRepository;
 
