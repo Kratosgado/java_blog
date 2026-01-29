@@ -12,15 +12,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.Map;
-import java.util.HashMap;
 
 import javax.sql.DataSource;
+
 import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -105,7 +105,6 @@ public abstract class BaseRepository<T extends HasId> {
    * Uses metadata and registered repositories to eagerly load and set
    * relationships on the entity.
    */
-  @SuppressWarnings("unchecked")
   protected void loadRelationships(T entity, ResultSet rs) {
     for (var field : projectionMetadata.getRelationshipFields()) {
       String fieldName = field.getName();
@@ -365,7 +364,7 @@ public abstract class BaseRepository<T extends HasId> {
     return withConnection(conn -> {
       try (PreparedStatement statement = conn.prepareStatement(query)) {
         for (int i = 0; i < params.length; i++) {
-          statement.setObject(i + 1, params[i]);
+          statement.setObject(i + 1, prepareParameter(params[i]));
         }
         try (ResultSet rs = statement.executeQuery()) {
           return mapResultSet(rs);
@@ -407,7 +406,7 @@ public abstract class BaseRepository<T extends HasId> {
     withConnection(conn -> {
       try (PreparedStatement statement = conn.prepareStatement(query)) {
         for (int i = 0; i < params.length; i++) {
-          statement.setObject(i + 1, params[i]);
+          statement.setObject(i + 1, prepareParameter(params[i]));
         }
         if (mapper == null) {
           statement.executeUpdate();
@@ -423,5 +422,15 @@ public abstract class BaseRepository<T extends HasId> {
       }
       return null;
     });
+  }
+
+  protected Object prepareParameter(Object param) {
+    if (param == null) {
+      return null;
+    }
+    if (param.getClass().isEnum()) {
+      return ((Enum<?>) param).name();
+    }
+    return param;
   }
 }

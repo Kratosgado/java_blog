@@ -53,7 +53,7 @@ public class ReviewGraphQLController {
 
   @MutationMapping
   public Review createReview(@Argument CreateReviewRequest input, @AuthenticationPrincipal User user) {
-    return reviewService.createReview(input, Long.valueOf(user.getId()));
+    return reviewService.createReview(input, user);
   }
 
   @MutationMapping

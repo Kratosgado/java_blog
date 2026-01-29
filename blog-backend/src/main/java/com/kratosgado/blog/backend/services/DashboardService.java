@@ -1,5 +1,11 @@
 package com.kratosgado.blog.backend.services;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
 import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
@@ -13,12 +19,6 @@ import com.kratosgado.blog.dtos.response.RecentActivityResponse;
 import com.kratosgado.blog.dtos.response.StatCountResponse;
 import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
 import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.models.Post;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -88,7 +88,8 @@ public class DashboardService {
             p.getLikesCount()))
         .collect(Collectors.toList());
 
-    // For now use the same as top by views as we don't have findTopPostsByLikes specifically
+    // For now use the same as top by views as we don't have findTopPostsByLikes
+    // specifically
     List<EngagementStatsResponse.PostEngagementSummary> topByLikes = postRepository.findTopPostsByViews(5).stream()
         .map(p -> new EngagementStatsResponse.PostEngagementSummary(p.getId(), p.getTitle(), p.getSlug(), p.getViews(),
             p.getLikesCount()))

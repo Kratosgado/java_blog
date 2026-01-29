@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import java.util.Map;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -103,7 +105,7 @@ public class ReviewController {
   @GetMapping("/post/{postId}/stats")
   @Operation(summary = "Get review statistics for a post", description = "Returns average rating and review count for a post")
   @GetEnpoint
-  public java.util.Map<String, Object> getPostReviewStats(
+  public Map<String, Object> getPostReviewStats(
       @PathVariable @Parameter(description = "Post ID") Long postId) {
     Double averageRating = reviewService.getAverageRating(postId);
     Long reviewCount = reviewService.getReviewCount(postId);

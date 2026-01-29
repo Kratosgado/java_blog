@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
@@ -86,18 +87,20 @@ public class TagService {
 
   }
 
-  public java.util.List<com.kratosgado.blog.dtos.response.TagResponse> getAllTagsWithPostCount() {
+  public List<com.kratosgado.blog.dtos.response.TagResponse> getAllTagsWithPostCount() {
     return tagRepository.findAllWithPostCount();
   }
 
   public PageResponse<Tag> getAllTags(PageRequest pageRequest) {
-    var tags = tagRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
+    var tags = tagRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(),
+        pageRequest.getSortDir());
     long totalItems = tagRepository.count();
     return DtoMapper.toPageResponse(tags, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
   }
 
   public PageResponse<Tag> searchTags(String keyword, PageRequest pageRequest) {
-    var tags = tagRepository.searchByKeyword(keyword, pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
+    var tags = tagRepository.searchByKeyword(keyword, pageRequest.getSize(), pageRequest.getOffset(),
+        pageRequest.getSortBy(), pageRequest.getSortDir());
     long totalItems = tagRepository.countByKeyword(keyword);
     return DtoMapper.toPageResponse(tags, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
   }

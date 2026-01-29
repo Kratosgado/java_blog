@@ -1,31 +1,16 @@
 package com.kratosgado.blog.backend.services;
 
-import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
-import com.kratosgado.blog.dtos.request.CreatePostRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
-import com.kratosgado.blog.dtos.request.UpdatePostRequest;
-import com.kratosgado.blog.dtos.response.*;
-import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.models.Category;
-import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -33,10 +18,33 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.provider.Arguments;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
+import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.UpdatePostRequest;
+import com.kratosgado.blog.dtos.response.AuthorSummary;
+import com.kratosgado.blog.dtos.response.CategorySummary;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.enums.PostStatus;
+import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.User;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PostService Tests")
@@ -64,7 +72,6 @@ class PostServiceTest {
   private User testUser;
   private Category testCategory;
   private PostResponse testPostResponse;
-  private CreatePostRequest createRequest;
   private UpdatePostRequest updateRequest;
 
   @BeforeEach
@@ -107,15 +114,6 @@ class PostServiceTest {
         null,
         List.of());
 
-    createRequest = new CreatePostRequest(
-        "New Post",
-        "New Content",
-        "New Excerpt",
-        1L,
-        "cover.jpg",
-        "draft",
-        new Long[] { 1L, 2L });
-
     updateRequest = new UpdatePostRequest(
         "Updated Title",
         "Updated Content",
@@ -125,66 +123,6 @@ class PostServiceTest {
         PostStatus.published,
         new Long[] { 3L });
   }
-
-  // @Test
-  // @DisplayName("Should successfully create a post")
-  // void createPost_WithValidData_ShouldReturnPostResponse() {
-  // // Arrange
-  // when(postRepository.save(any(Post.class))).thenReturn(testPost);
-  // when(categoryRepository.existsById(anyLong())).thenReturn(true);
-
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock
-  // .when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(testPostResponse);
-
-  // // Act
-  // PostResponse result = postService.createPost(createRequest, testUser);
-
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(testPostResponse.id(), result.id());
-  // assertEquals(testPostResponse.title(), result.title());
-  // }
-  // }
-
-  // @Test
-  // @DisplayName("Should successfully update a post")
-  // void updatePost_WithValidData_ShouldReturnUpdatedPostResponse() {
-  // // Arrange
-  // when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-  // when(postRepository.save(any(Post.class))).thenReturn(testPost);
-
-  // PostResponse updatedResponse = new PostResponse(
-  // 1L,
-  // testPostResponse.author(),
-  // testPostResponse.category(),
-  // testPostResponse.slug(),
-  // updateRequest.title(),
-  // updateRequest.content(),
-  // updateRequest.excerpt(),
-  // updateRequest.status(),
-  // testPostResponse.createdAt(),
-  // LocalDateTime.now(),
-  // 0,
-  // 0,
-  // updateRequest.coverImage(),
-  // testPostResponse.tags());
-
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock
-  // .when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(updatedResponse);
-
-  // // Act
-  // PostResponse result = postService.updatePost(1L, updateRequest, 1L);
-
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(updateRequest.title(), result.title());
-  // assertEquals(updateRequest.content(), result.content());
-  // }
-  // }
 
   @Test
   @DisplayName("Should throw exception when post not found for update")
@@ -204,20 +142,6 @@ class PostServiceTest {
         Arguments.of("delete"),
         Arguments.of("getById"));
   }
-
-  // @Test
-  // @DisplayName("Should successfully delete a post")
-  // void deletePost_WithValidId_ShouldDeletePost() {
-  // // Arrange
-  // when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-  // doNothing().when(postRepository).deleteById(1L);
-
-  // // Act
-  // postService.deletePost(1L, 1L);
-
-  // // Assert
-  // verify(postRepository).deleteById(1L);
-  // }
 
   @Test
   @DisplayName("Should successfully get post by slug from cache")
@@ -311,7 +235,8 @@ class PostServiceTest {
     // Arrange
     String keyword = "test";
     PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
-    when(postRepository.searchPostsByKeyword(eq(keyword), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.searchPostsByKeyword(eq(keyword), eq(10), eq(10), eq("created_at"), eq("desc")))
+        .thenReturn(List.of(testPost));
     when(postRepository.countPostsByKeyword(eq(keyword))).thenReturn(1L);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
@@ -334,7 +259,8 @@ class PostServiceTest {
   void getUserPosts_WithUserId_ShouldReturnPageOfPostResponses() {
     // Arrange
     PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
-    when(postRepository.findPostsByUser(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.findPostsByUser(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc")))
+        .thenReturn(List.of(testPost));
     when(postRepository.countPostsByUser(eq(1L))).thenReturn(1L);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
@@ -358,7 +284,8 @@ class PostServiceTest {
   void getPostsByCategory_WithCategoryId_ShouldReturnPageOfPostResponses() {
     // Arrange
     PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
-    when(postRepository.findPostsByCategory(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.findPostsByCategory(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc")))
+        .thenReturn(List.of(testPost));
     when(postRepository.countPostsByCategory(eq(1L))).thenReturn(1L);
 
     try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
@@ -377,51 +304,4 @@ class PostServiceTest {
     }
   }
 
-  // @Test
-  // @DisplayName("Should only update non-null fields in update request")
-  // void updatePost_WithPartialData_ShouldOnlyUpdateNonNullFields() {
-  // // Arrange
-  // UpdatePostRequest partialUpdate = new UpdatePostRequest(
-  // "Updated Title Only",
-  // null,
-  // null,
-  // null,
-  // null,
-  // null,
-  // null);
-
-  // String originalContent = testPost.getContent();
-  // when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
-  // when(postRepository.save(any(Post.class))).thenReturn(testPost);
-
-  // PostResponse partialUpdateResponse = new PostResponse(
-  // 1L,
-  // testPostResponse.author(),
-  // testPostResponse.category(),
-  // "updated-title-only", // slug
-  // "Updated Title Only",
-  // originalContent,
-  // testPostResponse.excerpt(),
-  // testPostResponse.status(),
-  // testPostResponse.createdAt(),
-  // LocalDateTime.now(),
-  // 0,
-  // 0,
-  // testPostResponse.coverImage(),
-  // testPostResponse.tags());
-
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock
-  // .when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(partialUpdateResponse);
-
-  // // Act
-  // PostResponse result = postService.updatePost(1L, partialUpdate, 1L);
-
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals("Updated Title Only", result.title());
-  // assertEquals(originalContent, result.content());
-  // }
-  // }
 }

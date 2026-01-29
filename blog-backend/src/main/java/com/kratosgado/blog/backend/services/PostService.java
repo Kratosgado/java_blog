@@ -126,6 +126,20 @@ public class PostService {
 
   }
 
+  public PostResponse publishPost(Long postId, Long userId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> BlogException.notFound("Post not found"));
+
+    if (!post.getUserId().equals(userId)) {
+      throw BlogException.forbidden("You don't have permission to publish this post");
+    }
+
+    post.setStatus(PostStatus.published);
+    post.onUpdate();
+    Post updatedPost = postRepository.update(post);
+    return DtoMapper.toPostResponse(updatedPost);
+  }
+
   public PageResponse<PostResponse> getPublishedPosts(PageRequest pageRequest) {
     int offset = pageRequest.getOffset();
     List<Post> posts = postRepository.findPublishedPosts(pageRequest.getSize(), offset, pageRequest.getSortBy(),

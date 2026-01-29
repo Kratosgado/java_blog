@@ -190,6 +190,16 @@ public class PostService {
   }
 
   /**
+   * Get total views for all posts by a user
+   */
+  public long getTotalViews(Long userId) {
+    List<Post> posts = getPostsByUserId(userId);
+    return posts.stream()
+        .mapToLong(p -> p.getViews() != null ? p.getViews() : 0)
+        .sum();
+  }
+
+  /**
    * Search posts by keyword as a list (for controllers)
    */
   public List<Post> searchPostsByKeyword(String keyword) {
@@ -246,12 +256,33 @@ public class PostService {
   }
 
   public boolean incrementViews(Long postId) {
-    logger.warn("incrementViews() not yet implemented via API");
-    throw new UnsupportedOperationException("incrementViews not yet implemented via API");
+    try {
+      PostResponse post = postApiClient.getPostById(postId);
+      postApiClient.incrementViews(post.slug());
+      return true;
+    } catch (Exception e) {
+      logger.error("Failed to increment views for post {}: {}", postId, e.getMessage());
+      return false;
+    }
   }
 
   public boolean publishPost(Long postId) {
-    logger.warn("publishPost() not yet implemented via API");
-    throw new UnsupportedOperationException("publishPost not yet implemented via API");
+    ensureAuthToken();
+    try {
+      postApiClient.publishPost(postId);
+      return true;
+    } catch (IOException e) {
+      logger.error("Failed to publish post due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to publish post: {}", e.getMessage());
+      throw new RuntimeException("Failed to publish post: " + e.getMessage(), e);
+    }
+  }
+
+  public boolean likePost(Long postId) {
+    logger.warn("likePost() not yet implemented via API");
+    // For now we just return true to simulate UI success
+    return true;
   }
 }

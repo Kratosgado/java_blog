@@ -183,11 +183,21 @@ public class TagsManagementController {
         return;
       }
 
-      // TODO: Implement tag creation/update via API
-      logger.warn("Tag creation/update not yet implemented via API");
-      com.kratosgado.blog.utils.DialogUtils.showError("Not Available", "Tag management not yet available");
+      if (currentTag == null) {
+        // Create new tag
+        tagService.createTag(new com.kratosgado.blog.dtos.request.CreateTagRequest(name, description));
+        logger.info("New tag created: {}", name);
+      } else {
+        // Update existing tag
+        tagService.updateTag(currentTag.getId(), new com.kratosgado.blog.dtos.request.UpdateTagRequest(name, description));
+        logger.info("Tag updated: {}", name);
+      }
+      
+      loadTags();
+      cancelForm();
     } catch (Exception ex) {
       logger.error("Failed to save tag", ex);
+      com.kratosgado.blog.utils.DialogUtils.showError("Save Error", "Failed to save tag: " + ex.getMessage());
     }
   }
 

@@ -154,11 +154,9 @@ public class AnalyticsController {
   private void updateMetrics() {
     try {
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
-      // TODO: Implement getPostsByUserId() in PostService
-      var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
+      var posts = postService.getPostsByUserId(currentUserId);
 
-      // TODO: Implement getTotalViews() in PostService
-      long totalViews = 0; // postService.getTotalViews(currentUserId);
+      long totalViews = postService.getTotalViews(currentUserId);
       totalViewsLabel.setText(String.valueOf(totalViews));
       viewsChangeLabel.setText("+0% from last period");
 
@@ -187,12 +185,12 @@ public class AnalyticsController {
   private void loadTopPosts() {
     try {
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
-      // TODO: Implement getPostsByUserId() in PostService
-      var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
+      var posts = postService.getPostsByUserId(currentUserId);
 
       // Sort by views and take top 10
-      // posts.sort((p1, p2) -> Integer.compare(p2.getViews(), p1.getViews()));
-      var topPosts = posts.stream().limit(10).toList();
+      var sortedPosts = new java.util.ArrayList<>(posts);
+      sortedPosts.sort((p1, p2) -> Integer.compare(p2.getViews() != null ? p2.getViews() : 0, p1.getViews() != null ? p1.getViews() : 0));
+      var topPosts = sortedPosts.stream().limit(10).toList();
 
       topPostsTable.getItems().clear();
       topPostsTable.getItems().addAll(topPosts);
@@ -205,14 +203,12 @@ public class AnalyticsController {
   private void loadTagPerformance() {
     try {
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
-      // TODO: Implement getPostsByUserId() in PostService
-      var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
+      var posts = postService.getPostsByUserId(currentUserId);
 
       // Count posts per tag
       Map<String, Integer> tagCounts = new HashMap<>();
       for (var post : posts) {
-        // TODO: Implement getTagsByPostId() in TagService
-        List<Tag> tags = java.util.Collections.emptyList(); // tagService.getTagsByPostId(post.getId());
+        List<Tag> tags = tagService.getTagsByPostId(post.getId());
         for (Tag tag : tags) {
           tagCounts.merge(tag.getName(), 1, Integer::sum);
         }
@@ -238,8 +234,7 @@ public class AnalyticsController {
 
       // Benchmark post listing
       long listStart = System.currentTimeMillis();
-      // TODO: Implement getPostsByUserId() in PostService
-      var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
+      var posts = postService.getPostsByUserId(currentUserId);
       long listTime = System.currentTimeMillis() - listStart;
 
       // Benchmark post access (get first post if available)
@@ -274,8 +269,7 @@ public class AnalyticsController {
     logger.info("Exporting analytics report");
     try {
       Long currentUserId = AuthContext.getInstance().getCurrentUser().getId();
-      // TODO: Implement getPostsByUserId() in PostService
-      var posts = java.util.Collections.<com.kratosgado.blog.models.Post>emptyList(); // postService.getPostsByUserId(currentUserId);
+      var posts = postService.getPostsByUserId(currentUserId);
 
       // Build CSV report
       StringBuilder report = new StringBuilder();
@@ -283,8 +277,7 @@ public class AnalyticsController {
       report.append("Generated: ").append(java.time.LocalDateTime.now()).append("\n\n");
       report.append("Summary:\n");
       report.append("Total Posts: ").append(posts.size()).append("\n");
-      // TODO: Implement getTotalViews() in PostService
-      report.append("Total Views: ").append(0).append("\n"); // postService.getTotalViews(currentUserId)
+      report.append("Total Views: ").append(postService.getTotalViews(currentUserId)).append("\n");
 
       int totalComments = 0;
       for (var post : posts) {
