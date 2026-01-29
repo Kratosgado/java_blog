@@ -1,7 +1,5 @@
 package com.kratosgado.blog.models;
 
-import com.kratosgado.blog.interfaces.HasId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,7 +24,7 @@ import lombok.experimental.SuperBuilder;
     @Index(name = "idx_users_username", columnList = "username"),
     @Index(name = "idx_users_email", columnList = "email")
 })
-public class User implements HasId {
+public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

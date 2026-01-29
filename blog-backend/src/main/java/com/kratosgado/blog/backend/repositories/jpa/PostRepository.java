@@ -12,39 +12,43 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Page<Post> findByStatus(PostStatus status, Pageable pageable);
-  
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Page<Post> findByUserUsername(String username, Pageable pageable);
-  
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Page<Post> findByCategorySlug(String slug, Pageable pageable);
+  Page<PostDetails> findByStatus(PostStatus status, Pageable pageable);
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Page<Post> findByUserId(Long userId, Pageable pageable);
+  Page<PostWithoutUser> findByUserUsername(String username, Pageable pageable);
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
-  
+  Page<PostWithoutCategory> findByCategorySlug(String slug, Pageable pageable);
+
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  Page<PostWithoutUser> findByUserId(Long userId, Pageable pageable);
+
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  Page<PostWithoutCategory> findByCategoryId(Long categoryId, Pageable pageable);
+
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query("SELECT p FROM Post p JOIN p.tags t WHERE t.slug = :tagSlug")
-  Page<Post> findByTagSlug(@Param("tagSlug") String tagSlug, Pageable pageable);
-  
+  Page<PostWithoutTag> findByTagSlug(@Param("tagSlug") String tagSlug, Pageable pageable);
+
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  Optional<Post> findBySlug(String slug);
-  
+  Optional<PostDetails> findBySlug(String slug);
+
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query("SELECT p FROM Post p WHERE p.status = 'published' AND (p.title LIKE %:query% OR p.content LIKE %:query%)")
-  Page<Post> searchPublishedPosts(@Param("query") String query, Pageable pageable);
+  Page<PostDetails> searchPublishedPosts(@Param("query") String query, Pageable pageable);
 
   @Query(value = "SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit", nativeQuery = true)
-  List<Post> findTopNByOrderByViewsDesc(@Param("limit") int limit);
+  List<PostDetails> findTopNByOrderByViewsDesc(@Param("limit") int limit);
 
   @Modifying
   @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.slug = :slug")
@@ -58,5 +62,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   long sumViewsByUserId(@Param("userId") Long userId);
 
   @Query(value = "SELECT * FROM posts ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
-  List<Post> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
+  List<PostDetails> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
+
 }

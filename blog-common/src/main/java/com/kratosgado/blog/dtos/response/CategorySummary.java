@@ -1,7 +1,9 @@
 package com.kratosgado.blog.dtos.response;
 
-public record CategorySummary(
-    Long id,
-    String name,
-    String slug) {
+public interface CategorySummary {
+  Long getId();
+
+  String getName();
+
+  String getSlug();
 }

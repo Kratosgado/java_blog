@@ -1,7 +1,5 @@
 package com.kratosgado.blog.models;
 
-import com.kratosgado.blog.interfaces.HasId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +22,7 @@ import lombok.Setter;
 @Table(name = "categories", indexes = {
     @Index(name = "idx_categories_slug", columnList = "slug"),
 })
-public class Category implements HasId {
+public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;

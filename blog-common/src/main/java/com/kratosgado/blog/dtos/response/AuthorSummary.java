@@ -1,8 +1,11 @@
 package com.kratosgado.blog.dtos.response;
 
-public record AuthorSummary(
-    Long id,
-    String username,
-    String email,
-    String avatarUrl) {
+public interface AuthorSummary {
+  Long getId();
+
+  String getUsername();
+
+  String getEmail();
+
+  String getAvatarUrl();
 }

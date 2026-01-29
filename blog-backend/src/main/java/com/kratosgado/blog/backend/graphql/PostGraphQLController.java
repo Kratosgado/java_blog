@@ -15,7 +15,9 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
@@ -39,17 +41,17 @@ public class PostGraphQLController {
   }
 
   @QueryMapping
-  public PostResponse post(@Argument Long id) {
+  public PostDetails post(@Argument Long id) {
     return postService.getPostById(id);
   }
 
   @QueryMapping
-  public PostResponse postBySlug(@Argument String slug) {
+  public PostDetails postBySlug(@Argument String slug) {
     return postService.getPostBySlug(slug);
   }
 
   @QueryMapping
-  public PageResponse<PostResponse> posts(
+  public PageResponse<PostDetails> posts(
       @Argument(name = "page") int page,
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
@@ -60,7 +62,7 @@ public class PostGraphQLController {
   }
 
   @QueryMapping
-  public PageResponse<PostResponse> searchPosts(
+  public PageResponse<PostDetails> searchPosts(
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
@@ -68,7 +70,7 @@ public class PostGraphQLController {
   }
 
   @QueryMapping
-  public PageResponse<PostResponse> postsByCategory(
+  public PageResponse<PostWithoutCategory> postsByCategory(
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
@@ -76,7 +78,7 @@ public class PostGraphQLController {
   }
 
   @QueryMapping
-  public PageResponse<PostResponse> postsByUser(
+  public PageResponse<PostWithoutUser> postsByUser(
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
@@ -85,14 +87,14 @@ public class PostGraphQLController {
 
   // Mutations
   @MutationMapping
-  public PostResponse createPost(@Argument CreatePostRequest input) {
+  public PostDetails createPost(@Argument CreatePostRequest input) {
 
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.createPost(input, userService.getUserById(userId));
   }
 
   @MutationMapping
-  public PostResponse updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
+  public PostDetails updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
 
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.updatePost(id, input, userId);
@@ -106,12 +108,12 @@ public class PostGraphQLController {
   }
 
   @MutationMapping
-  public PostResponse publishPost(@Argument Long id) {
+  public PostDetails publishPost(@Argument Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     var post = postService.getPostById(id);
     UpdatePostRequest updateRequest = new UpdatePostRequest(
-        post.title(), post.content(), post.excerpt(),
-        post.category().id(), post.coverImage(), PostStatus.published, null);
+        post.getTitle(), post.getContent(), post.getExcerpt(),
+        post.getCategory().getId(), post.getCoverImage(), PostStatus.published, null);
     return postService.updatePost(id, updateRequest, userId);
   }
 

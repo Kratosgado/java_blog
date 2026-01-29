@@ -1,39 +1,58 @@
 package com.kratosgado.blog.dtos.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.kratosgado.blog.enums.PostStatus;
 
-public record PostResponse(
-    Long id,
-    AuthorSummary author,
-    CategorySummary category,
-    String slug,
-    String title,
-    String content,
-    String excerpt,
-    PostStatus status,
-    LocalDateTime createdAt,
-    LocalDateTime updatedAt,
-    Integer views,
-    Integer likesCount,
-    String coverImage,
-    List<TagSummary> tags) {
+public interface PostResponse {
 
-  public Long authorId() {
-    return author != null ? author.id() : null;
+  public interface IPost {
+
+    Long getId();
+
+    String getTitle();
+
+    String getSlug();
+
+    String getContent();
+
+    String getExcerpt();
+
+    PostStatus getStatus();
+
+    String getCoverImage();
+
+    LocalDateTime getCreatedAt();
+
+    LocalDateTime getUpdatedAt();
+
+    Integer getViews();
+
+    Integer getLikesCount();
   }
 
-  public Long categoryId() {
-    return category != null ? category.id() : null;
+  public interface WithUser {
+    AuthorSummary getUser();
   }
 
-  public String authorName() {
-    return author != null ? author.username() : null;
+  public interface WithCategory {
+    CategorySummary getCategory();
   }
 
-  public String authorAvatarUrl() {
-    return author != null ? author.avatarUrl() : null;
+  public interface WithTag {
+    TagSummary getTags();
   }
+
+  public interface PostDetails extends IPost, WithUser, WithCategory, WithTag {
+  }
+
+  public interface PostWithoutUser extends IPost, WithCategory, WithTag {
+  }
+
+  public interface PostWithoutTag extends IPost, WithUser, WithCategory {
+  }
+
+  public interface PostWithoutCategory extends IPost, WithUser, WithTag {
+  }
+
 }

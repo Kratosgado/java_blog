@@ -3,7 +3,6 @@ package com.kratosgado.blog.backend.graphql;
 import java.util.Collections;
 import java.util.List;
 
-
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -17,6 +16,7 @@ import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
 
@@ -37,12 +37,12 @@ public class CommentGraphQLController {
   }
 
   @QueryMapping
-   public PageResponse<Comment> commentsByPost(
-       @Argument Long postId,
-       @Argument(name = "page") int page,
-       @Argument(name = "size") int size) {
-     return commentService.getPostComments(postId, new PageRequest(page, size, "id", "desc"));
-   }
+  public PageResponse<Comment> commentsByPost(
+      @Argument Long postId,
+      @Argument(name = "page") int page,
+      @Argument(name = "size") int size) {
+    return commentService.getPostComments(postId, new PageRequest(page, size, "id", "desc"));
+  }
 
   @MutationMapping
   public Comment createComment(@Argument CreateCommentRequest input, @AuthenticationPrincipal User user) {
@@ -63,7 +63,7 @@ public class CommentGraphQLController {
   }
 
   @SchemaMapping(typeName = "Comment", field = "post")
-  public PostResponse post(Comment comment) {
+  public PostDetails post(Comment comment) {
     return postService.getPostById(comment.getPostId());
   }
 

@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.interfaces.HasId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,10 +27,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "posts", indexes = {
     @Index(name = "idx_posts_slug", columnList = "slug"),
@@ -46,7 +41,12 @@ import lombok.Setter;
     @NamedAttributeNode("category"),
     @NamedAttributeNode("tags")
 })
-public class Post implements HasId {
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class Post {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -97,6 +97,9 @@ public class Post implements HasId {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User user;
+
+  @Column(name = "user_id", insertable = false, updatable = false)
+  private Long userId;
 
   @ManyToOne
   @JoinColumn(name = "category_id")

@@ -2,8 +2,6 @@ package com.kratosgado.blog.models;
 
 import java.util.List;
 
-import com.kratosgado.blog.interfaces.HasId;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "tags", indexes = {
     @Index(name = "idx_tags_slug", columnList = "slug"),
 })
-public class Tag implements HasId {
+public class Tag {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
