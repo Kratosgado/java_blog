@@ -80,91 +80,11 @@ class CategoryServiceTest {
     assertEquals("Category with this name already exists", exception.getMessage());
   }
 
-  // @ParameterizedTest
-  // @MethodSource("slugGenerationTestCases")
-  // @DisplayName("Should generate correct slug from category name")
-  // void createCategory_ShouldGenerateCorrectSlug(String name, String
-  // expectedSlug) {
-  // // Arrange
-  // CreateCategoryRequest request = new CreateCategoryRequest(name,
-  // "Description");
-  // when(categoryRepository.findBySlug(anyString())).thenReturn(Optional.empty());
-  // when(categoryRepository.save(any(Category.class))).thenAnswer(invocation -> {
-  // Category category = invocation.getArgument(0);
-  // assertEquals(expectedSlug, category.getSlug());
-  // return category;
-  // });
-
-  // // Act
-  // categoryService.createCategory(request);
-
-  // // Assert - verification done in mock answer
-  // }
-
   static Stream<Arguments> slugGenerationTestCases() {
     return Stream.of(
         Arguments.of("Web Development & Design", "web-development-design"),
         Arguments.of("Tech & AI/ML (2024)!", "tech-aiml-2024"));
   }
-
-  // @Test
-  // @DisplayName("Should successfully update a category")
-  // void updateCategory_WithValidData_ShouldReturnUpdatedCategory() {
-  // // Arrange
-  // CreateCategoryRequest updateRequest = new CreateCategoryRequest(
-  // "Updated Tech",
-  // "Updated description");
-  // when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-  // when(categoryRepository.findBySlug("updated-tech")).thenReturn(Optional.empty());
-  // when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
-
-  // // Act
-  // Category result = categoryService.updateCategory(1L, updateRequest);
-
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals("Updated Tech", testCategory.getName());
-  // assertEquals("updated-tech", testCategory.getSlug());
-  // }
-
-  // @Test
-  // @DisplayName("Should allow updating category with same name")
-  // void updateCategory_WithSameName_ShouldSucceed() {
-  // // Arrange
-  // CreateCategoryRequest sameNameRequest = new CreateCategoryRequest(
-  // "Technology",
-  // "Updated description");
-  // when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-  // when(categoryRepository.save(any(Category.class))).thenReturn(testCategory);
-
-  // // Act
-  // Category result = categoryService.updateCategory(1L, sameNameRequest);
-
-  // // Assert
-  // assertNotNull(result);
-  // verify(categoryRepository, never()).findBySlug(anyString());
-  // }
-
-  // @Test
-  // @DisplayName("Should throw exception when updating to existing category
-  // name")
-  // void updateCategory_WithExistingSlug_ShouldThrowException() {
-  // // Arrange
-  // CreateCategoryRequest updateRequest = new CreateCategoryRequest(
-  // "Programming",
-  // "Programming posts");
-  // when(categoryRepository.findById(1L)).thenReturn(Optional.of(testCategory));
-  // when(categoryRepository.findBySlug("programming")).thenReturn(Optional.of(new
-  // Category()));
-
-  // // Act
-  // BlogException exception = assertThrows(BlogException.class,
-  // () -> categoryService.updateCategory(1L, updateRequest));
-
-  // // Assert
-  // assertEquals("Category with this name already exists",
-  // exception.getMessage());
-  // }
 
   @ParameterizedTest
   @MethodSource("notFoundTestCases")
@@ -211,15 +131,6 @@ class CategoryServiceTest {
         Arguments.of("getCategoryById"),
         Arguments.of("getCategoryBySlug"));
   }
-
-  // @Test
-  // @DisplayName("Should successfully delete a category")
-  // void deleteCategory_WithValidId_ShouldDeleteCategory() {
-  // // Act
-  // categoryService.deleteCategory(1L);
-
-  // // Assert - method completes without exception
-  // }
 
   @Test
   @DisplayName("Should successfully get category by ID")
@@ -268,18 +179,4 @@ class CategoryServiceTest {
     assertEquals(1, result.totalElements());
   }
 
-  // @Test
-  // @DisplayName("Should successfully get all categories")
-  // void getAllCategories_ShouldReturnListOfCategories() {
-  // // Arrange
-  // List<Category> categories = List.of(testCategory);
-  // when(categoryRepository.findAll()).thenReturn(categories);
-
-  // // Act
-  // List<Category> result = categoryService.getAllCategories();
-
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.size());
-  // }
 }
