@@ -2,7 +2,6 @@
 package com.kratosgado.blog.backend.utils;
 
 import org.springframework.core.MethodParameter;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -41,7 +40,7 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
     if (body instanceof ResponseDto) {
       return body;
     }
-    
+
     return ResponseDto.success(status, "Operation completed successfully", body);
   }
 
@@ -53,7 +52,7 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
       if (path.startsWith("/docs") || path.startsWith("/v3/api-docs"))
         return false;
     }
-    
+
     Class<?> parameterType = returnType.getParameterType();
     return !parameterType.equals(ResponseDto.class)
         && !parameterType.equals(ResponseEntity.class);

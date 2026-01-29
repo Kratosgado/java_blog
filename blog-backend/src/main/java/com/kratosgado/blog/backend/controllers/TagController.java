@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import java.util.List;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -96,13 +98,11 @@ public class TagController {
     return tagService.searchTags(request.getKeyword(), request);
   }
 
+  @GetMapping("/with-post-count")
+  @GetEnpoint
+  @Operation(summary = "Get all tags with post counts", description = "Retrieves a list of all tags including the number of posts for each. Public access.")
+  public List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
+    return tagService.getAllTagsWithPostCount();
+  }
+}
 
-      
-        @GetMapping("/with-post-count")
-        @GetEnpoint
-        @Operation(summary = "Get all tags with post counts", description = "Retrieves a list of all tags including the number of posts for each. Public access.")
-        public java.util.List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
-          return tagService.getAllTagsWithPostCount();
-        }
-      }
-      

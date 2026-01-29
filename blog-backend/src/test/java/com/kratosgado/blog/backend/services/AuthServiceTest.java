@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -95,51 +96,51 @@ class AuthServiceTest {
     assertEquals("Invalid email or password", exception.getMessage());
   }
 
-  // @Test
-  // @DisplayName("Should successfully register new user")
-  // void register_WithValidData_ShouldReturnUser() {
-  //   // Arrange
-  //   when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
-  //   when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
-  //   when(userRepository.save(any(User.class))).thenReturn(testUser);
+  @Test
+  @DisplayName("Should successfully register new user")
+  void register_WithValidData_ShouldReturnUser() {
+    // Arrange
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
+    when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-  //   // Act
-  //   User result = authService.register(registerRequest);
+    // Act
+    User result = authService.register(registerRequest);
 
-  //   // Assert
-  //   assertNotNull(result);
-  //   assertEquals(testUser.getEmail(), result.getEmail());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertEquals(testUser.getEmail(), result.getEmail());
+  }
 
-  // @Test
-  // @DisplayName("Should throw exception when email already exists during registration")
-  // void register_WithExistingEmail_ShouldThrowException() {
-  //   // Arrange
-  //   when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(testUser));
+  @Test
+  @DisplayName("Should throw exception when email already exists during registration")
+  void register_WithExistingEmail_ShouldThrowException() {
+    // Arrange
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(testUser));
 
-  //   // Act
-  //   BlogException exception = assertThrows(BlogException.class, () -> authService.register(registerRequest));
+    // Act
+    BlogException exception = assertThrows(BlogException.class, () -> authService.register(registerRequest));
 
-  //   // Assert
-  //   assertEquals("Email already exists", exception.getMessage());
-  //   verifyNoInteractions(passwordEncoder);
-  // }
+    // Assert
+    assertEquals("Email already exists", exception.getMessage());
+    verifyNoInteractions(passwordEncoder);
+  }
 
-  // @Test
-  // @DisplayName("Should set default role as USER during registration")
-  // void register_ShouldSetDefaultRole() {
-  //   // Arrange
-  //   when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
-  //   when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
-  //   when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-  //     User savedUser = invocation.getArgument(0);
-  //     // The service doesn't set a role, so we can't test this behavior
-  //     return savedUser;
-  //   });
+  @Test
+  @DisplayName("Should set default role as USER during registration")
+  void register_ShouldSetDefaultRole() {
+    // Arrange
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
+    when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+      User savedUser = invocation.getArgument(0);
+      // The service doesn't set a role, so we can't test this behavior
+      return savedUser;
+    });
 
-  //   // Act
-  //   authService.register(registerRequest);
+    // Act
+    authService.register(registerRequest);
 
-  //   // Assert - verification done in mock answer
-  // }
+    // Assert - verification done in mock answer
+  }
 }

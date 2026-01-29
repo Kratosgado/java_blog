@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.repositories.jdbc;
 
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -49,13 +48,14 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
     // Using ? placeholders for batch
     String placeholders = Arrays.stream(entities.get(0).getClass().getDeclaredFields())
         .filter(field -> {
-          if (field.getName().equals("id")) return false;
+          if (field.getName().equals("id"))
+            return false;
           Class<?> type = field.getType();
           return !HasId.class.isAssignableFrom(type) && !Collection.class.isAssignableFrom(type);
         })
         .map(f -> "?")
         .collect(Collectors.joining(", "));
-    
+
     String query = "INSERT INTO " + tableName + columns + " VALUES (" + placeholders + ")";
 
     return withConnection(conn -> {
@@ -63,10 +63,12 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
         for (T entity : entities) {
           int idx = 1;
           for (Field field : entity.getClass().getDeclaredFields()) {
-            if (field.getName().equals("id")) continue;
+            if (field.getName().equals("id"))
+              continue;
             Class<?> type = field.getType();
-            if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type)) continue;
-            
+            if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))
+              continue;
+
             field.setAccessible(true);
             Object value = field.get(entity);
             statement.setObject(idx++, value);

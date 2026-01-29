@@ -1,17 +1,15 @@
 package com.kratosgado.blog.backend.services;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.sql.SQLException;
 
 @Service
 public class UserService {
@@ -105,7 +103,8 @@ public class UserService {
   }
 
   public PageResponse<User> getAllUsers(PageRequest pageRequest) {
-    var users = userRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
+    var users = userRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(),
+        pageRequest.getSortDir());
     long totalItems = userRepository.count();
     return DtoMapper.toPageResponse(users, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
   }

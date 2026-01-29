@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import java.sql.SQLException;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

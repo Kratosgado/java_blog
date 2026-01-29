@@ -3,6 +3,7 @@ package com.kratosgado.blog.backend.repositories.jdbc;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -122,7 +123,7 @@ public class UserRepository extends CrudRepository<User> {
     });
   }
 
-  public java.util.List<User> findAll(int size, int offset, String sortBy, String sortDir) {
+  public List<User> findAll(int size, int offset, String sortBy, String sortDir) {
     String query = String.format("SELECT * FROM users ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
     return withConnection(conn -> {
       java.util.List<User> users = new java.util.ArrayList<>();

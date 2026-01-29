@@ -7,14 +7,12 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.slf4j.LoggerFactory;
 // import org.springframework.data.domain.Page; // removed unused import
 import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Tag;
 
 @Repository
 public class PostRepository extends SluggableRepository<Post> {
@@ -54,11 +52,11 @@ public class PostRepository extends SluggableRepository<Post> {
            CONSTRAINT chk_views_positive CHECK (views >= 0),
            CONSTRAINT chk_likes_positive CHECK (likes_count >= 0)
         );
-        CREATE INDEX idx_posts_user_id ON posts(user_id);
-        CREATE INDEX idx_posts_category_id ON posts(category_id);
-        CREATE INDEX idx_posts_status ON posts(status);
-        CREATE INDEX idx_posts_title ON posts(title);
-        CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_posts_category_id ON posts(category_id);
+        CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+        CREATE INDEX IF NOT EXISTS idx_posts_title ON posts(title);
+        CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at DESC);
         """;
     safeExecuteQuery(sql, null);
   }

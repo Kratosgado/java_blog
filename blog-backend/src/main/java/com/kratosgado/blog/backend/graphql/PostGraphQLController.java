@@ -136,7 +136,7 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "publishedAt")
   public String publishedAt(Post post) {
-    if ("published".equals(post.getStatus()) && post.getUpdatedAt() != null) {
+    if (PostStatus.published.equals(post.getStatus()) && post.getUpdatedAt() != null) {
       return post.getUpdatedAt().toString();
     }
     return null;

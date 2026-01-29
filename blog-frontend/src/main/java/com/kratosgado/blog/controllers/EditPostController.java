@@ -1,14 +1,13 @@
 package com.kratosgado.blog.controllers;
 
-import com.google.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
@@ -21,13 +20,13 @@ import com.kratosgado.blog.utils.DialogUtils;
 import com.kratosgado.blog.utils.Navigator;
 import com.kratosgado.blog.utils.interfaces.Initializable;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 
@@ -281,7 +280,7 @@ public class EditPostController implements Initializable {
     if (validateForm()) {
       try {
         updatePostFromForm(PostStatus.published);
-        
+
         // Get category ID from selected category
         Long categoryId = null;
         String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
@@ -294,7 +293,7 @@ public class EditPostController implements Initializable {
             }
           }
         }
-        
+
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
             currentPost.getTitle(),
             currentPost.getContent(),
@@ -339,7 +338,7 @@ public class EditPostController implements Initializable {
     if (!titleField.getText().isEmpty()) {
       try {
         updatePostFromForm(PostStatus.draft);
-        
+
         // Get category ID from selected category
         Long categoryId = null;
         String selectedCategory = categoryComboBox.getSelectionModel().getSelectedItem();
@@ -352,7 +351,7 @@ public class EditPostController implements Initializable {
             }
           }
         }
-        
+
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
             currentPost.getTitle(),
             currentPost.getContent(),
@@ -436,7 +435,8 @@ public class EditPostController implements Initializable {
         } else {
           // Create new tag
           try {
-            Tag newTag = tagService.createTag(new com.kratosgado.blog.dtos.request.CreateTagRequest(tagName, "Created during post edit"));
+            Tag newTag = tagService
+                .createTag(new com.kratosgado.blog.dtos.request.CreateTagRequest(tagName, "Created during post edit"));
             tagId = Long.valueOf(newTag.getId());
             logger.info("Created new tag: {}", tagName);
           } catch (Exception e) {
@@ -474,9 +474,9 @@ public class EditPostController implements Initializable {
     logger.info("Previewing post");
     // Show preview dialog
     try {
-      DialogUtils.showInfo("Post Preview", 
+      DialogUtils.showInfo("Post Preview",
           "Title: " + titleField.getText() + "\n\n" +
-          "Content: " + contentArea.getText().substring(0, Math.min(contentArea.getText().length(), 200)) + "...");
+              "Content: " + contentArea.getText().substring(0, Math.min(contentArea.getText().length(), 200)) + "...");
     } catch (Exception e) {
       logger.error("Failed to show preview", e);
     }
