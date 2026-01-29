@@ -64,6 +64,14 @@ public class PostController {
     return postService.updatePost(id, request, userId);
   }
 
+  @PutMapping("/{id}/publish")
+  @Operation(summary = "Publish a post", description = "Updates a blog post status to published. Only the post author can publish it.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint
+  public PostResponse publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
+    Long userId = SecurityUtils.getCurrentUserId();
+    return postService.publishPost(id, userId);
+  }
+
   @DeleteMapping("/{id}")
   @Operation(summary = "Delete a post", description = "Deletes a blog post by ID. Only the post author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
