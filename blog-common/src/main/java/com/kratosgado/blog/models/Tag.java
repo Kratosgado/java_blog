@@ -18,8 +18,6 @@ public class Tag implements HasId {
 
   private String description;
 
-  private Integer postCount = 0;
-
   public Tag(String name, String slug, String description) {
     this.name = name;
     this.slug = slug;

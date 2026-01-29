@@ -1,145 +1,226 @@
 ### Performance Monitoring API Tests
 
-### Base URL
-@host = http://localhost:8080/api
-@adminToken = Bearer {{$dotenv ADMIN_TOKEN}}
 
-###
+### Base URL
+
+@host = http://localhost:8080/api
+
+
+### 
+
 
 ### Get all performance statistics
-# @name getPerformanceStats
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name getPerformanceStats
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Get formatted performance report
-# @name getPerformanceReport
-GET {{host}}/performance/report HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name getPerformanceReport
+
+GET {{host}}/performance/report HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Get monitoring status
-# @name getMonitoringStatus
-GET {{host}}/performance/status HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name getMonitoringStatus
+
+GET {{host}}/performance/status HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Reset all performance metrics
-# @name resetPerformanceMetrics
-DELETE {{host}}/performance/reset HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name resetPerformanceMetrics
+
+DELETE {{host}}/performance/reset HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Test workflow: Get initial stats, perform operations, check stats again
 
-### Step 1: Get initial performance stats
-# @name initialStats
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+### Step 1: Get initial performance stats
+
+# @name initialStats
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Step 2: Perform some operations (trigger a post fetch)
+
 # @name triggerOperation
+
 GET {{host}}/posts/1 HTTP/1.1
 
-###
+
+### 
+
 
 ### Step 3: Get updated performance stats (should show new metrics)
-# @name updatedStats
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name updatedStats
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Step 4: Check monitoring status
-# @name checkStatus
-GET {{host}}/performance/status HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name checkStatus
+
+GET {{host}}/performance/status HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Step 5: Get full report
-# @name fullReport
-GET {{host}}/performance/report HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name fullReport
+
+GET {{host}}/performance/report HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Step 6: Reset metrics
-# @name resetMetrics
-DELETE {{host}}/performance/reset HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name resetMetrics
+
+DELETE {{host}}/performance/reset HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Step 7: Verify metrics were reset
-# @name verifyReset
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name verifyReset
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Test without authentication (should fail with 401)
+
 # @name getStatsUnauthorized
+
 GET {{host}}/performance/stats HTTP/1.1
 
-###
+
+### 
+
 
 ### Test with regular user token (should fail with 403)
-# @name getStatsAsUser
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: Bearer {{$dotenv USER_TOKEN}}
 
-###
+# @name getStatsAsUser
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: Bearer
+
+
+### 
+
 
 ### Test report without authentication (should fail with 401)
+
 # @name getReportUnauthorized
+
 GET {{host}}/performance/report HTTP/1.1
 
-###
+
+### 
+
 
 ### Test reset without authentication (should fail with 401)
+
 # @name resetUnauthorized
+
 DELETE {{host}}/performance/reset HTTP/1.1
 
-###
+
+### 
+
 
 ### Load testing scenario: Trigger multiple operations and check performance
+
 # @name loadTest1
+
 GET {{host}}/posts?page=1&size=10 HTTP/1.1
 
-###
+
+### 
 
 # @name loadTest2
+
 GET {{host}}/categories HTTP/1.1
 
-###
+
+### 
 
 # @name loadTest3
+
 GET {{host}}/tags?page=1&size=10 HTTP/1.1
 
-###
+
+### 
 
 # @name loadTest4
+
 GET {{host}}/users?page=1&size=10 HTTP/1.1
 
-###
+
+### 
+
 
 ### Check performance after load test
-# @name performanceAfterLoad
-GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name performanceAfterLoad
+
+GET {{host}}/performance/stats HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 
+
 
 ### Get formatted report after load test
-# @name reportAfterLoad
-GET {{host}}/performance/report HTTP/1.1
-Authorization: {{adminToken}}
 
-###
+# @name reportAfterLoad
+
+GET {{host}}/performance/report HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### 

@@ -19,7 +19,7 @@ Authorization: {{userAuth}}
 
 {
   "description": "Articles about Spring Boot framework and its features",
-  "name": "Spring Boot"
+  "name": "Sring Boot"
 }
 
 

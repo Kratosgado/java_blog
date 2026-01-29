@@ -1,10 +1,5 @@
 package com.kratosgado.blog.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kratosgado.blog.interfaces.HasId;
 
 import lombok.AllArgsConstructor;
@@ -25,7 +20,6 @@ public class User implements HasId {
 
   private String username;
 
-  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String password;
 
   private String email;
@@ -37,10 +31,6 @@ public class User implements HasId {
 
   @Builder.Default
   private String role = "USER";
-
-  @JsonIgnore
-  @Builder.Default
-  private List<Post> posts = new ArrayList<>();
 
   @Override
   public String toString() {

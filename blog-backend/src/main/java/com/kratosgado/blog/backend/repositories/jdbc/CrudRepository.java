@@ -1,10 +1,11 @@
 package com.kratosgado.blog.backend.repositories.jdbc;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,12 +22,17 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
   }
 
   public T save(T entity) {
-    String columns = projectionMetadata.getInsertClause();
-    String values = getColumnValues(entity);
-    String query = "INSERT INTO " + tableName + columns + " VALUES ( " + values + ")";
+    List<String> columns = projectionMetadata.getColumns();
+    String columnClause = "(" + String.join(", ", columns) + ")";
+    String placeholders = columns.stream().map(c -> "?").collect(Collectors.joining(", "));
+    String query = "INSERT INTO " + tableName + " " + columnClause + " VALUES (" + placeholders + ")";
 
     return withConnection(conn -> {
       try (PreparedStatement statement = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        List<Object> values = getEntityValues(entity);
+        for (int i = 0; i < values.size(); i++) {
+          statement.setObject(i + 1, values.get(i));
+        }
         statement.executeUpdate();
         try (ResultSet rs = statement.getGeneratedKeys()) {
           if (rs.next()) {
@@ -44,34 +50,17 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
     if (entities == null || entities.isEmpty()) {
       return entities;
     }
-    String columns = projectionMetadata.getInsertClause();
-    // Using ? placeholders for batch
-    String placeholders = Arrays.stream(entities.get(0).getClass().getDeclaredFields())
-        .filter(field -> {
-          if (field.getName().equals("id"))
-            return false;
-          Class<?> type = field.getType();
-          return !HasId.class.isAssignableFrom(type) && !Collection.class.isAssignableFrom(type);
-        })
-        .map(f -> "?")
-        .collect(Collectors.joining(", "));
-
-    String query = "INSERT INTO " + tableName + columns + " VALUES (" + placeholders + ")";
+    List<String> columns = projectionMetadata.getColumns();
+    String columnClause = "(" + String.join(", ", columns) + ")";
+    String placeholders = columns.stream().map(c -> "?").collect(Collectors.joining(", "));
+    String query = "INSERT INTO " + tableName + " " + columnClause + " VALUES (" + placeholders + ")";
 
     return withConnection(conn -> {
       try (PreparedStatement statement = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
         for (T entity : entities) {
-          int idx = 1;
-          for (Field field : entity.getClass().getDeclaredFields()) {
-            if (field.getName().equals("id"))
-              continue;
-            Class<?> type = field.getType();
-            if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))
-              continue;
-
-            field.setAccessible(true);
-            Object value = field.get(entity);
-            statement.setObject(idx++, value);
+          List<Object> values = getEntityValues(entity);
+          for (int i = 0; i < values.size(); i++) {
+            statement.setObject(i + 1, values.get(i));
           }
           statement.addBatch();
         }
@@ -84,15 +73,49 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
           }
         }
         return entities;
-      } catch (SQLException | IllegalAccessException e) {
+      } catch (SQLException e) {
         throw BlogException.internal("Failed to saveAll entities: " + e.getMessage());
       }
     });
   }
 
   public T update(T entity) {
-    String query = "UPDATE " + tableName + " SET " + getUpdateClause(entity) + " WHERE id = ?";
-    safeExecuteQuery(query, null, getValues(entity).toArray(new Object[0]), entity.getId());
+    List<Object> values = new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+
+    for (Field field : entity.getClass().getDeclaredFields()) {
+      if (field.getName().equals("id"))
+        continue;
+      if (Modifier.isStatic(field.getModifiers()))
+        continue;
+
+      Class<?> type = field.getType();
+      if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))
+        continue;
+
+      try {
+        field.setAccessible(true);
+        Object value = field.get(entity);
+        if (value != null) {
+          String columnName = toSnakeCase(field.getName());
+          sb.append(columnName).append(" = ?, ");
+          values.add(prepareParameter(value));
+        }
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    if (sb.length() > 0) {
+      sb.setLength(sb.length() - 2);
+    } else {
+      return entity;
+    }
+
+    String query = "UPDATE " + tableName + " SET " + sb.toString() + " WHERE id = ?";
+    values.add(entity.getId());
+
+    safeExecuteQuery(query, null, values.toArray());
     return entity;
   }
 
@@ -114,59 +137,29 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
     safeExecuteQuery(query, null);
   }
 
-  private List<String> getValues(T entity) {
-    return Arrays.stream(entity.getClass().getDeclaredFields())
-        .filter(field -> {
-          if (field.getName().equals("id")) {
-            return false;
-          }
-          // Detect relationship fields: referencing HasId or List of HasId
-          Class<?> type = field.getType();
-          if (HasId.class.isAssignableFrom(type)) {
-            return false;
-          }
-          if (Collection.class.isAssignableFrom(type)) {
-            return false;
-          }
-
-          return true;
-        })
-        .map(field -> {
-          try {
-            field.setAccessible(true);
-            var value = field.get(entity);
-            return value == null ? "NULL" : "'" + value.toString() + "'";
-          } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-          }
-        })
-        .collect(Collectors.toList());
-  }
-
-  private String getColumnValues(T entity) {
-    return String.join(", ", getValues(entity));
-  }
-
-  private String getUpdateClause(T entity) {
-    StringBuilder sb = new StringBuilder();
+  private List<Object> getEntityValues(T entity) {
+    List<Object> values = new ArrayList<>();
     for (Field field : entity.getClass().getDeclaredFields()) {
-      if (field.getName().equals("id")) {
+      if (field.getName().equals("id"))
         continue;
-      }
+      if (Modifier.isStatic(field.getModifiers()))
+        continue;
+
+      Class<?> type = field.getType();
+      if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type))
+        continue;
+
       try {
         field.setAccessible(true);
-        Object value = field.get(entity);
-        if (value != null) {
-          sb.append(field.getName()).append(" = ?, ");
-        }
+        values.add(prepareParameter(field.get(entity)));
       } catch (IllegalAccessException e) {
         throw new RuntimeException(e);
       }
     }
-    if (sb.length() > 0) {
-      sb.deleteCharAt(sb.length() - 1);
-    }
-    return sb.toString();
+    return values;
   }
 
+  private String toSnakeCase(String camelCase) {
+    return camelCase.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+  }
 }
