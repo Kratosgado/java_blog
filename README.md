@@ -96,185 +96,40 @@ A comprehensive JavaFX blogging platform with a **hybrid database architecture**
 ### Layered Design
 
 ```
-Controllers (UI Layer)
+Controllers (REST / UI)
     ↓
-Services (Business Logic)
+Services (Business Logic & Transactions)
     ↓
-DAOs (Data Access Objects)
+Repositories (Spring Data JPA)
     ↓
-Database Layer (Hybrid)
-    ├── PostgreSQL (Structured Data)
-    │   ├── Users
-    │   ├── Posts
-    │   ├── Tags
-    │   └── Categories
-    └── MongoDB (Unstructured Data)
-        ├── Comments (flexible schema with reactions, mentions)
-        └── Reviews (flexible schema with rich media)
+Database Layer (Relational)
+    └── PostgreSQL (Structured Data)
+        ├── Users
+        ├── Posts
+        ├── Tags
+        ├── Categories
+        ├── Comments
+        └── Reviews
 ```
 
 ### Key Components
 
-1. **Models**: `Post`, `User`, `Comment`, `Tag`, `Category`, `Review` - Domain objects with Lombok annotations
-2. **DAOs**:
-   - **SQL**: `PostDAO`, `UserDAO`, `TagDAO`, `CategoryDAO` - PostgreSQL data access
-   - **NoSQL**: `CommentMongoDAO`, `ReviewMongoDAO` - MongoDB data access with flexible schemas
-3. **Services**: Business logic layer with validation and error handling
-4. **Controllers**: 15+ JavaFX UI controllers for user interaction
-5. **Cache**: `PostCache`, `UserCache`, `TagCache` - Multi-level in-memory caching with TTL expiration
-6. **Algorithms**: `SearchSortAlgorithms` - QuickSort and Binary Search implementations
-7. **Performance**: `PerformanceMonitor` - Operation timing and statistics tracking
-8. **Database Config**: `DatabaseConfig` (PostgreSQL), `MongoDBConfig` (MongoDB)
-
-## Database Schema
-
-**For detailed database models (Conceptual, Logical, Physical), see [DATABASE_MODELS.md](DATABASE_MODELS.md)**
-
-### Hybrid Architecture
-
-The platform uses a **hybrid database architecture**:
-
-- **PostgreSQL (SQL)**: Structured, relational data (Users, Posts, Tags, Categories)
-- **MongoDB (NoSQL)**: Unstructured, flexible schema data (Comments, Reviews)
-
-**Why MongoDB for Comments & Reviews?**
-
-- Variable structure (reactions, mentions, attachments, rich media)
-- Threaded/nested comments without complex SQL JOINs
-- High write throughput for user-generated content
-- Horizontal scalability for large volumes
-- Flexible schema for future enhancements
-
-### PostgreSQL Tables
-
-#### `users`
-
-- `id` (SERIAL PRIMARY KEY)
-- `username` (VARCHAR(50) UNIQUE)
-- `email` (VARCHAR(100) UNIQUE)
-- `password` (VARCHAR(255))
-- `avatar_url` (VARCHAR(255))
-- `created_at` (TIMESTAMP)
-
-#### `posts`
-
-- `id` (SERIAL PRIMARY KEY)
-- `user_id` (INTEGER FOREIGN KEY)
-- `title` (VARCHAR(255) NOT NULL)
-- `content` (TEXT NOT NULL)
-- `excerpt` (VARCHAR(500))
-- `status` (VARCHAR(20)) - 'draft', 'published', 'archived'
-- `featured_image` (VARCHAR(500))
-- `cover_image` (VARCHAR(500))
-- `icon` (VARCHAR(500))
-- `views` (INTEGER DEFAULT 0)
-- `created_at` (TIMESTAMP)
-- `updated_at` (TIMESTAMP)
-
-#### `tags`
-
-- `id` (SERIAL PRIMARY KEY)
-- `name` (VARCHAR(100) UNIQUE)
-- `created_at` (TIMESTAMP)
-
-#### `categories`
-
-- `id` (SERIAL PRIMARY KEY)
-- `name` (VARCHAR(100) UNIQUE)
-- `slug` (VARCHAR(120) UNIQUE)
-- `parent_id` (INTEGER FOREIGN KEY) - Hierarchical categories
-- `created_at` (TIMESTAMP)
-
-#### `post_tags` (Junction Table)
-
-- `post_id` (INTEGER FOREIGN KEY)
-- `tag_id` (INTEGER FOREIGN KEY)
-- PRIMARY KEY (post_id, tag_id)
-
-### MongoDB Collections
-
-#### `comments` - **NEW (NoSQL)**
-
-Document structure with flexible schema:
-
-```javascript
-{
-  _id: ObjectId,
-  post_id: int,           // Reference to PostgreSQL post
-  user_id: int,           // Reference to PostgreSQL user
-  content: string,
-  author_name: string,    // Denormalized
-  status: string,         // PENDING, APPROVED, FLAGGED, DELETED
-  parent_id: ObjectId,    // For threaded comments
-  depth: int,             // Nesting level
-  reactions: {            // Flexible social features
-    like: int,
-    love: int,
-    insightful: int
-  },
-  mentions: [],           // @mentioned users
-  attachments: [],        // Images, files
-  metadata: {},           // Flexible custom fields
-  created_at: timestamp
-}
-```
-
-#### `reviews` - **NEW (NoSQL)**
-
-Document structure with flexible schema:
-
-```javascript
-{
-  _id: ObjectId,
-  post_id: int,           // Reference to PostgreSQL post
-  user_id: int,           // Reference to PostgreSQL user
-  rating: int,            // 1-5 stars
-  title: string,
-  content: string,
-  helpful: boolean,
-  author_name: string,    // Denormalized
-  images: [],             // Review images
-  votes: {                // Helpful/not helpful votes
-    helpful: int,
-    not_helpful: int
-  },
-  metadata: {},           // Flexible custom fields
-  created_at: timestamp,
-  updated_at: timestamp
-}
-```
-
-**Indexes**: Both collections have indexes on post_id, user_id, created_at for optimal query performance.
-
-### Database Indexes (Performance Optimization)
-
-These indexes optimize:
-
-- **User post retrieval**: `idx_posts_user_id`
-- **Status filtering**: `idx_posts_status`
-- **Search queries**: `idx_posts_title`
-- **Date-based sorting**: `idx_posts_created_at`
-- **Review retrieval by post/user**: `idx_reviews_post_id`, `idx_reviews_user_id`
-- **Rating-based filtering**: `idx_reviews_rating`
-
-## Normalization
-
-The database schema is **normalized to Third Normal Form (3NF)**:
-
-1. **First Normal Form (1NF)**: All attributes are atomic
-2. **Second Normal Form (2NF)**: No partial dependencies on composite keys
-3. **Third Normal Form (3NF)**: No transitive dependencies
+1. **Models**: `Post`, `User`, `Comment`, `Tag`, `Category`, `Review` - JPA Entities with Hibernate annotations.
+2. **Repositories**: `UserRepository`, `PostRepository`, `TagRepository`, `CategoryRepository`, `CommentRepository`, `ReviewRepository` - Extending `JpaRepository` for automated CRUD, pagination, and custom JPQL/Native queries.
+3. **Services**: Business logic layer with `@Transactional` management and Spring Cache integration.
+4. **Caching**: Spring Cache with `@Cacheable` and `@CacheEvict` for efficient data retrieval.
+5. **Performance**: Advanced query optimization and database-level pagination.
 
 ## Technology Stack
 
 - **Language**: Java 21
-- **UI Framework**: JavaFX 21
-- **Database (SQL)**: PostgreSQL 14+
-- **Database (NoSQL)**: MongoDB 6.0+
-- **Database Drivers**: PostgreSQL JDBC 42.7.8, MongoDB Driver 4.11.1
-- **Build Tool**: Maven
-- **Logging**: SLF4J with Logback
-- **Security**: BCrypt for password hashing
+- **Framework**: Spring Boot 3.x
+- **Data Access**: Spring Data JPA (Hibernate)
+- **Caching**: Spring Cache
+- **Database**: PostgreSQL
+- **Security**: Spring Security with JWT and BCrypt
+- **API Documentation**: Springdoc OpenAPI (Swagger)
+
 
 ## Installation & Setup
 
