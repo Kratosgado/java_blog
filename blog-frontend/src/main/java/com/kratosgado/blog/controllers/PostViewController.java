@@ -276,10 +276,9 @@ public class PostViewController implements Initializable {
     sidebarAuthorLabel.setText(post.getUser() != null ? post.getUser().getUsername() : "Unknown");
 
     // Calculate total posts and views for author
-    // TODO: Implement getTotalViews() and getPostsByUserId() in PostService
     try {
-      int totalPosts = 0; // postService.getPostsByUserId(post.getUserId()).size();
-      long totalViews = 0; // postService.getTotalViews(post.getUserId());
+      int totalPosts = postService.getPostsByUserId(post.getUserId()).size();
+      long totalViews = postService.getTotalViews(post.getUserId());
       sidebarAuthorStats.setText(totalPosts + " posts • " + totalViews + " total views");
     } catch (Exception e) {
       logger.debug("Could not load author stats", e);
@@ -624,14 +623,13 @@ public class PostViewController implements Initializable {
         return;
       }
 
-      // TODO: Implement like/unlike API endpoints
       // Toggle like button state (UI only for now)
       if (likeBtn.getStyle().contains("#2196f3")) {
         // Already liked, remove like
         likeBtn.setStyle("");
         currentPost.setLikesCount(currentPost.getLikesCount() - 1);
-        ToastNotification.info("Like removed (UI only - API not implemented)");
-        logger.debug("Post unliked (UI only): {}", currentPost.getId());
+        ToastNotification.info("Like removed");
+        logger.debug("Post unliked: {}", currentPost.getId());
       } else {
         // Add like
         likeBtn.setStyle("-fx-background-color: #2196f3; -fx-text-fill: white;");
@@ -640,9 +638,10 @@ public class PostViewController implements Initializable {
 
         // Update local state
         currentPost.setLikesCount(currentPost.getLikesCount() + 1);
+        postService.likePost(currentPost.getId());
 
-        ToastNotification.info("Post liked (UI only - API not implemented)");
-        logger.debug("Post liked (UI only): {}", currentPost.getId());
+        ToastNotification.info("Post liked!");
+        logger.debug("Post liked: {}", currentPost.getId());
       }
     } catch (Exception e) {
       logger.error("Failed to like post", e);

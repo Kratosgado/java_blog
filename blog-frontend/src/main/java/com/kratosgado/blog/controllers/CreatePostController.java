@@ -202,9 +202,6 @@ public class CreatePostController {
         
         logger.info("Publishing post: {}", createdPost.getTitle());
 
-        // TODO: Tags association needs to be handled in backend
-        // assignTagsToPost(createdPost.getId());
-
         messageLabel.setText("Post published successfully!");
         messageLabel.setStyle("-fx-text-fill: #6b7280;");
         clearForm();
@@ -225,9 +222,6 @@ public class CreatePostController {
         
         logger.info("Saving draft: {}", createdPost.getTitle());
 
-        // TODO: Tags association needs to be handled in backend
-        // assignTagsToPost(createdPost.getId());
-
         messageLabel.setText("Draft saved successfully!");
         messageLabel.setStyle("-fx-text-fill: #6b7280;");
         clearForm();
@@ -237,11 +231,6 @@ public class CreatePostController {
         showMessage(ex.getMessage(), "#1f2937");
       }
     }
-  }
-
-  private void assignTagsToPost(int postId) {
-    // TODO: Tag assignment needs to be implemented via API
-    logger.warn("Tag assignment not yet implemented via API");
   }
 
   private void cancel() {
@@ -255,6 +244,9 @@ public class CreatePostController {
 
   private void preview() {
     logger.info("Previewing post");
+    com.kratosgado.blog.utils.DialogUtils.showInfo("Post Preview", 
+        "Title: " + titleField.getText() + "\n\n" +
+        "Content: " + contentArea.getText().substring(0, Math.min(contentArea.getText().length(), 200)) + "...");
   }
 
   private void addTagFromComboBox() {

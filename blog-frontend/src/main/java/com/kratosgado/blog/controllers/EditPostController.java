@@ -434,9 +434,15 @@ public class EditPostController implements Initializable {
           tagId = Long.valueOf(existingTag.getId());
           logger.debug("Using existing tag: {}", tagName);
         } else {
-          // TODO: Implement tag creation via API
-          logger.warn("Tag creation not yet implemented via API: {}", tagName);
-          continue;
+          // Create new tag
+          try {
+            Tag newTag = tagService.createTag(new com.kratosgado.blog.dtos.request.CreateTagRequest(tagName, "Created during post edit"));
+            tagId = Long.valueOf(newTag.getId());
+            logger.info("Created new tag: {}", tagName);
+          } catch (Exception e) {
+            logger.error("Failed to create tag {}: {}", tagName, e.getMessage());
+            continue;
+          }
         }
 
         // Associate tag with post
@@ -466,7 +472,14 @@ public class EditPostController implements Initializable {
 
   private void preview() {
     logger.info("Previewing post");
-    // TODO: Implement preview functionality
+    // Show preview dialog
+    try {
+      DialogUtils.showInfo("Post Preview", 
+          "Title: " + titleField.getText() + "\n\n" +
+          "Content: " + contentArea.getText().substring(0, Math.min(contentArea.getText().length(), 200)) + "...");
+    } catch (Exception e) {
+      logger.error("Failed to show preview", e);
+    }
   }
 
   private void addTag() {
