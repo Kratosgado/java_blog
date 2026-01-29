@@ -149,12 +149,23 @@ public class TagService {
   }
 
   /**
-   * Get tags by post ID (stub - not yet implemented in backend)
+   * Get tags by post ID
    */
   public List<Tag> getTagsByPostId(Long postId) {
-    logger.warn("getTagsByPostId() not yet implemented via API");
-    // Return empty list for now - this would need a new backend endpoint
-    return List.of();
+    ensureAuthToken();
+    try {
+      com.kratosgado.blog.utils.http.PostApiClient postApiClient = new com.kratosgado.blog.utils.http.PostApiClient(ApiConfig.getBaseUrl());
+      postApiClient.setAuthToken(AuthContext.getInstance().getAuthToken());
+      com.kratosgado.blog.dtos.response.PostResponse post = postApiClient.getPostById(postId);
+      if (post.tags() == null)
+        return List.of();
+      return post.tags().stream()
+          .map(ts -> new Tag(ts.name(), ts.slug(), ""))
+          .toList();
+    } catch (Exception e) {
+      logger.error("Failed to get tags for post {}: {}", postId, e.getMessage());
+      return List.of();
+    }
   }
 
   /**

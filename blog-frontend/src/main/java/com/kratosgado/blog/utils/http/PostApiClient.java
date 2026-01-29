@@ -106,6 +106,25 @@ public class PostApiClient extends BaseApiClient {
   }
 
   /**
+   * Publish a post
+   */
+  public PostResponse publishPost(Long id) throws IOException {
+    logger.info("Publishing post ID: {}", id);
+    HttpClient.HttpResponse<String> response = httpClient.put("/posts/" + id + "/publish", null, authToken, String.class);
+    return handleResponse(response, PostResponse.class, "Publish post");
+  }
+
+  /**
+   * Increment post views
+   */
+  public void incrementViews(String slug) throws IOException {
+    logger.info("Incrementing views for post slug: {}", slug);
+    // In backend this is an async service call, let's assume there is an endpoint
+    // for it if needed, or skip if not implemented.
+    // For now we just log it as it's not strictly required for the UI to function
+  }
+
+  /**
    * Delete a post
    */
   public void deletePost(Long id) throws IOException {
