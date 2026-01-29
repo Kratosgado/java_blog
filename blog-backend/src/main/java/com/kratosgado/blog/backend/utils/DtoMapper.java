@@ -57,8 +57,8 @@ public class DtoMapper {
 
   public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, int totalElements) {
     int totalPages = (int) Math.ceil((double) totalElements / size);
-    boolean isFirst = page == 1;
-    boolean isLast = page >= totalPages;
+    boolean isFirst = page == 0;
+    boolean isLast = page >= totalPages - 1;
     return new PageResponse<>(content, page, size, totalElements, totalPages, isFirst, isLast);
   }
 
