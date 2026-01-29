@@ -5,10 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,11 +23,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
-import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.models.User;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,8 +61,7 @@ class UserServiceTest {
   @ParameterizedTest
   @MethodSource("getUserByIdTestCases")
   @DisplayName("Should get user by ID with or without password")
-  void getUserById_ShouldReturnUserBasedOnPasswordFlag(boolean includePassword, boolean expectPassword)
-      throws SQLException {
+  void getUserById_ShouldReturnUserBasedOnPasswordFlag(boolean includePassword, boolean expectPassword) {
     // Arrange
     when(userRepository.findById(eq(1L))).thenReturn(Optional.of(testUser));
 
@@ -86,7 +88,7 @@ class UserServiceTest {
   @ParameterizedTest
   @MethodSource("getUserNotFoundTestCases")
   @DisplayName("Should throw exception when user not found")
-  void getUserNotFound_ShouldThrowException(String operation) throws SQLException {
+  void getUserNotFound_ShouldThrowException(String operation) {
     // Arrange
     switch (operation) {
       case "byId":
@@ -129,7 +131,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName("Should get user by email")
-  void getUserByEmail_WithValidEmail_ShouldReturnUser() throws SQLException {
+  void getUserByEmail_WithValidEmail_ShouldReturnUser() {
     // Arrange
     when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
@@ -143,7 +145,7 @@ class UserServiceTest {
 
   @Test
   @DisplayName("Should get user by username")
-  void getUserByUsername_WithValidUsername_ShouldReturnUser() throws SQLException {
+  void getUserByUsername_WithValidUsername_ShouldReturnUser() {
     // Arrange
     when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
@@ -159,10 +161,10 @@ class UserServiceTest {
   @DisplayName("Should get all users")
   void getAllUsers_ShouldReturnPageOfUsers() {
     // Arrange
-    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("id").sortDir("desc").build();
-    java.util.List<User> users = java.util.List.of(testUser);
-    when(userRepository.findAll(eq(10), eq(0), eq("id"), eq("desc"))).thenReturn(users);
-    when(userRepository.count()).thenReturn(1L);
+    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
+        .page(0).size(10).sortBy("id").sortDir("DESC").build();
+    Page<User> page = new PageImpl<>(List.of(testUser));
+    when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
 
     // Act
     var result = userService.getAllUsers(pageRequest);

@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.services;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,7 +54,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("Should successfully login with valid credentials")
-  void login_WithValidCredentials_ShouldReturnUser() throws SQLException {
+  void login_WithValidCredentials_ShouldReturnUser() {
     // Arrange
     when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(true);
@@ -70,7 +69,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("Should throw exception when user not found during login")
-  void login_WithInvalidEmail_ShouldThrowException() throws SQLException {
+  void login_WithInvalidEmail_ShouldThrowException() {
     // Arrange
     when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.empty());
 
@@ -84,7 +83,7 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("Should throw exception when password is incorrect")
-  void login_WithInvalidPassword_ShouldThrowException() throws SQLException {
+  void login_WithInvalidPassword_ShouldThrowException() {
     // Arrange
     when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(false);
