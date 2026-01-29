@@ -144,4 +144,4 @@ Content-Type: application/json
 
 # @name getPublishedPosts
 
-GET {{host}}/posts?status=published&page=0&size=10 HTTP/1.1
+GET {{host}}/posts?status=published&page=1&size=2 HTTP/1.1

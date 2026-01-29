@@ -1,12 +1,11 @@
 package com.kratosgado.blog.backend.repositories.jdbc;
 
-import java.lang.System.Logger;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.slf4j.LoggerFactory;
 // import org.springframework.data.domain.Page; // removed unused import
@@ -22,14 +21,39 @@ public class PostRepository extends SluggableRepository<Post> {
 
   final TagRepository tagRepository;
 
-  public PostRepository(Connection connection, TagRepository tagRepository, UserRepository userRepository,
+  public PostRepository(DataSource dataSource, TagRepository tagRepository, UserRepository userRepository,
       CategoryRepository categoryRepository) {
-    super(connection, Post.class);
+    super(dataSource, Post.class);
     tableName = "posts";
     this.tagRepository = tagRepository;
     registerRelationshipRepository("user", userRepository);
     registerRelationshipRepository("category", categoryRepository);
     registerManyToManyRelationship("tags", tagRepository, "post_tags", "post_id", "tag_id");
+  }
+
+  @Override
+  protected void initTable() {
+    String sql = """
+        CREATE TABLE IF NOT EXISTS posts (
+            id BIGSERIAL PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            slug VARCHAR(255) UNIQUE NOT NULL,
+            content TEXT NOT NULL,
+            excerpt TEXT,
+            status VARCHAR(20) DEFAULT 'draft',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            views INTEGER DEFAULT 0,
+            likes_count INTEGER DEFAULT 0,
+            cover_image VARCHAR(255),
+            user_id BIGINT REFERENCES users(id),
+            category_id BIGINT REFERENCES categories(id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
+        CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+        CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
+        """;
+    safeExecuteQuery(sql, null);
   }
 
   @Override
@@ -60,15 +84,19 @@ public class PostRepository extends SluggableRepository<Post> {
     safeExecuteQuery(query, null, slug);
   }
 
-  public long countPublishedPosts() throws SQLException {
+  public long countPublishedPosts() {
     String query = "SELECT COUNT(*) FROM posts WHERE status = 'published'";
-    try (PreparedStatement statement = connection.prepareStatement(query);
-        ResultSet rs = statement.executeQuery()) {
-      if (rs.next()) {
-        return rs.getLong(1);
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query);
+          ResultSet rs = statement.executeQuery()) {
+        if (rs.next()) {
+          return rs.getLong(1);
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count published posts: " + e.getMessage());
       }
-    }
-    return 0;
+      return 0L;
+    });
   }
 
   public List<Post> searchPostsByKeyword(String keyword, int size, int offset) {
@@ -82,18 +110,20 @@ public class PostRepository extends SluggableRepository<Post> {
 
   public long countPostsByKeyword(String keyword) {
     String query = "SELECT COUNT(*) FROM posts WHERE (LOWER(title) LIKE ? OR LOWER(content) LIKE ?) AND status = 'published'";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, "%" + keyword.toLowerCase() + "%");
-      statement.setString(2, "%" + keyword.toLowerCase() + "%");
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getLong(1);
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, "%" + keyword.toLowerCase() + "%");
+        statement.setString(2, "%" + keyword.toLowerCase() + "%");
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count posts by keyword: " + e.getMessage());
       }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to count posts by keyword: " + e.getMessage());
-    }
-    return 0;
+      return 0L;
+    });
   }
 
   public List<Post> findPostsByUser(Long userId, int size, int offset) {
@@ -102,17 +132,19 @@ public class PostRepository extends SluggableRepository<Post> {
 
   public long countPostsByUser(Long userId) {
     String query = "SELECT COUNT(*) FROM posts WHERE user_id = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setLong(1, userId);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getLong(1);
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setLong(1, userId);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count user posts: " + e.getMessage());
       }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to count user posts: " + e.getMessage());
-    }
-    return 0;
+      return 0L;
+    });
   }
 
   public List<Post> findPostsByCategory(Long categoryId, int size, int offset) {
@@ -122,17 +154,19 @@ public class PostRepository extends SluggableRepository<Post> {
 
   public long countPostsByCategory(Long categoryId) {
     String query = "SELECT COUNT(*) FROM posts WHERE category_id = ? AND status = 'published'";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setLong(1, categoryId);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getLong(1);
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setLong(1, categoryId);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count posts by category: " + e.getMessage());
       }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to count posts by category: " + e.getMessage());
-    }
-    return 0;
+      return 0L;
+    });
   }
 
 }

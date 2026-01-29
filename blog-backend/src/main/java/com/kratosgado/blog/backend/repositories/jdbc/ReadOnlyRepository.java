@@ -6,17 +6,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.interfaces.HasId;
 
-import java.sql.Connection;
+import javax.sql.DataSource;
 
 public abstract class ReadOnlyRepository<T extends HasId> extends BaseRepository<T> {
 
-  public ReadOnlyRepository(Connection connection, Class<T> entityClass) {
-    super(connection, entityClass);
+  public ReadOnlyRepository(DataSource dataSource, Class<T> entityClass) {
+    super(dataSource, entityClass);
   }
 
   public List<T> findAll() {
@@ -32,7 +31,7 @@ public abstract class ReadOnlyRepository<T extends HasId> extends BaseRepository
   public List<T> findAllByIds(List<Long> ids) {
     if (ids == null || ids.isEmpty())
       return new ArrayList<>();
-    String inClause = ids.stream().map(i -> "?").collect(Collectors.joining(", "));
+    String inClause = ids.stream().map(i -> "?").reduce((a, b) -> a + ", " + b).orElse("?");
     String query = generateSelectQuery("WHERE t.id IN (" + inClause + ")");
     return executeSelect(query, ids.toArray());
   }
@@ -45,17 +44,19 @@ public abstract class ReadOnlyRepository<T extends HasId> extends BaseRepository
 
   public boolean existsById(Long id) {
     String query = "SELECT COUNT(*) FROM " + tableName + " WHERE id = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setLong(1, id);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getInt(1) > 0;
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setLong(1, id);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getInt(1) > 0;
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count records: " + e.getMessage());
       }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to count records: " + e.getMessage());
-    }
-    return false;
+      return false;
+    });
   }
 
   public Long count() {

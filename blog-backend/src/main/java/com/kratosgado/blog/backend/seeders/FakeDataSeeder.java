@@ -1,8 +1,5 @@
 package com.kratosgado.blog.backend.seeders;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
 import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.services.AuthService;
@@ -44,7 +42,7 @@ public class FakeDataSeeder implements CommandLineRunner {
 
   private final Faker faker = new Faker();
   private final Random random = new Random();
-  private final Connection connection;
+  private final UserRepository userRepository;
   private final AuthService authService;
   private final PostRepository postRepository;
   private final CategoryRepository categoryRepository;
@@ -53,14 +51,14 @@ public class FakeDataSeeder implements CommandLineRunner {
   private final ReviewRepository reviewRepository;
 
   public FakeDataSeeder(
-      Connection connection,
+      UserRepository userRepository,
       AuthService authService,
       PostRepository postRepository,
       CategoryRepository categoryRepository,
       TagRepository tagRepository,
       CommentRepository commentRepository,
       ReviewRepository reviewRepository) {
-    this.connection = connection;
+    this.userRepository = userRepository;
     this.authService = authService;
     this.postRepository = postRepository;
     this.categoryRepository = categoryRepository;
@@ -105,23 +103,9 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     // Clear PostgreSQL (tables used by current JDBC repositories)
     try {
-      connection.setAutoCommit(false);
-      try (PreparedStatement stmt = connection.prepareStatement(
-          "TRUNCATE TABLE post_tags, posts, tags, categories, users RESTART IDENTITY CASCADE")) {
-        stmt.executeUpdate();
-      }
-      connection.commit();
-    } catch (SQLException e) {
-      try {
-        connection.rollback();
-      } catch (SQLException ignored) {
-      }
+      postRepository.safeExecuteQuery("TRUNCATE TABLE post_tags, posts, tags, categories, users RESTART IDENTITY CASCADE", null);
+    } catch (Exception e) {
       throw new RuntimeException("Failed to clear PostgreSQL tables", e);
-    } finally {
-      try {
-        connection.setAutoCommit(true);
-      } catch (SQLException ignored) {
-      }
     }
   }
 
@@ -393,12 +377,6 @@ public class FakeDataSeeder implements CommandLineRunner {
   }
 
   private void promoteToAdmin(Long userId) {
-    try (PreparedStatement stmt = connection.prepareStatement("UPDATE users SET role = ? WHERE id = ?")) {
-      stmt.setString(1, "ADMIN");
-      stmt.setLong(2, userId);
-      stmt.executeUpdate();
-    } catch (SQLException e) {
-      throw new RuntimeException("Failed promoting user to ADMIN: " + userId, e);
-    }
+    userRepository.safeExecuteQuery("UPDATE users SET role = ? WHERE id = ?", null, "ADMIN", userId);
   }
 }

@@ -10,30 +10,82 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.sql.DataSource;
+
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.interfaces.HasId;
 
 public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository<T> {
 
-  public CrudRepository(Connection connection, Class<T> entityClass) {
-    super(connection, entityClass);
+  public CrudRepository(DataSource dataSource, Class<T> entityClass) {
+    super(dataSource, entityClass);
   }
 
   public T save(T entity) {
     String columns = projectionMetadata.getInsertClause();
     String values = getColumnValues(entity);
     String query = "INSERT INTO " + tableName + columns + " VALUES ( " + values + ")";
-    try (PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
-      statement.executeUpdate();
-      try (ResultSet rs = statement.getGeneratedKeys()) {
-        if (rs.next()) {
-          entity.setId(rs.getLong(1));
+
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        statement.executeUpdate();
+        try (ResultSet rs = statement.getGeneratedKeys()) {
+          if (rs.next()) {
+            entity.setId(rs.getLong(1));
+          }
         }
+        return entity;
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to save: " + entity + ": " + e.getMessage() + "\n" + query);
       }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to save: " + entity + ": " + e.getMessage() + "\n" + query);
+    });
+  }
+
+  public List<T> saveAll(List<T> entities) {
+    if (entities == null || entities.isEmpty()) {
+      return entities;
     }
-    return entity;
+    String columns = projectionMetadata.getInsertClause();
+    // Using ? placeholders for batch
+    String placeholders = Arrays.stream(entities.get(0).getClass().getDeclaredFields())
+        .filter(field -> {
+          if (field.getName().equals("id")) return false;
+          Class<?> type = field.getType();
+          return !HasId.class.isAssignableFrom(type) && !Collection.class.isAssignableFrom(type);
+        })
+        .map(f -> "?")
+        .collect(Collectors.joining(", "));
+    
+    String query = "INSERT INTO " + tableName + columns + " VALUES (" + placeholders + ")";
+
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        for (T entity : entities) {
+          int idx = 1;
+          for (Field field : entity.getClass().getDeclaredFields()) {
+            if (field.getName().equals("id")) continue;
+            Class<?> type = field.getType();
+            if (HasId.class.isAssignableFrom(type) || Collection.class.isAssignableFrom(type)) continue;
+            
+            field.setAccessible(true);
+            Object value = field.get(entity);
+            statement.setObject(idx++, value);
+          }
+          statement.addBatch();
+        }
+        statement.executeBatch();
+        try (ResultSet rs = statement.getGeneratedKeys()) {
+          for (T entity : entities) {
+            if (rs.next()) {
+              entity.setId(rs.getLong(1));
+            }
+          }
+        }
+        return entities;
+      } catch (SQLException | IllegalAccessException e) {
+        throw BlogException.internal("Failed to saveAll entities: " + e.getMessage());
+      }
+    });
   }
 
   public T update(T entity) {
@@ -44,12 +96,15 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
 
   public void deleteById(Long id) {
     String query = "DELETE FROM " + tableName + " WHERE id = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setLong(1, id);
-      statement.executeUpdate();
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to delete by id: " + id + ": " + e.getMessage());
-    }
+    withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setLong(1, id);
+        statement.executeUpdate();
+        return null;
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to delete by id: " + id + ": " + e.getMessage());
+      }
+    });
   }
 
   public void deleteAll() {
@@ -111,4 +166,5 @@ public abstract class CrudRepository<T extends HasId> extends ReadOnlyRepository
     }
     return sb.toString();
   }
+
 }

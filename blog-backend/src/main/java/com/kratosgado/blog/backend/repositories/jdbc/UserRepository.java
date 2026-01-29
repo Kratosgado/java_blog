@@ -1,10 +1,11 @@
 package com.kratosgado.blog.backend.repositories.jdbc;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+
+import javax.sql.DataSource;
 
 import org.springframework.stereotype.Repository;
 
@@ -14,9 +15,29 @@ import com.kratosgado.blog.models.User;
 @Repository
 public class UserRepository extends CrudRepository<User> {
 
-  public UserRepository(Connection connection) {
-    super(connection, User.class);
+  public UserRepository(DataSource dataSource) {
+    super(dataSource, User.class);
     tableName = "users";
+  }
+
+  @Override
+  protected void initTable() {
+    String sql = """
+        CREATE TABLE IF NOT EXISTS users (
+            id BIGSERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            avatar_url VARCHAR(255),
+            bio TEXT,
+            website VARCHAR(255),
+            location VARCHAR(100),
+            role VARCHAR(20) DEFAULT 'USER'
+        );
+        CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+        CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+        """;
+    safeExecuteQuery(sql, null);
   }
 
   @Override
@@ -36,55 +57,69 @@ public class UserRepository extends CrudRepository<User> {
 
   public Optional<User> findByEmail(String email) {
     String query = "SELECT * FROM users WHERE email = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, email);
-      ResultSet rs = statement.executeQuery();
-      if (rs.next()) {
-        return Optional.of(toEntity(rs));
-      }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to find by email: " + email + ": " + e.getMessage());
-    }
-    return Optional.empty();
-  }
-
-  public Optional<User> findByUsername(String username) throws SQLException {
-    String query = "SELECT * FROM users WHERE username = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, username);
-      try (ResultSet rs = statement.executeQuery()) {
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, email);
+        ResultSet rs = statement.executeQuery();
         if (rs.next()) {
           return Optional.of(toEntity(rs));
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to find by email: " + email + ": " + e.getMessage());
       }
-    }
-    return Optional.empty();
+      return Optional.empty();
+    });
   }
 
-  public boolean existsByEmail(String email) throws SQLException {
+  public Optional<User> findByUsername(String username) {
+    String query = "SELECT * FROM users WHERE username = ?";
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, username);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return Optional.of(toEntity(rs));
+          }
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to find by username: " + username + ": " + e.getMessage());
+      }
+      return Optional.empty();
+    });
+  }
+
+  public boolean existsByEmail(String email) {
     String query = "SELECT COUNT(*) FROM users WHERE email = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, email);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getInt(1) > 0;
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, email);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getInt(1) > 0;
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count users by email: " + e.getMessage());
       }
-    }
-    return false;
+      return false;
+    });
   }
 
-  public boolean existsByUsername(String username) throws SQLException {
+  public boolean existsByUsername(String username) {
     String query = "SELECT COUNT(*) FROM users WHERE username = ?";
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      statement.setString(1, username);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (rs.next()) {
-          return rs.getInt(1) > 0;
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, username);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getInt(1) > 0;
+          }
         }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count users by username: " + e.getMessage());
       }
-    }
-    return false;
+      return false;
+    });
   }
 
 }

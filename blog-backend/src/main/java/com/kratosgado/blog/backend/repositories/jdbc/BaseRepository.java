@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
 
+import javax.sql.DataSource;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.utils.ProjectionMetadata;
 import com.kratosgado.blog.interfaces.HasId;
@@ -29,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class BaseRepository<T extends HasId> {
 
-  protected Connection connection;
+  protected final DataSource dataSource;
   protected String tableName;
   protected ProjectionMetadata projectionMetadata;
   // Holds fieldName => repository for relationships
@@ -54,10 +57,13 @@ public abstract class BaseRepository<T extends HasId> {
 
   private final Map<String, ManyToManyConfig> manyToManyRelationships = new HashMap<>();
 
-  public BaseRepository(Connection connection, Class<T> entityClass) {
-    this.connection = connection;
+  public BaseRepository(DataSource dataSource, Class<T> entityClass) {
+    this.dataSource = dataSource;
     this.projectionMetadata = new ProjectionMetadata(entityClass);
+    initTable();
   }
+
+  protected abstract void initTable();
 
   /**
    * Register a related entity repository for eager relationship loading.
@@ -346,17 +352,28 @@ public abstract class BaseRepository<T extends HasId> {
     return executeSelect(fullQuery, ids.toArray());
   }
 
-  protected List<T> executeSelect(String query, Object... params) {
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      for (int i = 0; i < params.length; i++) {
-        statement.setObject(i + 1, params[i]);
-      }
-      try (ResultSet rs = statement.executeQuery()) {
-        return mapResultSet(rs);
-      }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to execute select: " + query + ": " + e.getMessage());
+  protected <R> R withConnection(Function<Connection, R> action) {
+    Connection conn = DataSourceUtils.getConnection(dataSource);
+    try {
+      return action.apply(conn);
+    } finally {
+      DataSourceUtils.releaseConnection(conn, dataSource);
     }
+  }
+
+  protected List<T> executeSelect(String query, Object... params) {
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        for (int i = 0; i < params.length; i++) {
+          statement.setObject(i + 1, params[i]);
+        }
+        try (ResultSet rs = statement.executeQuery()) {
+          return mapResultSet(rs);
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to execute select: " + query + ": " + e.getMessage());
+      }
+    });
   }
 
   private List<T> mapResultSet(ResultSet rs) throws SQLException {
@@ -387,19 +404,24 @@ public abstract class BaseRepository<T extends HasId> {
   }
 
   public void safeExecuteQuery(String query, Function<ResultSet, Void> mapper, Object... params) {
-    try (PreparedStatement statement = connection.prepareStatement(query)) {
-      for (int i = 0; i < params.length; i++) {
-        statement.setObject(i + 1, params[i]);
+    withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        for (int i = 0; i < params.length; i++) {
+          statement.setObject(i + 1, params[i]);
+        }
+        if (mapper == null) {
+          statement.executeUpdate();
+          return null;
+        }
+        try (ResultSet rs = statement.executeQuery()) {
+          while (rs.next()) {
+            mapper.apply(rs);
+          }
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to execute query: " + query + ": " + e.getMessage());
       }
-      ResultSet rs = statement.executeQuery();
-      if (mapper == null) {
-        return;
-      }
-      while (rs.next()) {
-        mapper.apply(rs);
-      }
-    } catch (SQLException e) {
-      throw BlogException.internal("Failed to execute query: " + query + ": " + e.getMessage());
-    }
+      return null;
+    });
   }
 }

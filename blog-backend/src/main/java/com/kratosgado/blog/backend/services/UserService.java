@@ -43,12 +43,8 @@ public class UserService {
   }
 
   public User getUserByUsername(String username) {
-    try {
-      return userRepository.findByUsername(username)
-          .orElseThrow(() -> BlogException.notFound("User", "username", username));
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    return userRepository.findByUsername(username)
+        .orElseThrow(() -> BlogException.notFound("User", "username", username));
   }
 
   public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
