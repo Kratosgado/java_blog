@@ -6,15 +6,14 @@ import java.util.List;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.interfaces.HasId;
 
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -34,15 +33,19 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "posts")
-@NamedEntityGraph(
-    name = "post-with-details",
-    attributeNodes = {
-        @NamedAttributeNode("user"),
-        @NamedAttributeNode("category"),
-        @NamedAttributeNode("tags")
-    }
-)
+@Table(name = "posts", indexes = {
+    @Index(name = "idx_posts_slug", columnList = "slug"),
+    @Index(name = "idx_posts_title", columnList = "title"),
+    @Index(name = "idx_posts_status", columnList = "status"),
+    @Index(name = "idx_posts_created_at", columnList = "created_at"),
+    @Index(name = "idx_posts_user_id", columnList = "user_id"),
+    @Index(name = "idx_posts_category_id", columnList = "category_id")
+})
+@NamedEntityGraph(name = "post-with-details", attributeNodes = {
+    @NamedAttributeNode("user"),
+    @NamedAttributeNode("category"),
+    @NamedAttributeNode("tags")
+})
 public class Post implements HasId {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -100,11 +103,7 @@ public class Post implements HasId {
   private Category category;
 
   @ManyToMany
-  @JoinTable(
-      name = "post_tags",
-      joinColumns = @JoinColumn(name = "post_id"),
-      inverseJoinColumns = @JoinColumn(name = "tag_id")
-  )
+  @JoinTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
   private List<Tag> tags;
 
   public Long getUserId() {

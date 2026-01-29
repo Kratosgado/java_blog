@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+    @Index(name = "idx_categories_slug", columnList = "slug"),
+})
 public class Category implements HasId {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
