@@ -53,7 +53,7 @@ public class CommentGraphQLController {
   @MutationMapping
   public boolean deleteComment(@Argument String id, @AuthenticationPrincipal User user) {
 
-    commentService.deleteComment(id, Long.valueOf(user.getId()));
+    commentService.deleteComment(id, user.getId());
     return true;
   }
 

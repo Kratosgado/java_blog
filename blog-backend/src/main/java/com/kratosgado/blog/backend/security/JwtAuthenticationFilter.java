@@ -1,6 +1,6 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.models.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

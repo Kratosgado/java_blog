@@ -144,17 +144,17 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "author")
   public User author(Post post) {
-    return userService.getUserById(Long.valueOf(post.getUserId()));
+    return userService.getUserById(post.getUser().getId());
   }
 
   @SchemaMapping(typeName = "Post", field = "comments")
   public PageResponse<Comment> comments(Post post) {
-    return commentService.getPostComments(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
+    return commentService.getPostComments(post.getId(), new PageRequest(0, 100, "id", "desc"));
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
   public PageResponse<Review> reviews(Post post) {
-    return reviewService.getPostReviews(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
+    return reviewService.getPostReviews(post.getId(), new PageRequest(0, 100, "id", "desc"));
   }
 
 }
