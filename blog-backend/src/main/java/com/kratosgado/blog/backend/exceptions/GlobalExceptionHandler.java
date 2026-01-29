@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     logger.error("Blog exception: {}", ex.getMessage());
     return ResponseEntity
         .status(ex.getStatus())
-        .body(ResponseDto.error(ex.getStatus().getReasonPhrase(), ex.getMessage()));
+        .body(ResponseDto.error(ex.getStatus().value(), ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     logger.error("Validation error: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.fail(HttpStatus.BAD_REQUEST.getReasonPhrase(), "Validation failed", errors));
+        .body(ResponseDto.fail(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors));
   }
 
   @ExceptionHandler(ConstraintViolationException.class)
@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
     logger.error("Constraint violation: {}", errors);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), "Constraint violation: " + errors));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.value(), "Constraint violation: " + errors));
   }
 
   @ExceptionHandler(AuthenticationException.class)
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.UNAUTHORIZED)
         .body(
-            ResponseDto.error(HttpStatus.UNAUTHORIZED.getReasonPhrase(), "Authentication failed: " + ex.getMessage()));
+            ResponseDto.error(HttpStatus.UNAUTHORIZED.value(), "Authentication failed: " + ex.getMessage()));
   }
 
   @ExceptionHandler(AccessDeniedException.class)
@@ -73,17 +73,8 @@ public class GlobalExceptionHandler {
     logger.error("Access denied: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.FORBIDDEN)
-        .body(ResponseDto.error("Access denied: " + ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.FORBIDDEN.value(), "Access denied: " + ex.getMessage()));
   }
-
-  // @ExceptionHandler(DataIntegrityViolationException.class)
-  // public ResponseEntity<ResponseDto<String>> handleDataIntegrityViolation(
-  //     DataIntegrityViolationException ex) {
-  //   logger.error("Data integrity violation: {}", ex.getMessage());
-  //   return ResponseEntity
-  //       .status(HttpStatus.CONFLICT)
-  //       .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
-  // }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<?> handleIllegalArgument(
@@ -91,7 +82,7 @@ public class GlobalExceptionHandler {
     logger.error("Illegal argument: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
   }
 
   @ExceptionHandler(IllegalStateException.class)
@@ -100,7 +91,7 @@ public class GlobalExceptionHandler {
     logger.error("Illegal state: {}", ex.getMessage());
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .body(ResponseDto.error(HttpStatus.CONFLICT.getReasonPhrase(), ex.getMessage()));
+        .body(ResponseDto.error(HttpStatus.CONFLICT.value(), ex.getMessage()));
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -112,7 +103,7 @@ public class GlobalExceptionHandler {
     logger.error("Type mismatch: {}", error);
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.getReasonPhrase(), error));
+        .body(ResponseDto.error(HttpStatus.BAD_REQUEST.value(), error));
   }
 
   @ExceptionHandler(RuntimeException.class)
@@ -121,7 +112,7 @@ public class GlobalExceptionHandler {
     logger.error("Runtime exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ResponseDto.error("An unexpected error occurred"));
+        .body(ResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error occurred"));
   }
 
   @ExceptionHandler(Exception.class)
@@ -131,6 +122,6 @@ public class GlobalExceptionHandler {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(
-            ResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), "An internal server error occurred"));
+            ResponseDto.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An internal server error occurred"));
   }
 }

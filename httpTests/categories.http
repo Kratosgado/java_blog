@@ -16,12 +16,8 @@ Authorization: {{userAuth}}
 
 {
   "description": "Articles about technology, programming, and software development",
-  "name": "Technology",
-  "slug": "technology"
+  "name": "Technlgy"
 }
-
-
-### 
 
 
 ### Create another category
@@ -39,9 +35,6 @@ Authorization: {{adminAuth}}
 }
 
 
-### 
-
-
 ### Update a category
 
 # @name updateCategory
@@ -56,27 +49,18 @@ Authorization: {{adminAuth}}
 }
 
 
-### 
-
-
 ### Get a single category by ID
 
 # @name getCategory
 
-GET {{host}}/categories/3 HTTP/1.1
-
-
-### 
+GET {{host}}/categories/12 HTTP/1.1
 
 
 ### Get all categories
 
 # @name getAllCategories
 
-GET {{host}}/categories HTTP/1.1
-
-
-### 
+GET {{host}}/categories?page=0&size=10 HTTP/1.1
 
 
 ### Get category by slug
@@ -86,18 +70,12 @@ GET {{host}}/categories HTTP/1.1
 GET {{host}}/categories/slug/web-development HTTP/1.1
 
 
-### 
-
-
 ### Delete a category
 
 # @name deleteCategory
 
 DELETE {{host}}/categories/1 HTTP/1.1
 Authorization: {{adminAuth}}
-
-
-### 
 
 
 ### Test create category with duplicate slug (validation)
@@ -115,9 +93,6 @@ Authorization: {{adminAuth}}
 }
 
 
-### 
-
-
 ### Test create category with missing required fields
 
 # @name createInvalidCategory
@@ -129,9 +104,6 @@ Authorization: {{adminAuth}}
 {
   "description": "Missing name and slug"
 }
-
-
-### 
 
 
 ### Test update non-existent category
@@ -147,9 +119,6 @@ Authorization: {{adminAuth}}
 }
 
 
-### 
-
-
 ### Get category with post count
 
 # @name getCategoryWithPostCount
@@ -157,14 +126,8 @@ Authorization: {{adminAuth}}
 GET {{host}}/categories/1/with-post-count HTTP/1.1
 
 
-### 
-
-
 ### Get popular categories (sorted by post count)
 
 # @name getPopularCategories
 
 GET {{host}}/categories/popular?limit=5 HTTP/1.1
-
-
-### 

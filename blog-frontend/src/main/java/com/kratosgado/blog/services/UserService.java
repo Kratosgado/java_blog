@@ -77,7 +77,7 @@ public class UserService {
     }
   }
 
-  public PageResponse<UserResponse> getAllUsers(int page, int size) {
+  public PageResponse<User> getAllUsers(int page, int size) {
     ensureAuthToken();
     try {
       return userApiClient.getAllUsers(page, size);

@@ -8,7 +8,8 @@ public class ReviewResponse {
   public record AverageRatingResult(Double avgRating) {
   }
 
-  public record ReviewWithoutUser(Long postId, int rating, String title, String content, LocalDateTime createdAt,
+  public record ReviewWithoutUser(String id, Long postId, int rating, String title, String content,
+      LocalDateTime createdAt,
       LocalDateTime updatedAt) {
   }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 
 /**
@@ -62,25 +63,18 @@ public interface CacheService<K, V> {
    * Search the cache using a predicate with pagination and sorting.
    * 
    * @param searchPredicate predicate to filter results
-   * @param page            page number (0-based)
-   * @param size            page size
-   * @param sortField       field name to sort by (null for no sorting)
-   * @param ascending       sort direction
+   * @param pageRequest     pagination and sorting parameters
    * @return paginated response with matching results
    */
-  PageResponse<V> search(Predicate<V> searchPredicate, int page, int size,
-      String sortField, boolean ascending);
+  PageResponse<V> search(Predicate<V> searchPredicate, PageRequest pageRequest);
 
   /**
    * Get paginated results from cache.
    * 
-   * @param page      page number (0-based)
-   * @param size      page size
-   * @param sortField field name to sort by (null for no sorting)
-   * @param ascending sort direction
+   * @param pageRequest pagination and sorting parameters
    * @return paginated response
    */
-  PageResponse<V> paginate(int page, int size, String sortField, boolean ascending);
+  PageResponse<V> paginate(PageRequest pageRequest);
 
   /**
    * Check if a key exists in the cache.

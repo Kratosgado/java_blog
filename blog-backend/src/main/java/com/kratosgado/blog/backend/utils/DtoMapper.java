@@ -3,9 +3,6 @@ package com.kratosgado.blog.backend.utils;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import com.kratosgado.blog.dtos.response.AuthorSummary;
 import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -33,7 +30,7 @@ public class DtoMapper {
         post.getViews(),
         post.getLikesCount(),
         post.getCoverImage(),
-        post.getTags().stream().map(DtoMapper::toTagSummary).toList());
+        post.getTags() != null ? post.getTags().stream().map(DtoMapper::toTagSummary).toList() : null);
 
   }
 
@@ -58,21 +55,10 @@ public class DtoMapper {
     return new CategorySummary(category.getId().longValue(), category.getName(), category.getSlug());
   }
 
-  public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
-    return new PageResponse<>(
-        page.getContent(),
-        pageable.getPageNumber() + 1,
-        pageable.getPageSize(),
-        page.getTotalElements(),
-        page.getTotalPages(),
-        page.isFirst(),
-        page.isLast());
-  }
-
   public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, int totalElements) {
     int totalPages = (int) Math.ceil((double) totalElements / size);
-    boolean isFirst = page == 1;
-    boolean isLast = page >= totalPages;
+    boolean isFirst = page == 0;
+    boolean isLast = page >= totalPages - 1;
     return new PageResponse<>(content, page, size, totalElements, totalPages, isFirst, isLast);
   }
 

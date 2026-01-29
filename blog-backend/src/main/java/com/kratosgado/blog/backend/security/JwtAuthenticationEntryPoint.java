@@ -36,7 +36,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
     ResponseDto<?> errorResponse = ResponseDto.error(
-        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+        HttpStatus.UNAUTHORIZED.value(),
         "Authentication required. Please provide a valid JWT token.");
 
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

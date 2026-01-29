@@ -12,7 +12,9 @@ import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.DashboardService;
 import com.kratosgado.blog.dtos.response.AnalyticsResponse;
+import com.kratosgado.blog.dtos.response.EngagementStatsResponse;
 import com.kratosgado.blog.dtos.response.PostDistributionResponse;
+import com.kratosgado.blog.dtos.response.RecentActivityResponse;
 import com.kratosgado.blog.dtos.response.StatCountResponse;
 import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
 
@@ -67,5 +69,19 @@ public class DashboardController {
   @GetEnpoint
   public PostDistributionResponse getPostDistribution() {
     return dashboardService.getPostStatusDistribution();
+  }
+
+  @GetMapping("/engagement")
+  @Operation(summary = "Get engagement statistics", description = "Retrieves engagement statistics like top posts and popular categories. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @GetEnpoint
+  public EngagementStatsResponse getEngagement() {
+    return dashboardService.getEngagementStats();
+  }
+
+  @GetMapping("/recent")
+  @Operation(summary = "Get recent activity", description = "Retrieves recent activity like latest posts and comments. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @GetEnpoint
+  public RecentActivityResponse getRecentActivity() {
+    return dashboardService.getRecentActivity();
   }
 }

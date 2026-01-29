@@ -44,7 +44,8 @@ public class PostService {
   public Post createPost(CreatePostRequest request) {
     ensureAuthToken();
     try {
-      return postApiClient.createPost(request);
+      PostResponse response = postApiClient.createPost(request);
+      return convertToPost(response);
     } catch (IOException e) {
       logger.error("Failed to create post due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -57,7 +58,8 @@ public class PostService {
   public Post updatePost(Long id, UpdatePostRequest request) {
     ensureAuthToken();
     try {
-      return postApiClient.updatePost(id, request);
+      PostResponse response = postApiClient.updatePost(id, request);
+      return convertToPost(response);
     } catch (IOException e) {
       logger.error("Failed to update post due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -145,8 +147,9 @@ public class PostService {
     }
   }
 
-  // Convenience methods for controllers that expect List<Post> instead of PageResponse
-  
+  // Convenience methods for controllers that expect List<Post> instead of
+  // PageResponse
+
   /**
    * Get all published posts as a list (for controllers)
    */

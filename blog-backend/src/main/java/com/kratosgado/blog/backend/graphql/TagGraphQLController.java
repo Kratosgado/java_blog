@@ -1,11 +1,11 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import com.kratosgado.blog.backend.services.TagService;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Tag;
 
@@ -27,7 +27,7 @@ public class TagGraphQLController {
   public PageResponse<Tag> tags(
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return tagService.getAllTags(PageRequest.of(page, size));
+    return tagService.getAllTags(new PageRequest(page, size, "id", "desc"));
   }
 
   @QueryMapping
@@ -35,6 +35,6 @@ public class TagGraphQLController {
       @Argument String keyword,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return tagService.searchTags(keyword, PageRequest.of(page, size));
+    return tagService.searchTags(keyword, new PageRequest(page, size, "id", "desc"));
   }
 }

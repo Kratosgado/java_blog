@@ -26,9 +26,8 @@ public class CommentApiClient extends BaseApiClient {
     String endpoint = String.format("/comments/post/%d?page=%d&size=%d", postId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Comment>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Comment.class).getType();
+    return handleResponse(response, pageResponseType, "Get post comments");
   }
 
   /**
@@ -40,9 +39,8 @@ public class CommentApiClient extends BaseApiClient {
     String endpoint = String.format("/comments/user/%d?page=%d&size=%d", userId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Comment>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Comment.class).getType();
+    return handleResponse(response, pageResponseType, "Get user comments");
   }
 
   /**
@@ -65,9 +63,7 @@ public class CommentApiClient extends BaseApiClient {
 
     HttpClient.HttpResponse<String> response = httpClient.post("/comments", request, authToken, String.class);
 
-    Comment comment = handleResponse(response, Comment.class, "Create comment");
-    logger.info("Comment created successfully with ID: {}", comment.getId());
-    return comment;
+    return handleResponse(response, Comment.class, "Create comment");
   }
 
   /**
@@ -79,9 +75,7 @@ public class CommentApiClient extends BaseApiClient {
     HttpClient.HttpResponse<String> response = httpClient.put("/comments/" + id + "/approve", null, authToken,
         String.class);
 
-    Comment comment = handleResponse(response, Comment.class, "Approve comment");
-    logger.info("Comment approved successfully");
-    return comment;
+    return handleResponse(response, Comment.class, "Approve comment");
   }
 
   /**
@@ -93,9 +87,18 @@ public class CommentApiClient extends BaseApiClient {
     HttpClient.HttpResponse<String> response = httpClient.put("/comments/" + id + "/reject", null, authToken,
         String.class);
 
-    Comment comment = handleResponse(response, Comment.class, "Reject comment");
-    logger.info("Comment rejected successfully");
-    return comment;
+    return handleResponse(response, Comment.class, "Reject comment");
+  }
+
+  /**
+   * Get a comment by ID
+   */
+  public Comment getCommentById(String id) throws IOException {
+    logger.info("Fetching comment by ID: {}", id);
+
+    HttpClient.HttpResponse<String> response = httpClient.get("/comments/" + id, authToken, String.class);
+
+    return handleResponse(response, Comment.class, "Get comment by ID");
   }
 
   /**

@@ -1,10 +1,12 @@
 package com.kratosgado.blog.backend.services;
 
+import java.sql.SQLException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
@@ -19,7 +21,7 @@ public class AuthService {
     this.passwordEncoder = passwordEncoder;
   }
 
-  public User login(LoginRequest request) {
+  public User login(LoginRequest request) throws BlogException {
     var user = userRepository.findByEmail(request.email())
         .orElseThrow(() -> BlogException.unauthorized("Invalid email or password"));
 
@@ -29,7 +31,7 @@ public class AuthService {
     return user;
   }
 
-  public User register(RegisterRequest request) {
+  public User register(RegisterRequest request) throws BlogException {
     if (!request.password().equals(request.confirmPassword())) {
       throw BlogException.badRequest("Passwords do not match");
     }
@@ -42,7 +44,6 @@ public class AuthService {
     user.setUsername(request.username());
     user.setPassword(passwordEncoder.encode(request.password()));
     user.setAvatarUrl(request.avatarUrl());
-
     return userRepository.save(user);
   }
 }

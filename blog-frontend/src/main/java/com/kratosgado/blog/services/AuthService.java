@@ -44,7 +44,7 @@ public class AuthService {
       if (!password.equals(confirmPassword)) {
         throw BlogException.badRequest("Passwords do not match");
       }
-      RegisterRequest request = new RegisterRequest(username, email, password);
+      RegisterRequest request = new RegisterRequest(username, email, "avatarUrl", password, confirmPassword);
       AuthResponse response = authApiClient.register(request);
 
       // Store token and user info
