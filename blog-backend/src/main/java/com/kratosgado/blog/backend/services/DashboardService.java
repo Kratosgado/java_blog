@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.response.AnalyticsResponse;
 import com.kratosgado.blog.dtos.response.EngagementStatsResponse;
 import com.kratosgado.blog.dtos.response.PostDistributionResponse;
@@ -21,6 +22,7 @@ import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
 import com.kratosgado.blog.enums.PostStatus;
 
 @Service
+@Transactional(readOnly = true)
 public class DashboardService {
 
   private final PostRepository postRepository;
@@ -43,25 +45,24 @@ public class DashboardService {
 
   public StatCountResponse getDashboardStats() {
     return new StatCountResponse(
-        postRepository.countAll(),
-        userRepository.countAll(),
-        commentRepository.countAll(),
-        tagRepository.countAll(),
-        reviewRepository.countAll());
+        postRepository.count(),
+        userRepository.count(),
+        commentRepository.count(),
+        tagRepository.count(),
+        reviewRepository.count());
   }
 
   public UserDashboardStatsResponse getUserDashboardStats(Long userId) {
     return new UserDashboardStatsResponse(
-        postRepository.countPostsByUser(userId),
+        postRepository.countByUserId(userId),
         commentRepository.countByUserId(userId),
         reviewRepository.countByUserId(userId),
         postRepository.sumViewsByUserId(userId));
   }
 
   public AnalyticsResponse getAnalytics(LocalDateTime startDate, LocalDateTime endDate) {
-    // Basic implementation of analytics, focusing on top posts and general counts
-    long totalViews = 0; // In a real app, this would be filtered by date range
-    var topPosts = postRepository.findTopPostsByViews(10).stream()
+    long totalViews = 0;
+    var topPosts = postRepository.findTopNByOrderByViewsDesc(10).stream()
         .map(p -> new AnalyticsResponse.TopPostData(p.getId(), p.getTitle(), p.getViews(), p.getLikesCount()))
         .collect(Collectors.toList());
 
@@ -69,7 +70,7 @@ public class DashboardService {
       totalViews += post.views();
     }
 
-    int totalPosts = (int) postRepository.countPublishedPosts();
+    int totalPosts = (int) postRepository.countByStatus(PostStatus.published);
     double averageViews = totalPosts > 0 ? (double) totalViews / totalPosts : 0;
 
     return new AnalyticsResponse(totalPosts, totalViews, averageViews, topPosts);
@@ -83,14 +84,12 @@ public class DashboardService {
   }
 
   public EngagementStatsResponse getEngagementStats() {
-    List<EngagementStatsResponse.PostEngagementSummary> topByViews = postRepository.findTopPostsByViews(5).stream()
+    List<EngagementStatsResponse.PostEngagementSummary> topByViews = postRepository.findTopNByOrderByViewsDesc(5).stream()
         .map(p -> new EngagementStatsResponse.PostEngagementSummary(p.getId(), p.getTitle(), p.getSlug(), p.getViews(),
             p.getLikesCount()))
         .collect(Collectors.toList());
 
-    // For now use the same as top by views as we don't have findTopPostsByLikes
-    // specifically
-    List<EngagementStatsResponse.PostEngagementSummary> topByLikes = postRepository.findTopPostsByViews(5).stream()
+    List<EngagementStatsResponse.PostEngagementSummary> topByLikes = postRepository.findTopNByOrderByViewsDesc(5).stream()
         .map(p -> new EngagementStatsResponse.PostEngagementSummary(p.getId(), p.getTitle(), p.getSlug(), p.getViews(),
             p.getLikesCount()))
         .collect(Collectors.toList());
@@ -105,12 +104,12 @@ public class DashboardService {
   }
 
   public RecentActivityResponse getRecentActivity() {
-    List<RecentActivityResponse.RecentPost> latestPosts = postRepository.findLatestPosts(5).stream()
-        .map(p -> new RecentActivityResponse.RecentPost(p.getId(), p.getTitle(), p.getSlug(), "Author",
+    List<RecentActivityResponse.RecentPost> latestPosts = postRepository.findTopNByOrderByCreatedAtDesc(5).stream()
+        .map(p -> new RecentActivityResponse.RecentPost(p.getId(), p.getTitle(), p.getSlug(), p.getUser().getUsername(),
             p.getCreatedAt()))
         .collect(Collectors.toList());
 
-    List<RecentActivityResponse.RecentComment> latestComments = commentRepository.findLatestComments(5).stream()
+    List<RecentActivityResponse.RecentComment> latestComments = commentRepository.findTopNByOrderByCreatedAtDesc(5).stream()
         .map(c -> new RecentActivityResponse.RecentComment(c.getId(), c.getPostId(), c.getAuthorName(), c.getContent(),
             c.getCreatedAt()))
         .collect(Collectors.toList());

@@ -2,15 +2,19 @@ package com.kratosgado.blog.backend.services;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
-import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
@@ -19,16 +23,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@Transactional(readOnly = true)
 public class CategoryService {
   private final CategoryRepository categoryRepository;
-  private final CategoryCache categoryCache;
 
-  public CategoryService(CategoryRepository categoryRepository, CategoryCache categoryCache) {
+  public CategoryService(CategoryRepository categoryRepository) {
     this.categoryRepository = categoryRepository;
-    this.categoryCache = categoryCache;
   }
 
-  public Category createCategory(CreateCategoryRequest request) {
+  @Transactional
+  @CacheEvict(value = "categories", allEntries = true)
+  public Category createCategory(com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     String slug = BlogUtils.toSlug(request.name());
     if (categoryRepository.findBySlug(slug).isPresent()) {
       throw BlogException.conflict("Category with this name already exists");
@@ -40,10 +45,11 @@ public class CategoryService {
         .description(request.description())
         .build();
     return categoryRepository.save(category);
-
   }
 
-  public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
+  @Transactional
+  @CacheEvict(value = "categories", allEntries = true)
+  public Category updateCategory(Long categoryId, com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
 
@@ -57,37 +63,41 @@ public class CategoryService {
     category.setSlug(slug);
     category.setDescription(request.description());
 
-    return categoryRepository.update(category);
-
+    return categoryRepository.save(category);
   }
 
+  @Transactional
+  @CacheEvict(value = "categories", allEntries = true)
   public void deleteCategory(Long categoryId) {
     categoryRepository.deleteById(categoryId);
   }
 
+  @Cacheable(value = "categories", key = "#categoryId")
   public Category getCategoryById(Long categoryId) {
-    // Try to get from cache first
-    return categoryCache.get(categoryId).orElseGet(() -> {
-      Category category = categoryRepository.findById(categoryId)
-          .orElseThrow(() -> BlogException.notFound("Category not found"));
-      // Cache the result
-      categoryCache.put(categoryId, category);
-      return category;
-
-    });
+    return categoryRepository.findById(categoryId)
+        .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
+  @Cacheable(value = "categories", key = "#slug")
   public Category getCategoryBySlug(String slug) {
     return categoryRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
-
   }
 
-  public PageResponse<Category> getAllCategories(PageRequest pageRequest) {
-    java.util.List<Category> categories = categoryRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(),
-        pageRequest.getSortBy(), pageRequest.getSortDir());
-    Long total = categoryRepository.count();
-    return DtoMapper.toPageResponse(categories, pageRequest.getPage(), pageRequest.getSize(), total.intValue());
+  public PageResponse<Category> getAllCategories(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
+    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+    Page<Category> categoryPage = categoryRepository.findAll(pageable);
+    
+    return new PageResponse<>(
+        categoryPage.getContent(),
+        categoryPage.getNumber(),
+        categoryPage.getSize(),
+        (int) categoryPage.getTotalElements(),
+        categoryPage.getTotalPages(),
+        categoryPage.isFirst(),
+        categoryPage.isLast()
+    );
   }
 
   public List<Category> getAllCategories() {

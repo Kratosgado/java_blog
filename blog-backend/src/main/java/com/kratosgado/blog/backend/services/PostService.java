@@ -1,72 +1,85 @@
 package com.kratosgado.blog.backend.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.cache.CacheConfig.PostCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
-import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
 @Service
+@Transactional(readOnly = true)
 public class PostService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
   private final CategoryRepository categoryRepository;
-  private final PostCache postCache;
 
-  public PostService(PostRepository postRepository, TagRepository tagRepository, CategoryRepository categoryRepository,
-      PostCache postCache) {
+  public PostService(PostRepository postRepository, TagRepository tagRepository, CategoryRepository categoryRepository) {
     this.postRepository = postRepository;
     this.tagRepository = tagRepository;
     this.categoryRepository = categoryRepository;
-    this.postCache = postCache;
   }
 
+  @Transactional
+  @CacheEvict(value = "posts", allEntries = true)
   public PostResponse createPost(CreatePostRequest request, User user) {
     Post post = new Post();
-    post.setUserId(user.getId());
     post.setUser(user);
     post.setTitle(request.title());
     post.setSlug(BlogUtils.toSlug(request.title()));
     post.setContent(request.content());
     post.setExcerpt(request.excerpt());
-    post.setCategoryId(request.categoryId());
-    if (request.categoryId() != null
-        && categoryRepository.findById(request.categoryId()).isEmpty()) {
-      throw BlogException.badRequest("Category not found");
+    
+    if (request.categoryId() != null) {
+      post.setCategory(categoryRepository.findById(request.categoryId())
+          .orElseThrow(() -> BlogException.badRequest("Category not found")));
     }
+    
     post.setCoverImage(request.coverImage());
     post.setStatus(PostStatus.valueOf(request.status().toLowerCase()));
 
-    Post savedPost = postRepository.save(post);
     if (request.tagIds() != null && request.tagIds().length > 0) {
-      tagRepository.savePostTags(savedPost.getId(), request.tagIds());
+      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
+      post.setTags(tags);
     }
+
+    Post savedPost = postRepository.save(post);
     return DtoMapper.toPostResponse(savedPost);
   }
 
+  @Transactional
+  @Caching(evict = {
+      @CacheEvict(value = "posts", key = "#result.slug"),
+      @CacheEvict(value = "posts", allEntries = true)
+  })
   public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    if (!post.getUserId().equals(userId)) {
+    if (!post.getUser().getId().equals(userId)) {
       throw BlogException.forbidden("You don't have permission to update this post");
     }
-    post.onUpdate();
 
     if (request.title() != null) {
       post.setTitle(request.title());
@@ -77,9 +90,8 @@ public class PostService {
     if (request.excerpt() != null)
       post.setExcerpt(request.excerpt());
     if (request.categoryId() != null) {
-      post.setCategoryId(request.categoryId());
-      categoryRepository.findById(request.categoryId())
-          .ifPresent(post::setCategory);
+      post.setCategory(categoryRepository.findById(request.categoryId())
+          .orElseThrow(() -> BlogException.badRequest("Category not found")));
     }
     if (request.coverImage() != null)
       post.setCoverImage(request.coverImage());
@@ -87,97 +99,97 @@ public class PostService {
       post.setStatus(request.status());
 
     if (request.tagIds() != null) {
-      tagRepository.deletePostTags(postId);
-      tagRepository.savePostTags(postId, request.tagIds());
+      List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
+      post.setTags(tags);
     }
 
-    Post updatedPost = postRepository.update(post);
-    var response = DtoMapper.toPostResponse(updatedPost);
-    postCache.updateIfPresent(response.slug(), response);
-    return response;
+    Post updatedPost = postRepository.save(post);
+    return DtoMapper.toPostResponse(updatedPost);
   }
 
+  @Transactional
+  @CacheEvict(value = "posts", allEntries = true)
   public void deletePost(Long postId, Long userId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    if (!post.getUserId().equals(userId)) {
+    if (!post.getUser().getId().equals(userId)) {
       throw BlogException.forbidden("You don't have permission to delete this post");
     }
 
-    postRepository.deleteById(postId);
+    postRepository.delete(post);
   }
 
-  @Transactional
+  @Cacheable(value = "posts", key = "#slug")
   public PostResponse getPostBySlug(String slug) {
-    return postCache.get(slug).orElseGet(() -> {
-      Post post = postRepository.findBySlug(slug)
-          .orElseThrow(() -> BlogException.notFound("Post not found"));
-      PostResponse response = DtoMapper.toPostResponse(post);
-      postCache.put(post.getSlug(), response);
-      return response;
-    });
+    Post post = postRepository.findBySlug(slug)
+        .orElseThrow(() -> BlogException.notFound("Post not found"));
+    return DtoMapper.toPostResponse(post);
   }
 
   public PostResponse getPostById(Long postId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
     return DtoMapper.toPostResponse(post);
-
   }
 
+  @Transactional
+  @CacheEvict(value = "posts", allEntries = true)
   public PostResponse publishPost(Long postId, Long userId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
 
-    if (!post.getUserId().equals(userId)) {
+    if (!post.getUser().getId().equals(userId)) {
       throw BlogException.forbidden("You don't have permission to publish this post");
     }
 
     post.setStatus(PostStatus.published);
-    post.onUpdate();
-    Post updatedPost = postRepository.update(post);
+    Post updatedPost = postRepository.save(post);
     return DtoMapper.toPostResponse(updatedPost);
   }
 
-  public PageResponse<PostResponse> getPublishedPosts(PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    List<Post> posts = postRepository.findPublishedPosts(pageRequest.getSize(), offset, pageRequest.getSortBy(),
-        pageRequest.getSortDir());
-    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
-    long totalElements;
-    try {
-      totalElements = postRepository.countPublishedPosts();
-    } catch (Exception e) {
-      totalElements = 0;
-    }
-    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
+  public PageResponse<PostResponse> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Pageable pageable = toPageable(pageRequest);
+    Page<Post> postsPage = postRepository.findByStatus(PostStatus.published, pageable);
+    return toPageResponse(postsPage);
   }
 
-  public PageResponse<PostResponse> searchPosts(String keyword, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    List<Post> posts = postRepository.searchPostsByKeyword(keyword, pageRequest.getSize(), offset,
-        pageRequest.getSortBy(), pageRequest.getSortDir());
-    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
-    long totalElements = postRepository.countPostsByKeyword(keyword);
-    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
+  public PageResponse<PostResponse> searchPosts(String keyword, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Pageable pageable = toPageable(pageRequest);
+    Page<Post> postsPage = postRepository.searchPublishedPosts(keyword, pageable);
+    return toPageResponse(postsPage);
   }
 
-  public PageResponse<PostResponse> getUserPosts(Long userId, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    List<Post> posts = postRepository.findPostsByUser(userId, pageRequest.getSize(), offset, pageRequest.getSortBy(),
-        pageRequest.getSortDir());
-    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
-    long totalElements = postRepository.countPostsByUser(userId);
-    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
+  public PageResponse<PostResponse> getUserPosts(Long userId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Pageable pageable = toPageable(pageRequest);
+    Page<Post> postsPage = postRepository.findByUserId(userId, pageable);
+    return toPageResponse(postsPage);
   }
 
-  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    List<Post> posts = postRepository.findPostsByCategory(categoryId, pageRequest.getSize(), offset,
-        pageRequest.getSortBy(), pageRequest.getSortDir());
-    List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
-    long totalElements = postRepository.countPostsByCategory(categoryId);
-    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
+  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Pageable pageable = toPageable(pageRequest);
+    Page<Post> postsPage = postRepository.findByCategoryId(categoryId, pageable);
+    return toPageResponse(postsPage);
+  }
+
+  private Pageable toPageable(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
+    return PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  }
+
+  private PageResponse<PostResponse> toPageResponse(Page<Post> page) {
+    List<PostResponse> content = page.getContent().stream()
+        .map(DtoMapper::toPostResponse)
+        .collect(Collectors.toList());
+    
+    return new PageResponse<>(
+        content,
+        page.getNumber(),
+        page.getSize(),
+        (int) page.getTotalElements(),
+        page.getTotalPages(),
+        page.isFirst(),
+        page.isLast()
+    );
   }
 }

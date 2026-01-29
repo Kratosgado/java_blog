@@ -2,14 +2,16 @@ package com.kratosgado.blog.backend.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
 
 @Service
+@Transactional(readOnly = true)
 public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
@@ -29,6 +31,7 @@ public class AuthService {
     return user;
   }
 
+  @Transactional
   public User register(RegisterRequest request) throws BlogException {
     if (!request.password().equals(request.confirmPassword())) {
       throw BlogException.badRequest("Passwords do not match");
