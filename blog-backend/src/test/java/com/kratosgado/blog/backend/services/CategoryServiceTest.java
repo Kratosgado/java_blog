@@ -4,6 +4,7 @@ import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.models.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -248,6 +249,23 @@ class CategoryServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testCategory.getSlug(), result.getSlug());
+  }
+
+  @Test
+  @DisplayName("Should successfully get all categories with pagination")
+  void getAllCategories_ShouldReturnPageOfCategories() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("id").sortDir("desc").build();
+    java.util.List<Category> categories = java.util.List.of(testCategory);
+    when(categoryRepository.findAll(eq(10), eq(0), eq("id"), eq("desc"))).thenReturn(categories);
+    when(categoryRepository.count()).thenReturn(1L);
+
+    // Act
+    var result = categoryService.getAllCategories(pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
   }
 
   // @Test

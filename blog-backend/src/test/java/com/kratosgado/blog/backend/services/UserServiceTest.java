@@ -2,6 +2,7 @@ package com.kratosgado.blog.backend.services;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -153,8 +154,18 @@ class UserServiceTest {
   @Test
   @DisplayName("Should get all users")
   void getAllUsers_ShouldReturnPageOfUsers() {
-    // Note: This test depends on UserService.getAllUsers() implementation
-    // Since we don't have the full implementation, we'll skip it for now
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("id").sortDir("desc").build();
+    java.util.List<User> users = java.util.List.of(testUser);
+    when(userRepository.findAll(eq(10), eq(0), eq("id"), eq("desc"))).thenReturn(users);
+    when(userRepository.count()).thenReturn(1L);
+
+    // Act
+    var result = userService.getAllUsers(pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
   }
 
   // @Test

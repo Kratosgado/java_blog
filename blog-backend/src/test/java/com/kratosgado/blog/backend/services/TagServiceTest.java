@@ -4,6 +4,7 @@ import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.models.Tag;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -153,7 +155,7 @@ class TagServiceTest {
         when(tagCache.get(1L)).thenReturn(Optional.empty());
         break;
       case "delete":
-        doThrow(new SQLException("Tag not found")).when(tagRepository).deleteById(eq(1L));
+        doThrow(new RuntimeException("Tag not found")).when(tagRepository).deleteById(eq(1L));
         break;
       case "getBySlug":
         when(tagRepository.findBySlug("nonexistent")).thenReturn(Optional.empty());
@@ -264,37 +266,36 @@ class TagServiceTest {
     assertEquals(testTag.getSlug(), result.getSlug());
   }
 
-  // @Test
-  // @DisplayName("Should get all tags with pagination")
-  // void getAllTags_ShouldReturnPageOfTags() {
-  // // Arrange
-  // List<Tag> tags = List.of(testTag);
-  // Page<Tag> tagPage = new PageImpl<>(tags, PageRequest.of(0, 10), 1);
-  // when(tagRepository.findAll(any(org.springframework.data.domain.Pageable.class))).thenReturn(tagPage);
+  @Test
+  @DisplayName("Should get all tags with pagination")
+  void getAllTags_ShouldReturnPageOfTags() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("asc").build();
+    when(tagRepository.findAll(eq(10), eq(0), eq("name"), eq("asc"))).thenReturn(List.of(testTag));
+    when(tagRepository.count()).thenReturn(1L);
 
-  // // Act
-  // var result = tagService.getAllTags(PageRequest.of(0, 10));
+    // Act
+    var result = tagService.getAllTags(pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
+  }
 
-  // @Test
-  // @DisplayName("Should search tags by keyword")
-  // void searchTags_WithKeyword_ShouldReturnPageOfTags() {
-  // // Arrange
-  // String keyword = "java";
-  // List<Tag> tags = List.of(testTag);
-  // Page<Tag> tagPage = new PageImpl<>(tags, PageRequest.of(0, 10), 1);
-  // when(tagRepository.searchByName(eq(keyword),
-  // any(org.springframework.data.domain.Pageable.class))).thenReturn(tagPage);
+  @Test
+  @DisplayName("Should search tags by keyword")
+  void searchTags_WithKeyword_ShouldReturnPageOfTags() {
+    // Arrange
+    String keyword = "java";
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("asc").build();
+    when(tagRepository.searchByKeyword(eq(keyword), eq(10), eq(0), eq("name"), eq("asc"))).thenReturn(List.of(testTag));
+    when(tagRepository.countByKeyword(eq(keyword))).thenReturn(1L);
 
-  // // Act
-  // var result = tagService.searchTags(keyword, PageRequest.of(0, 10));
+    // Act
+    var result = tagService.searchTags(keyword, pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
+  }
 }

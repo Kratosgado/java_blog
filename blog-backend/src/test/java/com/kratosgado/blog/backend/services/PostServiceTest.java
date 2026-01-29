@@ -8,6 +8,7 @@ import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
 import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.*;
 import com.kratosgado.blog.enums.PostStatus;
@@ -281,109 +282,100 @@ class PostServiceTest {
     }
   }
 
-  // @Test
-  // @DisplayName("Should successfully get published posts")
-  // void getPublishedPosts_ShouldReturnPageOfPosts() {
-  // // Arrange
-  // Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0,
-  // 10), 1);
-  // new PageImpl<>(List.of(testPostResponse), PageRequest.of(0, 10), 1);
-  // when(postRepository.findPublishedPosts(any(PageRequest.class))).thenReturn(postPage);
+  @Test
+  @DisplayName("Should successfully get published posts")
+  void getPublishedPosts_ShouldReturnPageOfPosts() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(postRepository.findPublishedPosts(eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.countPublishedPosts()).thenReturn(1L);
 
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(testPostResponse);
-  // dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
-  // .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true,
-  // false));
+    try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
+          .thenReturn(testPostResponse);
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
-  // // Act
-  // PageResponse<PostResponse> result = postService.getPublishedPosts(1, 10);
+      // Act
+      PageResponse<PostResponse> result = postService.getPublishedPosts(pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // }
-  // }
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.totalElements());
+    }
+  }
 
-  // @Test
-  // @DisplayName("Should successfully search posts")
-  // void searchPosts_WithKeyword_ShouldReturnPageOfPosts() {
-  // // Arrange
-  // String keyword = "test";
-  // Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0,
-  // 10), 1);
-  // when(postRepository.searchPublishedPosts(eq(keyword),
-  // any(PageRequest.class))).thenReturn(postPage);
+  @Test
+  @DisplayName("Should successfully search posts")
+  void searchPosts_WithKeyword_ShouldReturnPageOfPosts() {
+    // Arrange
+    String keyword = "test";
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(postRepository.searchPostsByKeyword(eq(keyword), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.countPostsByKeyword(eq(keyword))).thenReturn(1L);
 
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(testPostResponse);
-  // dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
-  // .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true,
-  // false));
+    try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
+          .thenReturn(testPostResponse);
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
-  // // Act
-  // var result = postService.searchPosts(keyword, 1, 10);
+      // Act
+      var result = postService.searchPosts(keyword, pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // }
-  // }
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.totalElements());
+    }
+  }
 
-  // @Test
-  // @DisplayName("Should successfully get user posts")
-  // void getUserPosts_WithUserId_ShouldReturnPageOfPostResponses() {
-  // // Arrange
-  // Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0,
-  // 10), 1);
-  // when(postRepository.findByUserId(eq(1L),
-  // any(PageRequest.class))).thenReturn(postPage);
+  @Test
+  @DisplayName("Should successfully get user posts")
+  void getUserPosts_WithUserId_ShouldReturnPageOfPostResponses() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(postRepository.findPostsByUser(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.countPostsByUser(eq(1L))).thenReturn(1L);
 
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(testPostResponse);
-  // dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
-  // .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true,
-  // false));
+    try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
+          .thenReturn(testPostResponse);
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
-  // // Act
-  // PageResponse<PostResponse> result = postService.getUserPosts(1L, 1, 10);
+      // Act
+      PageResponse<PostResponse> result = postService.getUserPosts(1L, pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // assertEquals(1, result.content().size());
-  // }
-  // }
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.totalElements());
+      assertEquals(1, result.content().size());
+    }
+  }
 
-  // @Test
-  // @DisplayName("Should successfully get posts by category")
-  // void getPostsByCategory_WithCategoryId_ShouldReturnPageOfPostResponses() {
-  // // Arrange
-  // Page<Post> postPage = new PageImpl<>(List.of(testPost), PageRequest.of(0,
-  // 10), 1);
-  // when(postRepository.findByCategoryId(eq(1L),
-  // any(PageRequest.class))).thenReturn(postPage);
+  @Test
+  @DisplayName("Should successfully get posts by category")
+  void getPostsByCategory_WithCategoryId_ShouldReturnPageOfPostResponses() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(postRepository.findPostsByCategory(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc"))).thenReturn(List.of(testPost));
+    when(postRepository.countPostsByCategory(eq(1L))).thenReturn(1L);
 
-  // try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
-  // dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
-  // .thenReturn(testPostResponse);
-  // dtoMapperMock.when(() -> DtoMapper.toPageResponse(any(Page.class), any()))
-  // .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true,
-  // false));
+    try (MockedStatic<DtoMapper> dtoMapperMock = mockStatic(DtoMapper.class)) {
+      dtoMapperMock.when(() -> DtoMapper.toPostResponse(any(Post.class)))
+          .thenReturn(testPostResponse);
+      dtoMapperMock.when(() -> DtoMapper.toPageResponse(anyList(), anyInt(), anyInt(), anyInt()))
+          .thenReturn(new PageResponse<>(List.of(testPostResponse), 1, 10, 1, 1, true, false));
 
-  // // Act
-  // PageResponse<PostResponse> result = postService.getPostsByCategory(1L, 1,
-  // 10);
+      // Act
+      PageResponse<PostResponse> result = postService.getPostsByCategory(1L, pageRequest);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // assertEquals(1, result.content().size());
-  // }
-  // }
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.totalElements());
+      assertEquals(1, result.content().size());
+    }
+  }
 
   // @Test
   // @DisplayName("Should only update non-null fields in update request")

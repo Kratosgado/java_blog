@@ -26,11 +26,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
@@ -180,12 +180,14 @@ class CommentServiceTest {
   @DisplayName("Should get only approved comments for a post")
   void getPostComments_ShouldReturnOnlyApprovedComments() {
     // Arrange
-    Page<Comment> commentsPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByPostIdAndStatus(eq(1L), eq(CommentStatus.approved), any(PageRequest.class)))
-        .thenReturn(commentsPage);
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(commentRepository.findByPostIdAndStatusManual(eq(1L), eq(CommentStatus.approved), eq(10), eq(10),
+        eq("created_at"), eq("desc")))
+        .thenReturn(List.of(testComment));
+    when(commentRepository.countByPostIdAndStatus(1L, CommentStatus.approved)).thenReturn(1L);
 
     // Act
-    var result = commentService.getPostComments(1L, 1, 10);
+    var result = commentService.getPostComments(1L, pageRequest);
 
     // Assert
     assertNotNull(result);
@@ -197,12 +199,13 @@ class CommentServiceTest {
   @DisplayName("Should get all comments for a post regardless of status")
   void getAllPostComments_ShouldReturnAllComments() {
     // Arrange
-    Page<Comment> commentsPage = new PageImpl<>(List.of(testComment));
-    when(commentRepository.findByPostId(eq(1L), any(PageRequest.class)))
-        .thenReturn(commentsPage);
+    PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
+    when(commentRepository.findByPostId(eq(1L), eq(10), eq(10), eq("created_at"), eq("desc")))
+        .thenReturn(List.of(testComment));
+    when(commentRepository.countByPostId(1L)).thenReturn(1L);
 
     // Act
-    var result = commentService.getAllPostComments(1L, 1, 10);
+    var result = commentService.getAllPostComments(1L, pageRequest);
 
     // Assert
     assertNotNull(result);
