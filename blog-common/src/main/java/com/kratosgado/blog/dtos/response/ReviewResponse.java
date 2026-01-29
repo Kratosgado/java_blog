@@ -10,6 +10,7 @@ public class ReviewResponse {
 
   public record ReviewWithoutUser(String id, Long postId, int rating, String title, String content,
       LocalDateTime createdAt,
-      LocalDateTime updatedAt) {
+      LocalDateTime updatedAt,
+      boolean helpful) {
   }
 }

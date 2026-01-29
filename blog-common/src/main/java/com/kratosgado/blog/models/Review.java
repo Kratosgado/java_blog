@@ -2,23 +2,31 @@ package com.kratosgado.blog.models;
 
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Data
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@Document(collection = "reviews")
 public class Review {
+  @Id
   private String id;
 
+  @Field("post_id")
   private Long postId;
 
+  @Field("user_id")
   private Long userId;
-
-  private String authorName;
-
-  private String authorAvatarUrl;
 
   private int rating; // 1-5 stars
 
@@ -26,23 +34,23 @@ public class Review {
 
   private String content;
 
+  private String authorName;
+  private String authorAvatarUrl;
+
+  @Field("created_at")
   private LocalDateTime createdAt;
 
+  @Field("updated_at")
   private LocalDateTime updatedAt;
 
   private boolean helpful = false;
 
-  public Review(Long postId, Long userId, int rating, String title, String content) {
-    this.postId = postId;
-    this.userId = userId;
-    this.rating = rating;
-    this.title = title;
-    this.content = content;
-    this.createdAt = LocalDateTime.now();
-    this.updatedAt = LocalDateTime.now();
+  public void onCreate() {
+    createdAt = LocalDateTime.now();
+    updatedAt = LocalDateTime.now();
   }
 
-  public void setUpdatedAt() {
-    this.updatedAt = LocalDateTime.now();
+  public void onUpdate() {
+    updatedAt = LocalDateTime.now();
   }
 }
