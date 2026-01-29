@@ -6,6 +6,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import com.kratosgado.blog.backend.services.UserService;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.User;
@@ -28,7 +29,7 @@ public class UserGraphQLController {
   public PageResponse<User> users(
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return userService.getAllUsers(page, size);
+    return userService.getAllUsers(new PageRequest(page, size, "id", "desc"));
   }
 
   @MutationMapping

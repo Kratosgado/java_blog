@@ -11,6 +11,7 @@ import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
@@ -39,7 +40,7 @@ public class ReviewGraphQLController {
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return reviewService.getPostReviews(postId, page, size);
+    return reviewService.getPostReviews(postId, new PageRequest(page, size, "id", "desc"));
   }
 
   @QueryMapping
@@ -47,7 +48,7 @@ public class ReviewGraphQLController {
       @Argument Long userId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    return reviewService.getUserReviews(userId, page, size);
+    return reviewService.getUserReviews(userId, new PageRequest(page, size, "id", "desc"));
   }
 
   @MutationMapping

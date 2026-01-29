@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 
 import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
@@ -31,7 +32,7 @@ public class GraphCategoryConttroller {
    public PageResponse<Category> categories(
        @Argument(name = "page") int page,
        @Argument(name = "size") int size) {
-     return categoryService.getAllCategories(page, size);
+     return categoryService.getAllCategories(new PageRequest(page, size, "id", "desc"));
    }
 
   @QueryMapping

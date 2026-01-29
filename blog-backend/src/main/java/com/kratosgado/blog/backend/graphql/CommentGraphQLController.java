@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
 import com.kratosgado.blog.models.Comment;
@@ -40,7 +41,7 @@ public class CommentGraphQLController {
        @Argument Long postId,
        @Argument(name = "page") int page,
        @Argument(name = "size") int size) {
-     return commentService.getPostComments(postId, page, size);
+     return commentService.getPostComments(postId, new PageRequest(page, size, "id", "desc"));
    }
 
   @MutationMapping

@@ -12,6 +12,7 @@ import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
@@ -53,9 +54,9 @@ public class PostGraphQLController {
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
       @Argument(name = "sortDir") String sortDir) {
-    String sortField = sortBy != null ? sortBy : "createdAt";
+    String sortField = sortBy != null ? sortBy : "created_at";
     String direction = sortDir != null ? sortDir : "desc";
-    return postService.getPublishedPosts(page, size);
+    return postService.getPublishedPosts(new PageRequest(page, size, sortField, direction));
   }
 
   @QueryMapping
@@ -63,7 +64,7 @@ public class PostGraphQLController {
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
-    return postService.searchPosts(keyword, page, size);
+    return postService.searchPosts(keyword, new PageRequest(page, size, "created_at", "desc"));
   }
 
   @QueryMapping
@@ -71,7 +72,7 @@ public class PostGraphQLController {
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
-    return postService.getPostsByCategory(categoryId, page, size);
+    return postService.getPostsByCategory(categoryId, new PageRequest(page, size, "created_at", "desc"));
   }
 
   @QueryMapping
@@ -79,7 +80,7 @@ public class PostGraphQLController {
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
-    return postService.getUserPosts(userId, page, size);
+    return postService.getUserPosts(userId, new PageRequest(page, size, "created_at", "desc"));
   }
 
   // Mutations
@@ -148,12 +149,12 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "comments")
   public PageResponse<Comment> comments(Post post) {
-    return commentService.getPostComments(Long.valueOf(post.getId()), 0, 100);
+    return commentService.getPostComments(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
   public PageResponse<Review> reviews(Post post) {
-    return reviewService.getPostReviews(Long.valueOf(post.getId()), 0, 100);
+    return reviewService.getPostReviews(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
   }
 
 }
