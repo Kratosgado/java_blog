@@ -122,6 +122,25 @@ public class UserRepository extends CrudRepository<User> {
     });
   }
 
+  public java.util.List<User> findAll(int size, int offset, String sortBy, String sortDir) {
+    String query = String.format("SELECT * FROM users ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
+    return withConnection(conn -> {
+      java.util.List<User> users = new java.util.ArrayList<>();
+      try (java.sql.PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setInt(1, size);
+        statement.setInt(2, offset);
+        try (java.sql.ResultSet rs = statement.executeQuery()) {
+          while (rs.next()) {
+            users.add(toEntity(rs));
+          }
+        }
+      } catch (java.sql.SQLException e) {
+        throw BlogException.internal("Failed to find all users: " + e.getMessage());
+      }
+      return users;
+    });
+  }
+
   public long countAll() {
     String query = "SELECT COUNT(*) FROM users";
     return withConnection(conn -> {

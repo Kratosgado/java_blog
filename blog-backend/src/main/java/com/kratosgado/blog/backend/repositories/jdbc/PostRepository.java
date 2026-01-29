@@ -75,8 +75,9 @@ public class PostRepository extends SluggableRepository<Post> {
     return post;
   }
 
-  public List<Post> findPublishedPosts(int size, int offset) {
-    return executePagedSelect("WHERE t.status = 'published'", "ORDER BY t.created_at DESC", size, offset);
+  public List<Post> findPublishedPosts(int size, int offset, String sortBy, String sortDir) {
+    String orderClause = String.format("ORDER BY t.%s %s", sortBy, sortDir);
+    return executePagedSelect("WHERE t.status = 'published'", orderClause, size, offset);
   }
 
   public void incrementViews(String slug) {
@@ -99,11 +100,12 @@ public class PostRepository extends SluggableRepository<Post> {
     });
   }
 
-  public List<Post> searchPostsByKeyword(String keyword, int size, int offset) {
+  public List<Post> searchPostsByKeyword(String keyword, int size, int offset, String sortBy, String sortDir) {
     String like = "%" + keyword.toLowerCase() + "%";
+    String orderClause = String.format("ORDER BY t.%s %s", sortBy, sortDir);
     return executePagedSelect(
         "WHERE (LOWER(t.title) LIKE ? OR LOWER(t.content) LIKE ?) AND t.status = 'published'",
-        "ORDER BY t.created_at DESC",
+        orderClause,
         size, offset,
         like, like);
   }
@@ -126,8 +128,9 @@ public class PostRepository extends SluggableRepository<Post> {
     });
   }
 
-  public List<Post> findPostsByUser(Long userId, int size, int offset) {
-    return executePagedSelect("WHERE t.user_id = ?", "ORDER BY t.created_at DESC", size, offset, userId);
+  public List<Post> findPostsByUser(Long userId, int size, int offset, String sortBy, String sortDir) {
+    String orderClause = String.format("ORDER BY t.%s %s", sortBy, sortDir);
+    return executePagedSelect("WHERE t.user_id = ?", orderClause, size, offset, userId);
   }
 
   public long countPostsByUser(Long userId) {
@@ -147,8 +150,9 @@ public class PostRepository extends SluggableRepository<Post> {
     });
   }
 
-  public List<Post> findPostsByCategory(Long categoryId, int size, int offset) {
-    return executePagedSelect("WHERE t.category_id = ? AND t.status = 'published'", "ORDER BY t.created_at DESC", size,
+  public List<Post> findPostsByCategory(Long categoryId, int size, int offset, String sortBy, String sortDir) {
+    String orderClause = String.format("ORDER BY t.%s %s", sortBy, sortDir);
+    return executePagedSelect("WHERE t.category_id = ? AND t.status = 'published'", orderClause, size,
         offset, categoryId);
   }
 

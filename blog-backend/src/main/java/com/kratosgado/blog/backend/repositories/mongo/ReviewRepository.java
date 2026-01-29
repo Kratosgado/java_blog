@@ -84,11 +84,12 @@ public class ReviewRepository {
     return findReviews(filter, pageable, false);
   }
 
-  public List<Review> findByPostIdOrderByCreatedAtDesc(Long postId, int size, int offset) {
+  public List<Review> findByPostIdOrderByCreatedAtDesc(Long postId, int size, int offset, String sortBy, String sortDir) {
     List<Review> reviews = new ArrayList<>();
     var filter = Filters.eq("post_id", postId);
+    var sort = "asc".equalsIgnoreCase(sortDir) ? Sorts.ascending(sortBy) : Sorts.descending(sortBy);
     var find = collection.find(filter)
-      .sort(Sorts.descending("created_at"))
+      .sort(sort)
       .skip(offset)
       .limit(size);
     for (Document doc : find) {
@@ -109,11 +110,12 @@ public class ReviewRepository {
     return findReviews(filter, pageable, true);
   }
 
-  public List<ReviewResponse.ReviewWithoutUser> findByUserId(Long userId, int size, int offset) {
+  public List<ReviewResponse.ReviewWithoutUser> findByUserId(Long userId, int size, int offset, String sortBy, String sortDir) {
     var filter = Filters.eq("user_id", userId);
     List<ReviewResponse.ReviewWithoutUser> content = new ArrayList<>();
+    var sort = "asc".equalsIgnoreCase(sortDir) ? Sorts.ascending(sortBy) : Sorts.descending(sortBy);
     for (Document doc : collection.find(filter)
-        .sort(Sorts.descending("created_at"))
+        .sort(sort)
         .skip(offset)
         .limit(size)) {
       content.add(toReviewWithoutUser(doc));

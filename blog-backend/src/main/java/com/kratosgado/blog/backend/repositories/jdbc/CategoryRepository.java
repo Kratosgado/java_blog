@@ -3,6 +3,7 @@ package com.kratosgado.blog.backend.repositories.jdbc;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -10,6 +11,7 @@ import javax.sql.DataSource;
 import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.models.Category;
 
 @Repository
@@ -78,18 +80,37 @@ public class CategoryRepository extends SluggableRepository<Category> {
     });
   }
 
-  public java.util.List<com.kratosgado.blog.dtos.response.CategoryResponse> findAllWithPostCount() {
+  public List<Category> findAll(int size, int offset, String sortBy, String sortDir) {
+    String query = String.format("SELECT * FROM categories ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
+    return withConnection(conn -> {
+      List<Category> categories = new java.util.ArrayList<>();
+      try (java.sql.PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setInt(1, size);
+        statement.setInt(2, offset);
+        try (java.sql.ResultSet rs = statement.executeQuery()) {
+          while (rs.next()) {
+            categories.add(toEntity(rs));
+          }
+        }
+      } catch (java.sql.SQLException e) {
+        throw BlogException.internal("Failed to find all categories: " + e.getMessage());
+      }
+      return categories;
+    });
+  }
+
+  public List<CategoryResponse> findAllWithPostCount() {
     String query = """
         SELECT c.*, (SELECT COUNT(*) FROM posts p WHERE p.category_id = c.id) as post_count
         FROM categories c
         ORDER BY c.name ASC
         """;
     return withConnection(conn -> {
-      java.util.List<com.kratosgado.blog.dtos.response.CategoryResponse> categories = new java.util.ArrayList<>();
+      List<CategoryResponse> categories = new java.util.ArrayList<>();
       try (PreparedStatement statement = conn.prepareStatement(query)) {
         try (ResultSet rs = statement.executeQuery()) {
           while (rs.next()) {
-            categories.add(new com.kratosgado.blog.dtos.response.CategoryResponse(
+            categories.add(new CategoryResponse(
                 rs.getLong("id"),
                 rs.getString("name"),
                 rs.getString("slug"),

@@ -144,8 +144,8 @@ public class TagRepository extends SluggableRepository<Tag> {
     safeExecuteQuery(query, null, postId);
   }
 
-  public List<Tag> findAll(int size, int offset) {
-    String query = "SELECT * FROM tags ORDER BY name ASC LIMIT ? OFFSET ?";
+  public List<Tag> findAll(int size, int offset, String sortBy, String sortDir) {
+    String query = String.format("SELECT * FROM tags ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
     return withConnection(conn -> {
       List<Tag> tags = new ArrayList<>();
       try (PreparedStatement statement = conn.prepareStatement(query)) {
@@ -163,8 +163,8 @@ public class TagRepository extends SluggableRepository<Tag> {
     });
   }
 
-  public List<Tag> searchByKeyword(String keyword, int size, int offset) {
-    String query = "SELECT * FROM tags WHERE LOWER(name) LIKE ? ORDER BY name ASC LIMIT ? OFFSET ?";
+  public List<Tag> searchByKeyword(String keyword, int size, int offset, String sortBy, String sortDir) {
+    String query = String.format("SELECT * FROM tags WHERE LOWER(name) LIKE ? ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
     return withConnection(conn -> {
       List<Tag> tags = new ArrayList<>();
       try (PreparedStatement statement = conn.prepareStatement(query)) {

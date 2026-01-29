@@ -83,13 +83,6 @@ public class CommentRepository {
     return findComments(filter, pageable);
   }
 
-  public Page<Comment> findByPostIdAndStatus(Long postId, CommentStatus status, Pageable pageable) {
-    var filter = Filters.and(
-        Filters.eq("post_id", postId),
-        Filters.eq("status", status.name()));
-    return findComments(filter, pageable);
-  }
-
   public Page<CommentWithoutUser> findByUserId(Long userId, Pageable pageable) {
     var filter = Filters.eq("user_id", userId);
     long total = collection.countDocuments(filter);
@@ -208,13 +201,15 @@ public class CommentRepository {
   }
 
   // Manual pagination: approved comments for a post
-  public List<Comment> findByPostIdAndStatusManual(Long postId, CommentStatus status, int size, int offset) {
+  public List<Comment> findByPostIdAndStatus(Long postId, CommentStatus status, int size, int offset,
+      String sortBy, String sortDir) {
     var filter = Filters.and(
         Filters.eq("post_id", postId),
         Filters.eq("status", status.name()));
     List<Comment> comments = new ArrayList<>();
+    var sort = "asc".equalsIgnoreCase(sortDir) ? Sorts.ascending(sortBy) : Sorts.descending(sortBy);
     var find = collection.find(filter)
-        .sort(Sorts.descending("created_at"))
+        .sort(sort)
         .skip(offset)
         .limit(size);
     for (Document doc : find) {
@@ -226,11 +221,12 @@ public class CommentRepository {
     return comments;
   }
 
-  public List<Comment> findByPostIdManual(Long postId, int size, int offset) {
+  public List<Comment> findByPostId(Long postId, int size, int offset, String sortBy, String sortDir) {
     var filter = Filters.eq("post_id", postId);
     List<Comment> comments = new ArrayList<>();
+    var sort = "asc".equalsIgnoreCase(sortDir) ? Sorts.ascending(sortBy) : Sorts.descending(sortBy);
     var find = collection.find(filter)
-        .sort(Sorts.descending("created_at"))
+        .sort(sort)
         .skip(offset)
         .limit(size);
     for (Document doc : find) {
@@ -242,10 +238,12 @@ public class CommentRepository {
     return comments;
   }
 
-  public List<CommentWithoutUser> findCommentsByUserIdManual(Long userId, int size, int offset) {
+  public List<CommentWithoutUser> findCommentsByUserId(Long userId, int size, int offset, String sortBy,
+      String sortDir) {
     var filter = Filters.eq("user_id", userId);
     List<CommentWithoutUser> out = new ArrayList<>();
-    for (Document doc : collection.find(filter).sort(Sorts.descending("created_at")).skip(offset).limit(size)) {
+    var sort = "asc".equalsIgnoreCase(sortDir) ? Sorts.ascending(sortBy) : Sorts.descending(sortBy);
+    for (Document doc : collection.find(filter).sort(sort).skip(offset).limit(size)) {
       out.add(toCommentWithoutUser(doc));
     }
     return out;
