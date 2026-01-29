@@ -122,4 +122,19 @@ public class UserRepository extends CrudRepository<User> {
     });
   }
 
+  public long countAll() {
+    String query = "SELECT COUNT(*) FROM users";
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query);
+          ResultSet rs = statement.executeQuery()) {
+        if (rs.next()) {
+          return rs.getLong(1);
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count users: " + e.getMessage());
+      }
+      return 0L;
+    });
+  }
+
 }

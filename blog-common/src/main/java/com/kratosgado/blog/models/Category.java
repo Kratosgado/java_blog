@@ -21,4 +21,7 @@ public class Category implements HasId {
   private String slug;
 
   private String description;
+
+  @Builder.Default
+  private Integer postCount = 0;
 }

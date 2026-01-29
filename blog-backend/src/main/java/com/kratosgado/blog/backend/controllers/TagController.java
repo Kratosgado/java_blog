@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,6 +18,8 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
 import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.services.TagService;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Tag;
@@ -83,17 +85,24 @@ public class TagController {
   @GetMapping
   @Operation(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   @GetEnpoint
-  public PageResponse<Tag> getTags(@RequestParam int page, @RequestParam int size) {
-    return tagService.getAllTags(page, size);
+  public PageResponse<Tag> getTags(@ParameterObject PageRequest page) {
+    return tagService.getAllTags(page.getPage(), page.getSize());
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search tags", description = "Searches for tags by keyword in name")
   @GetEnpoint
-  public PageResponse<Tag> searchTags(
-      @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @RequestParam int page,
-      @RequestParam int size) {
-    return tagService.searchTags(keyword, page, size);
+  public PageResponse<Tag> searchTags(@ParameterObject SearchPageRequest request) {
+    return tagService.searchTags(request.getKeyword(), request.getPage(), request.getSize());
   }
-}
+
+
+      
+        @GetMapping("/with-post-count")
+        @GetEnpoint
+        @Operation(summary = "Get all tags with post counts", description = "Retrieves a list of all tags including the number of posts for each. Public access.")
+        public java.util.List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
+          return tagService.getAllTagsWithPostCount();
+        }
+      }
+      

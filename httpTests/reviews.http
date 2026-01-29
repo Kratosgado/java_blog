@@ -73,7 +73,7 @@ Authorization: {{userAuth}}
 
 # @name getPostReviewsPage2
 
-GET {{host}}/reviews/post/372?page=0&size=5 HTTP/1.1
+GET {{host}}/reviews/post/100?page=0&size=5 HTTP/1.1
 Authorization: {{userAuth}}
 
 

@@ -78,4 +78,30 @@ public class CategoryRepository extends SluggableRepository<Category> {
     });
   }
 
+  public java.util.List<com.kratosgado.blog.dtos.response.CategoryResponse> findAllWithPostCount() {
+    String query = """
+        SELECT c.*, (SELECT COUNT(*) FROM posts p WHERE p.category_id = c.id) as post_count
+        FROM categories c
+        ORDER BY c.name ASC
+        """;
+    return withConnection(conn -> {
+      java.util.List<com.kratosgado.blog.dtos.response.CategoryResponse> categories = new java.util.ArrayList<>();
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try (ResultSet rs = statement.executeQuery()) {
+          while (rs.next()) {
+            categories.add(new com.kratosgado.blog.dtos.response.CategoryResponse(
+                rs.getLong("id"),
+                rs.getString("name"),
+                rs.getString("slug"),
+                rs.getString("description"),
+                rs.getInt("post_count")));
+          }
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to find categories with post count: " + e.getMessage());
+      }
+      return categories;
+    });
+  }
+
 }

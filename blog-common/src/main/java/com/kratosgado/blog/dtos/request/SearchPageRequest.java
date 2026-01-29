@@ -2,6 +2,7 @@ package com.kratosgado.blog.dtos.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
@@ -9,13 +10,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class PageRequest {
-    protected int page = 0;
-    protected int size = 10;
-    protected String sortBy = "id";
-    protected String sortDir = "desc";
-
-    public int getOffset() {
-        return page * size;
-    }
+@EqualsAndHashCode(callSuper = true)
+public class SearchPageRequest extends PageRequest {
+    private String keyword;
 }

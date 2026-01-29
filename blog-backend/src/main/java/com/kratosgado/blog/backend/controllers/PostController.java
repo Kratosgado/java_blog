@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +20,8 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
@@ -90,20 +92,15 @@ public class PostController {
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
-  public PageResponse<PostResponse> getPosts(
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return postService.getPublishedPosts(page, size);
+  public PageResponse<PostResponse> getPosts(@ParameterObject PageRequest page) {
+    return postService.getPublishedPosts(page.getPage(), page.getSize());
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search posts", description = "Searches for posts by keyword in title and content")
   @GetEnpoint
-  public PageResponse<PostResponse> searchPosts(
-      @RequestParam @Parameter(description = "Search keyword") String keyword,
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return postService.searchPosts(keyword, page, size);
+  public PageResponse<PostResponse> searchPosts(@ParameterObject SearchPageRequest request) {
+    return postService.searchPosts(request.getKeyword(), request.getPage(), request.getSize());
   }
 
   @GetMapping("/user/{userId}")
@@ -111,9 +108,8 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return postService.getUserPosts(userId, page, size);
+      @ParameterObject PageRequest page) {
+    return postService.getUserPosts(userId, page.getPage(), page.getSize());
   }
 
   @GetMapping("/category/{categoryId}")
@@ -121,8 +117,7 @@ public class PostController {
   @GetEnpoint
   public PageResponse<PostResponse> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
-      @RequestParam(defaultValue = "1") int page,
-      @RequestParam(defaultValue = "10") int size) {
-    return postService.getPostsByCategory(categoryId, page, size);
+      @ParameterObject PageRequest page) {
+    return postService.getPostsByCategory(categoryId, page.getPage(), page.getSize());
   }
 }

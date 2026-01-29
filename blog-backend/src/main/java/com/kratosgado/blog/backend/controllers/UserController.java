@@ -57,7 +57,7 @@ public class UserController {
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
   public PageResponse<User> getUsers(@ParameterObject PageRequest page) {
-    return userService.getAllUsers(page.page(), page.size());
+    return userService.getAllUsers(page.getPage(), page.getSize());
   }
 
   @PutMapping("/{id}/profile")

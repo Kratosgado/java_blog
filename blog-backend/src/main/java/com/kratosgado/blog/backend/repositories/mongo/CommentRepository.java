@@ -259,6 +259,21 @@ public class CommentRepository {
     return collection.countDocuments(Filters.eq("user_id", userId));
   }
 
+  public long countAll() {
+    return collection.countDocuments();
+  }
+
+  public List<Comment> findLatestComments(int limit) {
+    List<Comment> out = new ArrayList<>();
+    for (Document doc : collection.find().sort(Sorts.descending("created_at")).limit(limit)) {
+      Comment c = fromDocument(doc);
+      if (c != null) {
+        out.add(c);
+      }
+    }
+    return out;
+  }
+
   private static Date toDate(LocalDateTime ldt) {
     if (ldt == null) {
       return null;

@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +20,7 @@ import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
@@ -84,9 +85,8 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
-    return reviewService.getPostReviews(postId, page, size);
+      @ParameterObject PageRequest page) {
+    return reviewService.getPostReviews(postId, page.getPage(), page.getSize());
   }
 
   @GetMapping("/user/{userId}")
@@ -94,9 +94,8 @@ public class ReviewController {
   @GetEnpoint
   public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
-      @RequestParam(name = "page", defaultValue = "0") int page,
-      @RequestParam(name = "size", defaultValue = "10") int size) {
-    return reviewService.getUserReviews(userId, page, size);
+      @ParameterObject PageRequest page) {
+    return reviewService.getUserReviews(userId, page.getPage(), page.getSize());
   }
 
   @GetMapping("/post/{postId}/stats")

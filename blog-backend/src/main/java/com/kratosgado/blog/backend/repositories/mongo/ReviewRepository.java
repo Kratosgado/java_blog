@@ -125,6 +125,10 @@ public class ReviewRepository {
     return collection.countDocuments(Filters.eq("user_id", userId));
   }
 
+  public long countAll() {
+    return collection.countDocuments();
+  }
+
   public Page<ReviewResponse.ReviewWithoutUser> findByUserId(Long userId, Pageable pageable) {
     var filter = Filters.eq("user_id", userId);
     long total = collection.countDocuments(filter);

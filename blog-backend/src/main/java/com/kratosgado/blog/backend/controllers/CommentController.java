@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +19,7 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Comment;
@@ -84,22 +85,20 @@ public class CommentController {
   @GetMapping("/post/{postId}")
   @GetEnpoint
   @Operation(summary = "Get comments for a post", description = "Retrieves all approved comments for a specific post. Public access.")
-   public PageResponse<Comment> getPostComments(
-       @PathVariable @Parameter(description = "Post ID") Long postId,
-       @RequestParam(value = "page", defaultValue = "0") int page,
-       @RequestParam(value = "size", defaultValue = "20") int size) {
-     return commentService.getPostComments(postId, page, size);
-   }
+  public PageResponse<Comment> getPostComments(
+      @PathVariable @Parameter(description = "Post ID") Long postId,
+      @ParameterObject PageRequest page) {
+    return commentService.getPostComments(postId, page.getPage(), page.getSize());
+  }
 
   @GetMapping("/user/{userId}")
   @GetEnpoint
   @Operation(summary = "Get comments by user", description = "Retrieves all comments created by a specific user")
-   public PageResponse<CommentWithoutUser> getUserComments(
-       @PathVariable @Parameter(description = "User ID") Long userId,
-       @RequestParam(value = "page", defaultValue = "0") int page,
-       @RequestParam(value = "size", defaultValue = "20") int size) {
-     return commentService.getUserComments(userId, page, size);
-   }
+  public PageResponse<CommentWithoutUser> getUserComments(
+      @PathVariable @Parameter(description = "User ID") Long userId,
+      @ParameterObject PageRequest page) {
+    return commentService.getUserComments(userId, page.getPage(), page.getSize());
+  }
 
   @GetMapping("/post/{postId}/count")
   @GetEnpoint

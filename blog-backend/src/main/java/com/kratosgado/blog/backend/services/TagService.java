@@ -83,4 +83,8 @@ public class TagService {
     long totalItems = tagRepository.countByKeyword(keyword);
     return DtoMapper.toPageResponse(tags, page, size, (int) totalItems);
   }
+
+  public java.util.List<com.kratosgado.blog.dtos.response.TagResponse> getAllTagsWithPostCount() {
+    return tagRepository.findAllWithPostCount();
+  }
 }

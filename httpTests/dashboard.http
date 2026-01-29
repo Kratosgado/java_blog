@@ -49,6 +49,20 @@ Authorization: {{adminAuth}}
 
 ###
 
+### Get Engagement Statistics
+# @name getEngagementStats
+GET {{host}}/dashboard/engagement HTTP/1.1
+Authorization: {{adminAuth}}
+
+###
+
+### Get Recent Activity
+# @name getRecentActivity
+GET {{host}}/dashboard/recent HTTP/1.1
+Authorization: {{adminAuth}}
+
+###
+
 ### Test Unauthorized Access - No Token (should return 401)
 # @name unauthorizedAccess
 GET {{host}}/dashboard/stats HTTP/1.1

@@ -93,4 +93,8 @@ public class CategoryService {
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
   }
+
+  public List<com.kratosgado.blog.dtos.response.CategoryResponse> getAllCategoriesWithPostCount() {
+    return categoryRepository.findAllWithPostCount();
+  }
 }

@@ -169,4 +169,61 @@ public class PostRepository extends SluggableRepository<Post> {
     });
   }
 
+  public List<Post> findLatestPosts(int limit) {
+    return executePagedSelect(null, "ORDER BY t.created_at DESC", limit, 0);
+  }
+
+  public List<Post> findTopPostsByViews(int limit) {
+    return executePagedSelect("WHERE t.status = 'published'", "ORDER BY t.views DESC", limit, 0);
+  }
+
+  public long countAll() {
+    String query = "SELECT COUNT(*) FROM posts";
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query);
+          ResultSet rs = statement.executeQuery()) {
+        if (rs.next()) {
+          return rs.getLong(1);
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count posts: " + e.getMessage());
+      }
+      return 0L;
+    });
+  }
+
+  public long countByStatus(PostStatus status) {
+    String query = "SELECT COUNT(*) FROM posts WHERE status = ?";
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setString(1, status.name());
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to count posts by status: " + e.getMessage());
+      }
+      return 0L;
+    });
+  }
+
+  public long sumViewsByUserId(Long userId) {
+    String query = "SELECT SUM(views) FROM posts WHERE user_id = ?";
+    return withConnection(conn -> {
+      try (PreparedStatement statement = conn.prepareStatement(query)) {
+        statement.setLong(1, userId);
+        try (ResultSet rs = statement.executeQuery()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
+        }
+      } catch (SQLException e) {
+        throw BlogException.internal("Failed to sum views: " + e.getMessage());
+      }
+      return 0L;
+    });
+  }
+
 }
