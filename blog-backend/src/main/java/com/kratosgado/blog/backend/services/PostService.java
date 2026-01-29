@@ -13,6 +13,7 @@ import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
@@ -91,7 +92,9 @@ public class PostService {
     }
 
     Post updatedPost = postRepository.update(post);
-    return DtoMapper.toPostResponse(updatedPost);
+    var response = DtoMapper.toPostResponse(updatedPost);
+    postCache.updateIfPresent(response.slug(), response);
+    return response;
   }
 
   public void deletePost(Long postId, Long userId) {
@@ -123,9 +126,10 @@ public class PostService {
 
   }
 
-  public PageResponse<PostResponse> getPublishedPosts(int page, int size) {
-    int offset = (page - 1) * size;
-    List<Post> posts = postRepository.findPublishedPosts(size, offset);
+  public PageResponse<PostResponse> getPublishedPosts(PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    List<Post> posts = postRepository.findPublishedPosts(pageRequest.getSize(), offset, pageRequest.getSortBy(),
+        pageRequest.getSortDir());
     List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
     long totalElements;
     try {
@@ -133,30 +137,33 @@ public class PostService {
     } catch (Exception e) {
       totalElements = 0;
     }
-    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
+    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
   }
 
-  public PageResponse<PostResponse> searchPosts(String keyword, int page, int size) {
-    int offset = (page - 1) * size;
-    List<Post> posts = postRepository.searchPostsByKeyword(keyword, size, offset);
+  public PageResponse<PostResponse> searchPosts(String keyword, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    List<Post> posts = postRepository.searchPostsByKeyword(keyword, pageRequest.getSize(), offset,
+        pageRequest.getSortBy(), pageRequest.getSortDir());
     List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
     long totalElements = postRepository.countPostsByKeyword(keyword);
-    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
+    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
   }
 
-  public PageResponse<PostResponse> getUserPosts(Long userId, int page, int size) {
-    int offset = (page - 1) * size;
-    List<Post> posts = postRepository.findPostsByUser(userId, size, offset);
+  public PageResponse<PostResponse> getUserPosts(Long userId, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    List<Post> posts = postRepository.findPostsByUser(userId, pageRequest.getSize(), offset, pageRequest.getSortBy(),
+        pageRequest.getSortDir());
     List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
     long totalElements = postRepository.countPostsByUser(userId);
-    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
+    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
   }
 
-  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, int page, int size) {
-    int offset = (page - 1) * size;
-    List<Post> posts = postRepository.findPostsByCategory(categoryId, size, offset);
+  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    List<Post> posts = postRepository.findPostsByCategory(categoryId, pageRequest.getSize(), offset,
+        pageRequest.getSortBy(), pageRequest.getSortDir());
     List<PostResponse> postResponses = posts.stream().map(DtoMapper::toPostResponse).toList();
     long totalElements = postRepository.countPostsByCategory(categoryId);
-    return DtoMapper.toPageResponse(postResponses, page, size, (int) totalElements);
+    return DtoMapper.toPageResponse(postResponses, pageRequest.getPage(), pageRequest.getSize(), (int) totalElements);
   }
 }

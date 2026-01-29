@@ -1,37 +1,35 @@
 package com.kratosgado.blog.backend.services;
 
-
-
-
 import org.springframework.stereotype.Service;
 
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
+import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-
+@AllArgsConstructor
 public class CommentService {
 
   private final CommentRepository commentRepository;
-
-  public CommentService(CommentRepository commentRepository) {
-    this.commentRepository = commentRepository;
-  }
+  private final PostRepository postRepository;
 
   public Comment createComment(CreateCommentRequest request, User user) {
-
-    Comment comment = new Comment(request.postId(), Long.valueOf(user.getId()), request.content());
+    if (!postRepository.existsById(request.postId())) {
+      throw BlogException.notFound("Post", "id", request.postId());
+    }
+    Comment comment = new Comment(request.postId(), user.getId(), request.content());
     comment.setStatus(CommentStatus.pending);
     // Populate author snapshot
     comment.setAuthorName(user.getUsername());
@@ -88,25 +86,28 @@ public class CommentService {
     return comment;
   }
 
-  public PageResponse<Comment> getPostComments(Long postId, int page, int size) {
-    int offset = page * size;
-    var comments = commentRepository.findByPostIdAndStatusManual(postId, CommentStatus.approved, size, offset);
+  public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    var comments = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageRequest.getSize(),
+        offset, pageRequest.getSortBy(), pageRequest.getSortDir());
     long total = commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
-    return DtoMapper.toPageResponse(comments, page, size, (int) total);
+    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
   }
 
-  public PageResponse<Comment> getAllPostComments(Long postId, int page, int size) {
-    int offset = page * size;
-    var comments = commentRepository.findByPostIdManual(postId, size, offset);
+  public PageResponse<Comment> getAllPostComments(Long postId, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    var comments = commentRepository.findByPostId(postId, pageRequest.getSize(), offset, pageRequest.getSortBy(),
+        pageRequest.getSortDir());
     long total = commentRepository.countByPostId(postId);
-    return DtoMapper.toPageResponse(comments, page, size, (int) total);
+    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
   }
 
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId, int page, int size) {
-    int offset = page * size;
-    var comments = commentRepository.findCommentsByUserIdManual(userId, size, offset);
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId, PageRequest pageRequest) {
+    int offset = pageRequest.getOffset();
+    var comments = commentRepository.findCommentsByUserId(userId, pageRequest.getSize(), offset,
+        pageRequest.getSortBy(), pageRequest.getSortDir());
     long total = commentRepository.countByUserId(userId);
-    return DtoMapper.toPageResponse(comments, page, size, (int) total);
+    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
   }
 
   public Long getPostCommentCount(Long postId) {

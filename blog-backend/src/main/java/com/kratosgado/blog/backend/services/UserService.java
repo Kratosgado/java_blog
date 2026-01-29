@@ -3,6 +3,7 @@ package com.kratosgado.blog.backend.services;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
@@ -66,9 +67,9 @@ public class UserService {
   // return null;
   // }
 
-  public PageResponse<User> getAllUsers(int page, int size) {
-    var users = userRepository.findAll(size, page * size);
+  public PageResponse<User> getAllUsers(PageRequest pageRequest) {
+    var users = userRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
     long totalItems = userRepository.count();
-    return DtoMapper.toPageResponse(users, page, size, (int) totalItems);
+    return DtoMapper.toPageResponse(users, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
   }
 }

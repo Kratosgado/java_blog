@@ -8,7 +8,10 @@ import com.kratosgado.blog.backend.cache.CacheConfig.CategoryCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
 
@@ -80,21 +83,18 @@ public class CategoryService {
 
   }
 
-  public PageResponse<Category> getAllCategories(int page, int size) {
-    java.util.List<Category> categories = categoryRepository.findAll(size, page * size);
+  public PageResponse<Category> getAllCategories(PageRequest pageRequest) {
+    java.util.List<Category> categories = categoryRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(),
+        pageRequest.getSortBy(), pageRequest.getSortDir());
     Long total = categoryRepository.count();
-    int totalPages = (int) Math.ceil((double) total / size);
-    boolean isFirst = page == 0;
-    boolean isLast = page == totalPages - 1;
-    return new PageResponse<>(categories, page, size, total, totalPages, isFirst, isLast);
-
+    return DtoMapper.toPageResponse(categories, pageRequest.getPage(), pageRequest.getSize(), total.intValue());
   }
 
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
   }
 
-  public List<com.kratosgado.blog.dtos.response.CategoryResponse> getAllCategoriesWithPostCount() {
+  public List<CategoryResponse> getAllCategoriesWithPostCount() {
     return categoryRepository.findAllWithPostCount();
   }
 }
