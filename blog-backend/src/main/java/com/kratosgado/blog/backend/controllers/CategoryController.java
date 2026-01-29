@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers;
 
+import java.util.List;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +21,7 @@ import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
 import com.kratosgado.blog.backend.services.CategoryService;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
 
@@ -76,32 +79,18 @@ public class CategoryController {
     return categoryService.getCategoryBySlug(slug);
   }
 
-    @GetMapping
-
-    @GetEnpoint
-
-    @Operation(summary = "Get all categories", description = "Retrieves a paginated list of all categories. Public access.")
-
-    public PageResponse<Category> getAllCategories(@ParameterObject PageRequest page) {
-
-      return categoryService.getAllCategories(page.getPage(), page.getSize());
-
-    }
-
-  
-
-    @GetMapping("/with-post-count")
-
-    @GetEnpoint
-
-    @Operation(summary = "Get all categories with post counts", description = "Retrieves a list of all categories including the number of posts in each. Public access.")
-
-    public java.util.List<com.kratosgado.blog.dtos.response.CategoryResponse> getCategoriesWithPostCount() {
-
-      return categoryService.getAllCategoriesWithPostCount();
-
-    }
-
+  @GetMapping
+  @GetEnpoint
+  @Operation(summary = "Get all categories", description = "Retrieves a paginated list of all categories. Public access.")
+  public PageResponse<Category> getAllCategories(@ParameterObject PageRequest page) {
+    return categoryService.getAllCategories(page);
   }
 
-  
+  @GetMapping("/with-post-count")
+  @GetEnpoint
+  @Operation(summary = "Get all categories with post counts", description = "Retrieves a list of all categories including the number of posts in each. Public access.")
+  public List<CategoryResponse> getCategoriesWithPostCount() {
+    return categoryService.getAllCategoriesWithPostCount();
+  }
+
+}

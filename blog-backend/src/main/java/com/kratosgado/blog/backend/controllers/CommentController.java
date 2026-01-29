@@ -88,7 +88,7 @@ public class CommentController {
   public PageResponse<Comment> getPostComments(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
-    return commentService.getPostComments(postId, page.getPage(), page.getSize());
+    return commentService.getPostComments(postId, page);
   }
 
   @GetMapping("/user/{userId}")
@@ -97,7 +97,7 @@ public class CommentController {
   public PageResponse<CommentWithoutUser> getUserComments(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
-    return commentService.getUserComments(userId, page.getPage(), page.getSize());
+    return commentService.getUserComments(userId, page);
   }
 
   @GetMapping("/post/{postId}/count")

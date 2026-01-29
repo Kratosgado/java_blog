@@ -2,6 +2,7 @@ package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.models.User;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,9 +50,9 @@ public class ReviewController {
   @SecuredCreateEndpoint
   @ResponseStatus(HttpStatus.CREATED)
   public Review createReview(
-      @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request) {
-    Long userId = SecurityUtils.getCurrentUserId();
-    return reviewService.createReview(request, userId);
+      @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request,
+      @AuthenticationPrincipal User user) {
+    return reviewService.createReview(request, user);
   }
 
   @PutMapping("/{id}")
@@ -86,7 +88,7 @@ public class ReviewController {
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
-    return reviewService.getPostReviews(postId, page.getPage(), page.getSize());
+    return reviewService.getPostReviews(postId, page);
   }
 
   @GetMapping("/user/{userId}")
@@ -95,7 +97,7 @@ public class ReviewController {
   public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
-    return reviewService.getUserReviews(userId, page.getPage(), page.getSize());
+    return reviewService.getUserReviews(userId, page);
   }
 
   @GetMapping("/post/{postId}/stats")

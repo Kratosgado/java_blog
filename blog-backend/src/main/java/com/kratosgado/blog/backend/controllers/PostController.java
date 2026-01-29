@@ -93,14 +93,14 @@ public class PostController {
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
   public PageResponse<PostResponse> getPosts(@ParameterObject PageRequest page) {
-    return postService.getPublishedPosts(page.getPage(), page.getSize());
+    return postService.getPublishedPosts(page);
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search posts", description = "Searches for posts by keyword in title and content")
   @GetEnpoint
   public PageResponse<PostResponse> searchPosts(@ParameterObject SearchPageRequest request) {
-    return postService.searchPosts(request.getKeyword(), request.getPage(), request.getSize());
+    return postService.searchPosts(request.getKeyword(), request);
   }
 
   @GetMapping("/user/{userId}")
@@ -109,7 +109,7 @@ public class PostController {
   public PageResponse<PostResponse> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
-    return postService.getUserPosts(userId, page.getPage(), page.getSize());
+    return postService.getUserPosts(userId, page);
   }
 
   @GetMapping("/category/{categoryId}")
@@ -118,6 +118,6 @@ public class PostController {
   public PageResponse<PostResponse> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
       @ParameterObject PageRequest page) {
-    return postService.getPostsByCategory(categoryId, page.getPage(), page.getSize());
+    return postService.getPostsByCategory(categoryId, page);
   }
 }

@@ -86,14 +86,14 @@ public class TagController {
   @Operation(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   @GetEnpoint
   public PageResponse<Tag> getTags(@ParameterObject PageRequest page) {
-    return tagService.getAllTags(page.getPage(), page.getSize());
+    return tagService.getAllTags(page);
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search tags", description = "Searches for tags by keyword in name")
   @GetEnpoint
   public PageResponse<Tag> searchTags(@ParameterObject SearchPageRequest request) {
-    return tagService.searchTags(request.getKeyword(), request.getPage(), request.getSize());
+    return tagService.searchTags(request.getKeyword(), request);
   }
 
 
