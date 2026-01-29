@@ -42,6 +42,9 @@ class CommentServiceTest {
   @Mock
   private CommentRepository commentRepository;
 
+  @Mock
+  private com.kratosgado.blog.backend.repositories.jdbc.PostRepository postRepository;
+
   @InjectMocks
   private CommentService commentService;
 
@@ -71,6 +74,7 @@ class CommentServiceTest {
   @DisplayName("Should successfully create a comment with pending status")
   void createComment_WithValidData_ShouldReturnPendingComment() {
     // Arrange
+    when(postRepository.existsById(1L)).thenReturn(true);
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
 
     // Act
@@ -181,7 +185,7 @@ class CommentServiceTest {
   void getPostComments_ShouldReturnOnlyApprovedComments() {
     // Arrange
     PageRequest pageRequest = PageRequest.builder().page(1).size(10).sortBy("created_at").sortDir("desc").build();
-    when(commentRepository.findByPostIdAndStatusManual(eq(1L), eq(CommentStatus.approved), eq(10), eq(10),
+    when(commentRepository.findByPostIdAndStatus(eq(1L), eq(CommentStatus.approved), eq(10), eq(10),
         eq("created_at"), eq("desc")))
         .thenReturn(List.of(testComment));
     when(commentRepository.countByPostIdAndStatus(1L, CommentStatus.approved)).thenReturn(1L);
