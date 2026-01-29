@@ -5,11 +5,15 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
  * MongoDB connection configuration for NoSQL data storage.
  * Used for storing unstructured data like reviews and comments.
  */
+@Configuration
+@EnableMongoRepositories(basePackages = "com.kratosgado.blog.backend.repositories.mongo")
 public class MongoDBConfig {
   private static final Logger logger = LoggerFactory.getLogger(MongoDBConfig.class);
   private static MongoClient mongoClient;
