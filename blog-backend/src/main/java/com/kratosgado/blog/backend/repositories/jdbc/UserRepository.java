@@ -32,7 +32,7 @@ public class UserRepository extends CrudRepository<User> {
             bio TEXT,
             website VARCHAR(255),
             location VARCHAR(100),
-            role VARCHAR(20) DEFAULT 'USER'
+            role VARCHAR(20) DEFAULT 'USER' CHECK (role IN ('USER', 'ADMIN'))
         );
         CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
         CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

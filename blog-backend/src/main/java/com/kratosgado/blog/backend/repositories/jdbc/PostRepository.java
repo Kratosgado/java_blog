@@ -40,7 +40,7 @@ public class PostRepository extends SluggableRepository<Post> {
             slug VARCHAR(255) UNIQUE NOT NULL,
             content TEXT NOT NULL,
             excerpt TEXT,
-            status VARCHAR(20) DEFAULT 'draft',
+            status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'archived')),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             views INTEGER DEFAULT 0,
@@ -48,10 +48,17 @@ public class PostRepository extends SluggableRepository<Post> {
             cover_image VARCHAR(255),
             user_id BIGINT REFERENCES users(id),
             category_id BIGINT REFERENCES categories(id)
+
+           CONSTRAINT chk_title_not_empty CHECK (LENGTH(TRIM(title)) > 0),
+           CONSTRAINT chk_content_not_empty CHECK (LENGTH(TRIM(content)) > 0),
+           CONSTRAINT chk_views_positive CHECK (views >= 0),
+           CONSTRAINT chk_likes_positive CHECK (likes_count >= 0)
         );
-        CREATE INDEX IF NOT EXISTS idx_posts_slug ON posts(slug);
-        CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
-        CREATE INDEX IF NOT EXISTS idx_posts_created_at ON posts(created_at);
+        CREATE INDEX idx_posts_user_id ON posts(user_id);
+        CREATE INDEX idx_posts_category_id ON posts(category_id);
+        CREATE INDEX idx_posts_status ON posts(status);
+        CREATE INDEX idx_posts_title ON posts(title);
+        CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
         """;
     safeExecuteQuery(sql, null);
   }

@@ -94,6 +94,7 @@ erDiagram
         varchar website
         varchar location
         timestamp created_at
+        varchar role
     }
 
     posts {
@@ -207,6 +208,7 @@ erDiagram
         VARCHAR_255 website
         VARCHAR_100 location
         TIMESTAMP created_at
+        VARCHAR_20 role
     }
 
     categories {

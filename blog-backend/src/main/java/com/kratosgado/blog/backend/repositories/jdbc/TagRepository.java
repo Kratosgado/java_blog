@@ -36,6 +36,8 @@ public class TagRepository extends SluggableRepository<Tag> {
             tag_id BIGINT REFERENCES tags(id) ON DELETE CASCADE,
             PRIMARY KEY (post_id, tag_id)
         );
+        CREATE INDEX idx_post_tags_post_id ON post_tags(post_id);
+        CREATE INDEX idx_post_tags_tag_id ON post_tags(tag_id);
         """;
     safeExecuteQuery(sql, null);
   }
@@ -164,7 +166,8 @@ public class TagRepository extends SluggableRepository<Tag> {
   }
 
   public List<Tag> searchByKeyword(String keyword, int size, int offset, String sortBy, String sortDir) {
-    String query = String.format("SELECT * FROM tags WHERE LOWER(name) LIKE ? ORDER BY %s %s LIMIT ? OFFSET ?", sortBy, sortDir);
+    String query = String.format("SELECT * FROM tags WHERE LOWER(name) LIKE ? ORDER BY %s %s LIMIT ? OFFSET ?", sortBy,
+        sortDir);
     return withConnection(conn -> {
       List<Tag> tags = new ArrayList<>();
       try (PreparedStatement statement = conn.prepareStatement(query)) {
