@@ -28,9 +28,7 @@ public class ReviewApiClient extends BaseApiClient {
 
     HttpClient.HttpResponse<String> response = httpClient.post("/reviews", request, authToken, String.class);
 
-    Review review = handleResponse(response, Review.class, "Create review");
-    logger.info("Review created successfully with ID: {}", review.getId());
-    return review;
+    return handleResponse(response, Review.class, "Create review");
   }
 
   /**
@@ -41,9 +39,7 @@ public class ReviewApiClient extends BaseApiClient {
 
     HttpClient.HttpResponse<String> response = httpClient.put("/reviews/" + id, request, authToken, String.class);
 
-    Review review = handleResponse(response, Review.class, "Update review");
-    logger.info("Review updated successfully");
-    return review;
+    return handleResponse(response, Review.class, "Update review");
   }
 
   /**
@@ -83,9 +79,8 @@ public class ReviewApiClient extends BaseApiClient {
     String endpoint = String.format("/reviews/post/%d?page=%d&size=%d", postId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Review>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Review.class).getType();
+    return handleResponse(response, pageResponseType, "Get post reviews");
   }
 
   /**
@@ -97,9 +92,8 @@ public class ReviewApiClient extends BaseApiClient {
     String endpoint = String.format("/reviews/user/%d?page=%d&size=%d", userId, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Review>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Review.class).getType();
+    return handleResponse(response, pageResponseType, "Get user reviews");
   }
 
   /**

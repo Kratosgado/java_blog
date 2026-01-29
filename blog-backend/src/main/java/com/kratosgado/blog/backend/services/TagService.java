@@ -1,7 +1,6 @@
 package com.kratosgado.blog.backend.services;
 
 import org.springframework.stereotype.Service;
-// Pageable and Page imports removed – now manual pagination.
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
@@ -27,16 +26,12 @@ public class TagService {
   }
 
   public Tag createTag(CreateTagRequest request) {
-
     String slug = BlogUtils.toSlug(request.name());
-
     if (tagRepository.existsBySlug(slug)) {
       throw BlogException.duplicateResource("Tag", "slug", slug);
     }
     Tag tag = new Tag(request.name(), slug, request.description());
-
     return tagRepository.save(tag);
-
   }
 
   public Tag updateTag(Long id, UpdateTagRequest request) {
@@ -64,37 +59,28 @@ public class TagService {
   }
 
   public Tag getTagById(Long id) {
-    // Try to get from cache first
     return tagCache.get(id).orElseGet(() -> {
-
       Tag tag = tagRepository.findById(id)
           .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
-
-      // Cache the result
       tagCache.put(id, tag);
-
       return tag;
-
     });
   }
 
   public Tag getTagBySlug(String slug) {
     return tagRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Tag", "slug", slug));
-
   }
 
-  // Updated to use manual pagination (no Pageable)
   public PageResponse<Tag> getAllTags(int page, int size) {
     var tags = tagRepository.findAll(size, page * size);
     long totalItems = tagRepository.count();
-    return DtoMapper.toPageResponse(tags, size, page, (int) totalItems);
+    return DtoMapper.toPageResponse(tags, page, size, (int) totalItems);
   }
 
-  // Updated to use manual pagination and counting
   public PageResponse<Tag> searchTags(String keyword, int page, int size) {
     var tags = tagRepository.searchByKeyword(keyword, size, page * size);
     long totalItems = tagRepository.countByKeyword(keyword);
-    return DtoMapper.toPageResponse(tags, size, page, (int) totalItems);
+    return DtoMapper.toPageResponse(tags, page, size, (int) totalItems);
   }
 }

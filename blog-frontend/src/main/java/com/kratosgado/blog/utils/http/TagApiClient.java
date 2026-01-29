@@ -29,9 +29,8 @@ public class TagApiClient extends BaseApiClient {
     String endpoint = String.format("/tags?page=%d&size=%d", page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Tag>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Tag.class).getType();
+    return handleResponse(response, pageResponseType, "Get tags");
   }
 
   /**
@@ -66,9 +65,8 @@ public class TagApiClient extends BaseApiClient {
     String endpoint = String.format("/tags/search?keyword=%s&page=%d&size=%d", encodedKeyword, page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<Tag>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Tag.class).getType();
+    return handleResponse(response, pageResponseType, "Search tags");
   }
 
   /**

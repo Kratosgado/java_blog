@@ -51,17 +51,11 @@ public class TagRepository extends SluggableRepository<Tag> {
   @Override
 
   public Tag toEntityFlat(ResultSet rs) throws SQLException {
-
     Tag tag = new Tag();
-
     tag.setId(rs.getLong("id"));
-
     tag.setName(rs.getString("name"));
-
     tag.setSlug(rs.getString("slug"));
-
     tag.setDescription(rs.getString("description"));
-
     return tag;
 
   }

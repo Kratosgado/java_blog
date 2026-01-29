@@ -21,5 +21,4 @@ public class Category implements HasId {
   private String slug;
 
   private String description;
-
 }

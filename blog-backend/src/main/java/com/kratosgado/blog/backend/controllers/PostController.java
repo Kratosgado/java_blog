@@ -1,8 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
@@ -24,7 +23,6 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.models.User;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,14 +30,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/posts")
 @Tag(name = "Posts", description = "Post management APIs")
 public class PostController {
 
-  private PostService postService;
+  private final PostService postService;
 
   public PostController(PostService postService) {
     this.postService = postService;
@@ -48,13 +45,11 @@ public class PostController {
   @PostMapping
   @Operation(summary = "Create a new post", description = "Creates a new blog post with the provided details. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
-  public ResponseEntity<ResponseDto<PostResponse>> createPost(
+  @ResponseStatus(HttpStatus.CREATED)
+  public PostResponse createPost(
       @Valid @RequestBody @Parameter(description = "Post creation request") CreatePostRequest request,
       @AuthenticationPrincipal User user) {
-    var post = postService.createPost(request, user);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(ResponseDto.success("Post created successfully", post));
+    return postService.createPost(request, user);
   }
 
   @PutMapping("/{id}")
@@ -70,11 +65,10 @@ public class PostController {
   @DeleteMapping("/{id}")
   @Operation(summary = "Delete a post", description = "Deletes a blog post by ID. Only the post author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
-  public ResponseDto<Void> deletePost(
+  public void deletePost(
       @PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     postService.deletePost(id, userId);
-    return ResponseDto.success("Post deleted successfully", null);
   }
 
   @GetMapping("/{id}")

@@ -36,7 +36,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     response.setStatus(HttpStatus.FORBIDDEN.value());
 
     ResponseDto<?> errorResponse = ResponseDto.error(
-        HttpStatus.FORBIDDEN.getReasonPhrase(),
+        HttpStatus.FORBIDDEN.value(),
         "Access denied. You do not have permission to access this resource.");
 
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

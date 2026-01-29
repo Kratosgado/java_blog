@@ -1,6 +1,6 @@
 package com.kratosgado.blog.backend.controllers;
 
-import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
 import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
 import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
@@ -23,11 +25,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/categories")
-
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Categories", description = "Category management APIs")
 public class CategoryController {
   private final CategoryService categoryService;
@@ -39,6 +39,7 @@ public class CategoryController {
   @SecuredCreateEndpoint
   @PostMapping
   @Operation(summary = "Create a new category", description = "Creates a new category. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @ResponseStatus(HttpStatus.CREATED)
   public Category createCategory(
       @Valid @RequestBody @Parameter(description = "Category creation request") CreateCategoryRequest request) {
     return categoryService.createCategory(request);
@@ -65,7 +66,6 @@ public class CategoryController {
   @Operation(summary = "Get a category by ID", description = "Retrieves a single category by its ID. Public access.")
   public Category getCategory(@PathVariable("id") @Parameter(description = "Category ID") Long id) {
     return categoryService.getCategoryById(id);
-
   }
 
   @GetMapping("/slug/{slug}")

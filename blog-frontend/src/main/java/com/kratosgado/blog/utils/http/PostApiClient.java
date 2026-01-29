@@ -86,27 +86,23 @@ public class PostApiClient extends BaseApiClient {
   /**
    * Create a new post
    */
-  public Post createPost(CreatePostRequest request) throws IOException {
+  public PostResponse createPost(CreatePostRequest request) throws IOException {
     logger.info("Creating new post: {}", request.title());
     
     HttpClient.HttpResponse<String> response = httpClient.post("/posts", request, authToken, String.class);
     
-    Post post = handleResponse(response, Post.class, "Create post");
-    logger.info("Post created successfully with ID: {}", post.getId());
-    return post;
+    return handleResponse(response, PostResponse.class, "Create post");
   }
 
   /**
    * Update an existing post
    */
-  public Post updatePost(Long id, UpdatePostRequest request) throws IOException {
+  public PostResponse updatePost(Long id, UpdatePostRequest request) throws IOException {
     logger.info("Updating post ID: {}", id);
     
     HttpClient.HttpResponse<String> response = httpClient.put("/posts/" + id, request, authToken, String.class);
     
-    Post post = handleResponse(response, Post.class, "Update post");
-    logger.info("Post updated successfully");
-    return post;
+    return handleResponse(response, PostResponse.class, "Update post");
   }
 
   /**

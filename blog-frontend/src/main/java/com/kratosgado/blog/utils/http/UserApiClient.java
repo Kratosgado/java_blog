@@ -56,15 +56,14 @@ public class UserApiClient extends BaseApiClient {
   /**
    * Get all users with pagination
    */
-  public PageResponse<UserResponse> getAllUsers(int page, int size) throws IOException {
+  public PageResponse<User> getAllUsers(int page, int size) throws IOException {
     logger.info("Fetching all users - page: {}, size: {}", page, size);
 
     String endpoint = String.format("/users?page=%d&size=%d", page, size);
     HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
 
-    Type pageType = new TypeToken<PageResponse<UserResponse>>() {
-    }.getType();
-    return gson.fromJson(response.getRawBody(), pageType);
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, User.class).getType();
+    return handleResponse(response, pageResponseType, "Get users");
   }
 
   /**
@@ -76,9 +75,7 @@ public class UserApiClient extends BaseApiClient {
     HttpClient.HttpResponse<String> response = httpClient.put("/users/" + id + "/profile", request, authToken,
         String.class);
 
-    User user = handleResponse(response, User.class, "Update user profile");
-    logger.info("User profile updated successfully");
-    return user;
+    return handleResponse(response, User.class, "Update user profile");
   }
 
   /**
@@ -105,13 +102,9 @@ public class UserApiClient extends BaseApiClient {
   public User updateUserAvatar(Long id, String avatarUrl) throws IOException {
     logger.info("Updating avatar for user ID: {}", id);
 
-    UpdateUserAvatarRequest request = new UpdateUserAvatarRequest(id, avatarUrl);
-
-    HttpClient.HttpResponse<String> response = httpClient.put("/users/" + id + "/avatar", request, authToken,
+    HttpClient.HttpResponse<String> response = httpClient.put("/users/" + id + "/avatar", new UpdateUserAvatarRequest(id, avatarUrl), authToken,
         String.class);
 
-    User user = handleResponse(response, User.class, "Update user avatar");
-    logger.info("User avatar updated successfully");
-    return user;
+    return handleResponse(response, User.class, "Update user avatar");
   }
 }
