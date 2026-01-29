@@ -277,7 +277,7 @@ public class CategoryManagementController {
       // Find most popular category (one with most posts)
       if (!categories.isEmpty()) {
         Category mostPopular = categories.stream()
-            .max((c1, c2) -> Integer.compare(c1.getPostCount(), c2.getPostCount()))
+            .max((c1, c2) -> Long.compare(c1.getPostCount(), c2.getPostCount()))
             .orElse(null);
 
         if (mostPopular != null && mostPopular.getPostCount() > 0) {

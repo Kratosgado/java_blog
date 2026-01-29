@@ -68,7 +68,7 @@ public class TagsManagementController {
   private void setupUI() {
     saveTagBtn.setOnAction(e -> saveTag());
     cancelFormBtn.setOnAction(e -> cancelForm());
-    
+
     // Set default color
     if (tagColorPicker != null) {
       tagColorPicker.setValue(Color.web("#6b7280"));
@@ -96,23 +96,23 @@ public class TagsManagementController {
     card.setPrefWidth(200);
     card.setStyle(
         "-fx-background-color: white; " +
-        "-fx-padding: 20; " +
-        "-fx-background-radius: 12; " +
-        "-fx-border-color: #e5e7eb; " +
-        "-fx-border-radius: 12; " +
-        "-fx-border-width: 1; " +
-        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);");
+            "-fx-padding: 20; " +
+            "-fx-background-radius: 12; " +
+            "-fx-border-color: #e5e7eb; " +
+            "-fx-border-radius: 12; " +
+            "-fx-border-width: 1; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);");
 
     // Tag name with color indicator
     HBox headerBox = new HBox(10);
     headerBox.setAlignment(Pos.CENTER_LEFT);
-    
+
     Label colorIndicator = new Label("●");
     colorIndicator.setStyle("-fx-font-size: 20px; -fx-text-fill: #6b7280;");
-    
+
     Label tagNameLabel = new Label(tag.getName());
     tagNameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #111827;");
-    
+
     headerBox.getChildren().addAll(colorIndicator, tagNameLabel);
 
     // Slug
@@ -140,21 +140,21 @@ public class TagsManagementController {
     Button editBtn = new Button("Edit");
     editBtn.setStyle(
         "-fx-background-color: -primary-color; " +
-        "-fx-text-fill: white; " +
-        "-fx-background-radius: 6; " +
-        "-fx-padding: 6 12; " +
-        "-fx-cursor: hand; " +
-        "-fx-font-size: 12px;");
+            "-fx-text-fill: white; " +
+            "-fx-background-radius: 6; " +
+            "-fx-padding: 6 12; " +
+            "-fx-cursor: hand; " +
+            "-fx-font-size: 12px;");
     editBtn.setOnAction(e -> editTag(tag));
 
     Button deleteBtn = new Button("Delete");
     deleteBtn.setStyle(
         "-fx-background-color: #374151; " +
-        "-fx-text-fill: white; " +
-        "-fx-background-radius: 6; " +
-        "-fx-padding: 6 12; " +
-        "-fx-cursor: hand; " +
-        "-fx-font-size: 12px;");
+            "-fx-text-fill: white; " +
+            "-fx-background-radius: 6; " +
+            "-fx-padding: 6 12; " +
+            "-fx-cursor: hand; " +
+            "-fx-font-size: 12px;");
     deleteBtn.setOnAction(e -> deleteTag(tag.getId()));
 
     actionsBox.getChildren().addAll(editBtn, deleteBtn);
@@ -177,7 +177,7 @@ public class TagsManagementController {
     try {
       String name = tagNameField.getText();
       String description = tagDescriptionArea.getText();
-      
+
       if (name == null || name.trim().isEmpty()) {
         logger.warn("Tag name is required");
         return;
@@ -189,10 +189,11 @@ public class TagsManagementController {
         logger.info("New tag created: {}", name);
       } else {
         // Update existing tag
-        tagService.updateTag(currentTag.getId(), new com.kratosgado.blog.dtos.request.UpdateTagRequest(name, description));
+        tagService.updateTag(currentTag.getId(),
+            new com.kratosgado.blog.dtos.request.UpdateTagRequest(name, description));
         logger.info("Tag updated: {}", name);
       }
-      
+
       loadTags();
       cancelForm();
     } catch (Exception ex) {
@@ -208,9 +209,7 @@ public class TagsManagementController {
     formTitleLabel.setText("Edit Tag");
     tagNameField.setText(tag.getName());
     tagDescriptionArea.setText(tag.getDescription());
-    
-    // Note: Color picker functionality can be added when Tag model supports it
-    
+
     logger.info("Editing tag: {}", tag.getId());
   }
 
