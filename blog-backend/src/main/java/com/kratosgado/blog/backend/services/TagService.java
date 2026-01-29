@@ -1,15 +1,15 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Tag;
@@ -35,14 +35,13 @@ public class TagService {
     if (tagRepository.findBySlug(slug).isPresent()) {
       throw BlogException.duplicateResource("Tag", "slug", slug);
     }
-
     Tag tag = new Tag(request.name(), slug, request.description());
 
     return tagRepository.save(tag);
+
   }
 
   public Tag updateTag(Long id, UpdateTagRequest request) {
-
     Tag tag = tagRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
 
@@ -59,22 +58,16 @@ public class TagService {
       tag.setDescription(request.description());
     }
 
-    return tagRepository.save(tag);
+    return tagRepository.update(tag);
   }
 
   public void deleteTag(Long id) {
-
-    if (!tagRepository.existsById(id)) {
-      throw BlogException.notFound("Tag", "id", id);
-    }
-
     tagRepository.deleteById(id);
   }
 
   public Tag getTagById(Long id) {
     // Try to get from cache first
     return tagCache.get(id).orElseGet(() -> {
-      log.debug("Cache miss for tag ID: {}, fetching from database", id);
 
       Tag tag = tagRepository.findById(id)
           .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
@@ -83,21 +76,29 @@ public class TagService {
       tagCache.put(id, tag);
 
       return tag;
+
     });
   }
 
   public Tag getTagBySlug(String slug) {
     return tagRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Tag", "slug", slug));
+
   }
 
-  public PageResponse<Tag> getAllTags(Pageable pageable) {
-    Page<Tag> tagPage = tagRepository.findAll(pageable);
-    return DtoMapper.toPageResponse(tagPage, pageable);
+  public java.util.List<com.kratosgado.blog.dtos.response.TagResponse> getAllTagsWithPostCount() {
+    return tagRepository.findAllWithPostCount();
   }
 
-  public PageResponse<Tag> searchTags(String keyword, Pageable pageable) {
-    Page<Tag> tagPage = tagRepository.searchByName(keyword, pageable);
-    return DtoMapper.toPageResponse(tagPage, pageable);
+  public PageResponse<Tag> getAllTags(PageRequest pageRequest) {
+    var tags = tagRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
+    long totalItems = tagRepository.count();
+    return DtoMapper.toPageResponse(tags, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
+  }
+
+  public PageResponse<Tag> searchTags(String keyword, PageRequest pageRequest) {
+    var tags = tagRepository.searchByKeyword(keyword, pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
+    long totalItems = tagRepository.countByKeyword(keyword);
+    return DtoMapper.toPageResponse(tags, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
   }
 }

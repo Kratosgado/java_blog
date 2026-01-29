@@ -75,7 +75,7 @@ public class DashboardApiClient extends BaseApiClient {
     }.getType();
     ResponseDto<Map<String, Long>> apiResponse = gson.fromJson(response.getRawBody(), responseType);
 
-    if (!"success".equals(apiResponse.status())) {
+    if (!"OK".equals(apiResponse.status())) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 
@@ -97,7 +97,7 @@ public class DashboardApiClient extends BaseApiClient {
     }.getType();
     ResponseDto<Map<String, Object>> apiResponse = gson.fromJson(response.getRawBody(), responseType);
 
-    if (!"success".equals(apiResponse.status())) {
+    if (!"OK".equals(apiResponse.status())) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 

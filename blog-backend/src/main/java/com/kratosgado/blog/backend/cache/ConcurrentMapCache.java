@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 
 /**
@@ -124,11 +125,10 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
   }
 
   @Override
-  public PageResponse<V> search(Predicate<V> searchPredicate, int page, int size,
-      String sortField, boolean ascending) {
+  public PageResponse<V> search(Predicate<V> searchPredicate, PageRequest pageRequest) {
 
-    log.debug("Cache [{}]: Searching with page={}, size={}, sortField={}, ascending={}",
-        cacheName, page, size, sortField, ascending);
+    log.debug("Cache [{}]: Searching with page={}, size={}, sortField={}, sortDir={}",
+        cacheName, pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSortBy(), pageRequest.getSortDir());
 
     // Remove expired entries first
     if (ttlMillis > 0) {
@@ -141,18 +141,19 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
         .collect(Collectors.toList());
 
     // Apply sorting if specified
-    if (sortField != null && !sortField.isEmpty()) {
-      filtered = applySorting(filtered, sortField, ascending);
+    if (pageRequest.getSortBy() != null && !pageRequest.getSortBy().isEmpty()) {
+      boolean ascending = "asc".equalsIgnoreCase(pageRequest.getSortDir());
+      filtered = applySorting(filtered, pageRequest.getSortBy(), ascending);
     }
 
     // Apply pagination
-    return paginateList(filtered, page, size);
+    return paginateList(filtered, pageRequest.getPage(), pageRequest.getSize());
   }
 
   @Override
-  public PageResponse<V> paginate(int page, int size, String sortField, boolean ascending) {
-    log.debug("Cache [{}]: Paginating with page={}, size={}, sortField={}, ascending={}",
-        cacheName, page, size, sortField, ascending);
+  public PageResponse<V> paginate(PageRequest pageRequest) {
+    log.debug("Cache [{}]: Paginating with page={}, size={}, sortField={}, sortDir={}",
+        cacheName, pageRequest.getPage(), pageRequest.getSize(), pageRequest.getSortBy(), pageRequest.getSortDir());
 
     // Remove expired entries first
     if (ttlMillis > 0) {
@@ -162,12 +163,13 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
     List<V> values = new ArrayList<>(cache.values());
 
     // Apply sorting if specified
-    if (sortField != null && !sortField.isEmpty()) {
-      values = applySorting(values, sortField, ascending);
+    if (pageRequest.getSortBy() != null && !pageRequest.getSortBy().isEmpty()) {
+      boolean ascending = "asc".equalsIgnoreCase(pageRequest.getSortDir());
+      values = applySorting(values, pageRequest.getSortBy(), ascending);
     }
 
     // Apply pagination
-    return paginateList(values, page, size);
+    return paginateList(values, pageRequest.getPage(), pageRequest.getSize());
   }
 
   @Override
@@ -313,7 +315,7 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
     long totalElements = list.size();
     int totalPages = (int) Math.ceil((double) totalElements / size);
 
-    // Calculate start and end indices
+    // Calculate start and end indices (0-based page)
     int startIndex = page * size;
     int endIndex = Math.min(startIndex + size, list.size());
 
@@ -321,8 +323,8 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
     if (startIndex >= list.size()) {
       return new PageResponse<>(
           new ArrayList<>(),
-          page + 1,
           page,
+          size,
           totalElements,
           totalPages,
           page == 0,
@@ -334,8 +336,8 @@ public class ConcurrentMapCache<K, V> implements CacheService<K, V> {
 
     return new PageResponse<>(
         new ArrayList<>(content),
-        page + 1,
         page,
+        size,
         totalElements,
         totalPages,
         page == 0,

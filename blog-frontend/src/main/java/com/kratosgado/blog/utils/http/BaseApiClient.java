@@ -97,7 +97,7 @@ public abstract class BaseApiClient {
 
     ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
 
-    if (!"OK".equals(apiResponse.status())) {
+    if (apiResponse.status() < 200 || apiResponse.status() >= 300) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 
@@ -117,7 +117,7 @@ public abstract class BaseApiClient {
 
     ResponseDto<T> apiResponse = parseApiResponse(response.getRawBody(), dataType);
 
-    if (!"OK".equals(apiResponse.status())) {
+    if (apiResponse.status() < 200 || apiResponse.status() >= 300) {
       throw new ApiException(apiResponse.message(), response.getStatusCode());
     }
 

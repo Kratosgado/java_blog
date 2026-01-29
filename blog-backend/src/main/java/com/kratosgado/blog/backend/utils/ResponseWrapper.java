@@ -2,11 +2,13 @@
 package com.kratosgado.blog.backend.utils;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -21,20 +23,26 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
       Object body,
       MethodParameter returnType,
       MediaType selectedContentType,
-      Class selectedConverterType,
+      Class<? extends HttpMessageConverter<?>> selectedConverterType,
       ServerHttpRequest request,
       ServerHttpResponse response) {
 
+    int status = 200;
+    if (response instanceof ServletServerHttpResponse servletResponse) {
+      status = servletResponse.getServletResponse().getStatus();
+    }
+
     // Handle string responses specially (they need manual conversion)
     if (body instanceof String) {
-      return ResponseDto.success((String) body, null);
+      return ResponseDto.success(status, (String) body, null);
     }
 
     // Skip if already wrapped
     if (body instanceof ResponseDto) {
       return body;
     }
-    return ResponseDto.success(body);
+    
+    return ResponseDto.success(status, "Operation completed successfully", body);
   }
 
   @Override
@@ -42,12 +50,12 @@ public class ResponseWrapper implements ResponseBodyAdvice<Object> {
     ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attr != null) {
       String path = attr.getRequest().getServletPath();
-      if (path.startsWith("/docs"))
+      if (path.startsWith("/docs") || path.startsWith("/v3/api-docs"))
         return false;
     }
-    return !returnType.getParameterType().equals(ResponseDto.class)
-        && !returnType.getParameterType().equals(ResponseEntity.class);
-
+    
+    Class<?> parameterType = returnType.getParameterType();
+    return !parameterType.equals(ResponseDto.class)
+        && !parameterType.equals(ResponseEntity.class);
   }
-
 }

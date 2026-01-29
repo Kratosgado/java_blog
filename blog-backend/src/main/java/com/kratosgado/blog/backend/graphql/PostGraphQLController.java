@@ -1,8 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -15,6 +12,7 @@ import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
@@ -56,10 +54,9 @@ public class PostGraphQLController {
       @Argument(name = "size") int size,
       @Argument(name = "sortBy") String sortBy,
       @Argument(name = "sortDir") String sortDir) {
-    Sort.Direction direction = "desc".equalsIgnoreCase(sortDir) ? Sort.Direction.DESC : Sort.Direction.ASC;
-    String sortField = sortBy != null ? sortBy : "createdAt";
-    Pageable pageable = PageRequest.of(page - 1, size, Sort.by(direction, sortField));
-    return postService.getPublishedPosts(pageable);
+    String sortField = sortBy != null ? sortBy : "created_at";
+    String direction = sortDir != null ? sortDir : "desc";
+    return postService.getPublishedPosts(new PageRequest(page, size, sortField, direction));
   }
 
   @QueryMapping
@@ -67,8 +64,7 @@ public class PostGraphQLController {
       @Argument String keyword,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.searchPosts(keyword, pageable);
+    return postService.searchPosts(keyword, new PageRequest(page, size, "created_at", "desc"));
   }
 
   @QueryMapping
@@ -76,8 +72,7 @@ public class PostGraphQLController {
       @Argument Long categoryId,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.getPostsByCategory(categoryId, pageable);
+    return postService.getPostsByCategory(categoryId, new PageRequest(page, size, "created_at", "desc"));
   }
 
   @QueryMapping
@@ -85,8 +80,7 @@ public class PostGraphQLController {
       @Argument Long userId,
       @Argument int page,
       @Argument int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return postService.getUserPosts(userId, pageable);
+    return postService.getUserPosts(userId, new PageRequest(page, size, "created_at", "desc"));
   }
 
   // Mutations
@@ -155,14 +149,12 @@ public class PostGraphQLController {
 
   @SchemaMapping(typeName = "Post", field = "comments")
   public PageResponse<Comment> comments(Post post) {
-    Pageable pageable = PageRequest.of(0, 100);
-    return commentService.getPostComments(Long.valueOf(post.getId()), pageable);
+    return commentService.getPostComments(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
   }
 
   @SchemaMapping(typeName = "Post", field = "reviews")
   public PageResponse<Review> reviews(Post post) {
-    Pageable pageable = PageRequest.of(0, 100);
-    return reviewService.getPostReviews(Long.valueOf(post.getId()), pageable);
+    return reviewService.getPostReviews(Long.valueOf(post.getId()), new PageRequest(0, 100, "id", "desc"));
   }
 
 }

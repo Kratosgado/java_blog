@@ -1,13 +1,14 @@
 package com.kratosgado.blog.backend.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
@@ -15,11 +16,10 @@ import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.ResponseDto;
-import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,8 +56,8 @@ public class UserController {
   @GetMapping
   @Operation(summary = "Get all users", description = "Retrieves a paginated list of all users. Public access.")
   @GetEnpoint
-  public PageResponse<UserResponse> getUsers(@ParameterObject Pageable pageable) {
-    return userService.getAllUsers(pageable);
+  public PageResponse<User> getUsers(@ParameterObject PageRequest page) {
+    return userService.getAllUsers(page);
   }
 
   @PutMapping("/{id}/profile")
@@ -72,22 +72,20 @@ public class UserController {
   @PutMapping("/{id}/avatar")
   @Operation(summary = "Update user avatar", description = "Updates a user's avatar. Only the user can update their own avatar.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseEntity<ResponseDto<User>> updateAvatar(
+  public User updateAvatar(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Avatar update request") UpdateUserAvatarRequest request) {
     Long currentUserId = SecurityUtils.getCurrentUserId();
-    User user = userService.updateUserAvatar(id, request.avatarUrl(), currentUserId);
-    return ResponseEntity.ok(ResponseDto.success("Avatar updated successfully", user));
+    return userService.updateUserAvatar(id, request.avatarUrl(), currentUserId);
   }
 
   @PutMapping("/{id}/password")
   @Operation(summary = "Change password", description = "Changes a user's password. Only the user can change their own password.", security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public ResponseEntity<ResponseDto<Void>> changePassword(
+  public void changePassword(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Password change request") ChangePasswordRequest request) {
     Long currentUserId = SecurityUtils.getCurrentUserId();
     userService.changePassword(id, request.oldPassword(), request.newPassword(), currentUserId);
-    return ResponseEntity.ok(ResponseDto.success("Password changed successfully", null));
   }
 }

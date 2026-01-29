@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -13,9 +11,11 @@ import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
@@ -40,17 +40,15 @@ public class ReviewGraphQLController {
       @Argument Long postId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return reviewService.getPostReviews(postId, pageable);
+    return reviewService.getPostReviews(postId, new PageRequest(page, size, "id", "desc"));
   }
 
   @QueryMapping
-  public PageResponse<Review> reviewsByUser(
+  public PageResponse<ReviewWithoutUser> reviewsByUser(
       @Argument Long userId,
       @Argument(name = "page") int page,
       @Argument(name = "size") int size) {
-    Pageable pageable = PageRequest.of(page - 1, size);
-    return reviewService.getUserReviews(userId, pageable);
+    return reviewService.getUserReviews(userId, new PageRequest(page, size, "id", "desc"));
   }
 
   @MutationMapping

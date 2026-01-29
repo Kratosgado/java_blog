@@ -15,19 +15,16 @@ Content-Type: application/json
 Authorization: {{userAuth}}
 
 {
-  "categoryId": 94,
+  "categoryId": 1,
   "content": "Spring Boot 3 brings many exciting features including native image support, improved observability, and Java 17+ baseline...",
   "excerpt": "Learn about the new features in Spring Boot 3",
   "featuredImage": "https://example.com/images/spring-boot-3.jpg",
   "status": "draft",
   "tagIds": [
-    59
+    3
   ],
-  "title": "Gettig wht  is Started with Spring Boot 3"
+  "title": "Gettig whtsjk is Started  Spring Boot 3"
 }
-
-
-### 
 
 
 ### Update a post
@@ -45,47 +42,32 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Get a single post by ID
 
 # @name getPost
 
-GET {{host}}/posts/466 HTTP/1.1
-
-
-### 
+GET {{host}}/posts/106 HTTP/1.1
 
 
 ### Get a single post by slug (cached endpoint)
 
 # @name getPostBySlug
 
-GET {{host}}/posts/slug/voluptatem-dignissimos-est-minus HTTP/1.1
-
-
-### 
+GET {{host}}/posts/slug/gettig-whtsjk-is-started-spring-boot-3 HTTP/1.1
 
 
 ### Get all published posts (with pagination and sorting)
 
 # @name getPosts
 
-GET {{host}}/posts?page=0&size=3&sort=id,asc HTTP/1.1
-
-
-### 
+GET {{host}}/posts?page=1&size=3&sort=id,asc HTTP/1.1
 
 
 ### Get posts with different sorting
 
 # @name getPostsSortedByTitle
 
-GET {{host}}/posts?page=1&size=10&sortBy=title&sortDir=ASC HTTP/1.1
-
-
-### 
+GET {{host}}/posts?page=1&size=4&sortBy=title&sortDir=ASC HTTP/1.1
 
 
 ### Search posts by keyword
@@ -95,17 +77,11 @@ GET {{host}}/posts?page=1&size=10&sortBy=title&sortDir=ASC HTTP/1.1
 GET {{host}}/posts/search?keyword=what&page=0&size=10 HTTP/1.1
 
 
-### 
-
-
 ### Get posts by user
 
 # @name getUserPosts
 
-GET {{host}}/posts/user/1?page=1&size=10 HTTP/1.1
-
-
-### 
+GET {{host}}/posts/user/{{userId}}?page=0&size=10 HTTP/1.1
 
 
 ### Get posts by category
@@ -113,9 +89,6 @@ GET {{host}}/posts/user/1?page=1&size=10 HTTP/1.1
 # @name getCategoryPosts
 
 GET {{host}}/posts/category/3?page=1&size=10 HTTP/1.1
-
-
-### 
 
 
 ### Delete a post
@@ -126,9 +99,6 @@ DELETE {{host}}/posts/1 HTTP/1.1
 Authorization: {{userAuth}}
 
 
-### 
-
-
 ### Test pagination - Second page
 
 # @name getPostsPage2
@@ -136,17 +106,11 @@ Authorization: {{userAuth}}
 GET {{host}}/posts?page=1&size=5 HTTP/1.1
 
 
-### 
-
-
 ### Test invalid post ID (should return 404)
 
 # @name getInvalidPost
 
 GET {{host}}/posts/99999 HTTP/1.1
-
-
-### 
 
 
 ### Test create post with missing required fields (validation)
@@ -163,9 +127,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Test create post without authentication (should fail)
 
 # @name createPostWithoutAuth
@@ -179,14 +140,8 @@ Content-Type: application/json
 }
 
 
-### 
-
-
 ### Filter posts by status (if implemented)
 
 # @name getPublishedPosts
 
-GET {{host}}/posts?status=published&page=0&size=10 HTTP/1.1
-
-
-### 
+GET {{host}}/posts?status=published&page=1&size=2 HTTP/1.1

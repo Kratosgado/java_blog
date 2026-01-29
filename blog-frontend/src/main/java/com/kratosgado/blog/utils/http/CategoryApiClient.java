@@ -4,7 +4,11 @@ import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
 import com.kratosgado.blog.models.Category;
 
+import com.google.gson.reflect.TypeToken;
+import com.kratosgado.blog.dtos.response.PageResponse;
+
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -17,14 +21,23 @@ public class CategoryApiClient extends BaseApiClient {
   }
 
   /**
-   * Get all categories
+   * Get all categories with pagination
+   */
+  public PageResponse<Category> getAllCategories(int page, int size) throws IOException {
+    logger.info("Fetching categories - page: {}, size: {}", page, size);
+
+    String endpoint = String.format("/categories?page=%d&size=%d", page, size);
+    HttpClient.HttpResponse<String> response = httpClient.get(endpoint, authToken, String.class);
+
+    Type pageResponseType = TypeToken.getParameterized(PageResponse.class, Category.class).getType();
+    return handleResponse(response, pageResponseType, "Get categories");
+  }
+
+  /**
+   * Get all categories (convenience for old callers)
    */
   public List<Category> getAllCategories() throws IOException {
-    logger.info("Fetching all categories");
-
-    HttpClient.HttpResponse<String> response = httpClient.get("/categories", authToken, String.class);
-
-    return handleResponse(response, List.class, "Get categories");
+    return getAllCategories(0, 1000).content();
   }
 
   /**
@@ -57,9 +70,7 @@ public class CategoryApiClient extends BaseApiClient {
 
     HttpClient.HttpResponse<String> response = httpClient.post("/categories", request, authToken, String.class);
 
-    Category category = handleResponse(response, Category.class, "Create category");
-    logger.info("Category created successfully with ID: {}", category.getId());
-    return category;
+    return handleResponse(response, Category.class, "Create category");
   }
 
   /**
@@ -70,9 +81,7 @@ public class CategoryApiClient extends BaseApiClient {
 
     HttpClient.HttpResponse<String> response = httpClient.put("/categories/" + id, request, authToken, String.class);
 
-    Category category = handleResponse(response, Category.class, "Update category");
-    logger.info("Category updated successfully");
-    return category;
+    return handleResponse(response, Category.class, "Update category");
   }
 
   /**

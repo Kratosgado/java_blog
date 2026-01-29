@@ -13,9 +13,6 @@
 GET {{host}}/users/1 HTTP/1.1
 
 
-### 
-
-
 ### Get all users (Admin only, with pagination)
 
 # @name getAllUsers
@@ -23,8 +20,10 @@ GET {{host}}/users/1 HTTP/1.1
 GET {{host}}/users?page=1&size=10 HTTP/1.1
 Authorization: {{userAuth}}
 
-
-### 
+> {%
+  const body = response.body.data.content;
+  client.global.set("userId", body[4].id);
+%}
 
 
 ### Update user profile
@@ -43,9 +42,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Change password
 
 # @name changePassword
@@ -61,9 +57,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Update avatar
 
 # @name updateAvatar
@@ -77,18 +70,12 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Get user's posts
 
 # @name getUserPosts
 
 GET {{host}}/users/1/posts?page=0&size=10 HTTP/1.1
 Authorization: {{userAuth}}
-
-
-### 
 
 
 ### Get user's comments
@@ -99,9 +86,6 @@ GET {{host}}/users/1/comments?page=0&size=10 HTTP/1.1
 Authorization: {{userAuth}}
 
 
-### 
-
-
 ### Delete user account (should be restricted)
 
 # @name deleteUser
@@ -110,18 +94,12 @@ DELETE {{host}}/users/1 HTTP/1.1
 Authorization: {{userAuth}}
 
 
-### 
-
-
 ### Search users by username
 
 # @name searchUsers
 
 GET {{host}}/users/search?q=john&page=0&size=10 HTTP/1.1
 Authorization: {{userAuth}}
-
-
-### 
 
 
 ### Test update profile with invalid data
@@ -139,9 +117,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Test unauthorized profile update
 
 # @name updateProfileUnauthorized
@@ -153,9 +128,6 @@ Authorization: {{userAuth}}
 {
   "bio": "Trying to update someone else's profile"
 }
-
-
-### 
 
 
 ### Test password change with wrong current password
@@ -173,9 +145,6 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Test password change with mismatched confirmation
 
 # @name changePasswordMismatch
@@ -191,14 +160,8 @@ Authorization: {{userAuth}}
 }
 
 
-### 
-
-
 ### Get user statistics
 
 # @name getUserStats
 
 GET {{host}}/users/1/stats HTTP/1.1
-
-
-### 

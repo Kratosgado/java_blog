@@ -3,9 +3,9 @@
 ### Base URL
 @host = http://localhost:8080/api
 
-### 
+ 
 ### IMPORTANT: Run auth.http login test first to set the adminAuth token
-### 
+ 
 
 ### Get Dashboard Statistics
 # @name getDashboardStats
@@ -45,6 +45,20 @@ Authorization: {{adminAuth}}
 ### Get Post Status Distribution
 # @name getPostDistribution
 GET {{host}}/dashboard/posts/distribution HTTP/1.1
+Authorization: {{adminAuth}}
+
+###
+
+### Get Engagement Statistics
+# @name getEngagementStats
+GET {{host}}/dashboard/engagement HTTP/1.1
+Authorization: {{adminAuth}}
+
+###
+
+### Get Recent Activity
+# @name getRecentActivity
+GET {{host}}/dashboard/recent HTTP/1.1
 Authorization: {{adminAuth}}
 
 ###
