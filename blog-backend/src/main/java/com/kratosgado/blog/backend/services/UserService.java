@@ -49,23 +49,60 @@ public class UserService {
   }
 
   public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
-    // TODO: Implement this method
-    return null;
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+
+    if (request.username() != null && !request.username().equals(user.getUsername())) {
+      if (userRepository.findByUsername(request.username()).isPresent()) {
+        throw BlogException.duplicateResource("User", "username", request.username());
+      }
+      user.setUsername(request.username());
+    }
+
+    if (request.bio() != null) {
+      user.setBio(request.bio());
+    }
+    if (request.website() != null) {
+      user.setWebsite(request.website());
+    }
+    if (request.location() != null) {
+      user.setLocation(request.location());
+    }
+
+    User updatedUser = userRepository.update(user);
+    updatedUser.setPassword(null);
+    return updatedUser;
   }
 
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
-    // TODO: Implement this method
-    return null;
+    if (!id.equals(currentUserId)) {
+      throw BlogException.forbidden("You are not authorized to update this user's avatar");
+    }
+
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+
+    user.setAvatarUrl(avatarUrl);
+    User updatedUser = userRepository.update(user);
+    updatedUser.setPassword(null);
+    return updatedUser;
   }
 
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
-    // TODO: Implement this method
-  }
+    if (!id.equals(currentUserId)) {
+      throw BlogException.forbidden("You are not authorized to change this user's password");
+    }
 
-  // public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
-  // // TODO: Implement this method
-  // return null;
-  // }
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+
+    if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+      throw BlogException.badRequest("Invalid current password");
+    }
+
+    user.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.update(user);
+  }
 
   public PageResponse<User> getAllUsers(PageRequest pageRequest) {
     var users = userRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
