@@ -1,8 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -15,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.User;
 
@@ -123,7 +119,7 @@ public class UserService {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<User> userPage = userRepository.findAll(pageable);
-    
+
     return new PageResponse<>(
         userPage.getContent(),
         userPage.getNumber(),
@@ -131,7 +127,6 @@ public class UserService {
         (int) userPage.getTotalElements(),
         userPage.getTotalPages(),
         userPage.isFirst(),
-        userPage.isLast()
-    );
+        userPage.isLast());
   }
 }

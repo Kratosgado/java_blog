@@ -12,15 +12,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 
 import lombok.AllArgsConstructor;
@@ -39,7 +37,7 @@ public class CommentService {
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
     }
-    
+
     Comment comment = Comment.builder()
         .postId(request.postId())
         .userId(user.getId())
@@ -106,25 +104,28 @@ public class CommentService {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
-    
+
     return toPageResponse(commentPage);
   }
 
-  public PageResponse<Comment> getAllPostComments(Long postId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+  public PageResponse<Comment> getAllPostComments(Long postId,
+      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
-    
+
     return toPageResponse(commentPage);
   }
 
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId,
+      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Comment> commentPage = commentRepository.findByUserId(userId, pageable);
-    
+
     List<CommentWithoutUser> content = commentPage.getContent().stream()
-        .map(c -> new CommentWithoutUser(c.getId(), c.getPostId(), c.getContent(), c.getStatus(), c.getCreatedAt(), c.getUpdatedAt()))
+        .map(c -> new CommentWithoutUser(c.getId(), c.getPostId(), c.getContent(), c.getStatus(), c.getCreatedAt(),
+            c.getUpdatedAt()))
         .collect(Collectors.toList());
 
     return new PageResponse<>(
@@ -134,8 +135,7 @@ public class CommentService {
         (int) commentPage.getTotalElements(),
         commentPage.getTotalPages(),
         commentPage.isFirst(),
-        commentPage.isLast()
-    );
+        commentPage.isLast());
   }
 
   public Long getPostCommentCount(Long postId) {
@@ -150,7 +150,6 @@ public class CommentService {
         (int) page.getTotalElements(),
         page.getTotalPages(),
         page.isFirst(),
-        page.isLast()
-    );
+        page.isLast());
   }
 }

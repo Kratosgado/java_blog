@@ -1,13 +1,11 @@
 package com.kratosgado.blog.backend.seeders;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -15,11 +13,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.services.AuthService;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
@@ -32,7 +30,6 @@ import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
 
@@ -141,7 +138,8 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     while (categories.size() < count) {
       String name = faker.commerce().department();
-      if (!names.add(name)) continue;
+      if (!names.add(name))
+        continue;
 
       Category category = Category.builder()
           .name(name)
@@ -160,7 +158,8 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     while (tags.size() < count) {
       String name = faker.commerce().productName().split(" ")[0];
-      if (!names.add(name)) continue;
+      if (!names.add(name))
+        continue;
 
       Tag tag = new Tag();
       tag.setName(name);

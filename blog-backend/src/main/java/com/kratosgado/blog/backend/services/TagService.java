@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
-import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.TagResponse;
 import com.kratosgado.blog.models.Tag;
@@ -93,7 +92,7 @@ public class TagService {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Tag> tagPage = tagRepository.findAll(pageable);
-    
+
     return new PageResponse<>(
         tagPage.getContent(),
         tagPage.getNumber(),
@@ -101,15 +100,14 @@ public class TagService {
         (int) tagPage.getTotalElements(),
         tagPage.getTotalPages(),
         tagPage.isFirst(),
-        tagPage.isLast()
-    );
+        tagPage.isLast());
   }
 
   public PageResponse<Tag> searchTags(String keyword, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Tag> tagPage = tagRepository.searchByKeyword(keyword, pageable);
-    
+
     return new PageResponse<>(
         tagPage.getContent(),
         tagPage.getNumber(),
@@ -117,7 +115,6 @@ public class TagService {
         (int) tagPage.getTotalElements(),
         tagPage.getTotalPages(),
         tagPage.isFirst(),
-        tagPage.isLast()
-    );
+        tagPage.isLast());
   }
 }

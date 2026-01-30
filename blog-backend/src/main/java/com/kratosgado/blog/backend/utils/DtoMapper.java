@@ -7,14 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
-import com.kratosgado.blog.models.Post;
 
 public class DtoMapper {
-
-  public static PostDetails toPostResponse(Post post) {
-    return (PostDetails) post;
-  }
 
   public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
     return new PageResponse<>(page.getContent(), pageable.getPageNumber() + 1, page.getNumber(),

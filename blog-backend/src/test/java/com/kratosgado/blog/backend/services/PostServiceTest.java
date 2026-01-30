@@ -4,27 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.provider.Arguments;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,12 +28,13 @@ import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
-import com.kratosgado.blog.dtos.response.AuthorSummary;
-import com.kratosgado.blog.dtos.response.CategorySummary;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostView;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
@@ -68,7 +62,6 @@ class PostServiceTest {
   private Post testPost;
   private User testUser;
   private Category testCategory;
-  private PostResponse testPostResponse;
   private UpdatePostRequest updateRequest;
 
   @BeforeEach
@@ -94,23 +87,6 @@ class PostServiceTest {
     testPost.setCategory(testCategory);
     testPost.setCreatedAt(LocalDateTime.now());
     testPost.setSlug("test-post");
-
-    // Create test PostResponse
-    testPostResponse = new PostResponse(
-        1L,
-        new AuthorSummary(1L, "testuser", "test@example.com", "avatar.jpg"),
-        new CategorySummary(1L, "Test Category", "test-category"),
-        "test-post", // slug
-        "Test Post",
-        "Test Content",
-        "Test Excerpt",
-        PostStatus.published,
-        LocalDateTime.now(),
-        LocalDateTime.now(),
-        0,
-        0,
-        null,
-        List.of());
 
     updateRequest = new UpdatePostRequest(
         "Updated Title",
@@ -139,15 +115,15 @@ class PostServiceTest {
   void getPostBySlug_WithValidSlug_ShouldReturnPostResponse() {
     // Arrange
     String slug = "test-post";
-    when(postRepository.findBySlug(slug)).thenReturn(Optional.of(testPost));
+    when(postRepository.findBySlug(slug)).thenReturn(Optional.of((PostDetails) testPost));
 
     // Act
-    PostResponse result = postService.getPostBySlug(slug);
+    PostDetails result = postService.getPostBySlug(slug);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testPost.getId(), result.id());
-    assertEquals(testPost.getSlug(), result.slug());
+    assertEquals(testPost.getId(), result.getId());
+    assertEquals(testPost.getSlug(), result.getSlug());
     verify(postRepository).findBySlug(slug);
   }
 
@@ -158,33 +134,31 @@ class PostServiceTest {
     when(postRepository.findById(eq(1L))).thenReturn(Optional.of(testPost));
 
     // Act
-    PostResponse result = postService.getPostById(1L);
+    PostDetails result = postService.getPostById(1L);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testPost.getId(), result.id());
+    assertEquals(testPost.getId(), result.getId());
     verify(postRepository).findById(eq(1L));
   }
 
-  // @Test
-  // @DisplayName("Should successfully get published posts")
-  // void getPublishedPosts_ShouldReturnPageOfPosts() {
-  // // Arrange
-  // com.kratosgado.blog.dtos.request.PageRequest pageRequest =
-  // com.kratosgado.blog.dtos.request.PageRequest.builder()
-  // .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-  // Page<Post> page = new PageImpl<>(List.of(testPost));
-  // when(postRepository.findByStatus(eq(PostStatus.published),
-  // any(Pageable.class))).thenReturn(page);
-  //
-  // // Act
-  // PageResponse<PostResponse> result =
-  // postService.getPublishedPosts(pageRequest);
-  //
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(1, result.totalElements());
-  // }
+  @Test
+  @DisplayName("Should successfully get published posts")
+  void getPublishedPosts_ShouldReturnPageOfPosts() {
+    // Arrange
+    PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
+        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
+    Page<PostView> page = new PageImpl<>(List.of((PostView) testPost));
+    when(postRepository.findByStatus(eq(PostStatus.published),
+        any(Pageable.class))).thenReturn(page);
+
+    // Act
+    PageResponse<PostView> result = postService.getPublishedPosts(pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
+  }
 
   @Test
   @DisplayName("Should successfully search posts")
@@ -193,11 +167,11 @@ class PostServiceTest {
     String keyword = "test";
     com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
         .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<Post> page = new PageImpl<>(List.of(testPost));
+    Page<PostView> page = new PageImpl<>(List.of((PostView) testPost));
     when(postRepository.searchPublishedPosts(eq(keyword), any(Pageable.class))).thenReturn(page);
 
     // Act
-    var result = postService.searchPosts(keyword, pageRequest);
+    PageResponse<PostView> result = postService.searchPosts(keyword, pageRequest);
 
     // Assert
     assertNotNull(result);
@@ -210,11 +184,11 @@ class PostServiceTest {
     // Arrange
     com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
         .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<Post> page = new PageImpl<>(List.of(testPost));
+    Page<PostWithoutUser> page = new PageImpl<>(List.of((PostWithoutUser) testPost));
     when(postRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(page);
 
     // Act
-    PageResponse<PostResponse> result = postService.getUserPosts(1L, pageRequest);
+    PageResponse<PostWithoutUser> result = postService.getUserPosts(1L, pageRequest);
 
     // Assert
     assertNotNull(result);
@@ -228,11 +202,11 @@ class PostServiceTest {
     // Arrange
     com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
         .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<Post> page = new PageImpl<>(List.of(testPost));
+    Page<PostWithoutCategory> page = new PageImpl<>(List.of((PostWithoutCategory) testPost));
     when(postRepository.findByCategoryId(eq(1L), any(Pageable.class))).thenReturn(page);
 
     // Act
-    PageResponse<PostResponse> result = postService.getPostsByCategory(1L, pageRequest);
+    PageResponse<PostWithoutCategory> result = postService.getPostsByCategory(1L, pageRequest);
 
     // Assert
     assertNotNull(result);

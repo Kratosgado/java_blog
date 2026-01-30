@@ -21,7 +21,7 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
-import com.kratosgado.blog.dtos.response.PostResponse.PostSummary;
+import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
@@ -66,8 +66,7 @@ public class PostService {
       post.setTags(tags);
     }
 
-    Post savedPost = postRepository.save(post);
-    return DtoMapper.toPostResponse(savedPost);
+    return (PostDetails) postRepository.save(post);
   }
 
   @Transactional
@@ -105,8 +104,7 @@ public class PostService {
       post.setTags(tags);
     }
 
-    Post updatedPost = postRepository.save(post);
-    return DtoMapper.toPostResponse(updatedPost);
+    return (PostDetails) postRepository.save(post);
   }
 
   @Transactional
@@ -129,9 +127,9 @@ public class PostService {
   }
 
   public PostDetails getPostById(Long postId) {
-    Post post = postRepository.findById(postId)
+    var post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
-    return DtoMapper.toPostResponse(post);
+    return (PostDetails) post;
   }
 
   @Transactional
@@ -145,17 +143,16 @@ public class PostService {
     }
 
     post.setStatus(PostStatus.published);
-    Post updatedPost = postRepository.save(post);
-    return DtoMapper.toPostResponse(updatedPost);
+    return (PostDetails) postRepository.save(post);
   }
 
-  public PageResponse<PostSummary> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+  public PageResponse<PostView> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Pageable pageable = toPageable(pageRequest);
     var postsPage = postRepository.findByStatus(PostStatus.published, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  public PageResponse<PostSummary> searchPosts(String keyword,
+  public PageResponse<PostView> searchPosts(String keyword,
       com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Pageable pageable = toPageable(pageRequest);
     var postsPage = postRepository.searchPublishedPosts(keyword, pageable);

@@ -14,12 +14,10 @@ import org.springframework.stereotype.Service;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
-import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
 
@@ -108,17 +106,19 @@ public class ReviewService {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Review> reviewPage = reviewRepository.findByPostId(postId, pageable);
-    
+
     return toPageResponse(reviewPage);
   }
 
-  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId,
+      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Review> reviewPage = reviewRepository.findByUserId(userId, pageable);
-    
+
     List<ReviewWithoutUser> content = reviewPage.getContent().stream()
-        .map(r -> new ReviewWithoutUser(r.getId(), r.getPostId(), r.getRating(), r.getTitle(), r.getContent(), r.getCreatedAt(), r.getUpdatedAt(), r.isHelpful()))
+        .map(r -> new ReviewWithoutUser(r.getId(), r.getPostId(), r.getRating(), r.getTitle(), r.getContent(),
+            r.getCreatedAt(), r.getUpdatedAt(), r.isHelpful()))
         .collect(Collectors.toList());
 
     return new PageResponse<>(
@@ -128,8 +128,7 @@ public class ReviewService {
         (int) reviewPage.getTotalElements(),
         reviewPage.getTotalPages(),
         reviewPage.isFirst(),
-        reviewPage.isLast()
-    );
+        reviewPage.isLast());
   }
 
   public Double getAverageRating(Long postId) {
@@ -149,7 +148,6 @@ public class ReviewService {
         (int) page.getTotalElements(),
         page.getTotalPages(),
         page.isFirst(),
-        page.isLast()
-    );
+        page.isLast());
   }
 }

@@ -2,8 +2,6 @@ package com.kratosgado.blog.backend.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -27,9 +25,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.enums.CommentStatus;
@@ -83,7 +80,7 @@ class CommentServiceTest {
   @DisplayName("Should successfully create a comment with pending status")
   void createComment_WithValidData_ShouldReturnPendingComment() {
     // Arrange
-    when(postRepository.findById(1L)).thenReturn(Optional.of(testPost));
+    when(postRepository.existsById(1L)).thenReturn(true);
     when(commentRepository.save(any(Comment.class))).thenReturn(testComment);
 
     // Act

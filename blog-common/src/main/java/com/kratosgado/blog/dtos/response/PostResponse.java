@@ -1,6 +1,7 @@
 package com.kratosgado.blog.dtos.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.kratosgado.blog.enums.PostStatus;
 
@@ -41,7 +42,10 @@ public interface PostResponse {
   }
 
   public interface WithTag {
-    TagSummary getTags();
+    List<? extends TagSummary> getTags();
+  }
+
+  public interface PostView extends PostSummary, WithUser, WithCategory, WithTag {
   }
 
   public interface PostDetails extends IPost, WithUser, WithCategory, WithTag {

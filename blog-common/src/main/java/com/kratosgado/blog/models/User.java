@@ -1,5 +1,7 @@
 package com.kratosgado.blog.models;
 
+import com.kratosgado.blog.dtos.response.AuthorSummary;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

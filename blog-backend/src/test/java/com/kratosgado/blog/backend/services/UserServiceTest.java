@@ -6,7 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -30,6 +34,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.models.User;
 
 @ExtendWith(MockitoExtension.class)
@@ -174,120 +179,118 @@ class UserServiceTest {
     assertEquals(1, result.totalElements());
   }
 
-  // @Test
-  // @DisplayName("Should successfully update user profile")
-  // void updateUserProfile_WithValidData_ShouldReturnUpdatedUser() {
-  // // Arrange
-  // UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
-  // "newusername",
-  // "New bio",
-  // "https://example.com",
-  // "New York");
-  // when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-  // when(userRepository.findByUsername("newusername")).thenReturn(Optional.empty());
-  // when(userRepository.save(any(User.class))).thenReturn(testUser);
+  @Test
+  @DisplayName("Should successfully update user profile")
+  void updateUserProfile_WithValidData_ShouldReturnUpdatedUser() {
+    // Arrange
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
+        "newusername",
+        "New bio",
+        "https://example.com",
+        "New York");
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.findByUsername("newusername")).thenReturn(Optional.empty());
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-  // // Act
-  // User result = userService.updateUserProfile(updateRequest, 1L);
+    // Act
+    User result = userService.updateUserProfile(updateRequest, 1L);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertNull(result.getPassword());
-  // assertEquals("newusername", testUser.getUsername());
-  // assertEquals("New bio", testUser.getBio());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertNull(result.getPassword());
+    assertEquals("newusername", testUser.getUsername());
+    assertEquals("New bio", testUser.getBio());
+  }
 
-  // @Test
-  // @DisplayName("Should throw exception when updating to existing username")
-  // void updateUserProfile_WithExistingUsername_ShouldThrowException() {
-  // // Arrange
-  // UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
-  // "existinguser",
-  // null,
-  // null,
-  // null);
-  // when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-  // when(userRepository.findByUsername("existinguser")).thenReturn(Optional.of(new
-  // User()));
+  @Test
+  @DisplayName("Should throw exception when updating to existing username")
+  void updateUserProfile_WithExistingUsername_ShouldThrowException() {
+    // Arrange
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
+        "existinguser",
+        null,
+        null,
+        null);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.findByUsername("existinguser")).thenReturn(Optional.of(new User()));
 
-  // // Act
-  // BlogException exception = assertThrows(BlogException.class,
-  // () -> userService.updateUserProfile(updateRequest, 1L));
+    // Act
+    BlogException exception = assertThrows(BlogException.class,
+        () -> userService.updateUserProfile(updateRequest, 1L));
 
-  // // Assert
-  // assertTrue(exception.getMessage().contains("already exists"));
-  // }
+    // Assert
+    assertTrue(exception.getMessage().contains("already exists"));
+  }
 
-  // @Test
-  // @DisplayName("Should allow updating profile with same username")
-  // void updateUserProfile_WithSameUsername_ShouldSucceed() {
-  // // Arrange
-  // UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
-  // "testuser",
-  // "Updated bio",
-  // null,
-  // null);
-  // when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-  // when(userRepository.save(any(User.class))).thenReturn(testUser);
+  @Test
+  @DisplayName("Should allow updating profile with same username")
+  void updateUserProfile_WithSameUsername_ShouldSucceed() {
+    // Arrange
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest(
+        "testuser",
+        "Updated bio",
+        null,
+        null);
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-  // // Act
-  // User result = userService.updateUserProfile(updateRequest, 1L);
+    // Act
+    User result = userService.updateUserProfile(updateRequest, 1L);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals("Updated bio", testUser.getBio());
-  // verify(userRepository, never()).findByUsername(anyString());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertEquals("Updated bio", testUser.getBio());
+    verify(userRepository, never()).findByUsername(anyString());
+  }
 
-  // @Test
-  // @DisplayName("Should only update non-null fields")
-  // void updateUserProfile_WithPartialData_ShouldOnlyUpdateNonNullFields() {
-  // // Arrange
-  // UpdateUserProfileRequest partialUpdate = new UpdateUserProfileRequest(
-  // null,
-  // "Only bio updated",
-  // null,
-  // null);
-  // String originalUsername = testUser.getUsername();
-  // when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-  // when(userRepository.save(any(User.class))).thenReturn(testUser);
+  @Test
+  @DisplayName("Should only update non-null fields")
+  void updateUserProfile_WithPartialData_ShouldOnlyUpdateNonNullFields() {
+    // Arrange
+    UpdateUserProfileRequest partialUpdate = new UpdateUserProfileRequest(
+        null,
+        "Only bio updated",
+        null,
+        null);
+    String originalUsername = testUser.getUsername();
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-  // // Act
-  // User result = userService.updateUserProfile(partialUpdate, 1L);
+    // Act
+    User result = userService.updateUserProfile(partialUpdate, 1L);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertEquals(originalUsername, testUser.getUsername());
-  // assertEquals("Only bio updated", testUser.getBio());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertEquals(originalUsername, testUser.getUsername());
+    assertEquals("Only bio updated", testUser.getBio());
+  }
 
-  // @ParameterizedTest
-  // @MethodSource("unauthorizedOperationTestCases")
-  // @DisplayName("Should throw exception when unauthorized user attempts
-  // operation")
-  // void unauthorizedOperation_ShouldThrowException(String operation) {
-  // // Arrange
-  // String newAvatarUrl = "https://example.com/avatar.jpg";
-  // String oldPassword = "oldpass123";
-  // String newPassword = "newpass123";
+  @ParameterizedTest
+  @MethodSource("unauthorizedOperationTestCases")
+  @DisplayName("Should throw exception when unauthorized user attempts operation")
+  void unauthorizedOperation_ShouldThrowException(String operation) {
+  // Arrange
+  String newAvatarUrl = "https://example.com/avatar.jpg";
+  String oldPassword = "oldpass123";
+  String newPassword = "newpass123";
 
-  // // Act & Assert
-  // BlogException exception;
-  // switch (operation) {
-  // case "updateAvatar":
-  // exception = assertThrows(BlogException.class,
-  // () -> userService.updateUserAvatar(1L, newAvatarUrl, 2L));
-  // break;
-  // case "changePassword":
-  // exception = assertThrows(BlogException.class,
-  // () -> userService.changePassword(1L, oldPassword, newPassword, 2L));
-  // break;
-  // default:
-  // throw new IllegalArgumentException("Unknown operation: " + operation);
-  // }
-  // assertTrue(exception.getMessage().contains("not authorized"));
-  // verifyNoInteractions(userRepository);
-  // }
+  // Act & Assert
+  BlogException exception;
+  switch (operation) {
+  case "updateAvatar":
+  exception = assertThrows(BlogException.class,
+  () -> userService.updateUserAvatar(1L, newAvatarUrl, 2L));
+  break;
+  case "changePassword":
+  exception = assertThrows(BlogException.class,
+  () -> userService.changePassword(1L, oldPassword, newPassword, 2L));
+  break;
+  default:
+  throw new IllegalArgumentException("Unknown operation: " + operation);
+  }
+  assertTrue(exception.getMessage().contains("not authorized"));
+  verifyNoInteractions(userRepository);
+  }
 
   static Stream<Arguments> unauthorizedOperationTestCases() {
     return Stream.of(
@@ -295,20 +298,20 @@ class UserServiceTest {
         Arguments.of("changePassword"));
   }
 
-  // @Test
-  // @DisplayName("Should successfully update user avatar")
-  // void updateUserAvatar_AsOwner_ShouldUpdateAvatar() {
-  // // Arrange
-  // String newAvatarUrl = "https://example.com/avatar.jpg";
-  // when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-  // when(userRepository.save(any(User.class))).thenReturn(testUser);
+  @Test
+  @DisplayName("Should successfully update user avatar")
+  void updateUserAvatar_AsOwner_ShouldUpdateAvatar() {
+    // Arrange
+    String newAvatarUrl = "https://example.com/avatar.jpg";
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-  // // Act
-  // User result = userService.updateUserAvatar(1L, newAvatarUrl, 1L);
+    // Act
+    User result = userService.updateUserAvatar(1L, newAvatarUrl, 1L);
 
-  // // Assert
-  // assertNotNull(result);
-  // assertNull(result.getPassword());
-  // assertEquals(newAvatarUrl, testUser.getAvatarUrl());
-  // }
+    // Assert
+    assertNotNull(result);
+    assertNull(result.getPassword());
+    assertEquals(newAvatarUrl, testUser.getAvatarUrl());
+  }
 }

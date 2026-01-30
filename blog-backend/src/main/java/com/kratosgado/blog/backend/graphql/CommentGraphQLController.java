@@ -15,8 +15,8 @@ import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.dtos.response.PostResponse.PostSummary;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
 
@@ -63,7 +63,7 @@ public class CommentGraphQLController {
   }
 
   @SchemaMapping(typeName = "Comment", field = "post")
-  public PostSummary post(Comment comment) {
+  public PostDetails post(Comment comment) {
     return postService.getPostById(comment.getPostId());
   }
 

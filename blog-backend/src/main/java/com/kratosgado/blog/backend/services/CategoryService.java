@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
-import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
@@ -88,7 +87,7 @@ public class CategoryService {
     Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
     Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
     Page<Category> categoryPage = categoryRepository.findAll(pageable);
-    
+
     return new PageResponse<>(
         categoryPage.getContent(),
         categoryPage.getNumber(),
@@ -96,8 +95,7 @@ public class CategoryService {
         (int) categoryPage.getTotalElements(),
         categoryPage.getTotalPages(),
         categoryPage.isFirst(),
-        categoryPage.isLast()
-    );
+        categoryPage.isLast());
   }
 
   public List<Category> getAllCategories() {
