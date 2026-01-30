@@ -21,6 +21,7 @@ import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostSummary;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
@@ -148,13 +149,13 @@ public class PostService {
     return DtoMapper.toPostResponse(updatedPost);
   }
 
-  public PageResponse<PostDetails> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
+  public PageResponse<PostSummary> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Pageable pageable = toPageable(pageRequest);
     var postsPage = postRepository.findByStatus(PostStatus.published, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  public PageResponse<PostDetails> searchPosts(String keyword,
+  public PageResponse<PostSummary> searchPosts(String keyword,
       com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
     Pageable pageable = toPageable(pageRequest);
     var postsPage = postRepository.searchPublishedPosts(keyword, pageable);

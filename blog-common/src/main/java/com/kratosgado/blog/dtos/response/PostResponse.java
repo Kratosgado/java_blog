@@ -6,15 +6,12 @@ import com.kratosgado.blog.enums.PostStatus;
 
 public interface PostResponse {
 
-  public interface IPost {
-
+  public interface PostSummary {
     Long getId();
 
     String getTitle();
 
     String getSlug();
-
-    String getContent();
 
     String getExcerpt();
 
@@ -24,11 +21,15 @@ public interface PostResponse {
 
     LocalDateTime getCreatedAt();
 
-    LocalDateTime getUpdatedAt();
-
     Integer getViews();
 
     Integer getLikesCount();
+  }
+
+  public interface IPost extends PostSummary {
+    String getContent();
+
+    LocalDateTime getUpdatedAt();
   }
 
   public interface WithUser {
@@ -46,13 +47,13 @@ public interface PostResponse {
   public interface PostDetails extends IPost, WithUser, WithCategory, WithTag {
   }
 
-  public interface PostWithoutUser extends IPost, WithCategory, WithTag {
+  public interface PostWithoutUser extends PostSummary, WithCategory, WithTag {
   }
 
-  public interface PostWithoutTag extends IPost, WithUser, WithCategory {
+  public interface PostWithoutTag extends PostSummary, WithUser, WithCategory {
   }
 
-  public interface PostWithoutCategory extends IPost, WithUser, WithTag {
+  public interface PostWithoutCategory extends PostSummary, WithUser, WithTag {
   }
 
 }

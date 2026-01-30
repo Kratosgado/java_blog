@@ -11,7 +11,6 @@ public record RecentActivityResponse(
       Long id,
       String title,
       String slug,
-      String authorName,
       LocalDateTime createdAt) {
   }
 

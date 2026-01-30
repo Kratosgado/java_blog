@@ -25,6 +25,7 @@ import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostSummary;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.models.User;
@@ -102,14 +103,14 @@ public class PostController {
   @GetMapping
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
-  public PageResponse<PostDetails> getPosts(@ParameterObject PageRequest page) {
+  public PageResponse<PostSummary> getPosts(@ParameterObject PageRequest page) {
     return postService.getPublishedPosts(page);
   }
 
   @GetMapping("/search")
   @Operation(summary = "Search posts", description = "Searches for posts by keyword in title and content")
   @GetEnpoint
-  public PageResponse<PostDetails> searchPosts(@ParameterObject SearchPageRequest request) {
+  public PageResponse<PostSummary> searchPosts(@ParameterObject SearchPageRequest request) {
     return postService.searchPosts(request.getKeyword(), request);
   }
 

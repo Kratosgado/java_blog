@@ -84,12 +84,14 @@ public class DashboardService {
   }
 
   public EngagementStatsResponse getEngagementStats() {
-    List<EngagementStatsResponse.PostEngagementSummary> topByViews = postRepository.findTopNByOrderByViewsDesc(5).stream()
+    List<EngagementStatsResponse.PostEngagementSummary> topByViews = postRepository.findTopNByOrderByViewsDesc(5)
+        .stream()
         .map(p -> new EngagementStatsResponse.PostEngagementSummary(p.getId(), p.getTitle(), p.getSlug(), p.getViews(),
             p.getLikesCount()))
         .collect(Collectors.toList());
 
-    List<EngagementStatsResponse.PostEngagementSummary> topByLikes = postRepository.findTopNByOrderByViewsDesc(5).stream()
+    List<EngagementStatsResponse.PostEngagementSummary> topByLikes = postRepository.findTopNByOrderByViewsDesc(5)
+        .stream()
         .map(p -> new EngagementStatsResponse.PostEngagementSummary(p.getId(), p.getTitle(), p.getSlug(), p.getViews(),
             p.getLikesCount()))
         .collect(Collectors.toList());
@@ -105,11 +107,12 @@ public class DashboardService {
 
   public RecentActivityResponse getRecentActivity() {
     List<RecentActivityResponse.RecentPost> latestPosts = postRepository.findTopNByOrderByCreatedAtDesc(5).stream()
-        .map(p -> new RecentActivityResponse.RecentPost(p.getId(), p.getTitle(), p.getSlug(), p.getUser().getUsername(),
+        .map(p -> new RecentActivityResponse.RecentPost(p.getId(), p.getTitle(), p.getSlug(),
             p.getCreatedAt()))
         .collect(Collectors.toList());
 
-    List<RecentActivityResponse.RecentComment> latestComments = commentRepository.findTopNByOrderByCreatedAtDesc(5).stream()
+    List<RecentActivityResponse.RecentComment> latestComments = commentRepository.findTopNByOrderByCreatedAtDesc(5)
+        .stream()
         .map(c -> new RecentActivityResponse.RecentComment(c.getId(), c.getPostId(), c.getAuthorName(), c.getContent(),
             c.getCreatedAt()))
         .collect(Collectors.toList());
