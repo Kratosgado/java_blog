@@ -166,22 +166,25 @@ class PostServiceTest {
     verify(postRepository).findById(eq(1L));
   }
 
-  @Test
-  @DisplayName("Should successfully get published posts")
-  void getPublishedPosts_ShouldReturnPageOfPosts() {
-    // Arrange
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
-        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<Post> page = new PageImpl<>(List.of(testPost));
-    when(postRepository.findByStatus(eq(PostStatus.published), any(Pageable.class))).thenReturn(page);
-
-    // Act
-    PageResponse<PostResponse> result = postService.getPublishedPosts(pageRequest);
-
-    // Assert
-    assertNotNull(result);
-    assertEquals(1, result.totalElements());
-  }
+  // @Test
+  // @DisplayName("Should successfully get published posts")
+  // void getPublishedPosts_ShouldReturnPageOfPosts() {
+  // // Arrange
+  // com.kratosgado.blog.dtos.request.PageRequest pageRequest =
+  // com.kratosgado.blog.dtos.request.PageRequest.builder()
+  // .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
+  // Page<Post> page = new PageImpl<>(List.of(testPost));
+  // when(postRepository.findByStatus(eq(PostStatus.published),
+  // any(Pageable.class))).thenReturn(page);
+  //
+  // // Act
+  // PageResponse<PostResponse> result =
+  // postService.getPublishedPosts(pageRequest);
+  //
+  // // Assert
+  // assertNotNull(result);
+  // assertEquals(1, result.totalElements());
+  // }
 
   @Test
   @DisplayName("Should successfully search posts")

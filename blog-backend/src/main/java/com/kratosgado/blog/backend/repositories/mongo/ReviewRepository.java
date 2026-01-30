@@ -1,7 +1,5 @@
 package com.kratosgado.blog.backend.repositories.mongo;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Aggregation;
@@ -13,9 +11,13 @@ import com.kratosgado.blog.models.Review;
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
   Page<Review> findByPostId(Long postId, Pageable pageable);
+
   Page<Review> findByUserId(Long userId, Pageable pageable);
+
   boolean existsByPostIdAndUserId(Long postId, Long userId);
+
   long countByPostId(Long postId);
+
   long countByUserId(Long userId);
 
   @Aggregation(pipeline = {
