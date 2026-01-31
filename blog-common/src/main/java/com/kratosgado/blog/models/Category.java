@@ -1,7 +1,5 @@
 package com.kratosgado.blog.models;
 
-import com.kratosgado.blog.dtos.response.CategorySummary;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +22,7 @@ import lombok.Setter;
 @Table(name = "categories", indexes = {
     @Index(name = "idx_categories_slug", columnList = "slug"),
 })
-public class Category implements CategorySummary {
+public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -37,6 +35,4 @@ public class Category implements CategorySummary {
 
   @Column(columnDefinition = "TEXT")
   private String description;
-
-  private transient Long postCount = 0L;
 }

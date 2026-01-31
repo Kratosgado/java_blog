@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.controllers;
+package com.kratosgado.blog.backend.controllers.v1;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -71,7 +71,8 @@ public class CacheController {
       cache.evict(key);
       try {
         cache.evict(Long.parseLong(key));
-      } catch (NumberFormatException ignored) {}
+      } catch (NumberFormatException ignored) {
+      }
       return ResponseEntity.ok(ResponseDto.success("Cache entry evicted successfully", key));
     }
     return ResponseEntity.badRequest().body(ResponseDto.error("Invalid cache name: " + cacheName));

@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.controllers;
+package com.kratosgado.blog.backend.controllers.v1;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
@@ -100,7 +100,7 @@ public class PostController {
     return postService.getPostBySlug(slug);
   }
 
-  @GetMapping
+  @GetMapping(params = "version=1")
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
   public PageResponse<PostView> getPosts(@ParameterObject PageRequest page) {

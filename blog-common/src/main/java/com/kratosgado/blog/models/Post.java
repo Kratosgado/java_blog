@@ -3,11 +3,6 @@ package com.kratosgado.blog.models;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
-import com.kratosgado.blog.dtos.response.PostResponse.PostView;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
 
 import jakarta.persistence.Column;

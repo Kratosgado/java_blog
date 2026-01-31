@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.controllers;
+package com.kratosgado.blog.backend.controllers.v1;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.controllers;
+package com.kratosgado.blog.backend.controllers.v1;
 
 import java.util.HashMap;
 import java.util.Map;

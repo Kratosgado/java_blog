@@ -1,4 +1,4 @@
-package com.kratosgado.blog.backend.controllers;
+package com.kratosgado.blog.backend.controllers.v1;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
@@ -35,11 +35,11 @@ import jakarta.validation.Valid;
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Comments", description = "Comment management APIs")
 public class CommentController {
 
-   private final CommentService commentService;
+  private final CommentService commentService;
 
-   public CommentController(CommentService commentService) {
-     this.commentService = commentService;
-   }
+  public CommentController(CommentService commentService) {
+    this.commentService = commentService;
+  }
 
   @PostMapping
   @SecuredUpdateEndpoint

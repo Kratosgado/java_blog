@@ -38,17 +38,18 @@ public class SecurityConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             // Public endpoints - no authentication required
-            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/v*/auth/**").permitAll()
             .requestMatchers("/docs/**").permitAll()
             .requestMatchers("/graphiql/**", "/graphql").permitAll()
 
             // Public read access to content
-            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**", "/tags/**", "/users/**")
+            .requestMatchers(HttpMethod.GET, "/v*/posts/**", "/v*/categories/**", "/v*/comments/**", "/v*/tags/**",
+                "/v*/users/**")
             .permitAll()
-            .requestMatchers(HttpMethod.GET, "/users/{id}").permitAll()
+            .requestMatchers(HttpMethod.GET, "/v*/users/{id}").permitAll()
 
             // Admin-only endpoints
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+            .requestMatchers("/v*/admin/**").hasRole("ADMIN")
 
             // All other endpoints require authentication
             .anyRequest().authenticated())

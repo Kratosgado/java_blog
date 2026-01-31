@@ -42,7 +42,7 @@ public interface PostResponse {
   }
 
   public interface WithTag {
-    List<? extends TagSummary> getTags();
+    List<TagSummary> getTags();
   }
 
   public interface PostView extends PostSummary, WithUser, WithCategory, WithTag {

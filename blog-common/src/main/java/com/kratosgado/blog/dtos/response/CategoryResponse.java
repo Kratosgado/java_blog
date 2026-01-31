@@ -5,5 +5,5 @@ public record CategoryResponse(
     String name,
     String slug,
     String description,
-    Integer postCount) {
+    Long postCount) {
 }
