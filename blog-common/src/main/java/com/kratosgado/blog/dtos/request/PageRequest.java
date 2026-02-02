@@ -1,5 +1,8 @@
 package com.kratosgado.blog.dtos.request;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,4 +26,10 @@ public class PageRequest {
   public int getOffset() {
     return page * size;
   }
+
+  public Pageable toPageable() {
+    Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+    return org.springframework.data.domain.PageRequest.of(page, size, sort);
+  }
+
 }

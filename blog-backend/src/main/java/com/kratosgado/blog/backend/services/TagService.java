@@ -5,9 +5,8 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,9 +87,8 @@ public class TagService {
     return tagRepository.findAllWithPostCount();
   }
 
-  public PageResponse<Tag> getAllTags(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  public PageResponse<Tag> getAllTags(PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.findAll(pageable);
 
     return new PageResponse<>(
@@ -103,9 +101,8 @@ public class TagService {
         tagPage.isLast());
   }
 
-  public PageResponse<Tag> searchTags(String keyword, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  public PageResponse<Tag> searchTags(String keyword, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.searchByKeyword(keyword, pageable);
 
     return new PageResponse<>(

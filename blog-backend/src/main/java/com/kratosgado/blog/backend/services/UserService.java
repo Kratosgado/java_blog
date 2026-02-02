@@ -3,9 +3,8 @@ package com.kratosgado.blog.backend.services;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,9 +114,8 @@ public class UserService {
     userRepository.save(user);
   }
 
-  public PageResponse<User> getAllUsers(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  public PageResponse<User> getAllUsers(PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<User> userPage = userRepository.findAll(pageable);
 
     return new PageResponse<>(

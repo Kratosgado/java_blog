@@ -1,4 +1,3 @@
-
 package com.kratosgado.blog.backend.utils;
 
 import java.util.List;

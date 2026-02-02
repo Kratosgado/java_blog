@@ -4,10 +4,7 @@ import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +25,7 @@ import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.dtos.request.PageRequest;
 
 @Service
 @Transactional(readOnly = true)
@@ -70,10 +68,7 @@ public class PostService {
   }
 
   @Transactional
-  @Caching(evict = {
-      @CacheEvict(value = "posts", key = "#result.slug"),
-      @CacheEvict(value = "posts", allEntries = true)
-  })
+  @CacheEvict(value = "posts", allEntries = true)
   public PostDetails updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> BlogException.notFound("Post not found"));
@@ -146,35 +141,28 @@ public class PostService {
     return (PostDetails) postRepository.save(post);
   }
 
-  public PageResponse<PostView> getPublishedPosts(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Pageable pageable = toPageable(pageRequest);
+  public PageResponse<PostView> getPublishedPosts(PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     var postsPage = postRepository.findByStatus(PostStatus.published, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  public PageResponse<PostView> searchPosts(String keyword,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Pageable pageable = toPageable(pageRequest);
+  public PageResponse<PostView> searchPosts(String keyword, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     var postsPage = postRepository.searchPublishedPosts(keyword, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  public PageResponse<PostWithoutUser> getUserPosts(Long userId,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Pageable pageable = toPageable(pageRequest);
+  public PageResponse<PostWithoutUser> getUserPosts(Long userId, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     var postsPage = postRepository.findByUserId(userId, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  public PageResponse<PostWithoutCategory> getPostsByCategory(Long categoryId,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Pageable pageable = toPageable(pageRequest);
+  public PageResponse<PostWithoutCategory> getPostsByCategory(Long categoryId, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     var postsPage = postRepository.findByCategoryId(categoryId, pageable);
     return DtoMapper.toPageResponse(postsPage, pageable);
   }
 
-  private Pageable toPageable(com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    return PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
-  }
 }

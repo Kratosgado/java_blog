@@ -6,9 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -100,27 +99,24 @@ public class CommentService {
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
   }
 
-  public PageResponse<Comment> getPostComments(Long postId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
 
     return toPageResponse(commentPage);
   }
 
   public PageResponse<Comment> getAllPostComments(Long postId,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
 
     return toPageResponse(commentPage);
   }
 
   public PageResponse<CommentWithoutUser> getUserComments(Long userId,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByUserId(userId, pageable);
 
     List<CommentWithoutUser> content = commentPage.getContent().stream()

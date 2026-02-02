@@ -6,9 +6,8 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -102,18 +101,16 @@ public class ReviewService {
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
   }
 
-  public PageResponse<Review> getPostReviews(Long postId, com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+  public PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Review> reviewPage = reviewRepository.findByPostId(postId, pageable);
 
     return toPageResponse(reviewPage);
   }
 
   public PageResponse<ReviewWithoutUser> getUserReviews(Long userId,
-      com.kratosgado.blog.dtos.request.PageRequest pageRequest) {
-    Sort sort = Sort.by(Sort.Direction.fromString(pageRequest.getSortDir()), pageRequest.getSortBy());
-    Pageable pageable = PageRequest.of(pageRequest.getPage(), pageRequest.getSize(), sort);
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
     Page<Review> reviewPage = reviewRepository.findByUserId(userId, pageable);
 
     List<ReviewWithoutUser> content = reviewPage.getContent().stream()
