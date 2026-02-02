@@ -13,4 +13,19 @@ public class BlogConstants {
     public static final long ONE_DAY = 24 * ONE_HOUR;
   }
 
+  public static class CacheNames {
+      public static final String POSTS = "posts";
+      public static final String POSTLIST = "postList";
+      public static final String USERS = "users";
+      public static final String USERLIST = "userList";
+     public static final String TAGS = "tags";
+     public static final String TAGLIST = "tagList";
+     public static final String CATEGORIES = "categories";
+     public static final String CATEGORYLIST = "categoryList";
+     public static final String COMMENTS = "comments";
+     public static final String REVIEWLIST = "reviewList";
+     public static final String REVIEWS = "reviews";
+     public static final String COMMENTLIST = "commentList";
+  }
+
 }

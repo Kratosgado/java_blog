@@ -99,7 +99,7 @@ public class DashboardService {
     List<EngagementStatsResponse.CategorySummaryWithCount> popularCategories = categoryRepository.findAllWithPostCount()
         .stream()
         .limit(5)
-        .map(c -> new EngagementStatsResponse.CategorySummaryWithCount(c.id(), c.name(), c.slug(), c.postCount()))
+        .map(c -> new EngagementStatsResponse.CategorySummaryWithCount(c.id(), c.name(), c.slug(), c.postCount().intValue()))
         .collect(Collectors.toList());
 
     return new EngagementStatsResponse(topByViews, topByLikes, popularCategories);

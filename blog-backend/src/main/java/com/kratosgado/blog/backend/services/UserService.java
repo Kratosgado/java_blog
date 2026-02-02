@@ -2,15 +2,17 @@ package com.kratosgado.blog.backend.services;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.User;
 
@@ -26,7 +28,7 @@ public class UserService {
     this.passwordEncoder = passwordEncoder;
   }
 
-  @Cacheable(value = "users", key = "#id")
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#id")
   public User getUserById(Long id) {
     return getUserById(id, false);
   }
@@ -40,20 +42,23 @@ public class UserService {
     return user;
   }
 
-  @Cacheable(value = "users", key = "#email")
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#email")
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
         .orElseThrow(() -> BlogException.notFound("User", "email", email));
   }
 
-  @Cacheable(value = "users", key = "#username")
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#username")
   public User getUserByUsername(String username) {
     return userRepository.findByUsername(username)
         .orElseThrow(() -> BlogException.notFound("User", "username", username));
   }
 
   @Transactional
-  @CacheEvict(value = "users", allEntries = true)
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public User updateUserProfile(com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
     User user = userRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("User", "id", id));
@@ -81,7 +86,10 @@ public class UserService {
   }
 
   @Transactional
-  @CacheEvict(value = "users", allEntries = true)
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
     if (!id.equals(currentUserId)) {
       throw BlogException.forbidden("You are not authorized to update this user's avatar");
@@ -97,7 +105,10 @@ public class UserService {
   }
 
   @Transactional
-  @CacheEvict(value = "users", key = "#id")
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#id"),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
     if (!id.equals(currentUserId)) {
       throw BlogException.forbidden("You are not authorized to change this user's password");
@@ -114,6 +125,7 @@ public class UserService {
     userRepository.save(user);
   }
 
+  @Cacheable(value = BlogConstants.CacheNames.USERLIST, key = "#pageRequest.toString()")
   public PageResponse<User> getAllUsers(PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<User> userPage = userRepository.findAll(pageable);

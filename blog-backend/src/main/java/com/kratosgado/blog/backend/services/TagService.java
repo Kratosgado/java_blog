@@ -3,7 +3,9 @@ package com.kratosgado.blog.backend.services;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.dtos.request.PageRequest;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.TagResponse;
@@ -31,7 +34,7 @@ public class TagService {
   }
 
   @Transactional
-  @CacheEvict(value = "tags", allEntries = true)
+  @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public Tag createTag(com.kratosgado.blog.dtos.request.CreateTagRequest request) {
     String slug = BlogUtils.toSlug(request.name());
 
@@ -44,7 +47,7 @@ public class TagService {
   }
 
   @Transactional
-  @CacheEvict(value = "tags", allEntries = true)
+  @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public Tag updateTag(Long id, com.kratosgado.blog.dtos.request.UpdateTagRequest request) {
     Tag tag = tagRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
@@ -66,27 +69,29 @@ public class TagService {
   }
 
   @Transactional
-  @CacheEvict(value = "tags", allEntries = true)
+  @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public void deleteTag(Long id) {
     tagRepository.deleteById(id);
   }
 
-  @Cacheable(value = "tags", key = "#id")
+  @Cacheable(value = CacheNames.TAGS, key = "#id")
   public Tag getTagById(Long id) {
     return tagRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Tag", "id", id));
   }
 
-  @Cacheable(value = "tags", key = "#slug")
+  @Cacheable(value = CacheNames.TAGS, key = "#slug")
   public Tag getTagBySlug(String slug) {
     return tagRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Tag", "slug", slug));
   }
 
+  @Cacheable(value = CacheNames.TAGLIST, key = "'withPostCount'")
   public List<TagResponse> getAllTagsWithPostCount() {
     return tagRepository.findAllWithPostCount();
   }
 
+  @Cacheable(value = CacheNames.TAGLIST, key = "'getAllTags-' + #pageRequest.toString()")
   public PageResponse<Tag> getAllTags(PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.findAll(pageable);
@@ -101,6 +106,7 @@ public class TagService {
         tagPage.isLast());
   }
 
+  @Cacheable(value = CacheNames.TAGLIST, key = "'searchTags-' + #keyword + '-' + #pageRequest.toString()")
   public PageResponse<Tag> searchTags(String keyword, PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.searchByKeyword(keyword, pageable);

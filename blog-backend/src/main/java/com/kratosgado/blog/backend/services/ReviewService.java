@@ -3,8 +3,7 @@ package com.kratosgado.blog.backend.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.dtos.request.PageRequest;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
+
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -31,7 +31,6 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final PostRepository postRepository;
 
-  @CacheEvict(value = "reviews", allEntries = true)
   public Review createReview(CreateReviewRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -57,7 +56,6 @@ public class ReviewService {
     return saved;
   }
 
-  @CacheEvict(value = "reviews", allEntries = true)
   public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -82,7 +80,6 @@ public class ReviewService {
     return updated;
   }
 
-  @CacheEvict(value = "reviews", allEntries = true)
   public void deleteReview(String id, Long userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -95,7 +92,6 @@ public class ReviewService {
     log.debug("Deleted review with ID: {}", id);
   }
 
-  @Cacheable(value = "reviews", key = "#id")
   public Review getReviewById(String id) {
     return reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));

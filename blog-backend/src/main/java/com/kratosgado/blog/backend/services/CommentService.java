@@ -3,8 +3,7 @@ package com.kratosgado.blog.backend.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.dtos.request.PageRequest;
@@ -13,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -31,7 +31,6 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final PostRepository postRepository;
 
-  @CacheEvict(value = "comments", allEntries = true)
   public Comment createComment(CreateCommentRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -53,7 +52,6 @@ public class CommentService {
     return saved;
   }
 
-  @CacheEvict(value = "comments", allEntries = true)
   public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
@@ -66,7 +64,6 @@ public class CommentService {
     return comment;
   }
 
-  @CacheEvict(value = "comments", allEntries = true)
   public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
@@ -79,7 +76,6 @@ public class CommentService {
     return comment;
   }
 
-  @CacheEvict(value = "comments", allEntries = true)
   public void deleteComment(String commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
@@ -93,7 +89,6 @@ public class CommentService {
     log.debug("Deleted comment with ID: {}", commentId);
   }
 
-  @Cacheable(value = "comments", key = "#commentId")
   public Comment getCommentById(String commentId) {
     return commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));

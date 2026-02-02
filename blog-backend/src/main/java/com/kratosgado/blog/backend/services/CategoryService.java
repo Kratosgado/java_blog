@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.dtos.request.PageRequest;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -30,7 +33,7 @@ public class CategoryService {
   }
 
   @Transactional
-  @CacheEvict(value = "categories", allEntries = true)
+  @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
   public Category createCategory(com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     String slug = BlogUtils.toSlug(request.name());
     if (categoryRepository.findBySlug(slug).isPresent()) {
@@ -46,7 +49,7 @@ public class CategoryService {
   }
 
   @Transactional
-  @CacheEvict(value = "categories", allEntries = true)
+  @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
   public Category updateCategory(Long categoryId, com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     Category category = categoryRepository.findById(categoryId)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
@@ -65,23 +68,27 @@ public class CategoryService {
   }
 
   @Transactional
-  @CacheEvict(value = "categories", allEntries = true)
+  @Caching(evict = {
+      @CacheEvict(value = CacheNames.CATEGORIES, key = "#categoryId"),
+      @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true)
+  })
   public void deleteCategory(Long categoryId) {
     categoryRepository.deleteById(categoryId);
   }
 
-  @Cacheable(value = "categories", key = "#categoryId")
+  @Cacheable(value = CacheNames.CATEGORIES, key = "#categoryId")
   public Category getCategoryById(Long categoryId) {
     return categoryRepository.findById(categoryId)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
-  @Cacheable(value = "categories", key = "#slug")
+  @Cacheable(value = CacheNames.CATEGORIES, key = "#slug")
   public Category getCategoryBySlug(String slug) {
     return categoryRepository.findBySlug(slug)
         .orElseThrow(() -> BlogException.notFound("Category not found"));
   }
 
+  @Cacheable(value = CacheNames.CATEGORYLIST, key = "'getAllCategories-' + #pageRequest.toString()")
   public PageResponse<Category> getAllCategories(PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<Category> categoryPage = categoryRepository.findAll(pageable);
@@ -96,10 +103,12 @@ public class CategoryService {
         categoryPage.isLast());
   }
 
+  @Cacheable(value = CacheNames.CATEGORYLIST, key = "'getAllCategories-All'")
   public List<Category> getAllCategories() {
     return categoryRepository.findAll();
   }
 
+  @Cacheable(value = CacheNames.CATEGORYLIST, key = "'withPostCount'")
   public List<CategoryResponse> getAllCategoriesWithPostCount() {
     return categoryRepository.findAllWithPostCount();
   }
