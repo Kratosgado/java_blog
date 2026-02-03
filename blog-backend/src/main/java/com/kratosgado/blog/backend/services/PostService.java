@@ -6,7 +6,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -146,30 +145,26 @@ public class PostService {
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> getPublishedPosts(PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
-    var postsPage = postRepository.findByStatus(PostStatus.published, pageable);
-    return DtoMapper.toPageResponse(postsPage, pageable);
+    var postsPage = postRepository.findByStatus(PostStatus.published, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> searchPosts(String keyword, PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
-    var postsPage = postRepository.searchPublishedPosts(keyword, pageable);
-    return DtoMapper.toPageResponse(postsPage, pageable);
+    var postsPage = postRepository.searchPublishedPosts(keyword, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostWithoutUser> getUserPosts(Long userId, PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
-    var postsPage = postRepository.findByUserId(userId, pageable);
-    return DtoMapper.toPageResponse(postsPage, pageable);
+    var postsPage = postRepository.findByUserId(userId, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostWithoutCategory> getPostsByCategory(Long categoryId, PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
-    var postsPage = postRepository.findByCategoryId(categoryId, pageable);
-    return DtoMapper.toPageResponse(postsPage, pageable);
+    var postsPage = postRepository.findByCategoryId(categoryId, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
   }
 
 }

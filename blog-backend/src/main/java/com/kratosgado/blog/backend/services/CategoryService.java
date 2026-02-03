@@ -3,12 +3,10 @@ package com.kratosgado.blog.backend.services;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +14,8 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
@@ -90,17 +90,8 @@ public class CategoryService {
 
   @Cacheable(value = CacheNames.CATEGORYLIST, key = "'getAllCategories-' + #pageRequest.toString()")
   public PageResponse<Category> getAllCategories(PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
-    Page<Category> categoryPage = categoryRepository.findAll(pageable);
-
-    return new PageResponse<>(
-        categoryPage.getContent(),
-        categoryPage.getNumber(),
-        categoryPage.getSize(),
-        (int) categoryPage.getTotalElements(),
-        categoryPage.getTotalPages(),
-        categoryPage.isFirst(),
-        categoryPage.isLast());
+    Page<Category> categoryPage = categoryRepository.findAll(pageRequest.toPageable());
+    return DtoMapper.toPageResponse(categoryPage);
   }
 
   @Cacheable(value = CacheNames.CATEGORYLIST, key = "'getAllCategories-All'")

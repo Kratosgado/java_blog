@@ -16,6 +16,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.TagResponse;
 import com.kratosgado.blog.models.Tag;
@@ -96,14 +97,7 @@ public class TagService {
     Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.findAll(pageable);
 
-    return new PageResponse<>(
-        tagPage.getContent(),
-        tagPage.getNumber(),
-        tagPage.getSize(),
-        (int) tagPage.getTotalElements(),
-        tagPage.getTotalPages(),
-        tagPage.isFirst(),
-        tagPage.isLast());
+    return DtoMapper.toPageResponse(tagPage);
   }
 
   @Cacheable(value = CacheNames.TAGLIST, key = "'searchTags-' + #keyword + '-' + #pageRequest.toString()")
@@ -111,13 +105,6 @@ public class TagService {
     Pageable pageable = pageRequest.toPageable();
     Page<Tag> tagPage = tagRepository.searchByKeyword(keyword, pageable);
 
-    return new PageResponse<>(
-        tagPage.getContent(),
-        tagPage.getNumber(),
-        tagPage.getSize(),
-        (int) tagPage.getTotalElements(),
-        tagPage.getTotalPages(),
-        tagPage.isFirst(),
-        tagPage.isLast());
+    return DtoMapper.toPageResponse(tagPage);
   }
 }

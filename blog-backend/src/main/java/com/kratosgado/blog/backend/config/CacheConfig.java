@@ -22,11 +22,14 @@ public class CacheConfig {
   public CacheManager cacheManager() {
     SimpleCacheManager cacheManager = new SimpleCacheManager();
 
+    // TODO: use reasonable ttls
     List<CaffeineCache> caches = Arrays.asList(
         buildCache(CacheNames.POSTS, 10, TimeUnit.DAYS, 1000),
         buildCache(CacheNames.POSTLIST, 1, TimeUnit.DAYS, 200),
         buildCache(CacheNames.TAGS, 1, TimeUnit.HOURS, 500),
-        buildCache(CacheNames.CATEGORIES, 2, TimeUnit.HOURS, 100));
+        buildCache(CacheNames.TAGLIST, 1, TimeUnit.HOURS, 500),
+        buildCache(CacheNames.CATEGORIES, 2, TimeUnit.HOURS, 100),
+        buildCache(CacheNames.CATEGORYLIST, 2, TimeUnit.HOURS, 100));
 
     cacheManager.setCaches(caches);
     return cacheManager;

@@ -100,7 +100,7 @@ public class PostController {
     return postService.getPostBySlug(slug);
   }
 
-  @GetMapping(params = "version=1")
+  @GetMapping()
   @Operation(summary = "Get all published posts", description = "Retrieves a paginated list of published blog posts with sorting options. Public access.")
   @GetEnpoint
   public PageResponse<PostView> getPosts(@ParameterObject PageRequest page) {

@@ -3,7 +3,7 @@
 
 ### Base URL
 
-@host = http://localhost:8080/api
+@host = http://localhost:8080/api/v1
 
 
 ### Create a new comment
@@ -48,19 +48,19 @@ Authorization: {{userAuth}}
 }
 
 
+### Get comments by post
+
+# @name getPostComments
+
+GET {{host}}/comments/post/372?page=0&size=10 HTTP/1.1
+
+
 ### Get a single comment by ID
 
 # @name getComment
 
 GET {{host}}/comments/1 HTTP/1.1
 Authorization: {{userAuth}}
-
-
-### Get comments by post
-
-# @name getPostComments
-
-GET {{host}}/comments/post/372?page=0&size=10 HTTP/1.1
 
 
 ### Get comments by user

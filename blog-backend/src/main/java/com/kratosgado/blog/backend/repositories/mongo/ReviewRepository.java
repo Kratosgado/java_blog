@@ -6,13 +6,14 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
   Page<Review> findByPostId(Long postId, Pageable pageable);
 
-  Page<Review> findByUserId(Long userId, Pageable pageable);
+  Page<ReviewWithoutUser> findByUserId(Long userId, Pageable pageable);
 
   boolean existsByPostIdAndUserId(Long postId, Long userId);
 

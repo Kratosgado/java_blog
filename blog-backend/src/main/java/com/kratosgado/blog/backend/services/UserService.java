@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants;
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.User;
@@ -129,14 +130,7 @@ public class UserService {
   public PageResponse<User> getAllUsers(PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<User> userPage = userRepository.findAll(pageable);
+    return DtoMapper.toPageResponse(userPage);
 
-    return new PageResponse<>(
-        userPage.getContent(),
-        userPage.getNumber(),
-        userPage.getSize(),
-        (int) userPage.getTotalElements(),
-        userPage.getTotalPages(),
-        userPage.isFirst(),
-        userPage.isLast());
   }
 }

@@ -3,14 +3,13 @@ package com.kratosgado.blog.backend.utils;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import com.kratosgado.blog.dtos.response.PageResponse;
 
 public class DtoMapper {
 
-  public static <T> PageResponse<T> toPageResponse(Page<T> page, Pageable pageable) {
-    return new PageResponse<>(page.getContent(), pageable.getPageNumber() + 1, page.getNumber(),
+  public static <T> PageResponse<T> toPageResponse(Page<T> page) {
+    return new PageResponse<>(page.getContent(), page.getNumber(), page.getNumber(),
         page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
   }
 

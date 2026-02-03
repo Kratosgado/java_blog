@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import com.kratosgado.blog.enums.CommentStatus;
 
-public class CommentResponse {
+public record CommentResponse() {
   public record CommentWithoutUser(String id, Long postId, String content, CommentStatus status,
       LocalDateTime createdAt,
       LocalDateTime updatedAt) {

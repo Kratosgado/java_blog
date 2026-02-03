@@ -1,19 +1,15 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
-
+import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
@@ -98,7 +94,7 @@ public class CommentService {
     Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
 
-    return toPageResponse(commentPage);
+    return DtoMapper.toPageResponse(commentPage);
   }
 
   public PageResponse<Comment> getAllPostComments(Long postId,
@@ -106,41 +102,18 @@ public class CommentService {
     Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
 
-    return toPageResponse(commentPage);
+    return DtoMapper.toPageResponse(commentPage);
   }
 
   public PageResponse<CommentWithoutUser> getUserComments(Long userId,
       PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
-    Page<Comment> commentPage = commentRepository.findByUserId(userId, pageable);
+    Page<CommentWithoutUser> commentPage = commentRepository.findByUserId(userId, pageable);
 
-    List<CommentWithoutUser> content = commentPage.getContent().stream()
-        .map(c -> new CommentWithoutUser(c.getId(), c.getPostId(), c.getContent(), c.getStatus(), c.getCreatedAt(),
-            c.getUpdatedAt()))
-        .collect(Collectors.toList());
-
-    return new PageResponse<>(
-        content,
-        commentPage.getNumber(),
-        commentPage.getSize(),
-        (int) commentPage.getTotalElements(),
-        commentPage.getTotalPages(),
-        commentPage.isFirst(),
-        commentPage.isLast());
+    return DtoMapper.toPageResponse(commentPage);
   }
 
   public Long getPostCommentCount(Long postId) {
     return commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
-  }
-
-  private PageResponse<Comment> toPageResponse(Page<Comment> page) {
-    return new PageResponse<>(
-        page.getContent(),
-        page.getNumber(),
-        page.getSize(),
-        (int) page.getTotalElements(),
-        page.getTotalPages(),
-        page.isFirst(),
-        page.isLast());
   }
 }
