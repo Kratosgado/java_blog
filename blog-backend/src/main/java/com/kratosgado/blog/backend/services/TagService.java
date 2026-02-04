@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -21,20 +22,18 @@ import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.TagResponse;
 import com.kratosgado.blog.models.Tag;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class TagService {
 
   private final TagRepository tagRepository;
 
-  public TagService(TagRepository tagRepository) {
-    this.tagRepository = tagRepository;
-  }
-
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public Tag createTag(com.kratosgado.blog.dtos.request.CreateTagRequest request) {
     String slug = BlogUtils.toSlug(request.name());
@@ -47,7 +46,7 @@ public class TagService {
     return tagRepository.save(tag);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public Tag updateTag(Long id, com.kratosgado.blog.dtos.request.UpdateTagRequest request) {
     Tag tag = tagRepository.findById(id)
@@ -69,7 +68,7 @@ public class TagService {
     return tagRepository.save(tag);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.TAGS, key = "#result.id"), evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public void deleteTag(Long id) {
     tagRepository.deleteById(id);

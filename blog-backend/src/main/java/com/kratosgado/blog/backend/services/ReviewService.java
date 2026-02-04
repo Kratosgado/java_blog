@@ -3,6 +3,8 @@ package com.kratosgado.blog.backend.services;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
@@ -22,11 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @AllArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class ReviewService {
 
   private final ReviewRepository reviewRepository;
   private final PostRepository postRepository;
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review createReview(CreateReviewRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -52,6 +56,7 @@ public class ReviewService {
     return saved;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));
@@ -76,6 +81,7 @@ public class ReviewService {
     return updated;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteReview(String id, Long userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(() -> BlogException.notFound("Review", "id", id));

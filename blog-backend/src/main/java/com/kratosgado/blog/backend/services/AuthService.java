@@ -2,6 +2,7 @@ package com.kratosgado.blog.backend.services;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -10,16 +11,14 @@ import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
-@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
-
-  public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
 
   public User login(LoginRequest request) throws BlogException {
     var user = userRepository.findByEmail(request.email())
@@ -31,7 +30,7 @@ public class AuthService {
     return user;
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public User register(RegisterRequest request) throws BlogException {
     if (!request.password().equals(request.confirmPassword())) {
       throw BlogException.badRequest("Passwords do not match");

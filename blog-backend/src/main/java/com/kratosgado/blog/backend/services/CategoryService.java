@@ -8,6 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -20,19 +21,17 @@ import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class CategoryService {
   private final CategoryRepository categoryRepository;
 
-  public CategoryService(CategoryRepository categoryRepository) {
-    this.categoryRepository = categoryRepository;
-  }
-
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
   public Category createCategory(com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     String slug = BlogUtils.toSlug(request.name());
@@ -48,7 +47,7 @@ public class CategoryService {
     return categoryRepository.save(category);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
   public Category updateCategory(Long categoryId, com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
     Category category = categoryRepository.findById(categoryId)
@@ -67,7 +66,7 @@ public class CategoryService {
     return categoryRepository.save(category);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(evict = {
       @CacheEvict(value = CacheNames.CATEGORIES, key = "#categoryId"),
       @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true)

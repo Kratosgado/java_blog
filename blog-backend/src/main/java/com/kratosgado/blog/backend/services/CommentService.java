@@ -3,6 +3,8 @@ package com.kratosgado.blog.backend.services;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
@@ -22,11 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @AllArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class CommentService {
 
   private final CommentRepository commentRepository;
   private final PostRepository postRepository;
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment createComment(CreateCommentRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
       throw BlogException.notFound("Post", "id", request.postId());
@@ -48,6 +52,7 @@ public class CommentService {
     return saved;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
@@ -60,6 +65,7 @@ public class CommentService {
     return comment;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
@@ -72,6 +78,7 @@ public class CommentService {
     return comment;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteComment(String commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
         .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));

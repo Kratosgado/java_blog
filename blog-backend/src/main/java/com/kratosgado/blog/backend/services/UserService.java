@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -17,17 +18,15 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.User;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
+@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
-
-  public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
 
   @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#id")
   public User getUserById(Long id) {
@@ -55,7 +54,7 @@ public class UserService {
         .orElseThrow(() -> BlogException.notFound("User", "username", username));
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(evict = {
       @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
       @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
@@ -86,7 +85,7 @@ public class UserService {
     return updatedUser;
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(evict = {
       @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
       @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
@@ -105,7 +104,7 @@ public class UserService {
     return updatedUser;
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(evict = {
       @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#id"),
       @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)

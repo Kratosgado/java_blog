@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
@@ -21,8 +22,11 @@ import com.kratosgado.blog.dtos.response.StatCountResponse;
 import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
 import com.kratosgado.blog.enums.PostStatus;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
-@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class DashboardService {
 
   private final PostRepository postRepository;
@@ -31,17 +35,6 @@ public class DashboardService {
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
   private final CategoryRepository categoryRepository;
-
-  public DashboardService(PostRepository postRepository, UserRepository userRepository, TagRepository tagRepository,
-      CommentRepository commentRepository, ReviewRepository reviewRepository,
-      CategoryRepository categoryRepository) {
-    this.postRepository = postRepository;
-    this.userRepository = userRepository;
-    this.tagRepository = tagRepository;
-    this.commentRepository = commentRepository;
-    this.reviewRepository = reviewRepository;
-    this.categoryRepository = categoryRepository;
-  }
 
   public StatCountResponse getDashboardStats() {
     return new StatCountResponse(
@@ -99,7 +92,8 @@ public class DashboardService {
     List<EngagementStatsResponse.CategorySummaryWithCount> popularCategories = categoryRepository.findAllWithPostCount()
         .stream()
         .limit(5)
-        .map(c -> new EngagementStatsResponse.CategorySummaryWithCount(c.id(), c.name(), c.slug(), c.postCount().intValue()))
+        .map(c -> new EngagementStatsResponse.CategorySummaryWithCount(c.id(), c.name(), c.slug(),
+            c.postCount().intValue()))
         .collect(Collectors.toList());
 
     return new EngagementStatsResponse(topByViews, topByLikes, popularCategories);

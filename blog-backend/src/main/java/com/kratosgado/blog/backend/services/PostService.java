@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
@@ -33,13 +34,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class PostService {
   private final PostRepository postRepository;
   private final TagRepository tagRepository;
   private final CategoryRepository categoryRepository;
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
   public PostDetails createPost(CreatePostRequest request, User user) {
     Post post = new Post();
@@ -65,7 +66,7 @@ public class PostService {
     return (PostDetails) postRepository.save(post);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.POSTS, key = "#result.slug"), evict = @CacheEvict(value = CacheNames.POSTLIST, allEntries = true))
   public PostDetails updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findById(postId)
@@ -101,7 +102,7 @@ public class PostService {
     return (PostDetails) postRepository.save(post);
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(evict = {
       @CacheEvict(value = CacheNames.POSTLIST, allEntries = true),
       @CacheEvict(value = CacheNames.POSTS, key = "#post.slug")
@@ -129,7 +130,7 @@ public class PostService {
     return (PostDetails) post;
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
   public PostDetails publishPost(Long postId, Long userId) {
     Post post = postRepository.findById(postId)

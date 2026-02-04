@@ -2,17 +2,34 @@
 package com.kratosgado.blog.dtos.response;
 
 import java.time.LocalDateTime;
-
 import com.kratosgado.blog.enums.CommentStatus;
 
-public record CommentResponse() {
-  public record CommentWithoutUser(String id, Long postId, String content, CommentStatus status,
-      LocalDateTime createdAt,
-      LocalDateTime updatedAt) {
+public interface CommentResponse {
+  public interface CommentSummary {
+
+    String getId();
+
+    String getContent();
+
+    CommentStatus getStatus();
+
+    LocalDateTime getCreatedAt();
   }
 
-  public record CommentWithoutPostId(String id, Long userId, String content, CommentStatus status,
-      String authorName, String authorAvatarUrl, LocalDateTime createdAt, LocalDateTime updatedAt) {
+  interface WithPostId {
+    Long getPostId();
+  }
+
+  interface WithUser {
+    String getAuthorName();
+
+    String getAuthorAvatarUrl();
+  }
+
+  public interface CommentWithoutUser extends CommentSummary, WithPostId {
+  }
+
+  public interface CommentWithoutPostId extends CommentSummary, WithUser {
   }
 
 }
