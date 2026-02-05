@@ -13,6 +13,9 @@ module com.kratosgado.blog.common {
   // Lombok
   requires static lombok;
 
+  // Swagger/OpenAPI annotations
+  requires static io.swagger.v3.oas.annotations;
+
   // Export all packages for use by other modules
   exports com.kratosgado.blog.models;
   exports com.kratosgado.blog.dtos.request;

@@ -1,10 +1,6 @@
 package com.kratosgado.blog.models;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.kratosgado.blog.enums.PostStatus;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,26 +18,31 @@ import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "posts", indexes = {
-    @Index(name = "idx_posts_slug", columnList = "slug"),
-    @Index(name = "idx_posts_title", columnList = "title"),
-    @Index(name = "idx_posts_status", columnList = "status"),
-    @Index(name = "idx_posts_created_at", columnList = "created_at"),
-    @Index(name = "idx_posts_user_id", columnList = "user_id"),
-    @Index(name = "idx_posts_category_id", columnList = "category_id")
-})
-@NamedEntityGraph(name = "post-with-details", attributeNodes = {
-    @NamedAttributeNode("user"),
-    @NamedAttributeNode("category"),
-    @NamedAttributeNode("tags")
-})
-
+@Table(
+    name = "posts",
+    indexes = {
+      @Index(name = "idx_posts_slug", columnList = "slug"),
+      @Index(name = "idx_posts_title", columnList = "title"),
+      @Index(name = "idx_posts_status", columnList = "status"),
+      @Index(name = "idx_posts_created_at", columnList = "created_at"),
+      @Index(name = "idx_posts_user_id", columnList = "user_id"),
+      @Index(name = "idx_posts_category_id", columnList = "category_id")
+    })
+@NamedEntityGraph(
+    name = "post-with-details",
+    attributeNodes = {
+      @NamedAttributeNode("user"),
+      @NamedAttributeNode("category"),
+      @NamedAttributeNode("tags")
+    })
 @Getter
 @Setter
 @AllArgsConstructor
@@ -106,6 +107,9 @@ public class Post {
   private Category category;
 
   @ManyToMany
-  @JoinTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  @JoinTable(
+      name = "post_tags",
+      joinColumns = @JoinColumn(name = "post_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id"))
   private List<Tag> tags;
 }
