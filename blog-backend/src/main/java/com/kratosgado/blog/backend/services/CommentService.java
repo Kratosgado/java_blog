@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
@@ -33,7 +34,7 @@ public class CommentService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment createComment(CreateCommentRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
-      throw BlogException.notFound("Post", "id", request.postId());
+      throw new ResourceNotFoundException("Post", "id", request.postId());
     }
 
     Comment comment = Comment.builder()
@@ -55,7 +56,7 @@ public class CommentService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.approved);
     comment.onUpdate();
@@ -68,7 +69,7 @@ public class CommentService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.rejected);
     comment.onUpdate();
@@ -81,10 +82,10 @@ public class CommentService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteComment(String commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     if (!comment.getUserId().equals(userId)) {
-      throw BlogException.unauthorized("You are not allowed to delete this comment");
+      throw new ForbiddenException("You are not allowed to delete this comment");
     }
 
     commentRepository.delete(comment);
@@ -94,7 +95,7 @@ public class CommentService {
 
   public Comment getCommentById(String commentId) {
     return commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
   }
 
   public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {

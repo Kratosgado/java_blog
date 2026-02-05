@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
@@ -33,10 +35,10 @@ public class CategoryService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
-  public Category createCategory(com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
+  public Category createCategory(CreateCategoryRequest request) {
     String slug = BlogUtils.toSlug(request.name());
     if (categoryRepository.findBySlug(slug).isPresent()) {
-      throw BlogException.conflict("Category with this name already exists");
+      throw new ResourceAlreadyExistsException("Category with this name already exists");
     }
 
     Category category = Category.builder()
@@ -49,14 +51,14 @@ public class CategoryService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(put = @CachePut(value = CacheNames.CATEGORIES, key = "#result.id"), evict = @CacheEvict(value = CacheNames.CATEGORYLIST, allEntries = true))
-  public Category updateCategory(Long categoryId, com.kratosgado.blog.dtos.request.CreateCategoryRequest request) {
+  public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
     Category category = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> BlogException.notFound("Category not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
     String slug = BlogUtils.toSlug(request.name());
 
     if (!category.getSlug().equals(slug) && categoryRepository.findBySlug(slug).isPresent()) {
-      throw BlogException.conflict("Category with this name already exists");
+      throw new ResourceAlreadyExistsException("Category with this name already exists");
     }
 
     category.setName(request.name());
@@ -78,13 +80,13 @@ public class CategoryService {
   @Cacheable(value = CacheNames.CATEGORIES, key = "#categoryId")
   public Category getCategoryById(Long categoryId) {
     return categoryRepository.findById(categoryId)
-        .orElseThrow(() -> BlogException.notFound("Category not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
   }
 
   @Cacheable(value = CacheNames.CATEGORIES, key = "#slug")
   public Category getCategoryBySlug(String slug) {
     return categoryRepository.findBySlug(slug)
-        .orElseThrow(() -> BlogException.notFound("Category not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
   }
 
   @Cacheable(value = CacheNames.CATEGORYLIST, key = "'getAllCategories-' + #pageRequest.toString()")

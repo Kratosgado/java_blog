@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
@@ -33,11 +35,11 @@ public class ReviewService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review createReview(CreateReviewRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
-      throw BlogException.notFound("Post", "id", request.postId());
+      throw new ResourceNotFoundException("Post", "id", request.postId());
     }
 
     if (reviewRepository.existsByPostIdAndUserId(request.postId(), user.getId())) {
-      throw BlogException.conflict("Review already exists for this post by this user");
+      throw new ResourceAlreadyExistsException("Review already exists for this post by this user");
     }
 
     Review review = Review.builder()
@@ -59,10 +61,10 @@ public class ReviewService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
-      throw BlogException.forbidden("You are not allowed to update this review");
+      throw new ForbiddenException("You are not allowed to update this review");
     }
 
     if (request.rating() != null) {
@@ -84,10 +86,10 @@ public class ReviewService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteReview(String id, Long userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
     if (!review.getUserId().equals(userId)) {
-      throw BlogException.forbidden("You are not allowed to delete this review");
+      throw new ForbiddenException("You are not allowed to delete this review");
     }
 
     reviewRepository.delete(review);
@@ -96,7 +98,7 @@ public class ReviewService {
 
   public Review getReviewById(String id) {
     return reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
   }
 
   public PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest) {

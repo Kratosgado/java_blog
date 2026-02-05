@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
@@ -52,7 +54,7 @@ public class PostService {
 
     if (request.categoryId() != null) {
       post.setCategory(categoryRepository.findById(request.categoryId())
-          .orElseThrow(() -> BlogException.badRequest("Category not found")));
+          .orElseThrow(() -> new InvalidRequestException("Category not found")));
     }
 
     post.setCoverImage(request.coverImage());
@@ -70,10 +72,10 @@ public class PostService {
   @Caching(put = @CachePut(value = CacheNames.POSTS, key = "#result.slug"), evict = @CacheEvict(value = CacheNames.POSTLIST, allEntries = true))
   public PostDetails updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post = postRepository.findById(postId)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
-      throw BlogException.forbidden("You don't have permission to update this post");
+      throw new ForbiddenException("You don't have permission to update this post");
     }
     String newSlug = BlogUtils.toSlug(request.title());
 
@@ -87,7 +89,7 @@ public class PostService {
       post.setExcerpt(request.excerpt());
     if (request.categoryId() != null) {
       post.setCategory(categoryRepository.findById(request.categoryId())
-          .orElseThrow(() -> BlogException.badRequest("Category not found")));
+          .orElseThrow(() -> new InvalidRequestException("Category not found")));
     }
     if (request.coverImage() != null)
       post.setCoverImage(request.coverImage());
@@ -109,10 +111,10 @@ public class PostService {
   })
   public void deletePost(Long postId, Long userId) {
     Post post = postRepository.findById(postId)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
-      throw BlogException.forbidden("You don't have permission to delete this post");
+      throw new ForbiddenException("You don't have permission to delete this post");
     }
 
     postRepository.delete(post);
@@ -121,12 +123,12 @@ public class PostService {
   @Cacheable(value = CacheNames.POSTS, key = "#slug")
   public PostDetails getPostBySlug(String slug) {
     return postRepository.findBySlug(slug)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
   }
 
   public PostDetails getPostById(Long postId) {
     var post = postRepository.findById(postId)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     return (PostDetails) post;
   }
 
@@ -134,10 +136,10 @@ public class PostService {
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
   public PostDetails publishPost(Long postId, Long userId) {
     Post post = postRepository.findById(postId)
-        .orElseThrow(() -> BlogException.notFound("Post not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
-      throw BlogException.forbidden("You don't have permission to publish this post");
+      throw new ForbiddenException("You don't have permission to publish this post");
     }
 
     post.setStatus(PostStatus.published);

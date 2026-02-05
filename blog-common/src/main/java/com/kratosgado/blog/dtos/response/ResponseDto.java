@@ -1,9 +1,12 @@
 package com.kratosgado.blog.dtos.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ResponseDto<T>(
     int status,
     String message,
-    T data) {
+    T data, T errors) {
   public static <T> ResponseDto<T> success(T data) {
     return success(200, "Operation completed successfully", data);
   }
@@ -13,22 +16,22 @@ public record ResponseDto<T>(
   }
 
   public static <T> ResponseDto<T> success(int status, String message, T data) {
-    return new ResponseDto<>(status, message, data);
+    return new ResponseDto<>(status, message, data, null);
   }
 
   public static <T> ResponseDto<T> error(String message) {
-    return new ResponseDto<>(500, message, null);
+    return new ResponseDto<>(500, message, null, null);
   }
 
   public static <T> ResponseDto<T> error(int status, String message) {
-    return new ResponseDto<>(status, message, null);
+    return new ResponseDto<>(status, message, null, null);
   }
 
   public static <T> ResponseDto<T> fail(String message, T data) {
-    return fail(400, message, data);
+    return error(400, message, data);
   }
 
-  public static <T> ResponseDto<T> fail(int status, String message, T data) {
-    return new ResponseDto<>(status, message, data);
+  public static <T> ResponseDto<T> error(int status, String message, T data) {
+    return new ResponseDto<>(status, message, null, data);
   }
 }

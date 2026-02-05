@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants;
 import com.kratosgado.blog.backend.utils.DtoMapper;
@@ -35,7 +38,7 @@ public class UserService {
 
   public User getUserById(Long id, boolean withPassword) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     if (!withPassword) {
       user.setPassword(null);
     }
@@ -45,13 +48,13 @@ public class UserService {
   @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#email")
   public User getUserByEmail(String email) {
     return userRepository.findByEmail(email)
-        .orElseThrow(() -> BlogException.notFound("User", "email", email));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
   }
 
   @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#username")
   public User getUserByUsername(String username) {
     return userRepository.findByUsername(username)
-        .orElseThrow(() -> BlogException.notFound("User", "username", username));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -61,11 +64,11 @@ public class UserService {
   })
   public User updateUserProfile(com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
     User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.findByUsername(request.username()).isPresent()) {
-        throw BlogException.duplicateResource("User", "username", request.username());
+        throw new ResourceAlreadyExistsException("User", "username", request.username());
       }
       user.setUsername(request.username());
     }
@@ -92,11 +95,11 @@ public class UserService {
   })
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
     if (!id.equals(currentUserId)) {
-      throw BlogException.forbidden("You are not authorized to update this user's avatar");
+      throw new ForbiddenException("You are not authorized to update this user's avatar");
     }
 
     User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     user.setAvatarUrl(avatarUrl);
     User updatedUser = userRepository.save(user);
@@ -111,14 +114,14 @@ public class UserService {
   })
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
     if (!id.equals(currentUserId)) {
-      throw BlogException.forbidden("You are not authorized to change this user's password");
+      throw new ForbiddenException("You are not authorized to change this user's password");
     }
 
     User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-      throw BlogException.badRequest("Invalid current password");
+      throw new InvalidRequestException("Invalid current password");
     }
 
     user.setPassword(passwordEncoder.encode(newPassword));
