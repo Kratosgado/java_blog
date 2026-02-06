@@ -1,17 +1,5 @@
 package com.kratosgado.blog.backend.seeders;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
@@ -29,12 +17,21 @@ import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.datafaker.Faker;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "test"})
 @Slf4j
 public class FakeDataSeeder implements CommandLineRunner {
 
@@ -87,8 +84,14 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     int reviewCount = seedReviews(200, posts, users);
 
-    log.info("Seeded dev data: users={}, categories={}, tags={}, posts={}, comments={}, reviews={}",
-        users.size(), categories.size(), tags.size(), posts.size(), commentCount, reviewCount);
+    log.info(
+        "Seeded dev data: users={}, categories={}, tags={}, posts={}, comments={}, reviews={}",
+        users.size(),
+        categories.size(),
+        tags.size(),
+        posts.size(),
+        commentCount,
+        reviewCount);
   }
 
   private List<User> seedUsers(int count) {
@@ -138,14 +141,14 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     while (categories.size() < count) {
       String name = faker.commerce().department();
-      if (!names.add(name))
-        continue;
+      if (!names.add(name)) continue;
 
-      Category category = Category.builder()
-          .name(name)
-          .slug(BlogUtils.toSlug(name))
-          .description(faker.lorem().sentence(20))
-          .build();
+      Category category =
+          Category.builder()
+              .name(name)
+              .slug(BlogUtils.toSlug(name))
+              .description(faker.lorem().sentence(20))
+              .build();
       categories.add(categoryRepository.save(category));
     }
 
@@ -158,8 +161,7 @@ public class FakeDataSeeder implements CommandLineRunner {
 
     while (tags.size() < count) {
       String name = faker.commerce().productName().split(" ")[0];
-      if (!names.add(name))
-        continue;
+      if (!names.add(name)) continue;
 
       Tag tag = new Tag();
       tag.setName(name);
@@ -171,7 +173,8 @@ public class FakeDataSeeder implements CommandLineRunner {
     return tags;
   }
 
-  private List<Post> seedPosts(int count, List<User> users, List<Category> categories, List<Tag> tags) {
+  private List<Post> seedPosts(
+      int count, List<User> users, List<Category> categories, List<Tag> tags) {
     List<Post> posts = new ArrayList<>();
 
     for (int i = 0; i < count; i++) {
@@ -210,14 +213,15 @@ public class FakeDataSeeder implements CommandLineRunner {
     for (int i = 0; i < count; i++) {
       Post post = getRandomElement(posts);
       User user = getRandomElement(users);
-      Comment comment = Comment.builder()
-          .postId(post.getId())
-          .userId(user.getId())
-          .content(faker.lorem().paragraph())
-          .status(CommentStatus.approved)
-          .authorName(user.getUsername())
-          .authorAvatarUrl(user.getAvatarUrl())
-          .build();
+      Comment comment =
+          Comment.builder()
+              .postId(post.getId())
+              .userId(user.getId())
+              .content(faker.lorem().paragraph())
+              .status(CommentStatus.approved)
+              .authorName(user.getUsername())
+              .authorAvatarUrl(user.getAvatarUrl())
+              .build();
       comment.onCreate();
       commentRepository.save(comment);
     }
@@ -228,15 +232,16 @@ public class FakeDataSeeder implements CommandLineRunner {
     for (int i = 0; i < count; i++) {
       Post post = getRandomElement(posts);
       User user = getRandomElement(users);
-      Review review = Review.builder()
-          .postId(post.getId())
-          .userId(user.getId())
-          .rating(faker.number().numberBetween(1, 6))
-          .title(faker.lorem().sentence())
-          .content(faker.lorem().paragraph())
-          .authorName(user.getUsername())
-          .authorAvatarUrl(user.getAvatarUrl())
-          .build();
+      Review review =
+          Review.builder()
+              .postId(post.getId())
+              .userId(user.getId())
+              .rating(faker.number().numberBetween(1, 6))
+              .title(faker.lorem().sentence())
+              .content(faker.lorem().paragraph())
+              .authorName(user.getUsername())
+              .authorAvatarUrl(user.getAvatarUrl())
+              .build();
       review.onCreate();
       reviewRepository.save(review);
     }
@@ -248,12 +253,13 @@ public class FakeDataSeeder implements CommandLineRunner {
   }
 
   private User registerUser(User user, String passwordPlaintext, boolean admin) {
-    RegisterRequest request = new RegisterRequest(
-        user.getUsername(),
-        user.getEmail(),
-        user.getAvatarUrl(),
-        passwordPlaintext,
-        passwordPlaintext);
+    RegisterRequest request =
+        new RegisterRequest(
+            user.getUsername(),
+            user.getEmail(),
+            user.getAvatarUrl(),
+            passwordPlaintext,
+            passwordPlaintext);
 
     User saved = authService.register(request);
 
