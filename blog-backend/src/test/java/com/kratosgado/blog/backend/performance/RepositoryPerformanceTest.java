@@ -8,6 +8,7 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
 import java.util.ArrayList;
@@ -20,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Performance tests for repository queries. Measures and compares query execution times for various
@@ -41,7 +41,6 @@ public class RepositoryPerformanceTest {
   private List<Tag> testTags;
 
   @BeforeEach
-  @Transactional
   public void setup() {
     // Reset metrics before each test
     performanceMonitor.resetMetrics();
@@ -77,6 +76,45 @@ public class RepositoryPerformanceTest {
     } else {
       testTags = tagRepository.findAll().subList(0, 5);
     }
+
+    // Create test posts if not exists
+    if (postRepository.count() < 100) {
+      createTestPosts(100);
+    }
+  }
+
+  private void createTestPosts(int count) {
+    List<Post> posts = new ArrayList<>();
+
+    for (int i = 0; i < count; i++) {
+      Post post = new Post();
+      post.setTitle("Performance Test Post " + i);
+      post.setSlug("perf-test-post-" + i);
+      post.setContent(
+          "This is a performance test post with content for searching. It contains keywords like"
+              + " java, spring, test, and performance.");
+      post.setExcerpt("Performance test excerpt " + i);
+      post.setStatus(i % 10 == 0 ? PostStatus.draft : PostStatus.published);
+      post.setUser(testUser);
+      post.setCategory(testCategory);
+      post.setViews(i * 10);
+      post.setLikesCount(i * 2);
+
+      // Assign tags (rotate through available tags)
+      List<Tag> postTags = new ArrayList<>();
+      postTags.add(testTags.get(i % testTags.size()));
+      if (i % 2 == 0 && testTags.size() > 1) {
+        postTags.add(testTags.get((i + 1) % testTags.size()));
+      }
+      post.setTags(postTags);
+
+      posts.add(post);
+    }
+
+    postRepository.saveAll(posts);
+    postRepository.flush();
+
+    log.info("Created {} test posts", count);
   }
 
   @Test

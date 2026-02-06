@@ -89,7 +89,8 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse.PostWithoutUser> getPostsByUser(Long userId, int page, int size) {
+  public PageResponse<PostResponse.PostWithoutUser> getPostsByUser(
+      Long userId, int page, int size) {
     ensureAuthToken();
     try {
       return postApiClient.getPostsByUser(userId, page, size);
@@ -164,7 +165,8 @@ public class PostService {
   public List<Post> getPostsByUserId(Long userId) {
     ensureAuthToken();
     try {
-      PageResponse<PostResponse.PostWithoutUser> response = postApiClient.getPostsByUser(userId, 0, 1000);
+      PageResponse<PostResponse.PostWithoutUser> response =
+          postApiClient.getPostsByUser(userId, 0, 1000);
       return response.content().stream().map(this::convertPostWithoutUserToPost).toList();
     } catch (IOException e) {
       logger.error("Failed to get posts by user due to network error", e);
@@ -250,11 +252,12 @@ public class PostService {
     // Set category if available
     if (postView.getCategory() != null) {
       var categorySummary = postView.getCategory();
-      post.setCategory(com.kratosgado.blog.models.Category.builder()
-          .id(categorySummary.getId())
-          .name(categorySummary.getName())
-          .slug(categorySummary.getSlug())
-          .build());
+      post.setCategory(
+          com.kratosgado.blog.models.Category.builder()
+              .id(categorySummary.getId())
+              .name(categorySummary.getName())
+              .slug(categorySummary.getSlug())
+              .build());
     }
 
     return post;
@@ -276,11 +279,12 @@ public class PostService {
     // Set category if available
     if (postWithoutUser.getCategory() != null) {
       var categorySummary = postWithoutUser.getCategory();
-      post.setCategory(com.kratosgado.blog.models.Category.builder()
-          .id(categorySummary.getId())
-          .name(categorySummary.getName())
-          .slug(categorySummary.getSlug())
-          .build());
+      post.setCategory(
+          com.kratosgado.blog.models.Category.builder()
+              .id(categorySummary.getId())
+              .name(categorySummary.getName())
+              .slug(categorySummary.getSlug())
+              .build());
     }
 
     return post;
