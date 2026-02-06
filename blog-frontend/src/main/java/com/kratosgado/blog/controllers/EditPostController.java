@@ -178,17 +178,31 @@ public class EditPostController implements Initializable {
 
   private void loadPost(Long postId) {
     try {
-      com.kratosgado.blog.dtos.response.PostResponse postResponse = postService.getPostById(postId);
-      // Convert PostResponse to Post for backward compatibility
+      com.kratosgado.blog.dtos.response.PostResponse.PostDetails postResponse = postService.getPostById(postId);
+      // Convert PostDetails to Post for backward compatibility
       currentPost = new Post();
-      currentPost.setId(postResponse.id());
-      currentPost.setTitle(postResponse.title());
-      currentPost.setContent(postResponse.content());
-      currentPost.setExcerpt(postResponse.excerpt());
-      currentPost.setStatus(postResponse.status());
-      currentPost.setCoverImage(postResponse.coverImage());
-      currentPost.setUserId(postResponse.authorId());
-      currentPost.setCategoryId(postResponse.categoryId());
+      currentPost.setId(postResponse.getId());
+      currentPost.setTitle(postResponse.getTitle());
+      currentPost.setContent(postResponse.getContent());
+      currentPost.setExcerpt(postResponse.getExcerpt());
+      currentPost.setStatus(postResponse.getStatus());
+      currentPost.setCoverImage(postResponse.getCoverImage());
+      // Get user ID from user object - PostDetails extends WithUser
+      var user = postResponse.getUser();
+      if (user != null) {
+        currentPost.setUserId(user.getId());
+      }
+      // Get category from category object if available
+      if (postResponse instanceof com.kratosgado.blog.dtos.response.PostResponse.WithCategory) {
+        var category = ((com.kratosgado.blog.dtos.response.PostResponse.WithCategory) postResponse).getCategory();
+        if (category != null) {
+          currentPost.setCategory(Category.builder()
+              .id(category.getId())
+              .name(category.getName())
+              .slug(category.getSlug())
+              .build());
+        }
+      }
 
       // Populate form fields with existing post data
       titleField.setText(currentPost.getTitle());
@@ -303,7 +317,7 @@ public class EditPostController implements Initializable {
             currentPost.getStatus(),
             null);
 
-        Post updatedPost = postService.updatePost(currentPost.getId(), dto);
+        var updatedPost = postService.updatePost(currentPost.getId(), dto);
         if (updatedPost != null) {
           logger.info("Updated and published post: {}", currentPost.getTitle());
 
@@ -361,7 +375,7 @@ public class EditPostController implements Initializable {
             currentPost.getStatus(),
             null);
 
-        Post updatedPost = postService.updatePost(currentPost.getId(), dto);
+        var updatedPost = postService.updatePost(currentPost.getId(), dto);
         if (updatedPost != null) {
           logger.info("Saved draft: {}", currentPost.getTitle());
 
