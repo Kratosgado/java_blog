@@ -43,6 +43,10 @@ import lombok.Setter;
       @NamedAttributeNode("category"),
       @NamedAttributeNode("tags")
     })
+@NamedEntityGraph(
+    name = "post-with-user-only",
+    attributeNodes = {@NamedAttributeNode("user")})
+@NamedEntityGraph(name = "post-list-view", attributeNodes = {@NamedAttributeNode("user")})
 @Getter
 @Setter
 @AllArgsConstructor
