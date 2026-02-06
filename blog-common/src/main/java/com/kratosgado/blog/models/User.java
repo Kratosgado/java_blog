@@ -14,12 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-class Views {
-  public static class Public {}
-
-  public static class Internal {}
-}
-
 @Setter
 @Getter
 @NoArgsConstructor

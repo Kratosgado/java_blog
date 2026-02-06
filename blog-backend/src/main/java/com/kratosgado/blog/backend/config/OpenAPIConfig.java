@@ -20,12 +20,20 @@ import org.springframework.context.annotation.Configuration;
 public class OpenAPIConfig {
   @Bean
   public GroupedOpenApi v1Api() {
-    return GroupedOpenApi.builder().group("v1").pathsToMatch("/v1/**").build();
+    return GroupedOpenApi.builder()
+        .group("v1")
+        .pathsToExclude("/data/**")
+        .pathsToMatch("/v1/**")
+        .build();
   }
 
   @Bean
   public GroupedOpenApi v2Api() {
-    return GroupedOpenApi.builder().group("v2").pathsToMatch("/api/v2/**").build();
+    return GroupedOpenApi.builder()
+        .group("v2")
+        .pathsToExclude("/data/**")
+        .pathsToMatch("/api/v2/**")
+        .build();
   }
 
   @Bean
