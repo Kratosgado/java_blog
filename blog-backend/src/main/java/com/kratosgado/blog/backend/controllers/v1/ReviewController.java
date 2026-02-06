@@ -1,7 +1,25 @@
 package com.kratosgado.blog.backend.controllers.v1;
 
+import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.GetEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
+import com.kratosgado.blog.backend.security.SecurityUtils;
+import com.kratosgado.blog.backend.services.ReviewService;
+import com.kratosgado.blog.backend.utils.BlogUtils;
+import com.kratosgado.blog.dtos.request.CreateReviewRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
+import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.models.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.Map;
-
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,27 +33,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kratosgado.blog.backend.annotations.OpenApi.DeleteEndpoint;
-import com.kratosgado.blog.backend.annotations.OpenApi.GetEnpoint;
-import com.kratosgado.blog.backend.annotations.OpenApi.SecuredCreateEndpoint;
-import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
-import com.kratosgado.blog.backend.security.SecurityUtils;
-import com.kratosgado.blog.backend.services.ReviewService;
-import com.kratosgado.blog.backend.utils.BlogUtils;
-import com.kratosgado.blog.dtos.request.CreateReviewRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
-import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
-import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
-import com.kratosgado.blog.models.Review;
-import com.kratosgado.blog.models.User;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/reviews")
 @Tag(name = "Reviews", description = "Review management APIs")
@@ -48,45 +45,58 @@ public class ReviewController {
   }
 
   @PostMapping
-  @Operation(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @Operation(
+      summary = "Create a new review",
+      description = "Creates a new review for a post. Requires authentication.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
   @ResponseStatus(HttpStatus.CREATED)
   public Review createReview(
-      @Valid @RequestBody @Parameter(description = "Review creation request") CreateReviewRequest request,
+      @Valid @RequestBody @Parameter(description = "Review creation request")
+          CreateReviewRequest request,
       @AuthenticationPrincipal User user) {
     return reviewService.createReview(request, user);
   }
 
   @PutMapping("/{id}")
-  @Operation(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @Operation(
+      summary = "Update a review",
+      description = "Updates an existing review. Only the review author can update it.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
   public Review updateReview(
       @PathVariable @Parameter(description = "Review ID") String id,
-      @Valid @RequestBody @Parameter(description = "Review update request") UpdateReviewRequest request) {
+      @Valid @RequestBody @Parameter(description = "Review update request")
+          UpdateReviewRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
     return reviewService.updateReview(id, request, userId);
   }
 
   @DeleteMapping("/{id}")
-  @Operation(summary = "Delete a review", description = "Deletes a review by ID. Only the review author can delete it.", security = @SecurityRequirement(name = "bearer-jwt"))
+  @Operation(
+      summary = "Delete a review",
+      description = "Deletes a review by ID. Only the review author can delete it.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
-  public void deleteReview(
-      @PathVariable @Parameter(description = "Review ID") String id) {
+  public void deleteReview(@PathVariable @Parameter(description = "Review ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     reviewService.deleteReview(id, userId);
   }
 
   @GetMapping("/{id}")
-  @Operation(summary = "Get a review by ID", description = "Retrieves a single review by its ID. Public access.")
-  @GetEnpoint
-  public Review getReview(
-      @PathVariable @Parameter(description = "Review ID") String id) {
+  @Operation(
+      summary = "Get a review by ID",
+      description = "Retrieves a single review by its ID. Public access.")
+  @GetEndpoint
+  public Review getReview(@PathVariable @Parameter(description = "Review ID") String id) {
     return reviewService.getReviewById(id);
   }
 
   @GetMapping("/post/{postId}")
-  @Operation(summary = "Get reviews for a post", description = "Retrieves all reviews for a specific post. Public access.")
-  @GetEnpoint
+  @Operation(
+      summary = "Get reviews for a post",
+      description = "Retrieves all reviews for a specific post. Public access.")
+  @GetEndpoint
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
@@ -94,8 +104,10 @@ public class ReviewController {
   }
 
   @GetMapping("/user/{userId}")
-  @Operation(summary = "Get reviews by user", description = "Retrieves all reviews created by a specific user")
-  @GetEnpoint
+  @Operation(
+      summary = "Get reviews by user",
+      description = "Retrieves all reviews created by a specific user")
+  @GetEndpoint
   public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
@@ -103,15 +115,16 @@ public class ReviewController {
   }
 
   @GetMapping("/post/{postId}/stats")
-  @Operation(summary = "Get review statistics for a post", description = "Returns average rating and review count for a post")
-  @GetEnpoint
+  @Operation(
+      summary = "Get review statistics for a post",
+      description = "Returns average rating and review count for a post")
+  @GetEndpoint
   public Map<String, Object> getPostReviewStats(
       @PathVariable @Parameter(description = "Post ID") Long postId) {
     Double averageRating = reviewService.getAverageRating(postId);
     Long reviewCount = reviewService.getReviewCount(postId);
 
     return java.util.Map.of(
-        "averageRating", BlogUtils.round(averageRating),
-        "reviewCount", reviewCount);
+        "averageRating", BlogUtils.round(averageRating), "reviewCount", reviewCount);
   }
 }
