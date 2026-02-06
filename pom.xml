@@ -159,6 +159,7 @@
               <goal>check</goal>
             </goals>
             <configuration>
+
               <rules>
                 <rule>
                   <element>BUNDLE</element>

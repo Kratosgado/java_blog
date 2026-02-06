@@ -8,8 +8,8 @@ spring:
     name: Blog Backend API (Test)
   datasource:
     url: jdbc:postgresql://localhost:5432/blog_db_test
-    username: blog_user
-    password: blog_password
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
