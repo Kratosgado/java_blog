@@ -46,7 +46,7 @@ setup)
   ;;
 test)
   echo "Running all tests..."
-  cd blog-backend && mvn clean test
+  mvn -pl blog-backend clean test
   ;;
 reset)
   echo "⚠️  This will DELETE all data and recreate databases!"

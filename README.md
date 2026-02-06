@@ -796,23 +796,29 @@ mvn test -Dtest=*ServiceTest
 
 ### Test Coverage Reports
 
-Generate comprehensive test coverage reports:
+Generate comprehensive test coverage reports (blog-backend only):
 
 ```bash
-# Generate JaCoCo coverage report
-mvn clean test jacoco:report
+# Generate coverage report
+cd blog-backend
+mvn clean test
 
-# View HTML report
-open target/site/jacoco/index.html
+# The HTML report is automatically generated at:
+# blog-backend/target/site/jacoco/index.html
 
-# Generate coverage for specific module
-mvn -pl blog-backend clean test jacoco:report
+# Use the helper script (generates and opens report):
+cd blog-backend
+./coverage-report.sh
+
+# Or open manually:
+open target/site/jacoco/index.html       # macOS
+xdg-open target/site/jacoco/index.html   # Linux
 ```
 
-**Coverage Targets**:
-- Instruction Coverage: > 80%
-- Branch Coverage: > 70%
-- Excluded: Config classes, DTOs, generated code
+**Current Coverage**:
+- Instruction Coverage: 27%
+- Branch Coverage: 16%
+- Excluded: Config classes, DTOs, models, generated code, infrastructure code
 
 ### Continuous Testing
 

@@ -3,24 +3,28 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>com.kratosgado.blog</groupId>
     <artifactId>blog-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>blog-frontend</artifactId>
   <packaging>jar</packaging>
   <name>Blog Frontend (JavaFX)</name>
-  
+
+  <properties>
+    <jacoco.skip>true</jacoco.skip>
+  </properties>
+
   <dependencies>
     <!-- Internal dependency -->
     <dependency>
       <groupId>com.kratosgado.blog</groupId>
       <artifactId>blog-common</artifactId>
     </dependency>
-    
+
     <!-- JavaFX -->
     <dependency>
       <groupId>org.openjfx</groupId>
@@ -32,45 +36,45 @@
       <artifactId>javafx-fxml</artifactId>
       <version>${javafx.version}</version>
     </dependency>
-    
+
     <!-- MaterialFX -->
     <dependency>
       <groupId>io.github.palexdev</groupId>
       <artifactId>materialfx</artifactId>
       <version>11.17.0</version>
     </dependency>
-    
+
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>
-    
+
     <!-- Gson for JSON -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
     </dependency>
-    
+
     <!-- PostgreSQL (for legacy direct DB access - will be removed) -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
     </dependency>
-    
+
     <!-- Environment variables -->
     <dependency>
       <groupId>io.github.cdimascio</groupId>
       <artifactId>dotenv-java</artifactId>
       <version>3.0.0</version>
     </dependency>
-    
+
     <!-- BCrypt -->
     <dependency>
       <groupId>at.favre.lib</groupId>
       <artifactId>bcrypt</artifactId>
     </dependency>
-    
+
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -81,7 +85,7 @@
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    
+
     <!-- Dependency Injection -->
     <dependency>
       <groupId>com.google.inject</groupId>
@@ -93,14 +97,14 @@
       <artifactId>javax.inject</artifactId>
       <version>1</version>
     </dependency>
-    
+
     <!-- MongoDB -->
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-sync</artifactId>
       <version>4.11.1</version>
     </dependency>
-    
+
     <!-- HTTP Client for REST API calls -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
@@ -108,14 +112,14 @@
       <version>4.12.0</version>
     </dependency>
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
       </plugin>
-      
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -125,7 +129,7 @@
           <release>21</release>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-maven-plugin</artifactId>
