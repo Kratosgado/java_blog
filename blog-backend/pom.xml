@@ -184,6 +184,95 @@
           <parameters>true</parameters>
         </configuration>
       </plugin>
+
+      <!-- JaCoCo Maven Plugin for Code Coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <!-- Prepare agent for test execution -->
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+
+          <!-- Generate HTML report after tests -->
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+
+          <!-- Check coverage threshold -->
+          <execution>
+            <id>check</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.16</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.16</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <!-- Output directory for reports -->
+          <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+          <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+
+          <!-- Exclude non-business logic classes -->
+          <excludes>
+            <!-- Application entry point -->
+            <exclude>**/BlogBackendApplication.class</exclude>
+
+            <!-- Configuration classes -->
+            <exclude>**/config/**</exclude>
+
+            <!-- DTOs and models (no business logic) -->
+            <exclude>**/dtos/**</exclude>
+            <exclude>**/models/**</exclude>
+            <exclude>**/enums/**</exclude>
+
+            <!-- Exceptions (simple wrappers) -->
+            <exclude>**/exceptions/BlogException.class</exclude>
+
+            <!-- Constants -->
+            <exclude>**/constants/**</exclude>
+
+            <!-- Infrastructure code -->
+            <exclude>**/seeders/**</exclude>
+            <exclude>**/aspects/**</exclude>
+            <exclude>**/annotations/**</exclude>
+
+            <!-- GraphQL (not core business logic) -->
+            <exclude>**/graphql/**</exclude>
+
+            <!-- Performance monitoring utilities -->
+            <exclude>**/performance/QueryPerformanceMonitor.class</exclude>
+            <exclude>**/performance/PerformanceAspect.class</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
