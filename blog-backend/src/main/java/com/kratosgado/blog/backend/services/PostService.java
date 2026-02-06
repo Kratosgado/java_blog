@@ -161,7 +161,11 @@ public class PostService {
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> searchPosts(String keyword, PageRequest pageRequest) {
-    var postsPage = postRepository.searchPublishedPosts(keyword, pageRequest.toPageable());
+    // Use optimized full-text search with PostgreSQL tsvector
+    String wildcardQuery = "%" + keyword + "%";
+    var postsPage =
+        postRepository.searchPublishedPosts(
+            wildcardQuery, keyword, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
   }
 

@@ -48,9 +48,30 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query(
-      "SELECT p FROM Post p WHERE p.status = 'published' AND (p.title LIKE %:query% OR p.content"
-          + " LIKE %:query%)")
-  Page<PostView> searchPublishedPosts(@Param("query") String query, Pageable pageable);
+      value =
+          "SELECT p.* FROM posts p WHERE p.status = 'published' AND "
+              + "(p.title ILIKE :query OR p.content ILIKE :query OR "
+              + "to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')) @@ "
+              + "plainto_tsquery('english', :searchTerm)) "
+              + "ORDER BY "
+              + "CASE WHEN p.title ILIKE :query THEN 1 ELSE 2 END, "
+              + "ts_rank(to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')), "
+              + "plainto_tsquery('english', :searchTerm)) DESC",
+      countQuery =
+          "SELECT COUNT(*) FROM posts p WHERE p.status = 'published' AND "
+              + "(p.title ILIKE :query OR p.content ILIKE :query OR "
+              + "to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')) @@ "
+              + "plainto_tsquery('english', :searchTerm))",
+      nativeQuery = true)
+  Page<PostView> searchPublishedPosts(
+      @Param("query") String query, @Param("searchTerm") String searchTerm, Pageable pageable);
+
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @Query(
+      "SELECT p FROM Post p WHERE p.status = 'published' AND "
+          + "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR "
+          + "LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%')))")
+  Page<PostView> searchPublishedPostsSimple(@Param("query") String query, Pageable pageable);
 
   @Query(
       value = "SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit",
@@ -70,4 +91,50 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query(value = "SELECT * FROM posts ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
   List<PostView> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
+
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @Query(
+      value =
+          "SELECT p.* FROM posts p "
+              + "WHERE p.status = :#{#status.name()} AND p.created_at >= :sinceDate "
+              + "ORDER BY p.views DESC, p.created_at DESC",
+      nativeQuery = true)
+  Page<PostView> findTrendingPosts(
+      @Param("status") PostStatus status,
+      @Param("sinceDate") java.time.LocalDateTime sinceDate,
+      Pageable pageable);
+
+  @Query(
+      value =
+          "SELECT p.* FROM posts p "
+              + "WHERE p.category_id = :categoryId AND p.status = 'published' "
+              + "ORDER BY p.created_at DESC",
+      countQuery = "SELECT COUNT(*) FROM posts WHERE category_id = :categoryId AND status = 'published'",
+      nativeQuery = true)
+  Page<PostView> findPublishedPostsByCategoryOptimized(
+      @Param("categoryId") Long categoryId, Pageable pageable);
+
+  @Query(
+      value =
+          "SELECT DISTINCT p.* FROM posts p "
+              + "INNER JOIN post_tags pt ON p.id = pt.post_id "
+              + "WHERE pt.tag_id = :tagId AND p.status = 'published' "
+              + "ORDER BY p.created_at DESC",
+      countQuery =
+          "SELECT COUNT(DISTINCT p.id) FROM posts p "
+              + "INNER JOIN post_tags pt ON p.id = pt.post_id "
+              + "WHERE pt.tag_id = :tagId AND p.status = 'published'",
+      nativeQuery = true)
+  Page<PostView> findPublishedPostsByTagOptimized(@Param("tagId") Long tagId, Pageable pageable);
+
+  @Query(
+      "SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.status = :status AND p.createdAt >= :since")
+  long countUserPostsSince(
+      @Param("userId") Long userId,
+      @Param("status") PostStatus status,
+      @Param("since") java.time.LocalDateTime since);
+
+  @Query(
+      "SELECT p.status, COUNT(p) FROM Post p WHERE p.user.id = :userId GROUP BY p.status")
+  List<Object[]> countPostsByStatusForUser(@Param("userId") Long userId);
 }
