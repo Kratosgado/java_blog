@@ -1,8 +1,14 @@
 package com.kratosgado.blog.backend.repositories.jpa;
 
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.dtos.response.PostResponse.PostView;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
+import com.kratosgado.blog.enums.PostStatus;
+import com.kratosgado.blog.models.Post;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -11,14 +17,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
-import com.kratosgado.blog.dtos.response.PostResponse.PostView;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
-import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
-import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.models.Post;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -38,6 +36,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Page<PostWithoutCategory> findByCategoryId(Long categoryId, Pageable pageable);
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @Query("SELECT p FROM Post p WHERE p.id = :id")
+  Optional<PostDetails> findPostDetailsById(@Param("id") Long id);
+
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query("SELECT p FROM Post p JOIN p.tags t WHERE t.slug = :tagSlug")
   Page<PostWithoutTag> findByTagSlug(@Param("tagSlug") String tagSlug, Pageable pageable);
 
@@ -45,10 +47,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Optional<PostDetails> findBySlug(String slug);
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
-  @Query("SELECT p FROM Post p WHERE p.status = 'published' AND (p.title LIKE %:query% OR p.content LIKE %:query%)")
+  @Query(
+      "SELECT p FROM Post p WHERE p.status = 'published' AND (p.title LIKE %:query% OR p.content"
+          + " LIKE %:query%)")
   Page<PostView> searchPublishedPosts(@Param("query") String query, Pageable pageable);
 
-  @Query(value = "SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit", nativeQuery = true)
+  @Query(
+      value = "SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit",
+      nativeQuery = true)
   List<PostView> findTopNByOrderByViewsDesc(@Param("limit") int limit);
 
   @Modifying
@@ -64,5 +70,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query(value = "SELECT * FROM posts ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
   List<PostView> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
-
 }

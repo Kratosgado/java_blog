@@ -1,15 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kratosgado.blog.backend.exceptions.ForbiddenException;
 import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
 import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
@@ -31,8 +21,15 @@ import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +50,10 @@ public class PostService {
     post.setExcerpt(request.excerpt());
 
     if (request.categoryId() != null) {
-      post.setCategory(categoryRepository.findById(request.categoryId())
-          .orElseThrow(() -> new InvalidRequestException("Category not found")));
+      post.setCategory(
+          categoryRepository
+              .findById(request.categoryId())
+              .orElseThrow(() -> new InvalidRequestException("Category not found")));
     }
 
     post.setCoverImage(request.coverImage());
@@ -69,10 +68,14 @@ public class PostService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  @Caching(put = @CachePut(value = CacheNames.POSTS, key = "#result.slug"), evict = @CacheEvict(value = CacheNames.POSTLIST, allEntries = true))
+  @Caching(
+      put = @CachePut(value = CacheNames.POSTS, key = "#result.slug"),
+      evict = @CacheEvict(value = CacheNames.POSTLIST, allEntries = true))
   public PostDetails updatePost(Long postId, UpdatePostRequest request, Long userId) {
-    Post post = postRepository.findById(postId)
-        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    Post post =
+        postRepository
+            .findById(postId)
+            .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
       throw new ForbiddenException("You don't have permission to update this post");
@@ -83,18 +86,16 @@ public class PostService {
       post.setTitle(request.title());
       post.setSlug(newSlug);
     }
-    if (request.content() != null)
-      post.setContent(request.content());
-    if (request.excerpt() != null)
-      post.setExcerpt(request.excerpt());
+    if (request.content() != null) post.setContent(request.content());
+    if (request.excerpt() != null) post.setExcerpt(request.excerpt());
     if (request.categoryId() != null) {
-      post.setCategory(categoryRepository.findById(request.categoryId())
-          .orElseThrow(() -> new InvalidRequestException("Category not found")));
+      post.setCategory(
+          categoryRepository
+              .findById(request.categoryId())
+              .orElseThrow(() -> new InvalidRequestException("Category not found")));
     }
-    if (request.coverImage() != null)
-      post.setCoverImage(request.coverImage());
-    if (request.status() != null)
-      post.setStatus(request.status());
+    if (request.coverImage() != null) post.setCoverImage(request.coverImage());
+    if (request.status() != null) post.setStatus(request.status());
 
     if (request.tagIds() != null) {
       List<Tag> tags = tagRepository.findAllById(List.of(request.tagIds()));
@@ -105,13 +106,16 @@ public class PostService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  @Caching(evict = {
-      @CacheEvict(value = CacheNames.POSTLIST, allEntries = true),
-      @CacheEvict(value = CacheNames.POSTS, key = "#post.slug")
-  })
+  @Caching(
+      evict = {
+        @CacheEvict(value = CacheNames.POSTLIST, allEntries = true),
+        @CacheEvict(value = CacheNames.POSTS, key = "#post.slug")
+      })
   public void deletePost(Long postId, Long userId) {
-    Post post = postRepository.findById(postId)
-        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    Post post =
+        postRepository
+            .findById(postId)
+            .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
       throw new ForbiddenException("You don't have permission to delete this post");
@@ -122,21 +126,24 @@ public class PostService {
 
   @Cacheable(value = CacheNames.POSTS, key = "#slug")
   public PostDetails getPostBySlug(String slug) {
-    return postRepository.findBySlug(slug)
+    return postRepository
+        .findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
   }
 
   public PostDetails getPostById(Long postId) {
-    var post = postRepository.findById(postId)
+    return postRepository
+        .findPostDetailsById(postId)
         .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-    return (PostDetails) post;
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
   public PostDetails publishPost(Long postId, Long userId) {
-    Post post = postRepository.findById(postId)
-        .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+    Post post =
+        postRepository
+            .findById(postId)
+            .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
     if (!post.getUser().getId().equals(userId)) {
       throw new ForbiddenException("You don't have permission to publish this post");
@@ -165,9 +172,9 @@ public class PostService {
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
-  public PageResponse<PostWithoutCategory> getPostsByCategory(Long categoryId, PageRequest pageRequest) {
+  public PageResponse<PostWithoutCategory> getPostsByCategory(
+      Long categoryId, PageRequest pageRequest) {
     var postsPage = postRepository.findByCategoryId(categoryId, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
   }
-
 }
