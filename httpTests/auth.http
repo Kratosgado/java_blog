@@ -30,7 +30,8 @@ POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
 
 {
-  "email": "katosgado@gmail.com"
+  "email": "kratosgado@gmail.com",
+  "password": "28935617Aa@"
 }
 
 > {%

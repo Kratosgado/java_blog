@@ -3,7 +3,8 @@
 
 ### Base URL
 
-@host = http://localhost:8080/api
+@host = http://localhost:8080/api/v1
+@hostData = http://localhost:8080/api/data
 
 
 ### Get all users (Admin only, with pagination)
@@ -16,6 +17,7 @@ Authorization: {{userAuth}}
 > {%
   const body = response.body.data.content;
   client.global.set("userId", body[4].id);
+  client.global.set("userEmail", body[4].email);
 %}
 
 
@@ -24,6 +26,23 @@ Authorization: {{userAuth}}
 # @name getUser
 
 GET {{host}}/users/{{userId}} HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### Get user by ID
+
+# @name getUser
+
+GET {{hostData}}/users/72?projection=user HTTP/1.1
+Authorization: {{userAuth}}
+
+
+### Get user by ID
+
+# @name getUser
+
+GET {{hostData}}/users/by-email/{{userEmail}} HTTP/1.1
+Authorization: {{userAuth}}
 
 
 ### Update user profile
