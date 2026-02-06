@@ -46,7 +46,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   Optional<PostDetails> findBySlug(String slug);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query(
       value =
           "SELECT p.* FROM posts p WHERE p.status = 'published' AND "
@@ -66,6 +65,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Page<PostView> searchPublishedPosts(
       @Param("query") String query, @Param("searchTerm") String searchTerm, Pageable pageable);
 
+  // JPQL query - Entity graph applicable for eager loading
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query(
       "SELECT p FROM Post p WHERE p.status = 'published' AND "
@@ -86,13 +86,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   long countByUserId(Long userId);
 
-  @Query("SELECT SUM(p.views) FROM Post p WHERE p.user.id = :userId")
+  @Query("SELECT COALESCE(SUM(p.views), 0) FROM Post p WHERE p.user.id = :userId")
   long sumViewsByUserId(@Param("userId") Long userId);
 
   @Query(value = "SELECT * FROM posts ORDER BY created_at DESC LIMIT :limit", nativeQuery = true)
   List<PostView> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query(
       value =
           "SELECT p.* FROM posts p "
@@ -109,7 +108,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
           "SELECT p.* FROM posts p "
               + "WHERE p.category_id = :categoryId AND p.status = 'published' "
               + "ORDER BY p.created_at DESC",
-      countQuery = "SELECT COUNT(*) FROM posts WHERE category_id = :categoryId AND status = 'published'",
+      countQuery =
+          "SELECT COUNT(*) FROM posts WHERE category_id = :categoryId AND status = 'published'",
       nativeQuery = true)
   Page<PostView> findPublishedPostsByCategoryOptimized(
       @Param("categoryId") Long categoryId, Pageable pageable);
@@ -128,13 +128,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Page<PostView> findPublishedPostsByTagOptimized(@Param("tagId") Long tagId, Pageable pageable);
 
   @Query(
-      "SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.status = :status AND p.createdAt >= :since")
+      "SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.status = :status AND p.createdAt"
+          + " >= :since")
   long countUserPostsSince(
       @Param("userId") Long userId,
       @Param("status") PostStatus status,
       @Param("since") java.time.LocalDateTime since);
 
-  @Query(
-      "SELECT p.status, COUNT(p) FROM Post p WHERE p.user.id = :userId GROUP BY p.status")
+  @Query("SELECT p.status, COUNT(p) FROM Post p WHERE p.user.id = :userId GROUP BY p.status")
   List<Object[]> countPostsByStatusForUser(@Param("userId") Long userId);
 }
