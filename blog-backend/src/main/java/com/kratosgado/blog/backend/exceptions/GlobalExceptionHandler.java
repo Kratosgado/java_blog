@@ -1,8 +1,9 @@
 package com.kratosgado.blog.backend.exceptions;
 
+import com.kratosgado.blog.dtos.response.ResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,13 +16,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.kratosgado.blog.dtos.response.ResponseDto;
-
-import jakarta.validation.ConstraintViolationException;
-
 /**
- * Global exception handler for all REST API exceptions.
- * Maps domain exceptions to appropriate HTTP responses.
+ * Global exception handler for all REST API exceptions. Maps domain exceptions to appropriate HTTP
+ * responses.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,8 +31,16 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
   }
 
+  @ExceptionHandler(org.springframework.data.rest.webmvc.ResourceNotFoundException.class)
+  public ResponseEntity<ResponseDto<?>> handleResourceNotFound(
+      org.springframework.data.rest.webmvc.ResourceNotFoundException ex) {
+    logger.error("Resource not found: {}", ex.getMessage());
+    return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+  }
+
   @ExceptionHandler(ResourceAlreadyExistsException.class)
-  public ResponseEntity<ResponseDto<?>> handleResourceAlreadyExists(ResourceAlreadyExistsException ex) {
+  public ResponseEntity<ResponseDto<?>> handleResourceAlreadyExists(
+      ResourceAlreadyExistsException ex) {
     logger.error("Resource conflict: {}", ex.getMessage());
     return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
   }
@@ -59,14 +64,18 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ResponseDto<?>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    Map<String, String> errors = ex.getBindingResult()
-        .getFieldErrors()
-        .stream()
-        .collect(Collectors.toMap(
-            error -> error.getField(),
-            error -> error.getDefaultMessage() != null ? error.getDefaultMessage() : "Invalid value",
-            (existing, replacement) -> existing));
+  public ResponseEntity<ResponseDto<?>> handleValidationExceptions(
+      MethodArgumentNotValidException ex) {
+    Map<String, String> errors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .collect(
+                Collectors.toMap(
+                    error -> error.getField(),
+                    error ->
+                        error.getDefaultMessage() != null
+                            ? error.getDefaultMessage()
+                            : "Invalid value",
+                    (existing, replacement) -> existing));
 
     logger.error("Validation failed: {}", errors);
     return buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed", errors);
@@ -74,12 +83,13 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ResponseDto<?>> handleConstraintViolation(ConstraintViolationException ex) {
-    Map<String, String> errors = ex.getConstraintViolations()
-        .stream()
-        .collect(Collectors.toMap(
-            violation -> violation.getPropertyPath().toString(),
-            violation -> violation.getMessage(),
-            (existing, replacement) -> existing));
+    Map<String, String> errors =
+        ex.getConstraintViolations().stream()
+            .collect(
+                Collectors.toMap(
+                    violation -> violation.getPropertyPath().toString(),
+                    violation -> violation.getMessage(),
+                    (existing, replacement) -> existing));
 
     logger.error("Constraint violation: {}", errors);
     return buildErrorResponse(HttpStatus.BAD_REQUEST, "Constraint violation", errors);
@@ -111,43 +121,39 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   public ResponseEntity<ResponseDto<?>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-    String message = String.format(
-        "Parameter '%s' should be of type %s",
-        ex.getName(),
-        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+    String message =
+        String.format(
+            "Parameter '%s' should be of type %s",
+            ex.getName(),
+            ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
 
     logger.error("Type mismatch: {}", message);
     return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
   }
 
   @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<ResponseDto<?>> handleRuntimeException(RuntimeException ex, WebRequest request) {
+  public ResponseEntity<ResponseDto<?>> handleRuntimeException(
+      RuntimeException ex, WebRequest request) {
     logger.error("Runtime exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
     return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ResponseDto<?>> handleGlobalException(Exception ex, WebRequest request) {
-    logger.error("Unhandled exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
-    return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An internal server error occurred");
+    logger.error(
+        "Unhandled exception at {}: {}", request.getDescription(false), ex.getMessage(), ex);
+    return buildErrorResponse(
+        HttpStatus.INTERNAL_SERVER_ERROR, "An internal server error occurred");
   }
 
-  /**
-   * Builds a standardized error response.
-   */
+  /** Builds a standardized error response. */
   private ResponseEntity<ResponseDto<?>> buildErrorResponse(HttpStatus status, String message) {
-    return ResponseEntity
-        .status(status)
-        .body(ResponseDto.error(status.value(), message));
+    return ResponseEntity.status(status).body(ResponseDto.error(status.value(), message));
   }
 
-  /**
-   * Builds a standardized error response with validation errors.
-   */
-  private ResponseEntity<ResponseDto<?>> buildErrorResponse(HttpStatus status, String message,
-      Map<String, String> errors) {
-    return ResponseEntity
-        .status(status)
-        .body(ResponseDto.error(status.value(), message, errors));
+  /** Builds a standardized error response with validation errors. */
+  private ResponseEntity<ResponseDto<?>> buildErrorResponse(
+      HttpStatus status, String message, Map<String, String> errors) {
+    return ResponseEntity.status(status).body(ResponseDto.error(status.value(), message, errors));
   }
 }
