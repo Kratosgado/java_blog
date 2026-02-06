@@ -47,6 +47,7 @@ class UserServiceTest {
   @InjectMocks private UserService userService;
 
   private User testUser;
+  private UserResponse mockUserResponse;
 
   @BeforeEach
   void setUp() {
@@ -57,6 +58,15 @@ class UserServiceTest {
     testUser.setPassword("encodedPassword");
     testUser.setRole("USER");
     testUser.setBio("Test bio");
+
+    // Create mock UserResponse for projection-based methods
+    // Use lenient() to avoid UnnecessaryStubbingException in tests that don't use all stubs
+    mockUserResponse = org.mockito.Mockito.mock(UserResponse.class);
+    org.mockito.Mockito.lenient().when(mockUserResponse.getId()).thenReturn(1L);
+    org.mockito.Mockito.lenient().when(mockUserResponse.getEmail()).thenReturn("test@example.com");
+    org.mockito.Mockito.lenient().when(mockUserResponse.getUsername()).thenReturn("testuser");
+    org.mockito.Mockito.lenient().when(mockUserResponse.getRole()).thenReturn("USER");
+    org.mockito.Mockito.lenient().when(mockUserResponse.getBio()).thenReturn("Test bio");
   }
 
   @ParameterizedTest
@@ -133,29 +143,28 @@ class UserServiceTest {
   @DisplayName("Should get user by email")
   void getUserByEmail_WithValidEmail_ShouldReturnUser() {
     // Arrange
-    when(userRepository.findBy("test@example.com")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(mockUserResponse));
 
     // Act
     var result = userService.getUserByEmail("test@example.com");
 
     // Assert
     assertNotNull(result);
-    assertEquals(testUser.getEmail(), result.getEmail());
+    assertEquals(mockUserResponse.getEmail(), result.getEmail());
   }
 
   @Test
   @DisplayName("Should get user by username")
   void getUserByUsername_WithValidUsername_ShouldReturnUser() {
     // Arrange
-    when(userRepository.findByUsername("testuser"))
-        .thenReturn(Optional.of((UserResponse) testUser));
+    when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(mockUserResponse));
 
     // Act
     var result = userService.getUserByUsername("testuser");
 
     // Assert
     assertNotNull(result);
-    assertEquals(testUser.getUsername(), result.getUsername());
+    assertEquals(mockUserResponse.getUsername(), result.getUsername());
   }
 
   @Test
@@ -169,8 +178,8 @@ class UserServiceTest {
             .sortBy("id")
             .sortDir("DESC")
             .build();
-    Page<User> page = new PageImpl<>(List.of(testUser));
-    when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
+    Page<UserResponse> page = new PageImpl<>(List.of(mockUserResponse));
+    when(userRepository.findAllBy(any(Pageable.class))).thenReturn(page);
 
     // Act
     var result = userService.getAllUsers(pageRequest);
@@ -206,9 +215,11 @@ class UserServiceTest {
     // Arrange
     UpdateUserProfileRequest updateRequest =
         new UpdateUserProfileRequest("existinguser", null, null, null);
+    UserResponse existingUserResponse = org.mockito.Mockito.mock(UserResponse.class);
+
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.findByUsername("existinguser"))
-        .thenReturn(Optional.of((UserResponse) new User()));
+        .thenReturn(Optional.of(existingUserResponse));
 
     // Act
     BlogException exception =
