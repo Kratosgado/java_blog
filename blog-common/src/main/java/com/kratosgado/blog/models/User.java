@@ -14,16 +14,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+class Views {
+  public static class Public {}
+
+  public static class Internal {}
+}
+
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_users_username", columnList = "username"),
-    @Index(name = "idx_users_email", columnList = "email")
-})
+@Table(
+    name = "users",
+    indexes = {
+      @Index(name = "idx_users_username", columnList = "username"),
+      @Index(name = "idx_users_email", columnList = "email")
+    })
 public class User {
 
   @Id
@@ -47,20 +55,34 @@ public class User {
   private String website;
   private String location;
 
-  @Builder.Default
-  private String role = "USER";
+  @Builder.Default private String role = "USER";
 
   @Override
   public String toString() {
-    return "User{" +
-        "id=" + id +
-        ", username='" + username + '\'' +
-        ", email='" + email + '\'' +
-        ", avatarUrl='" + avatarUrl + '\'' +
-        ", bio='" + bio + '\'' +
-        ", website='" + website + '\'' +
-        ", location='" + location + '\'' +
-        ", role='" + role + '\'' +
-        '}';
+    return "User{"
+        + "id="
+        + id
+        + ", username='"
+        + username
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", avatarUrl='"
+        + avatarUrl
+        + '\''
+        + ", bio='"
+        + bio
+        + '\''
+        + ", website='"
+        + website
+        + '\''
+        + ", location='"
+        + location
+        + '\''
+        + ", role='"
+        + role
+        + '\''
+        + '}';
   }
 }
