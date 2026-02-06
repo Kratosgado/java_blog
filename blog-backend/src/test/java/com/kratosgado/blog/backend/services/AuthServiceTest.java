@@ -72,7 +72,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when user not found during login")
   void login_WithInvalidEmail_ShouldThrowException() {
     // Arrange
-    when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.empty());
+    when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.empty());
 
     // Act
     BlogException exception =
@@ -119,7 +119,10 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when email already exists during registration")
   void register_WithExistingEmail_ShouldThrowException() {
     // Arrange
-    when(userRepository.findBy(registerRequest.email())).thenReturn(Optional.of(testUser));
+    com.kratosgado.blog.dtos.response.UserResponse existingUser =
+        org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.UserResponse.class);
+    when(userRepository.findByEmail(registerRequest.email()))
+        .thenReturn(Optional.of(existingUser));
 
     // Act
     BlogException exception =

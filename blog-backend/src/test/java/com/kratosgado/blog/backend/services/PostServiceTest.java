@@ -179,7 +179,9 @@ class PostServiceTest {
             .build();
     PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
     Page<PostView> page = new PageImpl<>(List.of(mockPostView));
-    when(postRepository.searchPublishedPosts(eq(keyword), any(Pageable.class))).thenReturn(page);
+    // Service adds wildcards: wildcardQuery = "%" + keyword + "%"
+    when(postRepository.searchPublishedPosts(eq("%" + keyword + "%"), eq(keyword), any(Pageable.class)))
+        .thenReturn(page);
 
     // Act
     PageResponse<PostView> result = postService.searchPosts(keyword, pageRequest);
