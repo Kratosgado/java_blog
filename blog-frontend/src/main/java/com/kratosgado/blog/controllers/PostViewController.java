@@ -206,24 +206,43 @@ public class PostViewController implements Initializable {
 
       // Convert PostResponse to Post
       currentPost = new Post();
-      currentPost.setId(postResponse.id());
-      currentPost.setUserId(postResponse.authorId());
-      currentPost.setCategoryId(postResponse.categoryId());
-      currentPost.setTitle(postResponse.title());
-      currentPost.setContent(postResponse.content());
-      currentPost.setExcerpt(postResponse.excerpt());
-      currentPost.setStatus(postResponse.status());
-      currentPost.setCreatedAt(postResponse.createdAt());
-      currentPost.setUpdatedAt(postResponse.updatedAt());
-      currentPost.setViews(Integer.valueOf(postResponse.views()));
-      currentPost.setLikesCount(Integer.valueOf(postResponse.likesCount()));
-      currentPost.setCoverImage(postResponse.coverImage());
-      if (postResponse.author() != null) {
-        User user = new User();
-        user.setUsername(postResponse.author().username());
-        user.setAvatarUrl(postResponse.author().avatarUrl());
-        user.setId(postResponse.author().id());
-        currentPost.setUser(user);
+      currentPost.setId(postResponse.getId());
+      currentPost.setTitle(postResponse.getTitle());
+      // Get content if PostDetails
+      if (postResponse instanceof com.kratosgado.blog.dtos.response.PostResponse.PostDetails) {
+        currentPost.setContent(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) postResponse).getContent());
+        currentPost.setUpdatedAt(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) postResponse).getUpdatedAt());
+      }
+      currentPost.setExcerpt(postResponse.getExcerpt());
+      currentPost.setStatus(postResponse.getStatus());
+      currentPost.setCreatedAt(postResponse.getCreatedAt());
+      currentPost.setViews(postResponse.getViews());
+      currentPost.setLikesCount(postResponse.getLikesCount());
+      currentPost.setCoverImage(postResponse.getCoverImage());
+
+      // Get user from user object if available
+      if (postResponse instanceof com.kratosgado.blog.dtos.response.PostResponse.WithUser) {
+        var userSummary = ((com.kratosgado.blog.dtos.response.PostResponse.WithUser) postResponse).getUser();
+        if (userSummary != null) {
+          currentPost.setUserId(userSummary.getId());
+          User user = new User();
+          user.setId(userSummary.getId());
+          user.setUsername(userSummary.getUsername());
+          user.setAvatarUrl(userSummary.getAvatarUrl());
+          currentPost.setUser(user);
+        }
+      }
+
+      // Get category from category object if available
+      if (postResponse instanceof com.kratosgado.blog.dtos.response.PostResponse.WithCategory) {
+        var categorySummary = ((com.kratosgado.blog.dtos.response.PostResponse.WithCategory) postResponse).getCategory();
+        if (categorySummary != null) {
+          currentPost.setCategory(com.kratosgado.blog.models.Category.builder()
+              .id(categorySummary.getId())
+              .name(categorySummary.getName())
+              .slug(categorySummary.getSlug())
+              .build());
+        }
       }
 
       logger.debug("Post loaded successfully: {}", id);
@@ -243,15 +262,9 @@ public class PostViewController implements Initializable {
   private void displayPost(Post post) {
     postTitleLabel.setText(post.getTitle());
 
-    // Fetch and display category name
-    if (post.getCategoryId() != null) {
-      try {
-        Category category = categoryService.getCategoryById(post.getCategoryId());
-        categoryLabel.setText(category != null ? category.getName() : "Uncategorized");
-      } catch (Exception e) {
-        logger.error("Failed to load category", e);
-        categoryLabel.setText("Uncategorized");
-      }
+    // Display category name from loaded category
+    if (post.getCategory() != null) {
+      categoryLabel.setText(post.getCategory().getName());
     } else {
       categoryLabel.setText("Uncategorized");
     }
@@ -763,16 +776,17 @@ public class PostViewController implements Initializable {
       if (currentPost.getStatus().equals(PostStatus.published)) {
         // Unpublish
         currentPost.setStatus(PostStatus.draft);
+        Long categoryId = currentPost.getCategory() != null ? currentPost.getCategory().getId() : null;
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
             currentPost.getTitle(),
             currentPost.getContent(),
             currentPost.getExcerpt(),
-            currentPost.getCategoryId(),
+            categoryId,
             currentPost.getCoverImage(),
             PostStatus.draft,
             null);
 
-        Post updated = postService.updatePost(currentPost.getId(), dto);
+        var updated = postService.updatePost(currentPost.getId(), dto);
         if (updated != null) {
           publishBtn.setText("Publish");
           publishBtn.setStyle(
@@ -785,16 +799,17 @@ public class PostViewController implements Initializable {
         }
       } else {
         // Publish
+        Long categoryId = currentPost.getCategory() != null ? currentPost.getCategory().getId() : null;
         com.kratosgado.blog.dtos.request.UpdatePostRequest dto = new com.kratosgado.blog.dtos.request.UpdatePostRequest(
             currentPost.getTitle(),
             currentPost.getContent(),
             currentPost.getExcerpt(),
-            currentPost.getCategoryId(),
+            categoryId,
             currentPost.getCoverImage(),
             PostStatus.published,
             null);
 
-        Post published = postService.updatePost(currentPost.getId(), dto);
+        var published = postService.updatePost(currentPost.getId(), dto);
         if (published != null) {
           currentPost.setStatus(PostStatus.published);
           publishBtn.setText("Published");

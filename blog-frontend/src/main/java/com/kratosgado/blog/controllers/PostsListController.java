@@ -301,16 +301,35 @@ public class PostsListController {
       // Convert PageResponse<PostResponse> to List<Post>
       var allPosts = pageResponse.content().stream().map(pr -> {
         Post p = new Post();
-        p.setId(pr.id());
-        p.setTitle(pr.title());
-        p.setContent(pr.content());
-        p.setExcerpt(pr.excerpt());
-        p.setStatus(pr.status());
-        p.setCoverImage(pr.coverImage());
-        p.setUserId(pr.authorId());
-        p.setCategoryId(pr.categoryId());
-        p.setCreatedAt(pr.createdAt());
-        p.setUpdatedAt(pr.updatedAt());
+        p.setId(pr.getId());
+        p.setTitle(pr.getTitle());
+        // Get content if PostDetails
+        if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.PostDetails) {
+          p.setContent(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) pr).getContent());
+          p.setUpdatedAt(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) pr).getUpdatedAt());
+        }
+        p.setExcerpt(pr.getExcerpt());
+        p.setStatus(pr.getStatus());
+        p.setCoverImage(pr.getCoverImage());
+        // Get user ID from user object if available
+        if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.WithUser) {
+          var user = ((com.kratosgado.blog.dtos.response.PostResponse.WithUser) pr).getUser();
+          if (user != null) {
+            p.setUserId(user.getId());
+          }
+        }
+        // Get category from category object if available
+        if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.WithCategory) {
+          var category = ((com.kratosgado.blog.dtos.response.PostResponse.WithCategory) pr).getCategory();
+          if (category != null) {
+            p.setCategory(com.kratosgado.blog.models.Category.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .slug(category.getSlug())
+                .build());
+          }
+        }
+        p.setCreatedAt(pr.getCreatedAt());
         return p;
       }).toList();
       
@@ -390,16 +409,35 @@ public class PostsListController {
         // Convert PageResponse<PostResponse> to List<Post>
         var allPosts = pageResponse.content().stream().map(pr -> {
           Post p = new Post();
-          p.setId(pr.id());
-          p.setTitle(pr.title());
-          p.setContent(pr.content());
-          p.setExcerpt(pr.excerpt());
-          p.setStatus(pr.status());
-          p.setCoverImage(pr.coverImage());
-          p.setUserId(pr.authorId());
-          p.setCategoryId(pr.categoryId());
-          p.setCreatedAt(pr.createdAt());
-          p.setUpdatedAt(pr.updatedAt());
+          p.setId(pr.getId());
+          p.setTitle(pr.getTitle());
+          // Get content if PostDetails
+          if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.PostDetails) {
+            p.setContent(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) pr).getContent());
+            p.setUpdatedAt(((com.kratosgado.blog.dtos.response.PostResponse.PostDetails) pr).getUpdatedAt());
+          }
+          p.setExcerpt(pr.getExcerpt());
+          p.setStatus(pr.getStatus());
+          p.setCoverImage(pr.getCoverImage());
+          // Get user ID from user object if available
+          if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.WithUser) {
+            var user = ((com.kratosgado.blog.dtos.response.PostResponse.WithUser) pr).getUser();
+            if (user != null) {
+              p.setUserId(user.getId());
+            }
+          }
+          // Get category from category object if available
+          if (pr instanceof com.kratosgado.blog.dtos.response.PostResponse.WithCategory) {
+            var category = ((com.kratosgado.blog.dtos.response.PostResponse.WithCategory) pr).getCategory();
+            if (category != null) {
+              p.setCategory(com.kratosgado.blog.models.Category.builder()
+                  .id(category.getId())
+                  .name(category.getName())
+                  .slug(category.getSlug())
+                  .build());
+            }
+          }
+          p.setCreatedAt(pr.getCreatedAt());
           return p;
         }).toList();
         

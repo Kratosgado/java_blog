@@ -1,10 +1,9 @@
 package com.kratosgado.blog.dtos.response;
 
+import com.kratosgado.blog.enums.PostStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import com.kratosgado.blog.enums.PostStatus;
 
 /**
  * Projection interfaces for post response data. Uses composition pattern to create different views
@@ -30,15 +29,19 @@ public interface PostResponse {
     @Schema(description = "URL-friendly post slug", example = "getting-started-with-spring-boot")
     String getSlug();
 
-    @Schema(description = "Brief excerpt or summary of the post",
+    @Schema(
+        description = "Brief excerpt or summary of the post",
         example = "Learn the basics of Spring Boot...")
     String getExcerpt();
 
-    @Schema(description = "Publication status of the post", example = "PUBLISHED",
+    @Schema(
+        description = "Publication status of the post",
+        example = "PUBLISHED",
         allowableValues = {"DRAFT", "PUBLISHED", "ARCHIVED"})
     PostStatus getStatus();
 
-    @Schema(description = "URL to the post's cover image",
+    @Schema(
+        description = "URL to the post's cover image",
         example = "https://example.com/images/spring-boot.jpg")
     String getCoverImage();
 
@@ -58,7 +61,8 @@ public interface PostResponse {
    */
   @Schema(description = "Post data including full content and update timestamp")
   public interface IPost extends PostSummary {
-    @Schema(description = "Full post content in markdown or HTML format",
+    @Schema(
+        description = "Full post content in markdown or HTML format",
         example = "# Introduction\n\nSpring Boot makes it easy to create...")
     String getContent();
 
@@ -66,27 +70,21 @@ public interface PostResponse {
     LocalDateTime getUpdatedAt();
   }
 
-  /**
-   * Mixin interface for including author/user information.
-   */
+  /** Mixin interface for including author/user information. */
   @Schema(description = "Mixin interface providing author details")
   public interface WithUser {
     @Schema(description = "Author information")
     AuthorSummary getUser();
   }
 
-  /**
-   * Mixin interface for including category information.
-   */
+  /** Mixin interface for including category information. */
   @Schema(description = "Mixin interface providing category details")
   public interface WithCategory {
     @Schema(description = "Category information")
     CategorySummary getCategory();
   }
 
-  /**
-   * Mixin interface for including tag list.
-   */
+  /** Mixin interface for including tag list. */
   @Schema(description = "Mixin interface providing list of tags")
   public interface WithTag {
     @Schema(description = "List of tags associated with the post")
@@ -98,38 +96,32 @@ public interface PostResponse {
    * comprehensive overview without full content.
    */
   @Schema(description = "Complete post summary with author, category, and tags")
-  public interface PostView extends PostSummary, WithUser, WithCategory, WithTag {
-  }
+  public interface PostView extends PostSummary, WithUser, WithCategory, WithTag {}
 
   /**
    * Complete post details view with full content and all relationships. Used in post detail
    * endpoints for complete post information.
    */
   @Schema(description = "Complete post details with full content, author, category, and tags")
-  public interface PostDetails extends IPost, WithUser, WithCategory, WithTag {
-  }
+  public interface PostDetails extends IPost, WithUser, WithCategory, WithTag {}
 
   /**
    * Post view without user information. Used when author details are not needed or should be
    * excluded.
    */
   @Schema(description = "Post summary with category and tags but without author information")
-  public interface PostWithoutUser extends PostSummary, WithCategory, WithTag {
-  }
+  public interface PostWithoutUser extends PostSummary, WithCategory, WithTag {}
 
   /**
    * Post view without tag information. Used when tag relationships should be excluded for
    * performance.
    */
   @Schema(description = "Post summary with author and category but without tags")
-  public interface PostWithoutTag extends PostSummary, WithUser, WithCategory {
-  }
+  public interface PostWithoutTag extends PostSummary, WithUser, WithCategory {}
 
   /**
    * Post view without category information. Used when category relationships should be excluded.
    */
   @Schema(description = "Post summary with author and tags but without category")
-  public interface PostWithoutCategory extends PostSummary, WithUser, WithTag {
-  }
-
+  public interface PostWithoutCategory extends PostSummary, WithUser, WithTag {}
 }

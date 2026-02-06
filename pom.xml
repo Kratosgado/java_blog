@@ -196,6 +196,7 @@
             <exclude>**/utils/performance/**</exclude>
             <exclude>**/annotations/**</exclude>
             <exclude>**/graphql/**</exclude>
+            <exclude>**/blog-frontend/**</exclude>
           </excludes>
         </configuration>
       </plugin>
