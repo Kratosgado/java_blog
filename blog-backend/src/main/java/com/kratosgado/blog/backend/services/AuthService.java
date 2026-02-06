@@ -1,10 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
 import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
 import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
@@ -12,8 +7,11 @@ import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +21,10 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
 
   public User login(LoginRequest request) {
-    var user = userRepository.findByEmail(request.email())
-        .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+    var user =
+        userRepository
+            .findBy(request.email())
+            .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
       throw new UnauthorizedException("Invalid email or password");
