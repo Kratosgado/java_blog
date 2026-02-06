@@ -8,21 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
@@ -39,25 +24,33 @@ import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("PostService Tests")
 class PostServiceTest {
 
-  @Mock
-  private PostRepository postRepository;
+  @Mock private PostRepository postRepository;
 
-  @Mock
-  private TagRepository tagRepository;
+  @Mock private TagRepository tagRepository;
 
-  @Mock
-  private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-  @Mock
-  private CategoryRepository categoryRepository;
+  @Mock private CategoryRepository categoryRepository;
 
-  @InjectMocks
-  private PostService postService;
+  @InjectMocks private PostService postService;
 
   private Post testPost;
   private User testUser;
@@ -88,14 +81,15 @@ class PostServiceTest {
     testPost.setCreatedAt(LocalDateTime.now());
     testPost.setSlug("test-post");
 
-    updateRequest = new UpdatePostRequest(
-        "Updated Title",
-        "Updated Content",
-        "Updated Excerpt",
-        1L,
-        "new-cover.jpg",
-        PostStatus.published,
-        new Long[] { 3L });
+    updateRequest =
+        new UpdatePostRequest(
+            "Updated Title",
+            "Updated Content",
+            "Updated Excerpt",
+            1L,
+            "new-cover.jpg",
+            PostStatus.published,
+            new Long[] {3L});
   }
 
   @Test
@@ -105,8 +99,8 @@ class PostServiceTest {
     when(postRepository.findById(eq(1L))).thenReturn(Optional.empty());
 
     // Act & Assert
-    BlogException exception = assertThrows(BlogException.class,
-        () -> postService.updatePost(1L, updateRequest, 1L));
+    BlogException exception =
+        assertThrows(BlogException.class, () -> postService.updatePost(1L, updateRequest, 1L));
     assertEquals("Post not found", exception.getMessage());
   }
 
@@ -115,7 +109,10 @@ class PostServiceTest {
   void getPostBySlug_WithValidSlug_ShouldReturnPostResponse() {
     // Arrange
     String slug = "test-post";
-    when(postRepository.findBySlug(slug)).thenReturn(Optional.of((PostDetails) testPost));
+    PostDetails mockPostDetails = org.mockito.Mockito.mock(PostDetails.class);
+    when(mockPostDetails.getId()).thenReturn(testPost.getId());
+    when(mockPostDetails.getSlug()).thenReturn(testPost.getSlug());
+    when(postRepository.findBySlug(slug)).thenReturn(Optional.of(mockPostDetails));
 
     // Act
     PostDetails result = postService.getPostBySlug(slug);
@@ -131,7 +128,9 @@ class PostServiceTest {
   @DisplayName("Should successfully get post by ID from database")
   void getPostById_WithValidId_ShouldReturnPostResponseFromDatabase() {
     // Arrange
-    when(postRepository.findById(eq(1L))).thenReturn(Optional.of(testPost));
+    PostDetails mockPostDetails = org.mockito.Mockito.mock(PostDetails.class);
+    when(mockPostDetails.getId()).thenReturn(testPost.getId());
+    when(postRepository.findPostDetailsById(eq(1L))).thenReturn(Optional.of(mockPostDetails));
 
     // Act
     PostDetails result = postService.getPostById(1L);
@@ -139,18 +138,24 @@ class PostServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testPost.getId(), result.getId());
-    verify(postRepository).findById(eq(1L));
+    verify(postRepository).findPostDetailsById(eq(1L));
   }
 
   @Test
   @DisplayName("Should successfully get published posts")
   void getPublishedPosts_ShouldReturnPageOfPosts() {
     // Arrange
-    PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
-        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<PostView> page = new PageImpl<>(List.of((PostView) testPost));
-    when(postRepository.findByStatus(eq(PostStatus.published),
-        any(Pageable.class))).thenReturn(page);
+    PageRequest pageRequest =
+        com.kratosgado.blog.dtos.request.PageRequest.builder()
+            .page(0)
+            .size(10)
+            .sortBy("createdAt")
+            .sortDir("DESC")
+            .build();
+    PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
+    Page<PostView> page = new PageImpl<>(List.of(mockPostView));
+    when(postRepository.findByStatus(eq(PostStatus.published), any(Pageable.class)))
+        .thenReturn(page);
 
     // Act
     PageResponse<PostView> result = postService.getPublishedPosts(pageRequest);
@@ -165,9 +170,15 @@ class PostServiceTest {
   void searchPosts_WithKeyword_ShouldReturnPageOfPosts() {
     // Arrange
     String keyword = "test";
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
-        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<PostView> page = new PageImpl<>(List.of((PostView) testPost));
+    com.kratosgado.blog.dtos.request.PageRequest pageRequest =
+        com.kratosgado.blog.dtos.request.PageRequest.builder()
+            .page(0)
+            .size(10)
+            .sortBy("createdAt")
+            .sortDir("DESC")
+            .build();
+    PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
+    Page<PostView> page = new PageImpl<>(List.of(mockPostView));
     when(postRepository.searchPublishedPosts(eq(keyword), any(Pageable.class))).thenReturn(page);
 
     // Act
@@ -182,9 +193,15 @@ class PostServiceTest {
   @DisplayName("Should successfully get user posts")
   void getUserPosts_WithUserId_ShouldReturnPageOfPostResponses() {
     // Arrange
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
-        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<PostWithoutUser> page = new PageImpl<>(List.of((PostWithoutUser) testPost));
+    com.kratosgado.blog.dtos.request.PageRequest pageRequest =
+        com.kratosgado.blog.dtos.request.PageRequest.builder()
+            .page(0)
+            .size(10)
+            .sortBy("createdAt")
+            .sortDir("DESC")
+            .build();
+    PostWithoutUser mockPostWithoutUser = org.mockito.Mockito.mock(PostWithoutUser.class);
+    Page<PostWithoutUser> page = new PageImpl<>(List.of(mockPostWithoutUser));
     when(postRepository.findByUserId(eq(1L), any(Pageable.class))).thenReturn(page);
 
     // Act
@@ -200,9 +217,11 @@ class PostServiceTest {
   @DisplayName("Should successfully get posts by category")
   void getPostsByCategory_WithCategoryId_ShouldReturnPageOfPostResponses() {
     // Arrange
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
-        .page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
-    Page<PostWithoutCategory> page = new PageImpl<>(List.of((PostWithoutCategory) testPost));
+    PageRequest pageRequest =
+        PageRequest.builder().page(0).size(10).sortBy("createdAt").sortDir("DESC").build();
+    PostWithoutCategory mockPostWithoutCategory =
+        org.mockito.Mockito.mock(PostWithoutCategory.class);
+    Page<PostWithoutCategory> page = new PageImpl<>(List.of(mockPostWithoutCategory));
     when(postRepository.findByCategoryId(eq(1L), any(Pageable.class))).thenReturn(page);
 
     // Act
@@ -213,5 +232,4 @@ class PostServiceTest {
     assertEquals(1, result.totalElements());
     assertEquals(1, result.content().size());
   }
-
 }
