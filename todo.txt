@@ -1,4 +1,0 @@
-replace review and comments with mongodb
-use named entity graphs to fix n+1 queries
-use projections instead of DTOs
-remove AI notes in lab-5

@@ -180,8 +180,7 @@ class PostServiceTest {
     PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
     Page<PostView> page = new PageImpl<>(List.of(mockPostView));
     // Service adds wildcards: wildcardQuery = "%" + keyword + "%"
-    when(postRepository.searchPublishedPosts(eq("%" + keyword + "%"), eq(keyword), any(Pageable.class)))
-        .thenReturn(page);
+    when(postRepository.searchPublishedPosts(eq(keyword), any(Pageable.class))).thenReturn(page);
 
     // Act
     PageResponse<PostView> result = postService.searchPosts(keyword, pageRequest);
@@ -233,5 +232,64 @@ class PostServiceTest {
     assertNotNull(result);
     assertEquals(1, result.totalElements());
     assertEquals(1, result.content().size());
+  }
+
+  @Test
+  @DisplayName("Should successfully get trending posts")
+  void getTrendingPosts_ShouldReturnPageOfPosts() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).build();
+    PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
+    Page<PostView> page = new PageImpl<>(List.of(mockPostView));
+
+    when(postRepository.findTrendingPosts(
+            eq(PostStatus.published), any(LocalDateTime.class), any(Pageable.class)))
+        .thenReturn(page);
+
+    // Act
+    PageResponse<PostView> result = postService.getTrendingPosts(pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
+  }
+
+  @Test
+  @DisplayName("Should successfully get optimized category posts")
+  void getCategoryPostsOptimized_ShouldReturnPageOfPosts() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).build();
+    PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
+    Page<PostView> page = new PageImpl<>(List.of(mockPostView));
+
+    when(postRepository.findPublishedPostsByCategoryOptimized(eq(1L), any(Pageable.class)))
+        .thenReturn(page);
+
+    // Act
+    PageResponse<PostView> result =
+        postService.getPublishedPostsByCategoryOptimized(1L, pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
+  }
+
+  @Test
+  @DisplayName("Should successfully get optimized tag posts")
+  void getTagPostsOptimized_ShouldReturnPageOfPosts() {
+    // Arrange
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).build();
+    PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
+    Page<PostView> page = new PageImpl<>(List.of(mockPostView));
+
+    when(postRepository.findPublishedPostsByTagOptimized(eq(1L), any(Pageable.class)))
+        .thenReturn(page);
+
+    // Act
+    PageResponse<PostView> result = postService.getPublishedPostsByTagOptimized(1L, pageRequest);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(1, result.totalElements());
   }
 }

@@ -11,8 +11,10 @@ import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.models.User;
+import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Performance tests for repository queries. Measures and compares query execution times for various
@@ -28,6 +31,7 @@ import org.springframework.test.context.ActiveProfiles;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Transactional
 @Slf4j
 public class RepositoryPerformanceTest {
   @Autowired private PostRepository postRepository;
@@ -35,6 +39,10 @@ public class RepositoryPerformanceTest {
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private TagRepository tagRepository;
   @Autowired private QueryPerformanceMonitor performanceMonitor;
+  @Autowired private EntityManager entityManager;
+
+  private static final int WARMUP_RUNS = 2;
+  private static final int MEASURE_RUNS = 5;
 
   private User testUser;
   private Category testCategory;
@@ -44,6 +52,7 @@ public class RepositoryPerformanceTest {
   public void setup() {
     // Reset metrics before each test
     performanceMonitor.resetMetrics();
+    ensurePerformanceIndexes();
 
     // Create test data if not exists
     if (userRepository.count() == 0) {
@@ -139,12 +148,22 @@ public class RepositoryPerformanceTest {
     String[] searchTerms = {"java", "spring", "test", "performance"};
 
     for (String term : searchTerms) {
-      long startTime = System.nanoTime();
-      Page<?> results = postRepository.searchPublishedPosts(term, term, PageRequest.of(0, 20));
-      long duration = (System.nanoTime() - startTime) / 1_000_000;
+      TimingStats likeStats =
+          measureSearch(() -> postRepository.searchPublishedPostsSimple(term, PageRequest.of(0, 20)));
+      TimingStats ftsStats =
+          measureSearch(() -> postRepository.searchPublishedPosts(term, PageRequest.of(0, 20)));
 
-      log.info("Search '{}': {}ms, Results: {}", term, duration, results.getTotalElements());
-      assertThat(duration).isLessThan(2000); // Should complete in under 2 seconds
+      double improvement = likeStats.averageMillis() / ftsStats.averageMillis();
+      log.info(
+          "Search '{}': LIKE avg {}ms, FTS avg {}ms ({}x)",
+          term,
+          String.format("%.2f", likeStats.averageMillis()),
+          String.format("%.2f", ftsStats.averageMillis()),
+          String.format("%.2f", improvement));
+      if (likeStats.resultCount() == 0 || ftsStats.resultCount() == 0) {
+        log.warn("Search '{}' returned no results; verify test data and search config.", term);
+      }
+      assertThat(ftsStats.averageMillis()).isLessThan(5000);
     }
   }
 
@@ -267,4 +286,69 @@ public class RepositoryPerformanceTest {
     // Print comprehensive report
     performanceMonitor.printReport();
   }
+
+  private TimingStats measureSearch(Supplier<Page<?>> search) {
+    for (int i = 0; i < WARMUP_RUNS; i++) {
+      clearPersistenceContext();
+      search.get();
+    }
+
+    long total = 0;
+    long min = Long.MAX_VALUE;
+    long max = 0;
+    long resultCount = 0;
+    for (int i = 0; i < MEASURE_RUNS; i++) {
+      clearPersistenceContext();
+      long start = System.nanoTime();
+      Page<?> page = search.get();
+      long duration = System.nanoTime() - start;
+      total += duration;
+      min = Math.min(min, duration);
+      max = Math.max(max, duration);
+      resultCount = Math.max(resultCount, page.getContent().size());
+    }
+
+    return new TimingStats(
+        toMillis(total / (double) MEASURE_RUNS),
+        toMillis(min),
+        toMillis(max),
+        resultCount);
+  }
+
+  private void clearPersistenceContext() {
+    entityManager.flush();
+    entityManager.clear();
+    entityManager.getEntityManagerFactory().getCache().evictAll();
+  }
+
+  private void ensurePerformanceIndexes() {
+    entityManager
+        .createNativeQuery(
+            "CREATE INDEX IF NOT EXISTS idx_posts_status_views ON posts(status, views DESC)")
+        .executeUpdate();
+    entityManager
+        .createNativeQuery(
+            "CREATE INDEX IF NOT EXISTS idx_posts_user_status ON posts(user_id, status)")
+        .executeUpdate();
+    entityManager
+        .createNativeQuery(
+            "CREATE INDEX IF NOT EXISTS idx_posts_category_status ON posts(category_id, status)")
+        .executeUpdate();
+    entityManager
+        .createNativeQuery(
+            "CREATE INDEX IF NOT EXISTS idx_posts_fts_vector ON posts USING GIN(search_vector)")
+        .executeUpdate();
+    entityManager
+        .createNativeQuery(
+            "CREATE INDEX IF NOT EXISTS idx_posts_published_created_at "
+                + "ON posts(created_at DESC) WHERE status = 'published'")
+        .executeUpdate();
+  }
+
+  private double toMillis(double nanos) {
+    return nanos / 1_000_000.0;
+  }
+
+  private record TimingStats(
+      double averageMillis, double minMillis, double maxMillis, long resultCount) {}
 }

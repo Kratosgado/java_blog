@@ -162,10 +162,7 @@ public class PostService {
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> searchPosts(String keyword, PageRequest pageRequest) {
     // Use optimized full-text search with PostgreSQL tsvector
-    String wildcardQuery = "%" + keyword + "%";
-    var postsPage =
-        postRepository.searchPublishedPosts(
-            wildcardQuery, keyword, pageRequest.toPageable());
+    var postsPage = postRepository.searchPublishedPosts(keyword, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -179,6 +176,35 @@ public class PostService {
   public PageResponse<PostWithoutCategory> getPostsByCategory(
       Long categoryId, PageRequest pageRequest) {
     var postsPage = postRepository.findByCategoryId(categoryId, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
+  }
+
+  @Cacheable(value = CacheNames.POSTLIST, key = "'trending-' + #pageRequest.toString()")
+  public PageResponse<PostView> getTrendingPosts(PageRequest pageRequest) {
+    // Default to trending in last 30 days
+    java.time.LocalDateTime sinceDate = java.time.LocalDateTime.now().minusDays(30);
+    var postsPage =
+        postRepository.findTrendingPosts(PostStatus.published, sinceDate, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
+  }
+
+  @Cacheable(
+      value = CacheNames.POSTLIST,
+      key = "'category-opt-' + #categoryId + '-' + #pageRequest.toString()")
+  public PageResponse<PostView> getPublishedPostsByCategoryOptimized(
+      Long categoryId, PageRequest pageRequest) {
+    var postsPage =
+        postRepository.findPublishedPostsByCategoryOptimized(categoryId, pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
+  }
+
+  @Cacheable(
+      value = CacheNames.POSTLIST,
+      key = "'tag-opt-' + #tagId + '-' + #pageRequest.toString()")
+  public PageResponse<PostView> getPublishedPostsByTagOptimized(
+      Long tagId, PageRequest pageRequest) {
+    var postsPage =
+        postRepository.findPublishedPostsByTagOptimized(tagId, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
   }
 }
