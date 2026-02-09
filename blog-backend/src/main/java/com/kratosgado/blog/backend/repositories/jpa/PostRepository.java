@@ -23,23 +23,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostView> findByStatus(PostStatus status, Pageable pageable);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @EntityGraph(value = "post-without-user", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostWithoutUser> findByUserUsername(String username, Pageable pageable);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @EntityGraph(value = "post-without-category", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostWithoutCategory> findByCategorySlug(String slug, Pageable pageable);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @EntityGraph(value = "post-without-user", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostWithoutUser> findByUserId(Long userId, Pageable pageable);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @EntityGraph(value = "post-without-category", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostWithoutCategory> findByCategoryId(Long categoryId, Pageable pageable);
 
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   @Query("SELECT p FROM Post p WHERE p.id = :id")
   Optional<PostDetails> findPostDetailsById(@Param("id") Long id);
 
-  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
+  @EntityGraph(value = "post-without-tags", type = EntityGraph.EntityGraphType.LOAD)
   @Query("SELECT p FROM Post p JOIN p.tags t WHERE t.slug = :tagSlug")
   Page<PostWithoutTag> findByTagSlug(@Param("tagSlug") String tagSlug, Pageable pageable);
 
@@ -48,22 +48,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query(
       value =
-          "SELECT p.* FROM posts p WHERE p.status = 'published' AND "
-              + "(p.title ILIKE :query OR p.content ILIKE :query OR "
-              + "to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')) @@ "
-              + "plainto_tsquery('english', :searchTerm)) "
-              + "ORDER BY "
-              + "CASE WHEN p.title ILIKE :query THEN 1 ELSE 2 END, "
-              + "ts_rank(to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')), "
-              + "plainto_tsquery('english', :searchTerm)) DESC",
+          """
+          SELECT * FROM posts
+          WHERE status = 'published'
+          AND search_vector @@ websearch_to_tsquery('english', :searchTerm)
+          ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', :searchTerm)) DESC
+          """,
       countQuery =
-          "SELECT COUNT(*) FROM posts p WHERE p.status = 'published' AND "
-              + "(p.title ILIKE :query OR p.content ILIKE :query OR "
-              + "to_tsvector('english', p.title || ' ' || COALESCE(p.content, '')) @@ "
-              + "plainto_tsquery('english', :searchTerm))",
+          """
+          SELECT count(*) FROM posts
+          WHERE status = 'published'
+          AND search_vector @@ websearch_to_tsquery('english', :searchTerm)
+          """,
       nativeQuery = true)
-  Page<PostView> searchPublishedPosts(
-      @Param("query") String query, @Param("searchTerm") String searchTerm, Pageable pageable);
+  Page<PostView> searchPublishedPosts(@Param("searchTerm") String searchTerm, Pageable pageable);
 
   // JPQL query - Entity graph applicable for eager loading
   @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)

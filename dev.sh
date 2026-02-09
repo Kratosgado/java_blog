@@ -15,6 +15,7 @@ start)
   echo "MongoDB:    localhost:27017 (blog_nosql)"
   ;;
 run)
+  mvn -pl blog-common clean install -DskipTests
   if [ "$2" == "all" ]; then
     echo "Running all applications..."
     cd blog-backend && mvn clean spring-boot:run &
@@ -43,6 +44,15 @@ stop | exit)
 setup)
   echo "Running complete database setup..."
   ./setup-databases.sh
+  ;;
+migrate)
+  echo "Applying V3 performance indexes..."
+  if [ "$(docker ps -q -f name=postgis)" ]; then
+    docker exec -i postgis psql -U postgres -d blog_db <blog-backend/src/main/resources/db/migration/V3__add_performance_indexes.sql
+    echo "✓ Migration applied!"
+  else
+    echo "✗ PostgreSQL is not running. Start it with '$0 start'."
+  fi
   ;;
 test)
   echo "Running all tests..."

@@ -30,11 +30,6 @@ import lombok.Setter;
     name = "posts",
     indexes = {
       @Index(name = "idx_posts_slug", columnList = "slug"),
-      @Index(name = "idx_posts_title", columnList = "title"),
-      @Index(name = "idx_posts_status", columnList = "status"),
-      @Index(name = "idx_posts_created_at", columnList = "created_at"),
-      @Index(name = "idx_posts_user_id", columnList = "user_id"),
-      @Index(name = "idx_posts_category_id", columnList = "category_id")
     })
 @NamedEntityGraph(
     name = "post-with-details",
@@ -44,9 +39,14 @@ import lombok.Setter;
       @NamedAttributeNode("tags")
     })
 @NamedEntityGraph(
-    name = "post-with-user-only",
-    attributeNodes = {@NamedAttributeNode("user")})
-@NamedEntityGraph(name = "post-list-view", attributeNodes = {@NamedAttributeNode("user")})
+    name = "post-without-user",
+    attributeNodes = {@NamedAttributeNode("tags"), @NamedAttributeNode("category")})
+@NamedEntityGraph(
+    name = "post-without-category",
+    attributeNodes = {@NamedAttributeNode("user"), @NamedAttributeNode("tags")})
+@NamedEntityGraph(
+    name = "post-without-tags",
+    attributeNodes = {@NamedAttributeNode("user"), @NamedAttributeNode("category")})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -116,4 +116,17 @@ public class Post {
       joinColumns = @JoinColumn(name = "post_id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id"))
   private List<Tag> tags;
+
+  @Column(
+      name = "search_vector",
+      columnDefinition =
+"""
+     GENERATED ALWAYS AS (
+    setweight(to_tsvector('english', title), 'A') ||
+    setweight(to_tsvector('english', COALESCE(content, '')), 'B')
+) STORED;
+""",
+      insertable = false,
+      updatable = false)
+  private String searchVector;
 }
