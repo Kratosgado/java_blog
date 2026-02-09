@@ -72,7 +72,6 @@ class JwtUtilTest {
     String token = jwtUtil.generateToken(username, claims);
 
     // Act
-    // Note: JJWT with Gson converts Long to Double, so we need to handle this
     Integer userIdAsInt = jwtUtil.extractClaim(token, claimsObj -> {
       Object userIdObj = claimsObj.get("userId");
       if (userIdObj instanceof Double) {
@@ -122,8 +121,7 @@ class JwtUtilTest {
   static Stream<Arguments> validationTestCases() {
     return Stream.of(
         Arguments.of("testuser", "testuser", true),
-        Arguments.of("testuser", "wronguser", false)
-    );
+        Arguments.of("testuser", "wronguser", false));
   }
 
   @Test
@@ -143,7 +141,7 @@ class JwtUtilTest {
     assertNotNull(token);
     String extractedUsername = jwtUtil.extractUsername(token);
     String role = jwtUtil.extractClaim(token, claimsObj -> claimsObj.get("role", String.class));
-    
+
     assertEquals(username, extractedUsername);
     assertEquals("ADMIN", role);
   }
@@ -177,8 +175,7 @@ class JwtUtilTest {
 
   static Stream<Arguments> invalidTokenTestCases() {
     return Stream.of(
-        Arguments.of("malformed", "invalid.token.here", MalformedJwtException.class)
-    );
+        Arguments.of("malformed", "invalid.token.here", MalformedJwtException.class));
   }
 
   @Test
@@ -188,7 +185,7 @@ class JwtUtilTest {
     JwtUtil shortExpirationJwtUtil = new JwtUtil();
     ReflectionTestUtils.setField(shortExpirationJwtUtil, "secret", testSecret);
     ReflectionTestUtils.setField(shortExpirationJwtUtil, "expiration", -1000L);
-    
+
     String username = "testuser";
     Long userId = 1L;
     String expiredToken = shortExpirationJwtUtil.generateToken(username, userId);
@@ -204,9 +201,10 @@ class JwtUtilTest {
     String username = "testuser";
     Long userId = 1L;
     String token = jwtUtil.generateToken(username, userId);
-    
+
     JwtUtil differentSecretJwtUtil = new JwtUtil();
-    ReflectionTestUtils.setField(differentSecretJwtUtil, "secret", "differentSecretKeyThatIsAlsoVeryLongForJwtGeneration");
+    ReflectionTestUtils.setField(differentSecretJwtUtil, "secret",
+        "differentSecretKeyThatIsAlsoVeryLongForJwtGeneration");
     ReflectionTestUtils.setField(differentSecretJwtUtil, "expiration", testExpiration);
 
     // Act & Assert

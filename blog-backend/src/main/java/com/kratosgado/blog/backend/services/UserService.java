@@ -1,58 +1,81 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.PageRequest;
-import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
+@RequiredArgsConstructor
 public class UserService {
 
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
 
-  public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
-
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#id")
   public User getUserById(Long id) {
     return getUserById(id, false);
   }
 
   public User getUserById(Long id, boolean withPassword) {
-    User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     if (!withPassword) {
       user.setPassword(null);
     }
     return user;
   }
 
-  public User getUserByEmail(String email) {
-    return userRepository.findByEmail(email)
-        .orElseThrow(() -> BlogException.notFound("User", "email", email));
-
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#email")
+  public UserResponse getUserByEmail(String email) {
+    return userRepository
+        .findByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
   }
 
-  public User getUserByUsername(String username) {
-    return userRepository.findByUsername(username)
-        .orElseThrow(() -> BlogException.notFound("User", "username", username));
+  @Cacheable(value = BlogConstants.CacheNames.USERS, key = "#username")
+  public UserResponse getUserByUsername(String username) {
+    return userRepository
+        .findByUsername(username)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
   }
 
-  public User updateUserProfile(UpdateUserProfileRequest request, Long id) {
-    User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  @Caching(
+      evict = {
+        @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+      })
+  public User updateUserProfile(
+      com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.findByUsername(request.username()).isPresent()) {
-        throw BlogException.duplicateResource("User", "username", request.username());
+        throw new ResourceAlreadyExistsException("User", "username", request.username());
       }
       user.setUsername(request.username());
     }
@@ -67,45 +90,61 @@ public class UserService {
       user.setLocation(request.location());
     }
 
-    User updatedUser = userRepository.update(user);
+    User updatedUser = userRepository.save(user);
     updatedUser.setPassword(null);
     return updatedUser;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  @Caching(
+      evict = {
+        @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+      })
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
     if (!id.equals(currentUserId)) {
-      throw BlogException.forbidden("You are not authorized to update this user's avatar");
+      throw new ForbiddenException("You are not authorized to update this user's avatar");
     }
 
-    User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     user.setAvatarUrl(avatarUrl);
-    User updatedUser = userRepository.update(user);
+    User updatedUser = userRepository.save(user);
     updatedUser.setPassword(null);
     return updatedUser;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  @Caching(
+      evict = {
+        @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#id"),
+        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+      })
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
     if (!id.equals(currentUserId)) {
-      throw BlogException.forbidden("You are not authorized to change this user's password");
+      throw new ForbiddenException("You are not authorized to change this user's password");
     }
 
-    User user = userRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-      throw BlogException.badRequest("Invalid current password");
+      throw new InvalidRequestException("Invalid current password");
     }
 
     user.setPassword(passwordEncoder.encode(newPassword));
-    userRepository.update(user);
+    userRepository.save(user);
   }
 
-  public PageResponse<User> getAllUsers(PageRequest pageRequest) {
-    var users = userRepository.findAll(pageRequest.getSize(), pageRequest.getOffset(), pageRequest.getSortBy(),
-        pageRequest.getSortDir());
-    long totalItems = userRepository.count();
-    return DtoMapper.toPageResponse(users, pageRequest.getPage(), pageRequest.getSize(), (int) totalItems);
+  @Cacheable(value = BlogConstants.CacheNames.USERLIST, key = "#pageRequest.toString()")
+  public PageResponse<UserResponse> getAllUsers(PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
+    Page<UserResponse> userPage = userRepository.findAllBy(pageable);
+    return DtoMapper.toPageResponse(userPage);
   }
 }

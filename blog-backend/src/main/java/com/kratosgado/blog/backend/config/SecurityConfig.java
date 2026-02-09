@@ -3,6 +3,8 @@ package com.kratosgado.blog.backend.config;
 import com.kratosgado.blog.backend.security.JwtAccessDeniedHandler;
 import com.kratosgado.blog.backend.security.JwtAuthenticationEntryPoint;
 import com.kratosgado.blog.backend.security.JwtAuthenticationFilter;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,9 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -32,29 +31,46 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            // Public endpoints - no authentication required
-            .requestMatchers("/auth/**").permitAll()
-            .requestMatchers("/docs/**").permitAll()
-            .requestMatchers("/graphiql/**", "/graphql").permitAll()
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth
+                    // Public endpoints - no authentication required
+                    .requestMatchers("/v*/auth/**")
+                    .permitAll()
+                    .requestMatchers("/docs/**")
+                    .permitAll()
+                    .requestMatchers("/graphiql/**", "/graphql")
+                    .permitAll()
 
-            // Public read access to content
-            .requestMatchers(HttpMethod.GET, "/posts/**", "/categories/**", "/comments/**", "/tags/**", "/users/**")
-            .permitAll()
-            .requestMatchers(HttpMethod.GET, "/users/{id}").permitAll()
+                    // Public read access to content
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/v*/posts/**",
+                        "/v*/categories/**",
+                        "/v*/comments/**",
+                        "/v*/tags/**",
+                        "/v*/users/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/v*/users/{id}")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/data/**", "/error")
+                    .permitAll()
 
-            // Admin-only endpoints
-            .requestMatchers("/admin/**").hasRole("ADMIN")
+                    // Admin-only endpoints
+                    .requestMatchers("/v*/admin/**")
+                    .hasRole("ADMIN")
 
-            // All other endpoints require authentication
-            .anyRequest().authenticated())
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            .accessDeniedHandler(jwtAccessDeniedHandler))
+                    // All other endpoints require authentication
+                    .anyRequest()
+                    .authenticated())
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .accessDeniedHandler(jwtAccessDeniedHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -64,8 +80,10 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(
-        List.of("http://localhost:8080", "http://localhost:3000", "https://studio.apollographql.com"));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        List.of(
+            "http://localhost:8080", "http://localhost:3000", "https://studio.apollographql.com"));
+    configuration.setAllowedMethods(
+        Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);
 

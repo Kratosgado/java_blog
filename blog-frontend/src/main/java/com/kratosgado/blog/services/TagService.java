@@ -156,11 +156,13 @@ public class TagService {
     try {
       com.kratosgado.blog.utils.http.PostApiClient postApiClient = new com.kratosgado.blog.utils.http.PostApiClient(ApiConfig.getBaseUrl());
       postApiClient.setAuthToken(AuthContext.getInstance().getAuthToken());
-      com.kratosgado.blog.dtos.response.PostResponse post = postApiClient.getPostById(postId);
-      if (post.tags() == null)
-        return List.of();
-      return post.tags().stream()
-          .map(ts -> new Tag(ts.name(), ts.slug(), ""))
+      com.kratosgado.blog.dtos.response.PostResponse.PostDetails post = postApiClient.getPostById(postId);
+
+      // PostDetails extends WithTag, so we can directly get tags
+      var tags = post.getTags();
+      if (tags == null) return List.of();
+      return tags.stream()
+          .map(ts -> new Tag(ts.getName(), ts.getSlug(), ""))
           .toList();
     } catch (Exception e) {
       logger.error("Failed to get tags for post {}: {}", postId, e.getMessage());

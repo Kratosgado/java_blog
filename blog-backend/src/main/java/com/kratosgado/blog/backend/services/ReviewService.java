@@ -1,10 +1,15 @@
 package com.kratosgado.blog.backend.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-// Pageable and Page import removed, now manual pagination only.
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
@@ -21,35 +26,45 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @AllArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class ReviewService {
 
   private final ReviewRepository reviewRepository;
   private final PostRepository postRepository;
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review createReview(CreateReviewRequest request, User user) {
-    // Validate post exists (JDBC)
     if (!postRepository.existsById(request.postId())) {
-      throw BlogException.notFound("Post", "id", request.postId());
-    }
-    if (reviewRepository.existsByPostIdAndUserId(request.postId(), user.getId())) {
-      throw BlogException.conflict("Review already exists for this post by this user");
+      throw new ResourceNotFoundException("Post", "id", request.postId());
     }
 
-    Review review = new Review(request.postId(), user.getId(), request.rating(), request.title(), request.content());
-    review.setAuthorName(user.getUsername());
-    review.setAuthorAvatarUrl(user.getAvatarUrl());
+    if (reviewRepository.existsByPostIdAndUserId(request.postId(), user.getId())) {
+      throw new ResourceAlreadyExistsException("Review already exists for this post by this user");
+    }
+
+    Review review = Review.builder()
+        .postId(request.postId())
+        .userId(user.getId())
+        .rating(request.rating())
+        .title(request.title())
+        .content(request.content())
+        .authorName(user.getUsername())
+        .authorAvatarUrl(user.getAvatarUrl())
+        .build();
+    review.onCreate();
 
     Review saved = reviewRepository.save(review);
     log.debug("Created review with ID: {}", saved.getId());
     return saved;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
-    if (review.getUserId() == null || !review.getUserId().equals(userId)) {
-      throw BlogException.forbidden("You are not allowed to update this review");
+    if (!review.getUserId().equals(userId)) {
+      throw new ForbiddenException("You are not allowed to update this review");
     }
 
     if (request.rating() != null) {
@@ -61,53 +76,53 @@ public class ReviewService {
     if (request.content() != null) {
       review.setContent(request.content());
     }
+    review.onUpdate();
 
-    review.setUpdatedAt();
     Review updated = reviewRepository.save(review);
     log.debug("Updated review with ID: {}", id);
     return updated;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteReview(String id, Long userId) {
     Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
 
-    if (review.getUserId() == null || !review.getUserId().equals(userId)) {
-      throw BlogException.forbidden("You are not allowed to delete this review");
+    if (!review.getUserId().equals(userId)) {
+      throw new ForbiddenException("You are not allowed to delete this review");
     }
 
-    reviewRepository.deleteById(id);
+    reviewRepository.delete(review);
     log.debug("Deleted review with ID: {}", id);
   }
 
   public Review getReviewById(String id) {
     return reviewRepository.findById(id)
-        .orElseThrow(() -> BlogException.notFound("Review", "id", id));
+        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
   }
 
   public PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest) {
-    var reviews = reviewRepository.findByPostIdOrderByCreatedAtDesc(postId, pageRequest.getSize(),
-        pageRequest.getOffset(), pageRequest.getSortBy(), pageRequest.getSortDir());
-    long total = reviewRepository.countByPostId(postId);
-    return DtoMapper.toPageResponse(reviews, pageRequest.getPage(), pageRequest.getSize(), (int) total);
+    Pageable pageable = pageRequest.toPageable();
+    Page<Review> reviewPage = reviewRepository.findByPostId(postId, pageable);
+
+    return DtoMapper.toPageResponse(reviewPage);
   }
 
-  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId, PageRequest pageRequest) {
-    var reviews = reviewRepository.findByUserId(userId, pageRequest.getSize(), pageRequest.getOffset(),
-        pageRequest.getSortBy(), pageRequest.getSortDir());
-    long total = reviewRepository.countByUserId(userId);
-    return DtoMapper.toPageResponse(reviews, pageRequest.getPage(), pageRequest.getSize(), (int) total);
+  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId,
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
+    Page<ReviewWithoutUser> reviewPage = reviewRepository.findByUserId(userId, pageable);
+    return DtoMapper.toPageResponse(reviewPage);
+
   }
 
   public Double getAverageRating(Long postId) {
-    var results = reviewRepository.getAverageRatingByPostId(postId);
-    if (results == null || results.isEmpty() || results.get(0).avgRating() == null) {
-      return 0.0;
-    }
-    return results.get(0).avgRating();
+    Double avg = reviewRepository.getAverageRating(postId);
+    return avg != null ? avg : 0.0;
   }
 
   public Long getReviewCount(Long postId) {
     return reviewRepository.countByPostId(postId);
   }
+
 }

@@ -2,6 +2,7 @@ package com.kratosgado.blog.utils.http;
 
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.models.Category;
 
 import com.google.gson.reflect.TypeToken;
@@ -99,5 +100,17 @@ public class CategoryApiClient extends BaseApiClient {
     }
 
     logger.info("Category deleted successfully");
+  }
+
+  /**
+   * Get all categories with post count
+   */
+  public List<CategoryResponse> getAllCategoriesWithPostCount() throws IOException {
+    logger.info("Fetching categories with post count");
+
+    HttpClient.HttpResponse<String> response = httpClient.get("/categories/with-post-count", authToken, String.class);
+
+    Type listType = TypeToken.getParameterized(List.class, CategoryResponse.class).getType();
+    return handleResponse(response, listType, "Get categories with post count");
   }
 }

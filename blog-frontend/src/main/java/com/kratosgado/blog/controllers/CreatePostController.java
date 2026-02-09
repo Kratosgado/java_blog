@@ -198,8 +198,8 @@ public class CreatePostController {
     if (validateForm()) {
       try {
         CreatePostRequest dto = getPostDto("published");
-        Post createdPost = postService.createPost(dto);
-        
+        var createdPost = postService.createPost(dto);
+
         logger.info("Publishing post: {}", createdPost.getTitle());
 
         messageLabel.setText("Post published successfully!");
@@ -218,8 +218,8 @@ public class CreatePostController {
     if (!titleField.getText().isEmpty()) {
       try {
         CreatePostRequest dto = getPostDto("draft");
-        Post createdPost = postService.createPost(dto);
-        
+        var createdPost = postService.createPost(dto);
+
         logger.info("Saving draft: {}", createdPost.getTitle());
 
         messageLabel.setText("Draft saved successfully!");

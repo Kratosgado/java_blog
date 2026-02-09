@@ -1,40 +1,44 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.UserRepository;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.models.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-    this.userRepository = userRepository;
-    this.passwordEncoder = passwordEncoder;
-  }
-
-  public User login(LoginRequest request) throws BlogException {
-    var user = userRepository.findByEmail(request.email())
-        .orElseThrow(() -> BlogException.unauthorized("Invalid email or password"));
+  public User login(LoginRequest request) {
+    var user =
+        userRepository
+            .findBy(request.email())
+            .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-      throw BlogException.unauthorized("Invalid email or password");
+      throw new UnauthorizedException("Invalid email or password");
     }
     return user;
   }
 
-  public User register(RegisterRequest request) throws BlogException {
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public User register(RegisterRequest request) {
     if (!request.password().equals(request.confirmPassword())) {
-      throw BlogException.badRequest("Passwords do not match");
+      throw new InvalidRequestException("Passwords do not match");
     }
     if (userRepository.findByEmail(request.email()).isPresent()) {
-      throw BlogException.conflict("Email already exists");
+      throw new ResourceAlreadyExistsException("Email already exists");
     }
 
     var user = new User();

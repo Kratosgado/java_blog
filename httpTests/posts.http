@@ -3,7 +3,7 @@
 
 ### Base URL
 
-@host = http://localhost:8080/api
+@host = http://localhost:8080/api/v1
 
 
 ### Create a new post
@@ -53,7 +53,7 @@ GET {{host}}/posts/106 HTTP/1.1
 
 # @name getPostBySlug
 
-GET {{host}}/posts/slug/gettig-whtsjk-is-started-spring-boot-3 HTTP/1.1
+GET {{host}}/posts/slug/death-be-not-proud-in-deleniti-fugit-enim-ut-totam HTTP/1.1
 
 
 ### Get all published posts (with pagination and sorting)
@@ -74,7 +74,7 @@ GET {{host}}/posts?page=1&size=4&sortBy=title&sortDir=ASC HTTP/1.1
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=spring&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=sit&page=0&size=10 HTTP/1.1
 
 
 ### Get posts by user
@@ -88,7 +88,7 @@ GET {{host}}/posts/user/{{userId}}?page=0&size=10 HTTP/1.1
 
 # @name getCategoryPosts
 
-GET {{host}}/posts/category/3?page=1&size=10 HTTP/1.1
+GET {{host}}/posts/category/7?page=1&size=10 HTTP/1.1
 
 
 ### Delete a post

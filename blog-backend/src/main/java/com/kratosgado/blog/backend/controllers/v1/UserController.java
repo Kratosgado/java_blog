@@ -1,0 +1,71 @@
+package com.kratosgado.blog.backend.controllers.v1;
+
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
+import com.kratosgado.blog.backend.security.SecurityUtils;
+import com.kratosgado.blog.backend.services.UserService;
+import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
+import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
+import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
+import com.kratosgado.blog.models.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/users")
+@RequiredArgsConstructor
+@Tag(name = "Users", description = "User management APIs")
+public class UserController {
+
+  private final UserService userService;
+
+  @PutMapping("/{id}/profile")
+  @Operation(
+      summary = "Update user profile",
+      description =
+          "Updates a user's profile information. Only the user can update their own profile.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint
+  public User updateProfile(
+      @Valid @RequestBody @Parameter(description = "Profile update request")
+          UpdateUserProfileRequest request) {
+    Long id = SecurityUtils.getCurrentUserId();
+    return userService.updateUserProfile(request, id);
+  }
+
+  @PutMapping("/{id}/avatar")
+  @Operation(
+      summary = "Update user avatar",
+      description = "Updates a user's avatar. Only the user can update their own avatar.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint
+  public User updateAvatar(
+      @PathVariable @Parameter(description = "User ID") Long id,
+      @Valid @RequestBody @Parameter(description = "Avatar update request")
+          UpdateUserAvatarRequest request) {
+    Long currentUserId = SecurityUtils.getCurrentUserId();
+    return userService.updateUserAvatar(id, request.avatarUrl(), currentUserId);
+  }
+
+  @PutMapping("/{id}/password")
+  @Operation(
+      summary = "Change password",
+      description = "Changes a user's password. Only the user can change their own password.",
+      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint
+  public void changePassword(
+      @PathVariable @Parameter(description = "User ID") Long id,
+      @Valid @RequestBody @Parameter(description = "Password change request")
+          ChangePasswordRequest request) {
+    Long currentUserId = SecurityUtils.getCurrentUserId();
+    userService.changePassword(id, request.oldPassword(), request.newPassword(), currentUserId);
+  }
+}

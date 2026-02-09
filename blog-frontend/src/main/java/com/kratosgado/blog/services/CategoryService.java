@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.kratosgado.blog.config.ApiConfig;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
@@ -136,5 +137,21 @@ public class CategoryService {
   public int getCategoryCount() {
     logger.debug("getCategoryCount() using getAllCategories().size() as workaround");
     return getAllCategories().size(); // Temporary workaround
+  }
+
+  /**
+   * Get all categories with post count for UI display
+   */
+  public List<CategoryResponse> getAllCategoriesWithPostCount() {
+    ensureAuthToken();
+    try {
+      return categoryApiClient.getAllCategoriesWithPostCount();
+    } catch (IOException e) {
+      logger.error("Failed to get categories with post count due to network error", e);
+      throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
+    } catch (ApiException e) {
+      logger.error("Failed to get categories with post count: {}", e.getMessage());
+      throw new RuntimeException("Failed to get categories with post count: " + e.getMessage(), e);
+    }
   }
 }

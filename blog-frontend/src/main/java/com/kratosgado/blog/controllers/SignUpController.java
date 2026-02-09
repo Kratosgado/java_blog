@@ -83,13 +83,12 @@ public class SignUpController {
 
     try {
       // Call new REST API-based register
-      // Note: Avatar upload is handled separately in backend, for now just register without avatar
       User user = authService.register(username, email, password, confirmPassword);
       String token = authService.getCurrentToken();
-      
+
       // Store authentication in context
       AuthContext.getInstance().setAuthentication(user, token);
-      
+
       ToastNotification.success("Registration successful! Welcome!");
       logger.info("User registered successfully: {}", email);
 

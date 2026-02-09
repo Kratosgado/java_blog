@@ -1,24 +1,20 @@
 package com.kratosgado.blog.services;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.google.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.kratosgado.blog.config.ApiConfig;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse;
-import com.kratosgado.blog.enums.PostStatus;
+import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
 import com.kratosgado.blog.utils.http.PostApiClient;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostService {
   private static final Logger logger = LoggerFactory.getLogger(PostService.class);
@@ -41,11 +37,10 @@ public class PostService {
     }
   }
 
-  public Post createPost(CreatePostRequest request) {
+  public PostResponse.PostDetails createPost(CreatePostRequest request) {
     ensureAuthToken();
     try {
-      PostResponse response = postApiClient.createPost(request);
-      return convertToPost(response);
+      return postApiClient.createPost(request);
     } catch (IOException e) {
       logger.error("Failed to create post due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -55,11 +50,10 @@ public class PostService {
     }
   }
 
-  public Post updatePost(Long id, UpdatePostRequest request) {
+  public PostResponse.PostDetails updatePost(Long id, UpdatePostRequest request) {
     ensureAuthToken();
     try {
-      PostResponse response = postApiClient.updatePost(id, request);
-      return convertToPost(response);
+      return postApiClient.updatePost(id, request);
     } catch (IOException e) {
       logger.error("Failed to update post due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -82,7 +76,7 @@ public class PostService {
     }
   }
 
-  public PostResponse getPostById(Long id) {
+  public PostResponse.PostDetails getPostById(Long id) {
     ensureAuthToken();
     try {
       return postApiClient.getPostById(id);
@@ -95,7 +89,8 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse> getPostsByUser(Long userId, int page, int size) {
+  public PageResponse<PostResponse.PostWithoutUser> getPostsByUser(
+      Long userId, int page, int size) {
     ensureAuthToken();
     try {
       return postApiClient.getPostsByUser(userId, page, size);
@@ -108,7 +103,7 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse> getAllPosts(int page, int size) {
+  public PageResponse<PostResponse.PostView> getAllPosts(int page, int size) {
     ensureAuthToken();
     try {
       return postApiClient.getAllPosts(page, size);
@@ -121,7 +116,7 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse> searchPosts(String keyword, int page, int size) {
+  public PageResponse<PostResponse.PostView> searchPosts(String keyword, int page, int size) {
     ensureAuthToken();
     try {
       return postApiClient.searchPosts(keyword, page, size);
@@ -134,7 +129,7 @@ public class PostService {
     }
   }
 
-  public PageResponse<PostResponse> getPostsByCategory(Long categoryId, int page, int size) {
+  public PageResponse<PostWithoutCategory> getPostsByCategory(Long categoryId, int page, int size) {
     ensureAuthToken();
     try {
       return postApiClient.getPostsByCategory(categoryId, page, size);
@@ -150,17 +145,13 @@ public class PostService {
   // Convenience methods for controllers that expect List<Post> instead of
   // PageResponse
 
-  /**
-   * Get all published posts as a list (for controllers)
-   */
+  /** Get all published posts as a list (for controllers) */
   public List<Post> getPublishedPosts() {
     ensureAuthToken();
     try {
-      PageResponse<PostResponse> response = postApiClient.getAllPosts(0, 1000);
-      // Convert PostResponse to Post (they should be compatible or you need mapping)
-      return response.content().stream()
-          .map(this::convertToPost)
-          .toList();
+      PageResponse<PostResponse.PostView> response = postApiClient.getAllPosts(0, 1000);
+      // Convert PostView to Post
+      return response.content().stream().map(this::convertPostViewToPost).toList();
     } catch (IOException e) {
       logger.error("Failed to get published posts due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -170,16 +161,13 @@ public class PostService {
     }
   }
 
-  /**
-   * Get posts by user ID as a list (for controllers)
-   */
+  /** Get posts by user ID as a list (for controllers) */
   public List<Post> getPostsByUserId(Long userId) {
     ensureAuthToken();
     try {
-      PageResponse<PostResponse> response = postApiClient.getPostsByUser(userId, 0, 1000);
-      return response.content().stream()
-          .map(this::convertToPost)
-          .toList();
+      PageResponse<PostResponse.PostWithoutUser> response =
+          postApiClient.getPostsByUser(userId, 0, 1000);
+      return response.content().stream().map(this::convertPostWithoutUserToPost).toList();
     } catch (IOException e) {
       logger.error("Failed to get posts by user due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -189,26 +177,18 @@ public class PostService {
     }
   }
 
-  /**
-   * Get total views for all posts by a user
-   */
+  /** Get total views for all posts by a user */
   public long getTotalViews(Long userId) {
     List<Post> posts = getPostsByUserId(userId);
-    return posts.stream()
-        .mapToLong(p -> p.getViews() != null ? p.getViews() : 0)
-        .sum();
+    return posts.stream().mapToLong(p -> p.getViews() != null ? p.getViews() : 0).sum();
   }
 
-  /**
-   * Search posts by keyword as a list (for controllers)
-   */
+  /** Search posts by keyword as a list (for controllers) */
   public List<Post> searchPostsByKeyword(String keyword) {
     ensureAuthToken();
     try {
-      PageResponse<PostResponse> response = postApiClient.searchPosts(keyword, 0, 1000);
-      return response.content().stream()
-          .map(this::convertToPost)
-          .toList();
+      PageResponse<PostResponse.PostView> response = postApiClient.searchPosts(keyword, 0, 1000);
+      return response.content().stream().map(this::convertPostViewToPost).toList();
     } catch (IOException e) {
       logger.error("Failed to search posts due to network error", e);
       throw new RuntimeException("Failed to connect to server: " + e.getMessage(), e);
@@ -218,52 +198,11 @@ public class PostService {
     }
   }
 
-  /**
-   * Get posts by tag name (stub - not yet implemented in backend)
-   */
+  /** Get posts by tag name (stub - not yet implemented in backend) */
   public List<Post> getPostsByTag(String tagName) {
     logger.warn("getPostsByTag() not yet fully implemented via API");
     // Return empty list for now - this would need a new backend endpoint
     return List.of();
-  }
-
-  /**
-   * Convert PostResponse to Post model
-   * This is a temporary mapping until we unify the models
-   */
-  private Post convertToPost(PostResponse response) {
-    Post post = new Post();
-    post.setId(response.id());
-    post.setTitle(response.title());
-    post.setContent(response.content());
-    post.setExcerpt(response.excerpt());
-    post.setCoverImage(response.coverImage());
-    post.setStatus(response.status() != null ? response.status() : PostStatus.draft);
-    post.setUserId(response.authorId()); // PostResponse uses authorId, Post uses userId
-    post.setCategoryId(response.categoryId());
-    post.setCreatedAt(response.createdAt());
-    post.setUpdatedAt(response.updatedAt());
-    post.setViews(response.views());
-    post.setLikesCount(response.likesCount());
-    if (response.author() != null) {
-      User user = new User();
-      user.setUsername(response.author().username());
-      user.setAvatarUrl(response.author().avatarUrl());
-      user.setId(response.author().id());
-      post.setUser(user);
-    }
-    return post;
-  }
-
-  public boolean incrementViews(Long postId) {
-    try {
-      PostResponse post = postApiClient.getPostById(postId);
-      postApiClient.incrementViews(post.slug());
-      return true;
-    } catch (Exception e) {
-      logger.error("Failed to increment views for post {}: {}", postId, e.getMessage());
-      return false;
-    }
   }
 
   public boolean publishPost(Long postId) {
@@ -284,5 +223,70 @@ public class PostService {
     logger.warn("likePost() not yet implemented via API");
     // For now we just return true to simulate UI success
     return true;
+  }
+
+  /** Convert PostView projection to Post entity */
+  private Post convertPostViewToPost(PostResponse.PostView postView) {
+    Post post = new Post();
+    post.setId(postView.getId());
+    post.setTitle(postView.getTitle());
+    post.setSlug(postView.getSlug());
+    post.setExcerpt(postView.getExcerpt());
+    post.setStatus(postView.getStatus());
+    post.setCoverImage(postView.getCoverImage());
+    post.setCreatedAt(postView.getCreatedAt());
+    post.setViews(postView.getViews());
+    post.setLikesCount(postView.getLikesCount());
+
+    // Set user if available
+    if (postView.getUser() != null) {
+      var userSummary = postView.getUser();
+      post.setUserId(userSummary.getId());
+      com.kratosgado.blog.models.User user = new com.kratosgado.blog.models.User();
+      user.setId(userSummary.getId());
+      user.setUsername(userSummary.getUsername());
+      user.setAvatarUrl(userSummary.getAvatarUrl());
+      post.setUser(user);
+    }
+
+    // Set category if available
+    if (postView.getCategory() != null) {
+      var categorySummary = postView.getCategory();
+      post.setCategory(
+          com.kratosgado.blog.models.Category.builder()
+              .id(categorySummary.getId())
+              .name(categorySummary.getName())
+              .slug(categorySummary.getSlug())
+              .build());
+    }
+
+    return post;
+  }
+
+  /** Convert PostWithoutUser projection to Post entity */
+  private Post convertPostWithoutUserToPost(PostResponse.PostWithoutUser postWithoutUser) {
+    Post post = new Post();
+    post.setId(postWithoutUser.getId());
+    post.setTitle(postWithoutUser.getTitle());
+    post.setSlug(postWithoutUser.getSlug());
+    post.setExcerpt(postWithoutUser.getExcerpt());
+    post.setStatus(postWithoutUser.getStatus());
+    post.setCoverImage(postWithoutUser.getCoverImage());
+    post.setCreatedAt(postWithoutUser.getCreatedAt());
+    post.setViews(postWithoutUser.getViews());
+    post.setLikesCount(postWithoutUser.getLikesCount());
+
+    // Set category if available
+    if (postWithoutUser.getCategory() != null) {
+      var categorySummary = postWithoutUser.getCategory();
+      post.setCategory(
+          com.kratosgado.blog.models.Category.builder()
+              .id(categorySummary.getId())
+              .name(categorySummary.getName())
+              .slug(categorySummary.getSlug())
+              .build());
+    }
+
+    return post;
   }
 }

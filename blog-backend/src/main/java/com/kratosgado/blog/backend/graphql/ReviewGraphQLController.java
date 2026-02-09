@@ -14,7 +14,7 @@ import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
@@ -68,7 +68,7 @@ public class ReviewGraphQLController {
   }
 
   @SchemaMapping(typeName = "Review", field = "post")
-  public PostResponse post(Review review) {
+  public PostDetails post(Review review) {
     return postService.getPostById(review.getPostId());
   }
 }

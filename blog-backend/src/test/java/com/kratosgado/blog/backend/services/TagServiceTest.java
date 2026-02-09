@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -24,10 +23,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
-import com.kratosgado.blog.backend.cache.CacheConfig.TagCache;
 import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.TagRepository;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
@@ -40,9 +41,6 @@ class TagServiceTest {
   @Mock
   private TagRepository tagRepository;
 
-  @Mock
-  private TagCache tagCache;
-
   @InjectMocks
   private TagService tagService;
 
@@ -50,13 +48,12 @@ class TagServiceTest {
 
   @BeforeEach
   void setUp() {
-    testTag = new Tag("Java", "java", "Java programming language");
-    testTag.setId(1L);
+    testTag = new Tag(1L, "Java", "java", "Java programming language");
   }
 
   @Test
   @DisplayName("Should throw exception when creating duplicate tag")
-  void createTag_WithExistingSlug_ShouldThrowException() throws SQLException {
+  void createTag_WithExistingSlug_ShouldThrowException() {
     // Arrange
     CreateTagRequest request = new CreateTagRequest("Java", "Java programming");
     when(tagRepository.findBySlug("java")).thenReturn(Optional.of(testTag));
@@ -69,27 +66,15 @@ class TagServiceTest {
     assertTrue(exception.getMessage().contains("already exists"));
   }
 
-  static Stream<Arguments> slugGenerationTestCases() {
-    return Stream.of(
-        Arguments.of("Spring Boot", "spring-boot"),
-        Arguments.of("C++ & C#", "c-c"));
-  }
-
   @ParameterizedTest
   @MethodSource("tagNotFoundTestCases")
   @DisplayName("Should throw exception when tag not found")
-  void tagNotFound_ShouldThrowException(String operation) throws SQLException {
+  void tagNotFound_ShouldThrowException(String operation) {
     // Arrange
     switch (operation) {
       case "update":
-        when(tagRepository.findById(eq(1L))).thenReturn(Optional.empty());
-        break;
       case "getById":
         when(tagRepository.findById(eq(1L))).thenReturn(Optional.empty());
-        when(tagCache.get(1L)).thenReturn(Optional.empty());
-        break;
-      case "delete":
-        doThrow(new RuntimeException("Tag not found")).when(tagRepository).deleteById(eq(1L));
         break;
       case "getBySlug":
         when(tagRepository.findBySlug("nonexistent")).thenReturn(Optional.empty());
@@ -102,14 +87,15 @@ class TagServiceTest {
         case "update":
           tagService.updateTag(1L, new UpdateTagRequest("Java", "Description"));
           break;
-        case "delete":
-          tagService.deleteTag(1L);
-          break;
         case "getById":
           tagService.getTagById(1L);
           break;
         case "getBySlug":
           tagService.getTagBySlug("nonexistent");
+          break;
+        case "delete":
+          doThrow(new RuntimeException("Tag not found")).when(tagRepository).deleteById(eq(1L));
+          tagService.deleteTag(1L);
           break;
         default:
           throw new IllegalArgumentException("Unknown operation: " + operation);
@@ -127,9 +113,8 @@ class TagServiceTest {
 
   @Test
   @DisplayName("Should successfully get tag by ID")
-  void getTagById_WithValidId_ShouldReturnTag() throws SQLException {
+  void getTagById_WithValidId_ShouldReturnTag() {
     // Arrange
-    when(tagCache.get(1L)).thenReturn(Optional.empty()); // Cache miss
     when(tagRepository.findById(eq(1L))).thenReturn(Optional.of(testTag));
 
     // Act
@@ -138,12 +123,11 @@ class TagServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testTag.getId(), result.getId());
-    verify(tagCache).put(1L, testTag); // Verify caching
   }
 
   @Test
   @DisplayName("Should successfully get tag by slug")
-  void getTagBySlug_WithValidSlug_ShouldReturnTag() throws SQLException {
+  void getTagBySlug_WithValidSlug_ShouldReturnTag() {
     // Arrange
     when(tagRepository.findBySlug("java")).thenReturn(Optional.of(testTag));
 
@@ -159,9 +143,9 @@ class TagServiceTest {
   @DisplayName("Should get all tags with pagination")
   void getAllTags_ShouldReturnPageOfTags() {
     // Arrange
-    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("asc").build();
-    when(tagRepository.findAll(eq(10), eq(0), eq("name"), eq("asc"))).thenReturn(List.of(testTag));
-    when(tagRepository.count()).thenReturn(1L);
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
+    Page<Tag> page = new PageImpl<>(List.of(testTag));
+    when(tagRepository.findAll(any(Pageable.class))).thenReturn(page);
 
     // Act
     var result = tagService.getAllTags(pageRequest);
@@ -176,9 +160,9 @@ class TagServiceTest {
   void searchTags_WithKeyword_ShouldReturnPageOfTags() {
     // Arrange
     String keyword = "java";
-    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("asc").build();
-    when(tagRepository.searchByKeyword(eq(keyword), eq(10), eq(0), eq("name"), eq("asc"))).thenReturn(List.of(testTag));
-    when(tagRepository.countByKeyword(eq(keyword))).thenReturn(1L);
+    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
+    Page<Tag> page = new PageImpl<>(List.of(testTag));
+    when(tagRepository.searchByKeyword(eq(keyword), any(Pageable.class))).thenReturn(page);
 
     // Act
     var result = tagService.searchTags(keyword, pageRequest);

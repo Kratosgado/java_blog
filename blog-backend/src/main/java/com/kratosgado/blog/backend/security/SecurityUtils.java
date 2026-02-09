@@ -1,6 +1,6 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class SecurityUtils {
       log.warn("User not authenticated. Authentication is null: {}, Is authenticated: {}", 
           authentication == null, 
           authentication != null ? authentication.isAuthenticated() : "N/A");
-      throw BlogException.unauthorized("User not authenticated");
+      throw new UnauthorizedException("User not authenticated");
     }
     
     Object principal = authentication.getPrincipal();
@@ -40,7 +40,7 @@ public class SecurityUtils {
     
     log.warn("Invalid authentication principal. Expected User but got: {}", 
         principal != null ? principal.getClass().getName() : "null");
-    throw BlogException.unauthorized("Invalid authentication principal");
+    throw new UnauthorizedException("Invalid authentication principal");
   }
 
   public static Long getCurrentUserId() {

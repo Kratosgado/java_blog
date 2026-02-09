@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.services.CategoryService;
 import com.kratosgado.blog.utils.UiUtils;
@@ -55,24 +56,24 @@ public class CategoryManagementController {
   @FXML
   private TextField searchField;
   @FXML
-  private TableView<Category> categoriesTable;
+  private TableView<CategoryResponse> categoriesTable;
   @FXML
-  private TableColumn<Category, Integer> idColumn;
+  private TableColumn<CategoryResponse, Long> idColumn;
   @FXML
-  private TableColumn<Category, String> nameColumn;
+  private TableColumn<CategoryResponse, String> nameColumn;
   @FXML
-  private TableColumn<Category, String> slugColumn;
+  private TableColumn<CategoryResponse, String> slugColumn;
   @FXML
-  private TableColumn<Category, String> descriptionColumn;
+  private TableColumn<CategoryResponse, String> descriptionColumn;
   @FXML
-  private TableColumn<Category, Integer> postCountColumn;
+  private TableColumn<CategoryResponse, Long> postCountColumn;
   @FXML
-  private TableColumn<Category, LocalDateTime> createdAtColumn;
+  private TableColumn<CategoryResponse, LocalDateTime> createdAtColumn;
   @FXML
-  private TableColumn<Category, Void> actionsColumn;
+  private TableColumn<CategoryResponse, Void> actionsColumn;
 
   private final CategoryService categoryService;
-  private ObservableList<Category> categories;
+  private ObservableList<CategoryResponse> categories;
   private Category editingCategory;
 
   @Inject
@@ -111,10 +112,10 @@ public class CategoryManagementController {
       }
     });
 
-    actionsColumn.setCellFactory(column -> new TableCell<Category, Void>() {
+    actionsColumn.setCellFactory(column -> new TableCell<CategoryResponse, Void>() {
       private final Button editBtn = new Button("✏️ Edit");
       private final Button deleteBtn = new CustomButton("🗑️ Delete", ButtonType.ERROR, e -> {
-        Category category = getTableView().getItems().get(getIndex());
+        CategoryResponse category = getTableView().getItems().get(getIndex());
         handleDeleteCategory(category);
 
       });
@@ -125,7 +126,7 @@ public class CategoryManagementController {
         actionBox.setAlignment(Pos.CENTER);
 
         editBtn.setOnAction(e -> {
-          Category category = getTableView().getItems().get(getIndex());
+          CategoryResponse category = getTableView().getItems().get(getIndex());
           handleEditCategory(category);
         });
       }
@@ -145,10 +146,10 @@ public class CategoryManagementController {
       if (newValue == null || newValue.isEmpty()) {
         categoriesTable.setItems(categories);
       } else {
-        ObservableList<Category> filtered = categories
-            .filtered(category -> category.getName().toLowerCase().contains(newValue.toLowerCase()) ||
-                category.getDescription().toLowerCase().contains(newValue.toLowerCase()) ||
-                category.getSlug().toLowerCase().contains(newValue.toLowerCase()));
+        ObservableList<CategoryResponse> filtered = categories
+            .filtered(category -> category.name().toLowerCase().contains(newValue.toLowerCase()) ||
+                (category.description() != null && category.description().toLowerCase().contains(newValue.toLowerCase())) ||
+                category.slug().toLowerCase().contains(newValue.toLowerCase()));
         categoriesTable.setItems(filtered);
       }
     });
@@ -234,20 +235,26 @@ public class CategoryManagementController {
     }
   }
 
-  private void handleEditCategory(Category category) {
-    editingCategory = category;
+  private void handleEditCategory(CategoryResponse category) {
+    // Convert CategoryResponse to Category for editing
+    editingCategory = Category.builder()
+        .id(category.id())
+        .name(category.name())
+        .slug(category.slug())
+        .description(category.description())
+        .build();
     formTitleLabel.setText("Edit Category");
-    categoryNameField.setText(category.getName());
-    categoryDescriptionArea.setText(category.getDescription());
-    slugPreviewLabel.setText("Slug: " + category.getSlug());
+    categoryNameField.setText(category.name());
+    categoryDescriptionArea.setText(category.description());
+    slugPreviewLabel.setText("Slug: " + category.slug());
     categoryFormContainer.setManaged(true);
     categoryFormContainer.setVisible(true);
     createCategoryBtn.setDisable(true);
   }
 
-  private void handleDeleteCategory(Category category) {
+  private void handleDeleteCategory(CategoryResponse category) {
     try {
-      categoryService.deleteCategory(category.getId());
+      categoryService.deleteCategory(category.id());
       ToastNotification.success("Category deleted successfully");
       loadCategories();
       updateStatistics();
@@ -259,7 +266,7 @@ public class CategoryManagementController {
 
   private void loadCategories() {
     try {
-      List<Category> allCategories = categoryService.getAllCategories();
+      List<CategoryResponse> allCategories = categoryService.getAllCategoriesWithPostCount();
       categories.clear();
       categories.addAll(allCategories);
       logger.info("Loaded {} categories", allCategories.size());
@@ -276,12 +283,12 @@ public class CategoryManagementController {
 
       // Find most popular category (one with most posts)
       if (!categories.isEmpty()) {
-        Category mostPopular = categories.stream()
-            .max((c1, c2) -> Integer.compare(c1.getPostCount(), c2.getPostCount()))
+        CategoryResponse mostPopular = categories.stream()
+            .max((c1, c2) -> Long.compare(c1.postCount(), c2.postCount()))
             .orElse(null);
 
-        if (mostPopular != null && mostPopular.getPostCount() > 0) {
-          popularCategoryLabel.setText(mostPopular.getName() + " (" + mostPopular.getPostCount() + " posts)");
+        if (mostPopular != null && mostPopular.postCount() > 0) {
+          popularCategoryLabel.setText(mostPopular.name() + " (" + mostPopular.postCount() + " posts)");
         } else {
           popularCategoryLabel.setText("-");
         }

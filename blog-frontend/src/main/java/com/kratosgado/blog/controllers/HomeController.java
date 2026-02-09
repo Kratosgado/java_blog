@@ -355,21 +355,41 @@ public class HomeController {
    */
   private List<Post> getAllPostsFallback() {
     try {
-      PageResponse<PostResponse> pageResponse = postService
+      PageResponse<PostResponse.PostView> pageResponse = postService
           .getAllPosts(0, 10);
-      // Convert PostResponse list to Post list
+      // Convert PostView list to Post list
       return pageResponse.content().stream().map(pr -> {
         Post p = new Post();
-        p.setId(pr.id());
-        p.setTitle(pr.title());
-        p.setContent(pr.content());
-        p.setExcerpt(pr.excerpt());
+        p.setId(pr.getId());
+        p.setTitle(pr.getTitle());
+        p.setExcerpt(pr.getExcerpt());
         p.setStatus(PostStatus.published);
-        p.setCoverImage(pr.coverImage());
-        p.setUserId(pr.authorId());
-        p.setCategoryId(pr.categoryId());
-        p.setCreatedAt(pr.createdAt());
-        p.setUpdatedAt(pr.updatedAt());
+        p.setCoverImage(pr.getCoverImage());
+
+        // Get user from user object if available
+        if (pr.getUser() != null) {
+          var user = pr.getUser();
+          p.setUserId(user.getId());
+          com.kratosgado.blog.models.User userModel = new com.kratosgado.blog.models.User();
+          userModel.setId(user.getId());
+          userModel.setUsername(user.getUsername());
+          userModel.setAvatarUrl(user.getAvatarUrl());
+          p.setUser(userModel);
+        }
+
+        // Get category from category object if available
+        if (pr.getCategory() != null) {
+          var category = pr.getCategory();
+          p.setCategory(com.kratosgado.blog.models.Category.builder()
+              .id(category.getId())
+              .name(category.getName())
+              .slug(category.getSlug())
+              .build());
+        }
+
+        p.setCreatedAt(pr.getCreatedAt());
+        p.setViews(pr.getViews());
+        p.setLikesCount(pr.getLikesCount());
         return p;
       }).toList();
     } catch (Exception e) {

@@ -1,9 +1,14 @@
 package com.kratosgado.blog.backend.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jdbc.PostRepository;
+import com.kratosgado.blog.backend.exceptions.ForbiddenException;
+import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
@@ -20,20 +25,27 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @AllArgsConstructor
+@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 public class CommentService {
 
   private final CommentRepository commentRepository;
   private final PostRepository postRepository;
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment createComment(CreateCommentRequest request, User user) {
     if (!postRepository.existsById(request.postId())) {
-      throw BlogException.notFound("Post", "id", request.postId());
+      throw new ResourceNotFoundException("Post", "id", request.postId());
     }
-    Comment comment = new Comment(request.postId(), user.getId(), request.content());
-    comment.setStatus(CommentStatus.pending);
-    // Populate author snapshot
-    comment.setAuthorName(user.getUsername());
-    comment.setAuthorAvatarUrl(user.getAvatarUrl());
+
+    Comment comment = Comment.builder()
+        .postId(request.postId())
+        .userId(user.getId())
+        .content(request.content())
+        .status(CommentStatus.pending)
+        .authorName(user.getUsername())
+        .authorAvatarUrl(user.getAvatarUrl())
+        .build();
+    comment.onCreate();
 
     Comment saved = commentRepository.save(comment);
 
@@ -41,73 +53,72 @@ public class CommentService {
     return saved;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment approveComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.approved);
+    comment.onUpdate();
     comment = commentRepository.save(comment);
 
     log.debug("Approved comment with ID: {}", commentId);
     return comment;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment rejectComment(String commentId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.rejected);
+    comment.onUpdate();
     comment = commentRepository.save(comment);
 
     log.debug("Rejected comment with ID: {}", commentId);
     return comment;
   }
 
+  @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteComment(String commentId, Long userId) {
     Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
-    // Only the comment author can delete their comment
     if (!comment.getUserId().equals(userId)) {
-      throw BlogException.unauthorized("You are not allowed to delete this comment");
+      throw new ForbiddenException("You are not allowed to delete this comment");
     }
 
-    commentRepository.deleteById(commentId);
+    commentRepository.delete(comment);
 
     log.debug("Deleted comment with ID: {}", commentId);
   }
 
   public Comment getCommentById(String commentId) {
-    // Try to get from cache first
-    log.debug("Cache miss for comment ID: {}, fetching from database", commentId);
-
-    Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> BlogException.notFound("Comment", "id", commentId));
-    return comment;
+    return commentRepository.findById(commentId)
+        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
   }
 
   public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    var comments = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageRequest.getSize(),
-        offset, pageRequest.getSortBy(), pageRequest.getSortDir());
-    long total = commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
-    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
+    Pageable pageable = pageRequest.toPageable();
+    Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
+
+    return DtoMapper.toPageResponse(commentPage);
   }
 
-  public PageResponse<Comment> getAllPostComments(Long postId, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    var comments = commentRepository.findByPostId(postId, pageRequest.getSize(), offset, pageRequest.getSortBy(),
-        pageRequest.getSortDir());
-    long total = commentRepository.countByPostId(postId);
-    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
+  public PageResponse<Comment> getAllPostComments(Long postId,
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
+    Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
+
+    return DtoMapper.toPageResponse(commentPage);
   }
 
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId, PageRequest pageRequest) {
-    int offset = pageRequest.getOffset();
-    var comments = commentRepository.findCommentsByUserId(userId, pageRequest.getSize(), offset,
-        pageRequest.getSortBy(), pageRequest.getSortDir());
-    long total = commentRepository.countByUserId(userId);
-    return DtoMapper.toPageResponse(comments, pageRequest.getPage(), pageRequest.getSize(), (int) total);
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId,
+      PageRequest pageRequest) {
+    Pageable pageable = pageRequest.toPageable();
+    Page<CommentWithoutUser> commentPage = commentRepository.findByUserId(userId, pageable);
+
+    return DtoMapper.toPageResponse(commentPage);
   }
 
   public Long getPostCommentCount(Long postId) {
