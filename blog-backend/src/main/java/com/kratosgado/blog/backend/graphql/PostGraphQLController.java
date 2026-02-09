@@ -1,11 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
-import org.springframework.stereotype.Controller;
-
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.CommentService;
 import com.kratosgado.blog.backend.services.PostService;
@@ -13,6 +7,7 @@ import com.kratosgado.blog.backend.services.ReviewService;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
@@ -24,6 +19,11 @@ import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.stereotype.Controller;
 
 @Controller
 public class PostGraphQLController {
@@ -33,8 +33,11 @@ public class PostGraphQLController {
   private final CommentService commentService;
   private final ReviewService reviewService;
 
-  public PostGraphQLController(PostService postService, UserService userService,
-      CommentService commentService, ReviewService reviewService) {
+  public PostGraphQLController(
+      PostService postService,
+      UserService userService,
+      CommentService commentService,
+      ReviewService reviewService) {
     this.postService = postService;
     this.userService = userService;
     this.commentService = commentService;
@@ -64,25 +67,21 @@ public class PostGraphQLController {
 
   @QueryMapping
   public PageResponse<PostView> searchPosts(
-      @Argument String keyword,
-      @Argument int page,
-      @Argument int size) {
-    return postService.searchPosts(keyword, new PageRequest(page, size, "created_at", "desc"));
+      @Argument String keyword, @Argument int page, @Argument int size) {
+    var searchRequest = SearchPageRequest.builder().keyword(keyword).page(page).size(size).build();
+    return postService.searchPosts(searchRequest);
   }
 
   @QueryMapping
   public PageResponse<PostWithoutCategory> postsByCategory(
-      @Argument Long categoryId,
-      @Argument int page,
-      @Argument int size) {
-    return postService.getPostsByCategory(categoryId, new PageRequest(page, size, "created_at", "desc"));
+      @Argument Long categoryId, @Argument int page, @Argument int size) {
+    return postService.getPostsByCategory(
+        categoryId, new PageRequest(page, size, "created_at", "desc"));
   }
 
   @QueryMapping
   public PageResponse<PostWithoutUser> postsByUser(
-      @Argument Long userId,
-      @Argument int page,
-      @Argument int size) {
+      @Argument Long userId, @Argument int page, @Argument int size) {
     return postService.getUserPosts(userId, new PageRequest(page, size, "created_at", "desc"));
   }
 
@@ -112,9 +111,15 @@ public class PostGraphQLController {
   public PostDetails publishPost(@Argument Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     var post = postService.getPostById(id);
-    UpdatePostRequest updateRequest = new UpdatePostRequest(
-        post.getTitle(), post.getContent(), post.getExcerpt(),
-        post.getCategory().getId(), post.getCoverImage(), PostStatus.published, null);
+    UpdatePostRequest updateRequest =
+        new UpdatePostRequest(
+            post.getTitle(),
+            post.getContent(),
+            post.getExcerpt(),
+            post.getCategory().getId(),
+            post.getCoverImage(),
+            PostStatus.published,
+            null);
     return postService.updatePost(id, updateRequest, userId);
   }
 
@@ -122,9 +127,7 @@ public class PostGraphQLController {
   @SchemaMapping(typeName = "Post", field = "slug")
   public String slug(Post post) {
     // Generate slug from title
-    return post.getTitle().toLowerCase()
-        .replaceAll("[^a-z0-9]+", "-")
-        .replaceAll("^-+|-+$", "");
+    return post.getTitle().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-+|-+$", "");
   }
 
   @SchemaMapping(typeName = "Post", field = "featuredImage")
@@ -159,5 +162,4 @@ public class PostGraphQLController {
   public PageResponse<Review> reviews(Post post) {
     return reviewService.getPostReviews(post.getId(), new PageRequest(0, 100, "id", "desc"));
   }
-
 }

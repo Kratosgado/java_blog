@@ -116,17 +116,4 @@ public class Post {
       joinColumns = @JoinColumn(name = "post_id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id"))
   private List<Tag> tags;
-
-  @Column(
-      name = "search_vector",
-      columnDefinition =
-"""
-     GENERATED ALWAYS AS (
-    setweight(to_tsvector('english', title), 'A') ||
-    setweight(to_tsvector('english', COALESCE(content, '')), 'B')
-) STORED;
-""",
-      insertable = false,
-      updatable = false)
-  private String searchVector;
 }

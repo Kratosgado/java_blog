@@ -53,7 +53,7 @@ GET {{host}}/posts/106 HTTP/1.1
 
 # @name getPostBySlug
 
-GET {{host}}/posts/slug/gettig-whtsjk-is-started-spring-boot-3 HTTP/1.1
+GET {{host}}/posts/slug/death-be-not-proud-in-deleniti-fugit-enim-ut-totam HTTP/1.1
 
 
 ### Get all published posts (with pagination and sorting)
