@@ -14,6 +14,7 @@ import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
@@ -170,12 +171,13 @@ class PostServiceTest {
   void searchPosts_WithKeyword_ShouldReturnPageOfPosts() {
     // Arrange
     String keyword = "test";
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest =
-        com.kratosgado.blog.dtos.request.PageRequest.builder()
+    SearchPageRequest pageRequest =
+        SearchPageRequest.builder()
             .page(0)
             .size(10)
             .sortBy("createdAt")
             .sortDir("DESC")
+            .keyword(keyword)
             .build();
     PostView mockPostView = org.mockito.Mockito.mock(PostView.class);
     Page<PostView> page = new PageImpl<>(List.of(mockPostView));
@@ -183,7 +185,7 @@ class PostServiceTest {
     when(postRepository.searchPublishedPosts(eq(keyword), any(Pageable.class))).thenReturn(page);
 
     // Act
-    PageResponse<PostView> result = postService.searchPosts(keyword, pageRequest);
+    PageResponse<PostView> result = postService.searchPosts(pageRequest);
 
     // Assert
     assertNotNull(result);

@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -31,6 +32,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @SpringBootTest
 @ActiveProfiles("test")
+@Sql(
+    scripts = "classpath:db/migration/V2__add_performance_indexes.sql",
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Transactional
 @Slf4j
 public class RepositoryPerformanceTest {
@@ -52,7 +56,6 @@ public class RepositoryPerformanceTest {
   public void setup() {
     // Reset metrics before each test
     performanceMonitor.resetMetrics();
-    ensurePerformanceIndexes();
 
     // Create test data if not exists
     if (userRepository.count() == 0) {
@@ -149,7 +152,8 @@ public class RepositoryPerformanceTest {
 
     for (String term : searchTerms) {
       TimingStats likeStats =
-          measureSearch(() -> postRepository.searchPublishedPostsSimple(term, PageRequest.of(0, 20)));
+          measureSearch(
+              () -> postRepository.searchPublishedPostsSimple(term, PageRequest.of(0, 20)));
       TimingStats ftsStats =
           measureSearch(() -> postRepository.searchPublishedPosts(term, PageRequest.of(0, 20)));
 
@@ -309,40 +313,13 @@ public class RepositoryPerformanceTest {
     }
 
     return new TimingStats(
-        toMillis(total / (double) MEASURE_RUNS),
-        toMillis(min),
-        toMillis(max),
-        resultCount);
+        toMillis(total / (double) MEASURE_RUNS), toMillis(min), toMillis(max), resultCount);
   }
 
   private void clearPersistenceContext() {
     entityManager.flush();
     entityManager.clear();
     entityManager.getEntityManagerFactory().getCache().evictAll();
-  }
-
-  private void ensurePerformanceIndexes() {
-    entityManager
-        .createNativeQuery(
-            "CREATE INDEX IF NOT EXISTS idx_posts_status_views ON posts(status, views DESC)")
-        .executeUpdate();
-    entityManager
-        .createNativeQuery(
-            "CREATE INDEX IF NOT EXISTS idx_posts_user_status ON posts(user_id, status)")
-        .executeUpdate();
-    entityManager
-        .createNativeQuery(
-            "CREATE INDEX IF NOT EXISTS idx_posts_category_status ON posts(category_id, status)")
-        .executeUpdate();
-    entityManager
-        .createNativeQuery(
-            "CREATE INDEX IF NOT EXISTS idx_posts_fts_vector ON posts USING GIN(search_vector)")
-        .executeUpdate();
-    entityManager
-        .createNativeQuery(
-            "CREATE INDEX IF NOT EXISTS idx_posts_published_created_at "
-                + "ON posts(created_at DESC) WHERE status = 'published'")
-        .executeUpdate();
   }
 
   private double toMillis(double nanos) {

@@ -24,11 +24,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Slf4j
+@Sql(
+    scripts = "classpath:db/migration/V2__add_performance_indexes.sql",
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class SearchPerformanceComparisonTest {
 
   @Autowired private PostRepository postRepository;
@@ -69,10 +73,8 @@ public class SearchPerformanceComparisonTest {
 
     log.info("=== Search Performance Comparison ({} posts) ===", POST_COUNT);
 
-    TimingStats legacyStats =
-        measureSearch("Legacy LIKE", () -> performLegacySearch(keyword));
-    TimingStats optimizedStats =
-        measureSearch("TSVector", () -> performOptimizedSearch(keyword));
+    TimingStats legacyStats = measureSearch("Legacy LIKE", () -> performLegacySearch(keyword));
+    TimingStats optimizedStats = measureSearch("TSVector", () -> performOptimizedSearch(keyword));
 
     log.info(
         "Legacy Search Avg/Min/Max: {}/{}/{} ms",
@@ -121,9 +123,9 @@ public class SearchPerformanceComparisonTest {
       String currentKeyword = shouldMatch ? "java" : keywords[random.nextInt(keywords.length)];
       // If it shouldn't match, ensure currentKeyword is NOT java
       if (!shouldMatch && "java".equals(currentKeyword)) {
-          currentKeyword = "software";
+        currentKeyword = "software";
       }
-      
+
       String title = "Post " + i + " about " + currentKeyword;
       post.setTitle(title);
       post.setSlug("post-" + i);
@@ -134,7 +136,7 @@ public class SearchPerformanceComparisonTest {
         // Ensure "java" doesn't appear in content for non-matching posts
         String randomKeyword = keywords[random.nextInt(keywords.length)];
         if (!shouldMatch && "java".equals(randomKeyword)) {
-            randomKeyword = "engineering";
+          randomKeyword = "engineering";
         }
         content.append(randomKeyword).append(" ");
         content.append("and other topics related to software engineering. ");
@@ -175,20 +177,24 @@ public class SearchPerformanceComparisonTest {
     String legacyExplain =
         "EXPLAIN (ANALYZE, BUFFERS, TIMING) SELECT * FROM posts WHERE status = 'published' AND "
             + "(LOWER(title) LIKE LOWER(?) OR LOWER(content) LIKE LOWER(?)) LIMIT 20";
-    List<String> legacyPlan = entityManager.createNativeQuery(legacyExplain)
-        .setParameter(1, "%" + keyword + "%")
-        .setParameter(2, "%" + keyword + "%")
-        .getResultList();
+    List<String> legacyPlan =
+        entityManager
+            .createNativeQuery(legacyExplain)
+            .setParameter(1, "%" + keyword + "%")
+            .setParameter(2, "%" + keyword + "%")
+            .getResultList();
     log.info("Legacy Search Plan:\n{}", String.join("\n", legacyPlan));
 
     String optimizedExplain =
         "EXPLAIN (ANALYZE, BUFFERS, TIMING) SELECT * FROM posts "
             + "WHERE status = 'published' AND search_vector @@ websearch_to_tsquery('english', ?) "
             + "ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', ?)) DESC LIMIT 20";
-    List<String> optimizedPlan = entityManager.createNativeQuery(optimizedExplain)
-        .setParameter(1, keyword)
-        .setParameter(2, keyword)
-        .getResultList();
+    List<String> optimizedPlan =
+        entityManager
+            .createNativeQuery(optimizedExplain)
+            .setParameter(1, keyword)
+            .setParameter(2, keyword)
+            .getResultList();
     log.info("Optimized Search Plan:\n{}", String.join("\n", optimizedPlan));
   }
 
@@ -239,10 +245,7 @@ public class SearchPerformanceComparisonTest {
 
     TimingStats stats =
         new TimingStats(
-            toMillis(total / (double) MEASURE_RUNS),
-            toMillis(min),
-            toMillis(max),
-            resultCount);
+            toMillis(total / (double) MEASURE_RUNS), toMillis(min), toMillis(max), resultCount);
     log.info(
         "{} Avg/Min/Max: {}/{}/{} ms (results: {})",
         label,

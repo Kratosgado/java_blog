@@ -129,10 +129,11 @@ public class PostControllerV2 {
   @GetMapping("/search")
   @Operation(
       summary = "Search posts (Optimized)",
-      description = "Searches for posts by keyword in title and content using full-text search vector")
+      description =
+          "Searches for posts by keyword in title and content using full-text search vector")
   @GetEndpoint
   public PageResponse<PostView> searchPosts(@ParameterObject SearchPageRequest request) {
-    return postService.searchPosts(request.getKeyword(), request);
+    return postService.searchPosts(request);
   }
 
   @GetMapping("/user/{userId}")

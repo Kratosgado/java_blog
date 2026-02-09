@@ -15,10 +15,10 @@ ON posts(category_id, status);
 
 -- Full-text search index using tsvector for title and content
 -- Add the stored generated column
-ALTER TABLE posts DROP COLUMN search_vector;
+-- ALTER TABLE posts DROP COLUMN search_vector;
 
 ALTER TABLE posts 
-ADD COLUMN search_vector tsvector 
+ADD COLUMN  search_vector tsvector
 GENERATED ALWAYS AS (
     setweight(to_tsvector('english', title), 'A') || 
     setweight(to_tsvector('english', COALESCE(content, '')), 'B')

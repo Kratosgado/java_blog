@@ -48,7 +48,7 @@ setup)
 migrate)
   echo "Applying V3 performance indexes..."
   if [ "$(docker ps -q -f name=postgis)" ]; then
-    docker exec -i postgis psql -U postgres -d blog_db <blog-backend/src/main/resources/db/migration/V3__add_performance_indexes.sql
+    docker exec -i postgis psql -U postgres -d blog_db <blog-backend/src/main/resources/db/migration/V2__add_performance_indexes.sql
     echo "✓ Migration applied!"
   else
     echo "✗ PostgreSQL is not running. Start it with '$0 start'."

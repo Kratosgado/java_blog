@@ -11,6 +11,7 @@ import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
@@ -159,10 +160,20 @@ public class PostService {
     return DtoMapper.toPageResponse(postsPage);
   }
 
-  @Cacheable(value = CacheNames.POSTLIST)
-  public PageResponse<PostView> searchPosts(String keyword, PageRequest pageRequest) {
+  // @Cacheable(value = CacheNames.POSTLIST)
+  public PageResponse<PostView> searchPosts(SearchPageRequest pageRequest) {
     // Use optimized full-text search with PostgreSQL tsvector
-    var postsPage = postRepository.searchPublishedPosts(keyword, pageRequest.toPageable());
+    var postsPage =
+        postRepository.searchPublishedPosts(pageRequest.getKeyword(), pageRequest.toPageable());
+    return DtoMapper.toPageResponse(postsPage);
+  }
+
+  // @Cacheable(value = CacheNames.POSTLIST)
+  public PageResponse<PostView> searchPostsV1(SearchPageRequest pageRequest) {
+    // Use optimized full-text search with PostgreSQL tsvector
+    var postsPage =
+        postRepository.searchPublishedPostsSimple(
+            pageRequest.getKeyword(), pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
   }
 
