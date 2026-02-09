@@ -48,18 +48,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query(
       value =
-          """
-          SELECT * FROM posts
-          WHERE status = 'published'
-          AND search_vector @@ websearch_to_tsquery('english', :searchTerm)
-          ORDER BY ts_rank(search_vector, websearch_to_tsquery('english', :searchTerm)) DESC
-          """,
+          "SELECT * FROM posts WHERE status = 'published' AND search_vector @@"
+              + " websearch_to_tsquery('english', :searchTerm)",
       countQuery =
-          """
-          SELECT count(*) FROM posts
-          WHERE status = 'published'
-          AND search_vector @@ websearch_to_tsquery('english', :searchTerm)
-          """,
+          "SELECT count(*) FROM posts WHERE status = 'published' AND search_vector @@"
+              + " websearch_to_tsquery('english', :searchTerm)",
       nativeQuery = true)
   Page<PostView> searchPublishedPosts(@Param("searchTerm") String searchTerm, Pageable pageable);
 
