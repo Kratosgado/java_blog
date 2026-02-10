@@ -1,10 +1,10 @@
 package com.kratosgado.blog.backend.config;
 
+import com.kratosgado.blog.backend.security.CustomOAuth2UserService;
 import com.kratosgado.blog.backend.security.JwtAccessDeniedHandler;
 import com.kratosgado.blog.backend.security.JwtAuthenticationEntryPoint;
 import com.kratosgado.blog.backend.security.JwtAuthenticationFilter;
 import java.util.Arrays;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +28,17 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+  private final CustomOAuth2UserService customOAuth2UserService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        // CSRF Protection: Disabled for stateless JWT API
+        // Rationale: CSRF attacks exploit automatic cookie submission by browsers.
+        // JWT tokens stored in localStorage are not automatically sent, making them
+        // immune to CSRF (but vulnerable to XSS, which we mitigate via input sanitization).
+        // To enable CSRF for stateful session-based auth:
+        // .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -60,9 +67,13 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/data/**", "/error")
                     .permitAll()
 
-                    // Admin-only endpoints
+                    // Role-based endpoint restrictions
                     .requestMatchers("/v*/admin/**")
                     .hasRole("ADMIN")
+                    .requestMatchers("/v*/author/**")
+                    .hasAnyRole("AUTHOR", "ADMIN")
+                    .requestMatchers("/v*/reader/**")
+                    .hasAnyRole("READER", "AUTHOR", "ADMIN")
 
                     // All other endpoints require authentication
                     .anyRequest()
@@ -71,7 +82,13 @@ public class SecurityConfig {
             ex ->
                 ex.authenticationEntryPoint(jwtAuthenticationEntryPoint)
                     .accessDeniedHandler(jwtAccessDeniedHandler))
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .loginPage("/login")
+                    .defaultSuccessUrl("/api/v1/posts")
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)));
 
     return http.build();
   }
@@ -79,13 +96,29 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(
-        List.of(
-            "http://localhost:8080", "http://localhost:3000", "https://studio.apollographql.com"));
+
+    // Configure allowed origins (can be overridden via CORS_ORIGINS env variable)
+    String corsOrigins =
+        System.getenv()
+            .getOrDefault(
+                "CORS_ORIGINS",
+                "http://localhost:8080,http://localhost:3000,https://studio.apollographql.com");
+    configuration.setAllowedOrigins(Arrays.asList(corsOrigins.split(",")));
+
+    // Define allowed HTTP methods
     configuration.setAllowedMethods(
         Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-    configuration.setAllowedHeaders(List.of("*"));
+
+    // Set specific allowed headers (not wildcard)
+    configuration.setAllowedHeaders(
+        Arrays.asList(
+            "Authorization", "Content-Type", "Accept", "X-Requested-With", "Cache-Control"));
+
+    // Enable credentials support for authenticated cross-origin requests
     configuration.setAllowCredentials(true);
+
+    // Set max age for preflight cache (in seconds)
+    configuration.setMaxAge(3600L);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
