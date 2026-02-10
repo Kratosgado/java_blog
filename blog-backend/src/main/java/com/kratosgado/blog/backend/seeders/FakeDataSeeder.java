@@ -10,6 +10,7 @@ import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.enums.PostStatus;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.Category;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
@@ -102,18 +103,22 @@ public class FakeDataSeeder implements CommandLineRunner {
   private List<User> seedUsers(int count) {
     List<User> users =
         IntStream.range(0, count).mapToObj(i -> createFakeUser(i)).collect(Collectors.toList());
-    users.add(createRealUser());
+    users.addAll(
+        List.of(
+            createRealUser("gado", UserRole.ADMIN),
+            createRealUser("kratos", UserRole.READER),
+            createRealUser("kratosgado", UserRole.AUTHOR)));
 
     return userRepository.saveAll(users);
   }
 
-  private User createRealUser() {
+  private User createRealUser(String username, UserRole role) {
     return User.builder()
-        .username("kratos")
-        .email("kratos@gmail.com")
+        .username(username)
+        .email(username + "@gmail.com")
         .password(BCrypt.withDefaults().hashToString(12, "28935617Aa@".toCharArray()))
         .avatarUrl("https://avatars.githubusercontent.com/u/10137?v=4")
-        .role("USER")
+        .role(role)
         .build();
   }
 
@@ -127,7 +132,7 @@ public class FakeDataSeeder implements CommandLineRunner {
         .email(faker.internet().emailAddress(username))
         .password(BCrypt.withDefaults().hashToString(12, "password123@".toCharArray()))
         .avatarUrl(faker.avatar().image())
-        .role(index == 0 ? "ADMIN" : "USER") // First user is admin
+        .role(faker.options().option(UserRole.class)) // First user is admin
         .build();
   }
 

@@ -86,8 +86,8 @@ public class SecurityConfig {
         .oauth2Login(
             oauth2 ->
                 oauth2
-                    .loginPage("/login")
-                    .defaultSuccessUrl("/api/v1/posts")
+                    .loginPage("/v1/auth/google")
+                    .defaultSuccessUrl("/v1/posts")
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)));
 
     return http.build();
