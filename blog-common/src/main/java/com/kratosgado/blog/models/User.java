@@ -1,7 +1,10 @@
 package com.kratosgado.blog.models;
 
+import com.kratosgado.blog.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,7 +27,8 @@ import lombok.experimental.SuperBuilder;
     name = "users",
     indexes = {
       @Index(name = "idx_users_username", columnList = "username"),
-      @Index(name = "idx_users_email", columnList = "email")
+      @Index(name = "idx_users_email", columnList = "email"),
+      @Index(name = "idx_users_role", columnList = "role")
     })
 public class User {
 
@@ -35,7 +39,7 @@ public class User {
   @Column(unique = true, nullable = false)
   private String username;
 
-  @Column(nullable = false)
+  @Column(nullable = true) // Nullable for OAuth2 users
   private String password;
 
   @Column(unique = true, nullable = false)
@@ -49,34 +53,44 @@ public class User {
   private String website;
   private String location;
 
-  @Builder.Default private String role = "USER";
+  // OAuth2 fields
+  @Column(name = "auth_provider")
+  private String authProvider; // "local", "google", "github", etc.
 
-  @Override
-  public String toString() {
-    return "User{"
-        + "id="
-        + id
-        + ", username='"
-        + username
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", avatarUrl='"
-        + avatarUrl
-        + '\''
-        + ", bio='"
-        + bio
-        + '\''
-        + ", website='"
-        + website
-        + '\''
-        + ", location='"
-        + location
-        + '\''
-        + ", role='"
-        + role
-        + '\''
-        + '}';
+  @Column(name = "provider_id")
+  private String providerId; // OAuth2 provider user ID
+
+  // Role-Based Access Control (RBAC)
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 10)
+  @Builder.Default
+  private UserRole role = UserRole.READER;
+
+  /**
+   * Check if user has a specific role
+   *
+   * @param userRole UserRole enum to check
+   * @return true if user has the role
+   */
+  public boolean hasRole(UserRole userRole) {
+    return this.role == userRole;
+  }
+
+  /**
+   * Check if user is authenticated via OAuth2
+   *
+   * @return true if user logged in via OAuth2 provider
+   */
+  public boolean isOAuth2User() {
+    return authProvider != null && !authProvider.equals("local");
+  }
+
+  /**
+   * Get role name as string
+   *
+   * @return Role name (e.g., "ADMIN", "AUTHOR", "READER")
+   */
+  public String getRoleString() {
+    return role.name();
   }
 }

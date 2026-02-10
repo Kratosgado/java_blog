@@ -34,4 +34,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByUsername(String username);
 
   boolean existsByEmail(String email);
+
+  /**
+   * Find user by OAuth2 provider and provider ID
+   * @param authProvider OAuth2 provider (google, github, etc.)
+   * @param providerId Provider-specific user ID
+   * @return Optional containing the user if found
+   */
+  Optional<User> findByAuthProviderAndProviderId(String authProvider, String providerId);
 }
