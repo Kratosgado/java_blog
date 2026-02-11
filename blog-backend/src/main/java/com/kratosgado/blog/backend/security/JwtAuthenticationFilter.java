@@ -1,14 +1,15 @@
 package com.kratosgado.blog.backend.security;
 
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
-import com.kratosgado.blog.dtos.response.UserResponse;
+import com.kratosgado.blog.backend.services.TokenBlacklistService;
+import com.kratosgado.blog.models.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,14 +17,33 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * JWT Authentication Filter
+ *
+ * <p>Validates JWT tokens and sets Spring Security authentication context with user roles from
+ * database.
+ *
+ * <p><b>Security Features:</b>
+ *
+ * <ul>
+ *   <li>Token blacklist checking (for logout/revocation support)
+ *   <li>Token signature and expiry validation
+ *   <li>Database-backed role loading with RBAC support
+ *   <li>Comprehensive security event logging
+ * </ul>
+ */
+@Slf4j
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
   private final UserRepository userRepository;
+  private final TokenBlacklistService tokenBlacklistService;
 
-  public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+  public JwtAuthenticationFilter(
+      JwtUtil jwtUtil, UserRepository userRepository, TokenBlacklistService tokenBlacklistService) {
     this.jwtUtil = jwtUtil;
     this.userRepository = userRepository;
+    this.tokenBlacklistService = tokenBlacklistService;
   }
 
   @Override
@@ -45,32 +65,74 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     jwt = authHeader.substring(7);
 
     try {
-      // Extract username from JWT
+      // CHECK 1: Token Blacklist (O(1) HashMap lookup)
+      // This check comes BEFORE extracting username to fail fast for revoked tokens
+      if (tokenBlacklistService.isBlacklisted(jwt)) {
+        log.warn(
+            "Authentication attempt with blacklisted token. Token prefix: {}...",
+            jwt.substring(0, Math.min(20, jwt.length())));
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response
+            .getWriter()
+            .write(
+                "{\"error\": \"Token has been revoked\", "
+                    + "\"message\": \"This token is no longer valid. Please login again.\"}");
+        return; // Stop filter chain - do not continue
+      }
+
+      // CHECK 2: Extract username from JWT
       username = jwtUtil.extractUsername(jwt);
 
-      // If username is not null and no authentication is set in the context
+      // CHECK 3: Verify username exists and no authentication already set
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        Optional<UserResponse> userOptional = null;
-        userOptional = userRepository.findByEmail(username);
+        // CHECK 4: Load full User entity with roles from database
+        Optional<User> userOptional = userRepository.findBy(username);
 
         if (userOptional.isPresent()) {
-          var user = userOptional.get();
+          User user = userOptional.get();
 
-          // Validate token
+          // CHECK 5: Validate token signature and expiry
           if (jwtUtil.validateToken(jwt, username)) {
+            // Convert user role to Spring Security authority
+            var authority = new SimpleGrantedAuthority(user.getRoleString());
+            var authorities = java.util.List.of(authority);
 
             UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(
-                    user, null, List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole())));
+                new UsernamePasswordAuthenticationToken(user, null, authorities);
 
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             // Set authentication in security context
             SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            log.debug(
+                "JWT authentication successful for user: {} with role: {}",
+                username,
+                user.getRole().name());
+          } else {
+            // Token validation failed (signature mismatch or expired)
+            log.warn(
+                "JWT validation failed for user: {}. Token may be expired or tampered. "
+                    + "Token prefix: {}...",
+                username,
+                jwt.substring(0, Math.min(20, jwt.length())));
           }
+        } else {
+          // User not found in database
+          log.warn(
+              "User not found for JWT token: {}. Token prefix: {}...",
+              username,
+              jwt.substring(0, Math.min(20, jwt.length())));
         }
       }
 
     } catch (Exception e) {
+      // Catch-all for any JWT processing errors
+      log.error(
+          "JWT authentication failed. Token prefix: {}..., Error: {}",
+          jwt.substring(0, Math.min(20, jwt.length())),
+          e.getMessage(),
+          e);
     }
 
     filterChain.doFilter(request, response);

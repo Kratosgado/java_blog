@@ -12,7 +12,7 @@
 
 POST {{host}}/posts HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "categoryId": 1,
@@ -89,7 +89,7 @@ GET {{host}}/posts/slug/{{postSlugV2}} HTTP/1.1
 
 PUT {{host}}/posts/{{postIdV2}} HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "categoryId": 1,
@@ -105,7 +105,7 @@ Authorization: {{userAuth}}
 # @name publishPost
 
 PUT {{host}}/posts/{{postIdV2}}/publish HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get posts by user
@@ -127,4 +127,4 @@ GET {{host}}/posts/category/1 HTTP/1.1
 # @name deletePost
 
 DELETE {{host}}/posts/{{postIdV2}} HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}

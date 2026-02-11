@@ -14,7 +14,7 @@
 # @name getCacheStats
 
 GET {{host}}/cache/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -25,7 +25,7 @@ Authorization: {{userAuth}}
 # @name clearPostsCache
 
 DELETE {{host}}/cache/posts HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -36,7 +36,7 @@ Authorization: {{userAuth}}
 # @name clearCategoriesCache
 
 DELETE {{host}}/cache/categories HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -47,7 +47,7 @@ Authorization: {{userAuth}}
 # @name clearTagsCache
 
 DELETE {{host}}/cache/tags HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -58,7 +58,7 @@ Authorization: {{userAuth}}
 # @name clearCommentsCache
 
 DELETE {{host}}/cache/comments HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -69,7 +69,7 @@ Authorization: {{userAuth}}
 # @name clearAllCaches
 
 DELETE {{host}}/cache HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -80,7 +80,7 @@ Authorization: {{userAuth}}
 # @name refreshPostsCache
 
 POST {{host}}/cache/posts/refresh HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -91,7 +91,7 @@ Authorization: {{userAuth}}
 # @name refreshCategoriesCache
 
 POST {{host}}/cache/categories/refresh HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -102,7 +102,7 @@ Authorization: {{userAuth}}
 # @name refreshTagsCache
 
 POST {{host}}/cache/tags/refresh HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -113,7 +113,7 @@ Authorization: {{userAuth}}
 # @name refreshCommentsCache
 
 POST {{host}}/cache/comments/refresh HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -124,7 +124,7 @@ Authorization: {{userAuth}}
 # @name evictPostFromCache
 
 DELETE {{host}}/cache/posts/test-post-slug HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -135,7 +135,7 @@ Authorization: {{userAuth}}
 # @name evictCategoryFromCache
 
 DELETE {{host}}/cache/categories/1 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -146,7 +146,7 @@ Authorization: {{userAuth}}
 # @name evictTagFromCache
 
 DELETE {{host}}/cache/tags/1 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -157,7 +157,7 @@ Authorization: {{userAuth}}
 # @name evictCommentFromCache
 
 DELETE {{host}}/cache/comments/comment-id-123 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -178,7 +178,7 @@ GET {{host}}/cache/stats HTTP/1.1
 # @name getCacheStatsAsUser
 
 GET {{host}}/cache/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -189,7 +189,7 @@ Authorization: {{userAuth}}
 # @name clearInvalidCache
 
 DELETE {{host}}/cache/invalid-cache-name HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 

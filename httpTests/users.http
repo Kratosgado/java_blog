@@ -12,7 +12,7 @@
 # @name getAllUsers
 
 GET {{host}}/users?page=1&size=10 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 > {%
   const body = response.body.data.content;
@@ -26,7 +26,7 @@ Authorization: {{userAuth}}
 # @name getUser
 
 GET {{host}}/users/{{userId}} HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get user by ID
@@ -34,7 +34,7 @@ Authorization: {{userAuth}}
 # @name getUser
 
 GET {{hostData}}/users/72?projection=user HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get user by ID
@@ -42,7 +42,7 @@ Authorization: {{userAuth}}
 # @name getUser
 
 GET {{hostData}}/users/by-email/{{userEmail}} HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Update user profile
@@ -51,7 +51,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/{{userId}}/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "avatarUrl": "https://example.com/avatar.jpg",
@@ -67,7 +67,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/{{userId}}/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "confirmPassword": "newPassword456!",
@@ -82,7 +82,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/9/avatar HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "avatarUrl": "https://example.com/new-avatar.jpg"
@@ -94,7 +94,7 @@ Authorization: {{userAuth}}
 # @name getUserPosts
 
 GET {{host}}/users/1/posts?page=0&size=10 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get user's comments
@@ -102,7 +102,7 @@ Authorization: {{userAuth}}
 # @name getUserComments
 
 GET {{host}}/users/1/comments?page=0&size=10 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Delete user account (should be restricted)
@@ -110,7 +110,7 @@ Authorization: {{userAuth}}
 # @name deleteUser
 
 DELETE {{host}}/users/1 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Search users by username
@@ -118,7 +118,7 @@ Authorization: {{userAuth}}
 # @name searchUsers
 
 GET {{host}}/users/search?q=john&page=0&size=10 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Test update profile with invalid data
@@ -127,7 +127,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "bio": "",
@@ -142,7 +142,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/1/profile HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "bio": "Trying to update someone else's profile"
@@ -155,7 +155,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "confirmPassword": "newPassword456!",
@@ -170,7 +170,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/users/1/password HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "confirmPassword": "differentPassword!",

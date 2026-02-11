@@ -24,7 +24,7 @@ Content-Type: application/json
 
 ### Login and capture token
 
-# @name login
+# @name reader login
 
 POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
@@ -36,11 +36,53 @@ Content-Type: application/json
 
 > {%
   var token = response.body.data.token;
-  client.global.set("userAuth", "Bearer " + token);
+  client.global.set("readerAuth", "Bearer " + token);
+%}
+
+
+### Login and capture token
+
+# @name author login
+
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "kratosgado@gmail.com",
+  "password": "28935617Aa@"
+}
+
+> {%
+  var token = response.body.data.token;
+  client.global.set("authorAuth", "Bearer " + token);
+%}
+
+
+### Login and capture token
+
+# @name admin login
+
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "gado@gmail.com",
+  "password": "28935617Aa@"
+}
+
+> {%
+  var token = response.body.data.token;
+  client.global.set("adminAuth", "Bearer " + token);
 %}
 
 
 ### Validate token
 
 GET {{host}}/auth/validate HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
+
+
+### Logout
+
+POST {{host}}/auth/logout HTTP/1.1
+Authorization: {{readerAuth}}

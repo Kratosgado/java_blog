@@ -12,7 +12,7 @@
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "This is a very well-written and informative article. I learned a lot from it and would highly recommend it to others.",
@@ -28,7 +28,7 @@ Authorization: {{userAuth}}
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "Pretty good article overall. Could use a bit more detail in some sections, but generally helpful.",
@@ -43,7 +43,7 @@ Authorization: {{userAuth}}
 # @name getReview
 
 GET {{host}}/reviews/{{reviewId}} HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Update a Review
@@ -52,7 +52,7 @@ Authorization: {{userAuth}}
 
 PUT {{host}}/reviews/69774191ba135a7b67306003 HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "After re-reading, I appreciate this even more. The examples are very clear and practical. Definitely a 5-star article!",
@@ -66,7 +66,7 @@ Authorization: {{userAuth}}
 # @name deleteReview
 
 DELETE {{host}}/reviews/{{reviewId}} HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get Reviews for a Post - Page
@@ -74,7 +74,7 @@ Authorization: {{userAuth}}
 # @name getPostReviewsPage2
 
 GET {{host}}/reviews/post/100?page=0&size=5 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get Reviews by User
@@ -82,7 +82,7 @@ Authorization: {{userAuth}}
 # @name getUserReviews
 
 GET {{host}}/reviews/user/66?page=0&size=4 HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Get Review Statistics for a Post
@@ -90,7 +90,7 @@ Authorization: {{userAuth}}
 # @name getPostReviewStats
 
 GET {{host}}/reviews/post/372/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### Test Create Review with Invalid Rating (validation error)
@@ -99,7 +99,7 @@ Authorization: {{userAuth}}
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "Rating should be between 1-5",
@@ -115,7 +115,7 @@ Authorization: {{userAuth}}
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "postId": 1,
@@ -129,7 +129,7 @@ Authorization: {{userAuth}}
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "Post does not exist",
@@ -145,7 +145,7 @@ Authorization: {{userAuth}}
 
 POST {{host}}/reviews HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "User already reviewed this post",
@@ -197,7 +197,7 @@ DELETE {{host}}/reviews/{{reviewId}} HTTP/1.1
 
 PUT {{host}}/reviews/some_other_user_review_id HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "content": "This should fail",

@@ -1,9 +1,9 @@
 package com.kratosgado.blog.backend.config;
 
-import com.kratosgado.blog.backend.security.CustomOAuth2UserService;
 import com.kratosgado.blog.backend.security.JwtAccessDeniedHandler;
 import com.kratosgado.blog.backend.security.JwtAuthenticationEntryPoint;
 import com.kratosgado.blog.backend.security.JwtAuthenticationFilter;
+import com.kratosgado.blog.backend.services.CustomOAuth2UserService;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

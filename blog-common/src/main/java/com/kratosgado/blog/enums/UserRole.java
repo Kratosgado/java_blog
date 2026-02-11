@@ -8,37 +8,7 @@ package com.kratosgado.blog.enums;
  * content, comment, like)
  */
 public enum UserRole {
-  /** Administrator role with full system access */
-  ADMIN("Administrator", "Full system access including user management"),
-
-  /** Author role for content creators */
-  AUTHOR("Author", "Can create, edit, and publish blog posts"),
-
-  /** Reader role for regular users */
-  READER("Reader", "Can view content, comment, and interact");
-
-  private final String displayName;
-  private final String description;
-
-  UserRole(String displayName, String description) {
-    this.displayName = displayName;
-    this.description = description;
-  }
-
-  public String getDisplayName() {
-    return displayName;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * Get default role for new users
-   *
-   * @return Default role (READER)
-   */
-  public static UserRole getDefault() {
-    return READER;
-  }
+  ADMIN,
+  AUTHOR,
+  READER
 }

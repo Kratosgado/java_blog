@@ -130,6 +130,690 @@ Database Layer (Relational)
 - **Security**: Spring Security with JWT and BCrypt
 - **API Documentation**: Springdoc OpenAPI (Swagger)
 
+## Security Configuration
+
+### Overview
+
+The blogging platform implements comprehensive security measures including JWT-based authentication, role-based access control (RBAC), CORS configuration, and CSRF protection strategies optimized for stateless API architecture.
+
+### CORS (Cross-Origin Resource Sharing)
+
+**What is CORS?**
+
+CORS is a **browser-enforced security mechanism** that controls which web domains can access your API. It implements the Same-Origin Policy (SOP), which by default blocks cross-origin requests to prevent malicious websites from stealing data.
+
+**How CORS Works:**
+
+1. **Preflight Request**: Browser sends OPTIONS request with origin, method, and headers
+2. **Server Response**: Server responds with allowed origins, methods, and headers
+3. **Actual Request**: If preflight succeeds, browser sends the actual request
+4. **Browser Enforcement**: Browser blocks response if origin is not allowed
+
+**Our CORS Configuration:**
+
+```java
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+
+    // Allowed origins (configurable via CORS_ORIGINS environment variable)
+    // Default: http://localhost:8080, http://localhost:3000, https://studio.apollographql.com
+    String corsOrigins = System.getenv().getOrDefault("CORS_ORIGINS",
+        "http://localhost:8080,http://localhost:3000,https://studio.apollographql.com");
+    configuration.setAllowedOrigins(Arrays.asList(corsOrigins.split(",")));
+
+    // Allowed HTTP methods
+    configuration.setAllowedMethods(
+        Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+    // Allowed headers (explicit list for security)
+    configuration.setAllowedHeaders(
+        Arrays.asList("Authorization", "Content-Type", "Accept",
+                     "X-Requested-With", "Cache-Control"));
+
+    // Enable credentials (cookies, Authorization headers)
+    configuration.setAllowCredentials(true);
+
+    // Preflight cache duration (1 hour)
+    configuration.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+}
+```
+
+**Key Points:**
+
+- ✅ **Browser-Enforced**: CORS is enforced by the browser, not the server
+- ✅ **Preflight Optimization**: 1-hour cache reduces redundant OPTIONS requests
+- ✅ **Specific Headers**: Only necessary headers allowed (not wildcard `*`)
+- ✅ **Environment-Configurable**: Origins can be customized via `CORS_ORIGINS` env variable
+- ❌ **Not Protection Against**: CORS does NOT protect against server-to-server attacks (use authentication for that)
+
+**Testing CORS:**
+
+```bash
+# Test preflight request
+curl -X OPTIONS http://localhost:8080/api/v1/posts \
+  -H "Origin: http://localhost:3000" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: Authorization" \
+  -v
+
+# Expected headers in response:
+# Access-Control-Allow-Origin: http://localhost:3000
+# Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+# Access-Control-Allow-Headers: Authorization, Content-Type, ...
+# Access-Control-Allow-Credentials: true
+
+# Test with unauthorized origin (should fail in browser)
+curl -X GET http://localhost:8080/api/v1/posts \
+  -H "Origin: http://malicious-site.com" \
+  -v
+# Browser will block the response even if server returns 200 OK
+```
+
+### CSRF (Cross-Site Request Forgery)
+
+**What is CSRF?**
+
+CSRF is a **server-side security vulnerability** where an attacker tricks a user's browser into making unwanted requests to a website where the user is authenticated. It exploits the fact that browsers automatically send cookies with every request.
+
+**How CSRF Attacks Work:**
+
+1. **User Authenticates**: User logs into `bank.com`, receives session cookie
+2. **Cookie Persists**: Browser stores session cookie for `bank.com`
+3. **Malicious Site**: User visits `evil.com` (in another tab)
+4. **Forged Request**: `evil.com` submits form to `bank.com/transfer?amount=1000&to=attacker`
+5. **Automatic Cookies**: Browser automatically sends session cookie to `bank.com`
+6. **Unauthorized Action**: `bank.com` processes the request (thinks it's legitimate)
+
+**Why CSRF Protection is DISABLED for our JWT API:**
+
+```java
+http.csrf(csrf -> csrf.disable())
+```
+
+**Rationale:**
+
+| Aspect | Session-Based Auth (CSRF Vulnerable) | JWT-Based Auth (CSRF Immune) |
+|--------|-------------------------------------|------------------------------|
+| **Storage** | Cookies (automatic) | localStorage/sessionStorage (manual) |
+| **Transmission** | Automatically sent by browser | Manually added to Authorization header |
+| **CSRF Risk** | ⚠️ High (browser sends cookies automatically) | ✅ None (attacker cannot access localStorage) |
+| **XSS Risk** | ✅ Low (HttpOnly cookies) | ⚠️ Higher (JavaScript can access localStorage) |
+| **Protection** | CSRF tokens required | Input sanitization + CORS |
+
+**Our JWT API is not vulnerable to CSRF because:**
+
+1. ✅ **No Automatic Transmission**: JWTs are stored in localStorage and must be manually added to `Authorization` header
+2. ✅ **Stateless**: No server-side session state; tokens are self-contained
+3. ✅ **CORS Protection**: Strict CORS policy prevents unauthorized domains from making requests
+4. ✅ **Token Validation**: Every request validates JWT signature and expiry
+
+**When to Enable CSRF Protection:**
+
+Enable CSRF protection if you use:
+- ❌ Cookie-based session authentication
+- ❌ Spring Security form login with sessions
+- ❌ Hybrid authentication (mixing sessions and tokens)
+
+**How to Enable CSRF (if needed):**
+
+```java
+// In SecurityConfig.java, replace csrf.disable() with:
+.csrf(csrf -> csrf
+    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+)
+```
+
+Then include CSRF token in forms:
+```html
+<form method="POST" action="/submit">
+    <input type="hidden" name="_csrf" value="${_csrf.token}"/>
+    <!-- form fields -->
+</form>
+```
+
+### CORS vs CSRF: Key Differences
+
+| Feature | CORS | CSRF |
+|---------|------|------|
+| **What it protects** | Data confidentiality (reading responses) | Action integrity (preventing unwanted requests) |
+| **Enforced by** | Browser (client-side) | Server (backend validation) |
+| **Attack scenario** | Malicious site tries to read API responses | Malicious site tricks user into submitting request |
+| **Vulnerability** | Same-Origin Policy bypass | Automatic cookie submission |
+| **Protection mechanism** | Allow/deny specific origins | Validate unique token per session |
+| **Applies to** | All cross-origin requests | State-changing requests (POST/PUT/DELETE) |
+| **Our implementation** | ✅ Enabled with strict origin list | ❌ Disabled (stateless JWT API) |
+
+### Security Best Practices
+
+**1. CORS Configuration:**
+- ✅ Use specific origins (never use `*` in production with credentials)
+- ✅ Limit allowed methods to only what's needed
+- ✅ Specify explicit headers instead of wildcard
+- ✅ Use environment variables for origin configuration
+- ✅ Enable credentials only when necessary
+
+**2. JWT Security:**
+- ✅ Store JWTs in `localStorage` or `sessionStorage` (not cookies)
+- ✅ Use HTTPS to prevent token interception
+- ✅ Implement short token expiry (24 hours)
+- ✅ Validate token signature, expiry, and claims on every request
+- ✅ Implement token blacklist for logout functionality
+- ✅ BCrypt password hashing with cost factor ≥ 12
+
+**3. Alternative Security Measures:**
+- ✅ **XSS Protection**: Sanitize all user inputs (primary concern for JWT APIs)
+- ✅ **Input Validation**: Validate all request data on server-side
+- ✅ **HTTPS Only**: Never transmit tokens over HTTP
+- ✅ **Rate Limiting**: Prevent brute force attacks with account lockout
+- ✅ **Security Headers**: Use `Content-Security-Policy`, `X-Frame-Options`, etc.
+- ✅ **Security Event Logging**: Monitor authentication and authorization events
+
+### JWT Token Blacklist (DSA Implementation)
+
+**Purpose:**
+
+Implement JWT token revocation for logout functionality using HashMap-based blacklist with O(1) lookup performance.
+
+**Data Structure & Algorithm Analysis:**
+
+```
+Data Structure: ConcurrentHashMap<String, Long>
+  - Key: JWT token string
+  - Value: Expiry timestamp (Unix epoch milliseconds)
+
+Time Complexity:
+  - blacklistToken(): O(1) - HashMap put operation
+  - isBlacklisted(): O(1) - HashMap get + timestamp check
+  - cleanupExpiredTokens(): O(n) - Periodic cleanup (hourly)
+
+Space Complexity: O(n) where n = number of blacklisted tokens
+```
+
+**Implementation (TokenBlacklistService):**
+
+```java
+@Service
+public class TokenBlacklistService {
+    private final ConcurrentHashMap<String, Long> blacklist = new ConcurrentHashMap<>();
+
+    // Add token to blacklist (O(1))
+    public void blacklistToken(String token, long expiryTimestamp) {
+        blacklist.put(token, expiryTimestamp);
+    }
+
+    // Check if token is blacklisted (O(1))
+    public boolean isBlacklisted(String token) {
+        Long expiryTimestamp = blacklist.get(token);
+        if (expiryTimestamp == null) return false;
+
+        // Lazy expiry: remove expired tokens on access
+        if (System.currentTimeMillis() > expiryTimestamp) {
+            blacklist.remove(token);
+            return false;
+        }
+        return true;
+    }
+
+    // Scheduled cleanup to prevent memory leak (runs hourly)
+    @Scheduled(fixedRate = 3600000)
+    public void cleanupExpiredTokens() {
+        long currentTime = System.currentTimeMillis();
+        blacklist.entrySet().removeIf(entry ->
+            currentTime > entry.getValue());
+    }
+}
+```
+
+**Integration in JwtAuthenticationFilter:**
+
+```java
+@Override
+protected void doFilterInternal(HttpServletRequest request, ...) {
+    String jwt = authHeader.substring(7);
+
+    // CHECK 1: Token Blacklist (O(1) lookup)
+    if (tokenBlacklistService.isBlacklisted(jwt)) {
+        response.setStatus(401);
+        response.getWriter().write("{\"error\": \"Token has been revoked\"}");
+        return; // Stop filter chain
+    }
+
+    // CHECK 2: Validate token signature and expiry
+    // CHECK 3: Load user and set authentication
+    // ...
+}
+```
+
+**Logout Endpoint:**
+
+```bash
+# Logout: Blacklist current token
+POST /api/v1/auth/logout
+Authorization: Bearer <your-jwt-token>
+
+# Response
+{
+  "data": {
+    "message": "Logout successful",
+    "username": "alice@example.com",
+    "tokenBlacklisted": true,
+    "tokenExpiresAt": 1710345600000
+  }
+}
+
+# Subsequent requests with blacklisted token return 401
+GET /api/v1/reader/profile
+Authorization: Bearer <blacklisted-token>
+
+# Response: 401 Unauthorized
+{
+  "error": "Token has been revoked",
+  "message": "This token is no longer valid. Please login again."
+}
+```
+
+**Memory Management:**
+
+1. **Scheduled Cleanup**: Runs every hour to remove expired tokens
+2. **Lazy Expiry**: Expired tokens removed on access check (immediate memory reclamation)
+3. **Bounded Growth**: Tokens automatically removed after natural JWT expiry (24 hours)
+4. **Concurrent Access**: ConcurrentHashMap provides thread-safe operations
+
+**Limitations:**
+
+- ⚠️ **Single Instance**: Not shared across multiple app instances (use Redis for distributed systems)
+- ⚠️ **Lost on Restart**: Blacklist cleared on application restart (acceptable for short-lived tokens)
+- ✅ **Performance**: O(1) lookup ensures zero impact on authentication latency
+
+### Brute-Force Attack Detection
+
+**Purpose:**
+
+Prevent credential stuffing and brute-force attacks by implementing account lockout after N failed login attempts.
+
+**Data Structure & Algorithm Analysis:**
+
+```
+Data Structure: ConcurrentHashMap<String, LoginAttemptRecord>
+  - Key: Username (lowercase for case-insensitive)
+  - Value: LoginAttemptRecord { attemptCount, firstAttemptTimestamp }
+
+Time Complexity:
+  - recordFailedAttempt(): O(1) - HashMap compute
+  - recordSuccessfulAttempt(): O(1) - HashMap remove
+  - isBlocked(): O(1) - HashMap get + timestamp check
+  - cleanupOldRecords(): O(n) - Periodic cleanup (every 30 min)
+
+Space Complexity: O(m) where m = users with failed attempts
+```
+
+**Configuration:**
+
+```yaml
+# application.yml
+security:
+  login:
+    max-attempts: 5                 # Lockout after 5 failed attempts
+    lockout-duration-ms: 900000     # 15 minutes (900,000 ms)
+```
+
+**Implementation (LoginAttemptService):**
+
+```java
+@Service
+public class LoginAttemptService {
+    @Value("${security.login.max-attempts:5}")
+    private int MAX_ATTEMPTS;
+
+    @Value("${security.login.lockout-duration-ms:900000}")
+    private long LOCKOUT_DURATION_MS; // 15 minutes
+
+    private final ConcurrentHashMap<String, LoginAttemptRecord> attemptCache
+        = new ConcurrentHashMap<>();
+
+    // Record failed attempt (O(1))
+    public void recordFailedAttempt(String username) {
+        String key = username.toLowerCase();
+        attemptCache.compute(key, (k, record) ->
+            record == null
+                ? new LoginAttemptRecord(1, System.currentTimeMillis())
+                : new LoginAttemptRecord(record.attemptCount + 1,
+                                         record.firstAttemptTimestamp)
+        );
+    }
+
+    // Check if user is blocked (O(1))
+    public boolean isBlocked(String username) {
+        LoginAttemptRecord record = attemptCache.get(username.toLowerCase());
+        if (record == null) return false;
+
+        long elapsed = System.currentTimeMillis() - record.firstAttemptTimestamp;
+        if (elapsed > LOCKOUT_DURATION_MS) {
+            attemptCache.remove(username.toLowerCase()); // Auto-unlock
+            return false;
+        }
+
+        return record.attemptCount >= MAX_ATTEMPTS;
+    }
+
+    // Clear attempts on successful login (O(1))
+    public void recordSuccessfulAttempt(String username) {
+        attemptCache.remove(username.toLowerCase());
+    }
+}
+```
+
+**Integration in AuthService:**
+
+```java
+public User login(LoginRequest request) {
+    String email = request.email();
+
+    // STEP 1: Check if account is blocked
+    if (loginAttemptService.isBlocked(email)) {
+        long remainingTime = loginAttemptService.getRemainingLockoutTime(email);
+        throw new InvalidRequestException(
+            String.format("Account locked. Try again in %d seconds",
+                          remainingTime / 1000));
+    }
+
+    // STEP 2: Authenticate user
+    var user = userRepository.findBy(email)
+        .orElseThrow(() -> {
+            loginAttemptService.recordFailedAttempt(email); // Record failure
+            return new UnauthorizedException("Invalid credentials");
+        });
+
+    // STEP 3: Verify password
+    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        loginAttemptService.recordFailedAttempt(email); // Record failure
+        throw new UnauthorizedException("Invalid credentials");
+    }
+
+    // STEP 4: Success - clear failed attempts
+    loginAttemptService.recordSuccessfulAttempt(email);
+    return user;
+}
+```
+
+**Attack Scenarios:**
+
+```bash
+# Scenario 1: Brute-force attack (5 failed attempts)
+POST /api/v1/auth/login  # Attempt 1: 401 Unauthorized
+POST /api/v1/auth/login  # Attempt 2: 401 Unauthorized
+POST /api/v1/auth/login  # Attempt 3: 401 Unauthorized
+POST /api/v1/auth/login  # Attempt 4: 401 Unauthorized
+POST /api/v1/auth/login  # Attempt 5: 401 Unauthorized
+POST /api/v1/auth/login  # Attempt 6: 400 Bad Request (Account locked)
+
+# Response after lockout:
+{
+  "message": "Account locked. Try again in 897 seconds",
+  "error": "Invalid request"
+}
+
+# Scenario 2: Automatic unlock after 15 minutes
+# Wait 15 minutes...
+POST /api/v1/auth/login  # Success: 200 OK (lockout expired)
+```
+
+**Security Benefits:**
+
+- ✅ **Prevents Brute-Force**: Lockout after 5 failed attempts
+- ✅ **Prevents Credential Stuffing**: Rate limits login attempts
+- ✅ **Automatic Recovery**: Time-based unlock (no manual intervention)
+- ✅ **Username Enumeration Protection**: Same error message for valid/invalid users
+- ✅ **Memory Efficient**: Periodic cleanup prevents unbounded growth
+
+### Security Event Logging
+
+**Purpose:**
+
+Comprehensive audit logging for authentication, authorization, and security events to detect attacks and investigate incidents.
+
+**Monitored Events:**
+
+1. **Authentication Success**: Username, roles, IP address, timestamp
+2. **Authentication Failure**: Username, failure reason, IP address, timestamp
+3. **Authorization Denied**: Username, endpoint, required role, user roles
+4. **JWT Validation Failures**: Token expiry, signature mismatch, blacklist rejection
+5. **Account Lockout**: Username, failed attempt count, lockout duration
+
+**Implementation (SecurityEventListener):**
+
+```java
+@Component
+public class SecurityEventListener {
+    // Listen to authentication success
+    @EventListener
+    public void onAuthenticationSuccess(AuthenticationSuccessEvent event) {
+        Authentication auth = event.getAuthentication();
+        log.info("✓ AUTHENTICATION SUCCESS | User: {} | Roles: {} | IP: {} | Time: {}",
+            auth.getName(), auth.getAuthorities(),
+            getClientIpAddress(), formatTimestamp());
+    }
+
+    // Listen to authentication failure
+    @EventListener
+    public void onAuthenticationFailure(AbstractAuthenticationFailureEvent event) {
+        String username = event.getAuthentication().getName();
+        String reason = event.getException().getClass().getSimpleName();
+        log.warn("✗ AUTHENTICATION FAILURE | User: {} | Reason: {} | IP: {} | Time: {}",
+            username, reason, getClientIpAddress(), formatTimestamp());
+    }
+
+    // Listen to authorization denied (RBAC)
+    @EventListener
+    public void onAuthorizationDenied(AuthorizationDeniedEvent<?> event) {
+        Authentication auth = event.getAuthentication().get();
+        log.warn("⊘ AUTHORIZATION DENIED | User: {} | Roles: {} | Endpoint: {} | IP: {}",
+            auth.getName(), auth.getAuthorities(),
+            getCurrentEndpoint(), getClientIpAddress());
+    }
+}
+```
+
+**Log Examples:**
+
+```
+[INFO]  ✓ AUTHENTICATION SUCCESS | User: alice@example.com | Roles: [ROLE_READER] | IP: 192.168.1.100 | Time: 2024-03-15 14:32:45 UTC
+
+[WARN]  ✗ AUTHENTICATION FAILURE | User: attacker@example.com | Reason: BadCredentialsException | IP: 203.0.113.42 | Time: 2024-03-15 14:33:10 UTC
+
+[WARN]  ⊘ AUTHORIZATION DENIED | User: alice | Roles: [ROLE_READER] | Endpoint: GET /admin/users | IP: 192.168.1.100 | Time: 2024-03-15 14:34:00 UTC
+
+[WARN]  ⚠ ACCOUNT LOCKED | User: test@example.com | Failed attempts: 5 | Lockout duration: 900000ms
+
+[WARN]  JWT validation failed for user: alice. Token may be expired or tampered. Token prefix: eyJhbGciOiJIUzI1NiIs...
+
+[WARN]  Authentication attempt with blacklisted token. Token prefix: eyJhbGciOiJIUzI1NiIs...
+```
+
+**Security Use Cases:**
+
+1. **Incident Investigation**: Track authentication history for security incidents
+2. **Brute-Force Detection**: Monitor failed login patterns by IP/username
+3. **Compliance Audit**: Maintain logs for SOC 2, PCI-DSS, GDPR requirements
+4. **Anomaly Detection**: Identify unusual login times/locations
+5. **RBAC Violations**: Track unauthorized access attempts
+
+**Log Analysis:**
+
+```bash
+# Count failed login attempts by user
+grep "AUTHENTICATION FAILURE" logs/spring.log | grep -oP 'User: \K[^|]+' | sort | uniq -c | sort -nr
+
+# Find brute-force attacks (multiple failures from same IP)
+grep "AUTHENTICATION FAILURE" logs/spring.log | grep -oP 'IP: \K[^\s]+' | sort | uniq -c | sort -nr
+
+# List all RBAC denials
+grep "AUTHORIZATION DENIED" logs/spring.log | grep -oP 'Endpoint: \K[^|]+'
+
+# Track specific user activity
+grep "alice@example.com" logs/spring.log | grep -E "AUTHENTICATION|AUTHORIZATION"
+```
+
+### BCrypt Password Hashing
+
+**Configuration:**
+
+```java
+@Bean
+public PasswordEncoder passwordEncoder() {
+    // Cost factor 12 = 2^12 = 4,096 key expansion rounds
+    // ~400ms per hash (protects against brute-force GPU attacks)
+    return new BCryptPasswordEncoder(12);
+}
+```
+
+**Cost Factor Analysis:**
+
+| Cost Factor | Iterations | Time per Hash | Security Level |
+|-------------|-----------|---------------|----------------|
+| 10 (default) | 1,024 | ~100ms | Acceptable |
+| 12 (Lab 7 requirement) | 4,096 | ~400ms | **Recommended** |
+| 14 | 16,384 | ~1,600ms | Very Strong |
+| 16 | 65,536 | ~6,400ms | Overkill for most cases |
+
+**Why Cost Factor 12?**
+
+- ✅ **Security**: 4× more computationally expensive than default (cost 10)
+- ✅ **GPU Resistance**: Makes GPU-accelerated password cracking significantly harder
+- ✅ **Usability**: ~400ms hash time is acceptable for login/registration
+- ✅ **Future-Proof**: Provides security margin as hardware improves
+- ✅ **Lab Requirement**: Meets Lab 7 minimum cost factor ≥ 12
+
+**Performance Impact:**
+
+```
+Login/Registration Flow:
+  1. Receive credentials: ~1ms
+  2. BCrypt hash/verify: ~400ms (cost factor 12)
+  3. Database query: ~10ms
+  4. JWT generation: ~5ms
+  Total: ~416ms (acceptable for authentication)
+```
+
+### Security Demonstration Endpoints
+
+We provide educational endpoints to demonstrate CSRF concepts:
+
+```bash
+# Get CSRF token info (explains why it's disabled)
+GET /csrf-demo/token
+
+# Submit form without CSRF protection
+POST /csrf-demo/submit-form?message=test
+
+# Get detailed CSRF vs CORS explanation
+GET /csrf-demo/info
+```
+
+These endpoints are for **educational purposes only** and demonstrate the difference between stateful (CSRF-protected) and stateless (JWT) authentication flows.
+
+### Testing Security Configuration
+
+**1. Test CORS with Postman:**
+
+```bash
+# Valid origin (should succeed)
+curl -X GET http://localhost:8080/api/v1/posts \
+  -H "Origin: http://localhost:3000"
+
+# Invalid origin (browser will block, but curl will show response)
+curl -X GET http://localhost:8080/api/v1/posts \
+  -H "Origin: http://unauthorized-site.com"
+```
+
+**2. Test JWT Authentication:**
+
+```bash
+# Login to get JWT token
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","password":"password123"}'
+
+# Use token for authenticated request
+curl -X GET http://localhost:8080/api/v1/posts \
+  -H "Authorization: Bearer <your-jwt-token>"
+
+# Request without token (should return 401 Unauthorized)
+curl -X POST http://localhost:8080/api/v1/posts \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test Post"}'
+```
+
+**3. Test Role-Based Access Control:**
+
+```bash
+# Admin-only endpoint (requires ADMIN role)
+curl -X GET http://localhost:8080/api/v1/admin/users \
+  -H "Authorization: Bearer <admin-jwt-token>"
+
+# Author endpoint (requires AUTHOR or ADMIN role)
+curl -X GET http://localhost:8080/api/v1/author/posts \
+  -H "Authorization: Bearer <author-jwt-token>"
+
+# Reader endpoint (requires READER, AUTHOR, or ADMIN role)
+curl -X GET http://localhost:8080/api/v1/reader/bookmarks \
+  -H "Authorization: Bearer <reader-jwt-token>"
+```
+
+### Environment Variables
+
+Configure security settings via environment variables:
+
+```bash
+# CORS allowed origins (comma-separated)
+CORS_ORIGINS=http://localhost:3000,http://localhost:8080,https://your-frontend.com
+
+# JWT configuration
+JWT_SECRET=your-secret-key-min-256-bits
+JWT_EXPIRATION=86400000  # 24 hours in milliseconds
+
+# Server configuration
+PORT=8080
+```
+
+### Security Architecture Diagram
+
+```
+┌─────────────────────┐
+│   Browser Client    │
+│  (React/JavaFX)     │
+└──────────┬──────────┘
+           │ CORS Preflight (OPTIONS)
+           │ ┌─────────────────────────────┐
+           │ │ Check Origin, Method, Headers│
+           │ └─────────────────────────────┘
+           ↓
+┌──────────────────────┐
+│   Spring Security    │
+│   Filter Chain       │
+├──────────────────────┤
+│ 1. CORS Filter       │ ← Validates origin, methods, headers
+│ 2. JWT Filter        │ ← Validates Bearer token
+│ 3. Authorization     │ ← Checks roles (@PreAuthorize)
+└──────────┬───────────┘
+           ↓
+┌──────────────────────┐
+│   REST Controllers   │
+│   (@PreAuthorize)    │
+└──────────────────────┘
+```
+
+### Additional Resources
+
+- **OWASP CORS Guide**: https://owasp.org/www-community/attacks/CORS_OriginHeaderScrutiny
+- **OWASP CSRF Guide**: https://owasp.org/www-community/attacks/csrf
+- **JWT Best Practices**: https://tools.ietf.org/html/rfc8725
+- **Spring Security Docs**: https://docs.spring.io/spring-security/reference/
 
 ## Installation & Setup
 

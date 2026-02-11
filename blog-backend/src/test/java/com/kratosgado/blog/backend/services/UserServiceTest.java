@@ -17,6 +17,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.UserResponse;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +57,7 @@ class UserServiceTest {
     testUser.setEmail("test@example.com");
     testUser.setUsername("testuser");
     testUser.setPassword("encodedPassword");
-    testUser.setRole("USER");
+    testUser.setRole(UserRole.READER);
     testUser.setBio("Test bio");
 
     // Create mock UserResponse for projection-based methods
@@ -65,7 +66,7 @@ class UserServiceTest {
     org.mockito.Mockito.lenient().when(mockUserResponse.getId()).thenReturn(1L);
     org.mockito.Mockito.lenient().when(mockUserResponse.getEmail()).thenReturn("test@example.com");
     org.mockito.Mockito.lenient().when(mockUserResponse.getUsername()).thenReturn("testuser");
-    org.mockito.Mockito.lenient().when(mockUserResponse.getRole()).thenReturn("USER");
+    org.mockito.Mockito.lenient().when(mockUserResponse.getRole()).thenReturn("READER");
     org.mockito.Mockito.lenient().when(mockUserResponse.getBio()).thenReturn("Test bio");
   }
 

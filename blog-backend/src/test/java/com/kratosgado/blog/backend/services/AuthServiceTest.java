@@ -9,6 +9,7 @@ import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,8 @@ class AuthServiceTest {
 
   @Mock private PasswordEncoder passwordEncoder;
 
+  @Mock private LoginAttemptService loginAttemptService;
+
   @InjectMocks private AuthService authService;
 
   private User testUser;
@@ -41,7 +44,7 @@ class AuthServiceTest {
     testUser.setEmail("test@example.com");
     testUser.setUsername("testuser");
     testUser.setPassword("encodedPassword");
-    testUser.setRole("USER");
+    testUser.setRole(UserRole.READER);
 
     loginRequest = new LoginRequest("test@example.com", "password123");
     registerRequest =
@@ -57,6 +60,7 @@ class AuthServiceTest {
   @DisplayName("Should successfully login with valid credentials")
   void login_WithValidCredentials_ShouldReturnUser() {
     // Arrange
+    when(loginAttemptService.isBlocked(loginRequest.email())).thenReturn(false);
     when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(true);
 
@@ -72,6 +76,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when user not found during login")
   void login_WithInvalidEmail_ShouldThrowException() {
     // Arrange
+    when(loginAttemptService.isBlocked(loginRequest.email())).thenReturn(false);
     when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.empty());
 
     // Act
@@ -87,6 +92,7 @@ class AuthServiceTest {
   @DisplayName("Should throw exception when password is incorrect")
   void login_WithInvalidPassword_ShouldThrowException() {
     // Arrange
+    when(loginAttemptService.isBlocked(loginRequest.email())).thenReturn(false);
     when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword()))
         .thenReturn(false);
