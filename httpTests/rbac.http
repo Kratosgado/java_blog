@@ -1,0 +1,442 @@
+### Lab 7 Epic 4 - Role-Based Access Control (RBAC) Tests
+### OAuth2 and RBAC Testing
+
+### Base URL
+@host = http://localhost:8080/api/v1
+
+###############################################################################
+### SETUP: Login to get tokens for different roles
+###############################################################################
+
+### Login as ADMIN (if you have admin user)
+# @name loginAdmin
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("adminToken", "Bearer " + response.body.token);
+    client.log("Admin token saved");
+  }
+%}
+
+###
+
+### Login as AUTHOR (if you have author user)
+# @name loginAuthor
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "author@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("authorToken", "Bearer " + response.body.token);
+    client.log("Author token saved");
+  }
+%}
+
+###
+
+### Login as READER (regular user - default role)
+# @name loginReader
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("readerToken", "Bearer " + response.body.token);
+    client.log("Reader token saved");
+  }
+%}
+
+###############################################################################
+### ADMIN ENDPOINTS (Requires ADMIN role)
+###############################################################################
+
+### Admin: Get all users (with ADMIN token - should succeed)
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can access /admin/users", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+    client.assert(response.body.requiredRole === "ADMIN", "Should require ADMIN role");
+  });
+%}
+
+###
+
+### Admin: Get all users (with AUTHOR token - should fail 403)
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author cannot access /admin/users", function() {
+    client.assert(response.status === 403, "Expected 403 Forbidden for AUTHOR");
+  });
+%}
+
+###
+
+### Admin: Get all users (with READER token - should fail 403)
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader cannot access /admin/users", function() {
+    client.assert(response.status === 403, "Expected 403 Forbidden for READER");
+  });
+%}
+
+###
+
+### Admin: Get all users (no token - should fail 401)
+GET {{host}}/admin/users HTTP/1.1
+
+> {%
+  client.test("Unauthenticated cannot access /admin/users", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+  });
+%}
+
+###
+
+### Admin: Promote user (ADMIN only)
+POST {{host}}/admin/users/42/promote HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can promote users", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+  });
+%}
+
+###
+
+### Admin: Delete user (ADMIN only)
+DELETE {{host}}/admin/users/42 HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can delete users", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+  });
+%}
+
+###
+
+### Admin: System stats (ADMIN only)
+GET {{host}}/admin/system/stats HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can view system stats", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+  });
+%}
+
+###############################################################################
+### AUTHOR ENDPOINTS (Requires AUTHOR or ADMIN role)
+###############################################################################
+
+### Author: Get author posts (with ADMIN token - should succeed)
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can access author endpoints", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+  });
+%}
+
+###
+
+### Author: Get author posts (with AUTHOR token - should succeed)
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author can access /author/posts", function() {
+    client.assert(response.status === 200, "Expected 200 OK for AUTHOR");
+    client.assert(response.body.requiredRoles, "Should specify required roles");
+  });
+%}
+
+###
+
+### Author: Get author posts (with READER token - should fail 403)
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader cannot access /author/posts", function() {
+    client.assert(response.status === 403, "Expected 403 Forbidden for READER");
+  });
+%}
+
+###
+
+### Author: Create draft (AUTHOR or ADMIN)
+POST {{host}}/author/posts/draft HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author can create drafts", function() {
+    client.assert(response.status === 200, "Expected 200 OK for AUTHOR");
+  });
+%}
+
+###
+
+### Author: Publish post (AUTHOR or ADMIN)
+PUT {{host}}/author/posts/publish HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author can publish posts", function() {
+    client.assert(response.status === 200, "Expected 200 OK for AUTHOR");
+  });
+%}
+
+###
+
+### Author: Get analytics (AUTHOR or ADMIN)
+GET {{host}}/author/analytics HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author can view analytics", function() {
+    client.assert(response.status === 200, "Expected 200 OK for AUTHOR");
+  });
+%}
+
+###############################################################################
+### READER ENDPOINTS (Requires any authenticated user)
+###############################################################################
+
+### Reader: Get bookmarks (with ADMIN - should succeed)
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("Admin can access reader endpoints", function() {
+    client.assert(response.status === 200, "Expected 200 OK for ADMIN");
+  });
+%}
+
+###
+
+### Reader: Get bookmarks (with AUTHOR - should succeed)
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("Author can access reader endpoints", function() {
+    client.assert(response.status === 200, "Expected 200 OK for AUTHOR");
+  });
+%}
+
+###
+
+### Reader: Get bookmarks (with READER - should succeed)
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader can access /reader/bookmarks", function() {
+    client.assert(response.status === 200, "Expected 200 OK for READER");
+    client.assert(response.body.requiredRoles, "Should specify required roles");
+  });
+%}
+
+###
+
+### Reader: Get bookmarks (no token - should fail 401)
+GET {{host}}/reader/bookmarks HTTP/1.1
+
+> {%
+  client.test("Unauthenticated cannot access /reader/bookmarks", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+  });
+%}
+
+###
+
+### Reader: Add bookmark
+POST {{host}}/reader/bookmarks/101 HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader can add bookmarks", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+###
+
+### Reader: Remove bookmark
+DELETE {{host}}/reader/bookmarks/101 HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader can remove bookmarks", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+###
+
+### Reader: Get profile
+GET {{host}}/reader/profile HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("Reader can view profile", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+  });
+%}
+
+###############################################################################
+### ROLE HIERARCHY VALIDATION
+###############################################################################
+
+### Verify ADMIN has all permissions
+# ADMIN should be able to access ADMIN, AUTHOR, and READER endpoints
+
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("ADMIN can access ADMIN endpoints", function() {
+    client.assert(response.status === 200, "Admin endpoints accessible");
+  });
+%}
+
+###
+
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("ADMIN can access AUTHOR endpoints", function() {
+    client.assert(response.status === 200, "Author endpoints accessible");
+  });
+%}
+
+###
+
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{adminToken}}
+
+> {%
+  client.test("ADMIN can access READER endpoints", function() {
+    client.assert(response.status === 200, "Reader endpoints accessible");
+  });
+%}
+
+###
+
+### Verify AUTHOR has limited permissions
+# AUTHOR should access AUTHOR and READER endpoints, but NOT ADMIN
+
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("AUTHOR cannot access ADMIN endpoints", function() {
+    client.assert(response.status === 403, "Admin endpoints forbidden");
+  });
+%}
+
+###
+
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("AUTHOR can access AUTHOR endpoints", function() {
+    client.assert(response.status === 200, "Author endpoints accessible");
+  });
+%}
+
+###
+
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{authorToken}}
+
+> {%
+  client.test("AUTHOR can access READER endpoints", function() {
+    client.assert(response.status === 200, "Reader endpoints accessible");
+  });
+%}
+
+###
+
+### Verify READER has minimal permissions
+# READER should only access READER endpoints
+
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("READER cannot access ADMIN endpoints", function() {
+    client.assert(response.status === 403, "Admin endpoints forbidden");
+  });
+%}
+
+###
+
+GET {{host}}/author/posts HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("READER cannot access AUTHOR endpoints", function() {
+    client.assert(response.status === 403, "Author endpoints forbidden");
+  });
+%}
+
+###
+
+GET {{host}}/reader/bookmarks HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("READER can access READER endpoints", function() {
+    client.assert(response.status === 200, "Reader endpoints accessible");
+  });
+%}
+
+###############################################################################
+### OAuth2 FLOW (Manual Browser Test)
+###############################################################################
+
+### Note: OAuth2 login requires browser interaction
+### 1. Start your backend server
+### 2. Visit: http://localhost:8080/oauth2/authorization/google
+### 3. Login with Google account
+### 4. You'll be redirected to: http://localhost:8080/api/v1/oauth2/success
+### 5. Check database - new user should be created with READER role
+
+### OAuth2 Success Endpoint
+# This is where users land after successful OAuth2 login
+# GET http://localhost:8080/api/v1/oauth2/success
+
+### OAuth2 Failure Endpoint
+# This is where users land if OAuth2 login fails
+# GET http://localhost:8080/api/v1/oauth2/failure
+
+###
