@@ -1,6 +1,7 @@
-package com.kratosgado.blog.backend.security;
+package com.kratosgado.blog.backend.services;
 
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.security.CustomOAuth2User;
 import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import java.util.Map;
@@ -31,10 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   @Override
   @Transactional
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-    // Delegate to default implementation to load user
     OAuth2User oauth2User = super.loadUser(userRequest);
-
-    // Process and save user
     return processOAuth2User(userRequest, oauth2User);
   }
 
@@ -46,6 +44,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    * @return CustomOAuth2User with user details and authorities
    */
   private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oauth2User) {
+    log.info("Processing OAuth2 user: {}", oauth2User.getName());
     String registrationId = userRequest.getClientRegistration().getRegistrationId(); // "google"
     Map<String, Object> attributes = oauth2User.getAttributes();
 

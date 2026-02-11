@@ -14,7 +14,7 @@
 # @name getPerformanceStats
 
 GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -25,7 +25,7 @@ Authorization: {{userAuth}}
 # @name getPerformanceReport
 
 GET {{host}}/performance/report HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -36,7 +36,7 @@ Authorization: {{userAuth}}
 # @name getMonitoringStatus
 
 GET {{host}}/performance/status HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -47,7 +47,7 @@ Authorization: {{userAuth}}
 # @name resetPerformanceMetrics
 
 DELETE {{host}}/performance/reset HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -61,7 +61,7 @@ Authorization: {{userAuth}}
 # @name initialStats
 
 GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -82,7 +82,7 @@ GET {{host}}/posts/1 HTTP/1.1
 # @name updatedStats
 
 GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -93,7 +93,7 @@ Authorization: {{userAuth}}
 # @name checkStatus
 
 GET {{host}}/performance/status HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -104,7 +104,7 @@ Authorization: {{userAuth}}
 # @name fullReport
 
 GET {{host}}/performance/report HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -115,7 +115,7 @@ Authorization: {{userAuth}}
 # @name resetMetrics
 
 DELETE {{host}}/performance/reset HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -126,7 +126,7 @@ Authorization: {{userAuth}}
 # @name verifyReset
 
 GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -209,7 +209,7 @@ GET {{host}}/users?page=1&size=10 HTTP/1.1
 # @name performanceAfterLoad
 
 GET {{host}}/performance/stats HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 
@@ -220,7 +220,7 @@ Authorization: {{userAuth}}
 # @name reportAfterLoad
 
 GET {{host}}/performance/report HTTP/1.1
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 
 ### 

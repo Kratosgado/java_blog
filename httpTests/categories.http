@@ -12,7 +12,7 @@
 
 POST {{host}}/categories HTTP/1.1
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: {{readerAuth}}
 
 {
   "description": "Articles about technology, programming, and software development",
