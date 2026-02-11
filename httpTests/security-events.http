@@ -1,0 +1,406 @@
+### Lab 7 Epic 5 - Security Event Logging & DSA Implementation Tests
+### Token Blacklist, Brute-Force Detection, and Security Monitoring
+
+### Base URL
+@host = http://localhost:8080/api/v1
+
+###############################################################################
+### PART 1: JWT Token Blacklist Testing (TokenBlacklistService)
+###############################################################################
+
+### Step 1: Login to get a valid token
+# @name login
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("testToken", "Bearer " + response.body.token);
+    client.log("Test token saved: " + response.body.token);
+  }
+%}
+
+###
+
+### Step 2: Verify token works (should succeed)
+GET {{host}}/reader/profile HTTP/1.1
+Authorization: {{testToken}}
+
+> {%
+  client.test("Token works before logout", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.log("✓ Token is valid before logout");
+  });
+%}
+
+###
+
+### Step 3: Logout (blacklist the token)
+POST {{host}}/auth/logout HTTP/1.1
+Authorization: {{testToken}}
+
+> {%
+  client.test("Logout successful", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.data.tokenBlacklisted === true, "Token should be blacklisted");
+    client.log("✓ Token blacklisted successfully");
+    client.log("Token expires at: " + response.body.data.tokenExpiresAt);
+  });
+%}
+
+###
+
+### Step 4: Try to use the blacklisted token (should fail with 401)
+GET {{host}}/reader/profile HTTP/1.1
+Authorization: {{testToken}}
+
+> {%
+  client.test("Blacklisted token is rejected", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.assert(response.body.error === "Token has been revoked",
+        "Should return revoked token error");
+    client.log("✓ Blacklisted token correctly rejected");
+  });
+%}
+
+###
+
+### Step 5: Try to access protected endpoint with blacklisted token (should fail)
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{testToken}}
+
+> {%
+  client.test("Blacklisted token rejected for admin endpoint", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("✓ Blacklist protection works across all endpoints");
+  });
+%}
+
+###
+
+### Step 6: Login again to get a new token (should succeed)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  client.test("Can login again after logout", function() {
+    client.assert(response.status === 200, "Expected 200 OK");
+    client.assert(response.body.token, "Should receive new token");
+    client.log("✓ New login successful, new token issued");
+  });
+%}
+
+###############################################################################
+### PART 2: Brute-Force Detection Testing (LoginAttemptService)
+###############################################################################
+
+### Test Account Setup
+# Create a test user if not exists (or use existing user)
+# For testing brute-force, use: test-bruteforce@example.com
+
+### Attempt 1: Failed login (wrong password)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword1"
+}
+
+> {%
+  client.test("First failed attempt recorded", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("❌ Failed attempt #1");
+  });
+%}
+
+###
+
+### Attempt 2: Failed login (wrong password)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword2"
+}
+
+> {%
+  client.test("Second failed attempt recorded", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("❌ Failed attempt #2");
+  });
+%}
+
+###
+
+### Attempt 3: Failed login (wrong password)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword3"
+}
+
+> {%
+  client.test("Third failed attempt recorded", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("❌ Failed attempt #3");
+  });
+%}
+
+###
+
+### Attempt 4: Failed login (wrong password)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword4"
+}
+
+> {%
+  client.test("Fourth failed attempt recorded", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("❌ Failed attempt #4");
+  });
+%}
+
+###
+
+### Attempt 5: Failed login (wrong password) - This should trigger lockout
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword5"
+}
+
+> {%
+  client.test("Fifth failed attempt - account locked", function() {
+    client.assert(response.status === 401, "Expected 401 Unauthorized");
+    client.log("❌ Failed attempt #5 - Account should be locked now");
+  });
+%}
+
+###
+
+### Attempt 6: Try to login (should be blocked with 400/429 - Too Many Requests)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "wrongpassword6"
+}
+
+> {%
+  client.test("Account is locked after max attempts", function() {
+    // Expecting 400 Bad Request (InvalidRequestException) with lockout message
+    client.assert(response.status === 400 || response.status === 429,
+        "Expected 400 Bad Request or 429 Too Many Requests");
+    client.assert(response.body.message.includes("locked") ||
+                  response.body.message.includes("too many"),
+        "Error message should indicate account is locked");
+    client.log("⊘ Account locked: " + response.body.message);
+  });
+%}
+
+###
+
+### Attempt 7: Try with CORRECT password while locked (should still be blocked)
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "test-bruteforce@example.com",
+  "password": "correctpassword"
+}
+
+> {%
+  client.test("Correct password rejected while account locked", function() {
+    client.assert(response.status === 400 || response.status === 429,
+        "Expected 400/429 - Account should remain locked");
+    client.log("⊘ Even correct password is rejected during lockout period");
+    client.log("Lockout message: " + response.body.message);
+  });
+%}
+
+###
+
+### Wait for lockout to expire (15 minutes = 900 seconds)
+### For testing, you can manually clear the lockout or reduce the lockout duration
+### in application properties: security.login.lockout-duration-ms=60000 (1 minute)
+
+### Optional: Verify lockout expires after configured time
+### (Uncomment and run after waiting for lockout duration)
+
+# POST {{host}}/auth/login HTTP/1.1
+# Content-Type: application/json
+#
+# {
+#   "email": "test-bruteforce@example.com",
+#   "password": "correctpassword"
+# }
+#
+# > {%
+#   client.test("Login succeeds after lockout expiry", function() {
+#     client.assert(response.status === 200, "Expected 200 OK after lockout expiry");
+#     client.log("✓ Account automatically unlocked after timeout");
+#   });
+# %}
+
+###############################################################################
+### PART 3: Security Event Logging Verification
+### (Check server logs for these events)
+###############################################################################
+
+### Test 1: Successful Authentication Event
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  client.log("✓ Check server logs for: [INFO] AUTHENTICATION SUCCESS");
+  client.log("Expected log fields: username, roles, IP address, timestamp");
+%}
+
+###
+
+### Test 2: Failed Authentication Event
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "wrongpassword"
+}
+
+> {%
+  client.log("✓ Check server logs for: [WARN] AUTHENTICATION FAILURE");
+  client.log("Expected log fields: username, reason, IP address, timestamp");
+%}
+
+###
+
+### Test 3: Authorization Denied Event (RBAC)
+# Login as READER
+# @name readerLogin
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("readerToken", "Bearer " + response.body.token);
+  }
+%}
+
+###
+
+# Try to access ADMIN endpoint (should be denied)
+GET {{host}}/admin/users HTTP/1.1
+Authorization: {{readerToken}}
+
+> {%
+  client.test("RBAC denial triggers security event", function() {
+    client.assert(response.status === 403, "Expected 403 Forbidden");
+    client.log("✓ Check server logs for: [WARN] AUTHORIZATION DENIED");
+    client.log("Expected log fields: username, user roles, endpoint, required role");
+  });
+%}
+
+###############################################################################
+### PART 4: Token Blacklist Performance & Memory Management
+###############################################################################
+
+### Test: Multiple logout operations (test HashMap O(1) performance)
+### This should complete quickly regardless of blacklist size
+
+POST {{host}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "password123"
+}
+
+> {%
+  if (response.body.token) {
+    client.global.set("token1", "Bearer " + response.body.token);
+  }
+%}
+
+###
+
+POST {{host}}/auth/logout HTTP/1.1
+Authorization: {{token1}}
+
+> {%
+  client.log("✓ Token blacklisted (O(1) HashMap put operation)");
+%}
+
+###
+
+### Note: Scheduled cleanup tasks run automatically
+### - Token blacklist cleanup: Every 1 hour
+### - Login attempt cleanup: Every 30 minutes
+### Check server logs for cleanup statistics
+
+###############################################################################
+### PART 5: Testing Instructions Summary
+###############################################################################
+
+### Test Execution Order:
+# 1. Run PART 1 (Token Blacklist) - Verify token revocation works
+# 2. Run PART 2 (Brute-Force Detection) - Verify account lockout after 5 attempts
+# 3. Run PART 3 (Security Events) - Check server logs for event logging
+# 4. Verify scheduled cleanup tasks in server logs after 30+ minutes
+
+### Expected Security Event Logs:
+# - [INFO] ✓ AUTHENTICATION SUCCESS | User: alice@example.com | Roles: [...] | IP: 127.0.0.1
+# - [WARN] ✗ AUTHENTICATION FAILURE | User: test@example.com | Reason: BadCredentialsException | IP: 127.0.0.1
+# - [WARN] ⊘ AUTHORIZATION DENIED | User: alice | Roles: [READER] | Endpoint: GET /admin/users | IP: 127.0.0.1
+# - [WARN] ⚠ ACCOUNT LOCKED | User: test-bruteforce@example.com | Failed attempts: 5 | Lockout duration: 900000ms
+# - [INFO] Blacklist cleanup completed. Removed X expired tokens.
+# - [INFO] Login attempt cleanup completed. Removed X expired records.
+
+### Configuration Properties (application.yml):
+# security:
+#   login:
+#     max-attempts: 5                    # Maximum failed login attempts before lockout
+#     lockout-duration-ms: 900000        # Lockout duration: 15 minutes (900,000 ms)
+
+### DSA Analysis Summary:
+# Token Blacklist:
+#   - Data Structure: ConcurrentHashMap<String, Long>
+#   - blacklistToken(): O(1) - HashMap put
+#   - isBlacklisted(): O(1) - HashMap get
+#   - cleanupExpiredTokens(): O(n) - Scheduled cleanup every hour
+#
+# Login Attempt Tracking:
+#   - Data Structure: ConcurrentHashMap<String, LoginAttemptRecord>
+#   - recordFailedAttempt(): O(1) - HashMap compute
+#   - isBlocked(): O(1) - HashMap get
+#   - cleanupOldRecords(): O(n) - Scheduled cleanup every 30 minutes
