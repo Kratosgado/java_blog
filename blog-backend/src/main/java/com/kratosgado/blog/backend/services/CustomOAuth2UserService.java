@@ -32,6 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   @Override
   @Transactional
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    log.info("Processing OAuth2 user: {}", userRequest.toString());
     OAuth2User oauth2User = super.loadUser(userRequest);
     return processOAuth2User(userRequest, oauth2User);
   }
