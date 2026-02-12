@@ -74,14 +74,6 @@ public class TokenBlacklistService {
         finalSize);
   }
 
-  /**
-   * Clear entire blacklist (for testing/admin purposes).
-   *
-   * <p><b>Time Complexity:</b> O(n) - Clear all entries
-   *
-   * <p><b>⚠️ Warning:</b> Use with caution. This will allow all blacklisted tokens to be used again
-   * until they naturally expire.
-   */
   public void clearBlacklist() {
     int size = blacklist.size();
     blacklist.clear();
