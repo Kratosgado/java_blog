@@ -128,4 +128,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query("SELECT p.status, COUNT(p) FROM Post p WHERE p.user.id = :userId GROUP BY p.status")
   List<Object[]> countPostsByStatusForUser(@Param("userId") Long userId);
+
+  boolean existsByIdAndUserId(Long postId, Long userId);
 }

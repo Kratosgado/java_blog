@@ -15,6 +15,7 @@ import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
+import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +54,8 @@ public class PostController {
       security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredCreateEndpoint
   @ResponseStatus(HttpStatus.CREATED)
-  public PostDetails createPost(
+  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+  public Post createPost(
       @Valid @RequestBody @Parameter(description = "Post creation request")
           CreatePostRequest request,
       @AuthenticationPrincipal User user) {
@@ -65,7 +68,8 @@ public class PostController {
       description = "Updates an existing blog post. Only the post author can update it.",
       security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public PostDetails updatePost(
+  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+  public Post updatePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @Valid @RequestBody @Parameter(description = "Post update request")
           UpdatePostRequest request) {
@@ -79,7 +83,7 @@ public class PostController {
       description = "Updates a blog post status to published. Only the post author can publish it.",
       security = @SecurityRequirement(name = "bearer-jwt"))
   @SecuredUpdateEndpoint
-  public PostDetails publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
+  public Post publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.publishPost(id, userId);
   }
@@ -90,9 +94,11 @@ public class PostController {
       description = "Deletes a blog post by ID. Only the post author can delete it.",
       security = @SecurityRequirement(name = "bearer-jwt"))
   @DeleteEndpoint
-  public void deletePost(@PathVariable @Parameter(description = "Post ID") Long id) {
-    Long userId = SecurityUtils.getCurrentUserId();
-    postService.deletePost(id, userId);
+  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+  public void deletePost(
+      @PathVariable @Parameter(description = "Post ID") Long id,
+      @AuthenticationPrincipal User user) {
+    postService.deletePost(id, user.getId());
   }
 
   @GetMapping("/{id}")

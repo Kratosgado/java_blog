@@ -78,7 +78,7 @@ public class PostGraphQLController {
 
   // Mutations
   @MutationMapping
-  public PostDetails createPost(@Argument CreatePostRequest input) {
+  public Post createPost(@Argument CreatePostRequest input) {
 
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.createPost(input, userService.getUserById(userId));

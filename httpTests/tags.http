@@ -3,7 +3,7 @@
 
 ### Base URL
 
-@host = http://localhost:8080/api
+@host = http://localhost:8080/api/v1
 
 
 ### IMPORTANT: Run auth.http login test first to set the readerAuth token
@@ -46,14 +46,8 @@ GET {{host}}/tags?page=0&size=10&sort=name,asc HTTP/1.1
 > {%
   var tags = response.body.data.content;
   client.global.set("tagId", tags[0].id);
+  client.global.set("tagSlug", tags[0].slug);
 %}
-
-
-### Get All Tags - Page 2
-
-# @name getAllTagsPage2
-
-GET {{host}}/tags?page=1&size=5 HTTP/1.1
 
 
 ### Get a Tag by ID

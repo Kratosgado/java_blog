@@ -133,7 +133,7 @@ public class AuthService {
     String token = authHeader.substring(7);
 
     // Extract username and expiry from token
-    String username = jwtUtil.extractUsername(token);
+    String sub = jwtUtil.extractSub(token);
     long expiryTimestamp = jwtUtil.extractExpiration(token).getTime();
 
     // Add token to blacklist
@@ -142,7 +142,7 @@ public class AuthService {
     // Prepare response
     Map<String, Object> data = new HashMap<>();
     data.put("message", "Logout successful");
-    data.put("username", username);
+    data.put("sub", sub);
     data.put("tokenBlacklisted", true);
     data.put("tokenExpiresAt", expiryTimestamp);
     data.put("note", "This token can no longer be used for authentication");
@@ -153,10 +153,12 @@ public class AuthService {
   public Map<String, Object> validateToken(String authHeader) {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
-      String username = jwtUtil.extractUsername(token);
+      var payload = jwtUtil.extractPayload(token);
 
-      if (jwtUtil.validateToken(token, username)) {
-        Map<String, Object> data = Map.of("valid", true, "username", username);
+      if (jwtUtil.validateToken(token, payload.userId().toString())) {
+        Map<String, Object> data =
+            Map.of(
+                "valid", true, "sub", payload.userId().toString(), "username", payload.username());
         return data;
       }
     }
