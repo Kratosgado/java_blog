@@ -1,43 +1,43 @@
 package com.kratosgado.blog.backend.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kratosgado.blog.dtos.response.ResponseDto;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kratosgado.blog.dtos.response.ResponseDto;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 @Component
+@Slf4j
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
-
-  private static final Logger log = LoggerFactory.getLogger(JwtAccessDeniedHandler.class);
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
-  public void handle(HttpServletRequest request, HttpServletResponse response,
-      AccessDeniedException accessDeniedException) throws IOException, ServletException {
-    
-    log.warn("Access denied for request: {} {} - Reason: {}", 
-        request.getMethod(), 
-        request.getRequestURI(), 
+  public void handle(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      AccessDeniedException accessDeniedException)
+      throws IOException, ServletException {
+
+    log.warn(
+        "Access denied for request: {} {} - Reason: {}",
+        request.getMethod(),
+        request.getRequestURI(),
         accessDeniedException.getMessage());
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpStatus.FORBIDDEN.value());
 
-    ResponseDto<?> errorResponse = ResponseDto.error(
-        HttpStatus.FORBIDDEN.value(),
-        "Access denied. You do not have permission to access this resource.");
+    ResponseDto<?> errorResponse =
+        ResponseDto.error(
+            HttpStatus.FORBIDDEN.value(),
+            "Access denied. You do not have permission to access this resource.");
 
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }

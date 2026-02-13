@@ -73,7 +73,7 @@ public class AuthController {
     String token = jwtUtil.generateToken(user.getEmail(), claims);
 
     return new AuthResponse(
-        token, user.getId().longValue(), user.getUsername(), user.getEmail(), user.getRoleString());
+        token, user.getId(), user.getUsername(), user.getEmail(), user.getRoleString());
   }
 
   /**
@@ -230,10 +230,5 @@ public class AuthController {
     } catch (Exception e) {
       throw new InvalidRequestException("Invalid token: " + e.getMessage());
     }
-  }
-
-  @GetMapping("google")
-  public Map<String, Object> google() {
-    return Map.of("message", "Google OAuth2 callback");
   }
 }

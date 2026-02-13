@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,44 +34,27 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * </ul>
  */
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
   private final UserRepository userRepository;
   private final TokenBlacklistService tokenBlacklistService;
 
-  public JwtAuthenticationFilter(
-      JwtUtil jwtUtil, UserRepository userRepository, TokenBlacklistService tokenBlacklistService) {
-    this.jwtUtil = jwtUtil;
-    this.userRepository = userRepository;
-    this.tokenBlacklistService = tokenBlacklistService;
-  }
-
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    final String authHeader = request.getHeader("Authorization");
-    final String jwt;
+    final String token = extractTokenFromRequest(request);
     final String username;
-
-    // If no Authorization header or doesn't start with "Bearer ", skip this filter
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
-
-    // Extract JWT token
-    jwt = authHeader.substring(7);
-
     try {
       // CHECK 1: Token Blacklist (O(1) HashMap lookup)
       // This check comes BEFORE extracting username to fail fast for revoked tokens
-      if (tokenBlacklistService.isBlacklisted(jwt)) {
+      if (tokenBlacklistService.isBlacklisted(token)) {
         log.warn(
             "Authentication attempt with blacklisted token. Token prefix: {}...",
-            jwt.substring(0, Math.min(20, jwt.length())));
+            token.substring(0, Math.min(20, token.length())));
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response
@@ -82,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       // CHECK 2: Extract username from JWT
-      username = jwtUtil.extractUsername(jwt);
+      username = jwtUtil.extractUsername(token);
 
       // CHECK 3: Verify username exists and no authentication already set
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -93,7 +77,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           User user = userOptional.get();
 
           // CHECK 5: Validate token signature and expiry
-          if (jwtUtil.validateToken(jwt, username)) {
+          if (jwtUtil.validateToken(token, username)) {
             // Convert user role to Spring Security authority
             var authority = new SimpleGrantedAuthority(user.getRoleString());
             var authorities = java.util.List.of(authority);
@@ -115,14 +99,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 "JWT validation failed for user: {}. Token may be expired or tampered. "
                     + "Token prefix: {}...",
                 username,
-                jwt.substring(0, Math.min(20, jwt.length())));
+                token.substring(0, Math.min(20, token.length())));
           }
         } else {
           // User not found in database
           log.warn(
               "User not found for JWT token: {}. Token prefix: {}...",
               username,
-              jwt.substring(0, Math.min(20, jwt.length())));
+              token.substring(0, Math.min(20, token.length())));
         }
       }
 
@@ -130,11 +114,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       // Catch-all for any JWT processing errors
       log.error(
           "JWT authentication failed. Token prefix: {}..., Error: {}",
-          jwt.substring(0, Math.min(20, jwt.length())),
+          token.substring(0, Math.min(20, token.length())),
           e.getMessage(),
           e);
     }
 
     filterChain.doFilter(request, response);
+  }
+
+  private String extractTokenFromRequest(HttpServletRequest request) {
+    String bearerToken = request.getHeader("Authorization");
+    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+      return bearerToken.substring(7);
+    }
+    return null;
   }
 }
