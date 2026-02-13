@@ -29,7 +29,7 @@ public class CustomOAuth2User implements OAuth2User {
     this.user = user;
     this.attributes = attributes;
     // Use user role as authority, ignoring OAuth provider authorities
-    this.authorities = List.of(new SimpleGrantedAuthority(user.getRoleString()));
+    this.authorities = List.of(new SimpleGrantedAuthority(user.getAuthority()));
   }
 
   @Override
@@ -57,7 +57,11 @@ public class CustomOAuth2User implements OAuth2User {
   }
 
   public String getRole() {
-    return user.getRoleString();
+    return user.getRole().name();
+  }
+
+  public String getAuthority() {
+    return user.getAuthority();
   }
 
   public String getUsername() {

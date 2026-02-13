@@ -85,7 +85,7 @@ public class PostGraphQLController {
   }
 
   @MutationMapping
-  public PostDetails updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
+  public Post updatePost(@Argument Long id, @Argument UpdatePostRequest input) {
 
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.updatePost(id, input, userId);
@@ -99,7 +99,7 @@ public class PostGraphQLController {
   }
 
   @MutationMapping
-  public PostDetails publishPost(@Argument Long id) {
+  public Post publishPost(@Argument Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     var post = postService.getPostById(id);
     UpdatePostRequest updateRequest =

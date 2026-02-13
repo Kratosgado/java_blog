@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           User user = userOptional.get();
           if (jwtUtil.validateToken(jwt, sub)) {
             // Convert user role to Spring Security authority
-            var authority = new SimpleGrantedAuthority(user.getRoleString());
+            var authority = new SimpleGrantedAuthority(user.getAuthority());
             var authorities = java.util.List.of(authority);
 
             UsernamePasswordAuthenticationToken authToken =

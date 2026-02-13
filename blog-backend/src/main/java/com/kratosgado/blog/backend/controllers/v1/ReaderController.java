@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReaderController {
 
   @GetMapping("/bookmarks")
-  @PreAuthorize("hasAnyRole('READER', 'AUTHOR', 'ADMIN')")
   @Operation(
       summary = "Get user bookmarks",
       description =
@@ -49,7 +47,6 @@ public class ReaderController {
   }
 
   @PostMapping("/bookmarks/{postId}")
-  @PreAuthorize("hasAnyRole('READER', 'AUTHOR', 'ADMIN')")
   @Operation(
       summary = "Add bookmark",
       description = "Bookmark a post. Requires any authenticated role.")
@@ -64,7 +61,6 @@ public class ReaderController {
   }
 
   @DeleteMapping("/bookmarks/{postId}")
-  @PreAuthorize("hasAnyRole('READER', 'AUTHOR', 'ADMIN')")
   @Operation(
       summary = "Remove bookmark",
       description = "Remove a bookmarked post. Requires any authenticated role.")
@@ -80,7 +76,6 @@ public class ReaderController {
   }
 
   @GetMapping("/profile")
-  @PreAuthorize("hasAnyRole('READER', 'AUTHOR', 'ADMIN')")
   @Operation(
       summary = "Get user profile",
       description = "Retrieve authenticated user's profile. Requires any authenticated role.")
