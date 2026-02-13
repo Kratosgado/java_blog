@@ -29,6 +29,7 @@ public class SecurityConfig {
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
   private final CustomOAuth2UserService customOAuth2UserService;
+  private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -87,7 +88,7 @@ public class SecurityConfig {
             oauth2 ->
                 oauth2
                     .loginPage("/v1/auth/google")
-                    .defaultSuccessUrl("/v1/posts")
+                    .successHandler(oAuth2SuccessHandler)
                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)));
 
     return http.build();
