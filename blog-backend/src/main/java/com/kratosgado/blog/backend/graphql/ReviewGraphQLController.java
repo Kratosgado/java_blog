@@ -1,12 +1,5 @@
 package com.kratosgado.blog.backend.graphql;
 
-import org.springframework.graphql.data.method.annotation.Argument;
-import org.springframework.graphql.data.method.annotation.MutationMapping;
-import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.PostService;
 import com.kratosgado.blog.backend.services.ReviewService;
@@ -18,17 +11,20 @@ import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
 public class ReviewGraphQLController {
 
   private final ReviewService reviewService;
   private final PostService postService;
-
-  public ReviewGraphQLController(ReviewService reviewService, PostService postService) {
-    this.reviewService = reviewService;
-    this.postService = postService;
-  }
 
   @QueryMapping
   public Review review(@Argument String id) {
@@ -37,22 +33,19 @@ public class ReviewGraphQLController {
 
   @QueryMapping
   public PageResponse<Review> reviewsByPost(
-      @Argument Long postId,
-      @Argument(name = "page") int page,
-      @Argument(name = "size") int size) {
+      @Argument Long postId, @Argument(name = "page") int page, @Argument(name = "size") int size) {
     return reviewService.getPostReviews(postId, new PageRequest(page, size, "id", "desc"));
   }
 
   @QueryMapping
   public PageResponse<ReviewWithoutUser> reviewsByUser(
-      @Argument Long userId,
-      @Argument(name = "page") int page,
-      @Argument(name = "size") int size) {
+      @Argument Long userId, @Argument(name = "page") int page, @Argument(name = "size") int size) {
     return reviewService.getUserReviews(userId, new PageRequest(page, size, "id", "desc"));
   }
 
   @MutationMapping
-  public Review createReview(@Argument CreateReviewRequest input, @AuthenticationPrincipal User user) {
+  public Review createReview(
+      @Argument CreateReviewRequest input, @AuthenticationPrincipal User user) {
     return reviewService.createReview(input, user);
   }
 

@@ -1,17 +1,16 @@
 package com.kratosgado.blog.backend.security;
 
-import java.util.Date;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
+import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import java.util.Map;
+import java.util.function.Function;
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUtil {
@@ -44,11 +43,7 @@ public class JwtUtil {
   }
 
   private Claims extractAllClaims(String token) {
-    return Jwts.parser()
-        .verifyWith(getSigningKey())
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
+    return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
   }
 
   private Boolean isTokenExpired(String token) {
@@ -77,5 +72,19 @@ public class JwtUtil {
   public Boolean validateToken(String token, String username) {
     final String extractedUsername = extractUsername(token);
     return (extractedUsername.equals(username) && !isTokenExpired(token));
+  }
+
+  public AuthResponse signToken(User user) {
+    Map<String, Object> claims = Map.of("userId", user.getId(), "role", user.getRoleString());
+    String token = createToken(claims, user.getUsername());
+    return new AuthResponse(
+        token, user.getId(), user.getUsername(), user.getEmail(), user.getRoleString());
+  }
+
+  public AuthResponse signToken(CustomOAuth2User user) {
+    Map<String, Object> claims = Map.of("userId", user.getUserId(), "role", user.getRole());
+    String token = createToken(claims, user.getUsername());
+    return new AuthResponse(
+        token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole());
   }
 }

@@ -19,6 +19,7 @@ import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.Review;
 import com.kratosgado.blog.models.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -26,23 +27,13 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
 public class PostGraphQLController {
 
   private final PostService postService;
   private final UserService userService;
   private final CommentService commentService;
   private final ReviewService reviewService;
-
-  public PostGraphQLController(
-      PostService postService,
-      UserService userService,
-      CommentService commentService,
-      ReviewService reviewService) {
-    this.postService = postService;
-    this.userService = userService;
-    this.commentService = commentService;
-    this.reviewService = reviewService;
-  }
 
   @QueryMapping
   public PostDetails post(@Argument Long id) {

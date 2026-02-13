@@ -6,19 +6,17 @@ import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.models.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
 public class UserGraphQLController {
 
   private final UserService userService;
-
-  public UserGraphQLController(UserService userService) {
-    this.userService = userService;
-  }
 
   @QueryMapping
   public User user(@Argument Long id) {
@@ -36,4 +34,3 @@ public class UserGraphQLController {
     return userService.updateUserProfile(input, id);
   }
 }
-
