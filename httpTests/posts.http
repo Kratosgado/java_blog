@@ -15,15 +15,15 @@ Content-Type: application/json
 Authorization: {{readerAuth}}
 
 {
-  "categoryId": 41,
+  "categoryId": 10,
   "content": "Spring Boot 3 brings many exciting features including native image support, improved observability, and Java 17+ baseline...",
   "excerpt": "Learn about the new features in Spring Boot 3",
   "featuredImage": "https://example.com/images/spring-boot-3.jpg",
   "status": "draft",
   "tagIds": [
-    29
+    6
   ],
-  "title": "Gettg whtsjk is Started  Spring Boot 3"
+  "title": "Gettg whtsjk is Started booting  Spring 3"
 }
 
 
@@ -31,14 +31,14 @@ Authorization: {{readerAuth}}
 
 # @name updatePost
 
-PUT {{host}}/posts/403 HTTP/1.1
+PUT {{host}}/posts/100012 HTTP/1.1
 Content-Type: application/json
 Authorization: {{readerAuth}}
 
 {
   "content": "Updated content about Spring Boot 3...",
   "status": "published",
-  "title": "Getting Started with Spring Boot 3 - Updated"
+  "title": "Getting Started with Spring Boot 3  Updated"
 }
 
 
@@ -46,7 +46,7 @@ Authorization: {{readerAuth}}
 
 # @name getPost
 
-GET {{host}}/posts/106 HTTP/1.1
+GET {{host}}/posts/100012 HTTP/1.1
 
 
 ### Get a single post by slug (cached endpoint)
@@ -74,7 +74,7 @@ GET {{host}}/posts?page=1&size=4&sortBy=title&sortDir=ASC HTTP/1.1
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=sit&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
 
 
 ### Get posts by user

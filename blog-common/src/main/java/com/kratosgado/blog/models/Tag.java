@@ -1,7 +1,6 @@
 package com.kratosgado.blog.models;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,9 +18,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "tags", indexes = {
-    @Index(name = "idx_tags_slug", columnList = "slug"),
-})
+@Table(
+    name = "tags",
+    indexes = {
+      @Index(name = "idx_tags_slug", columnList = "slug"),
+    })
 public class Tag {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,9 +38,8 @@ public class Tag {
   private String description;
 
   @ManyToMany(mappedBy = "tags")
+  @JsonIgnore
   private List<Post> posts;
-
-  private transient Long postCount = 0L;
 
   public Tag(Long id, String name, String slug, String description) {
     this.id = id;
@@ -52,5 +53,5 @@ public class Tag {
     this.slug = slug;
     this.description = description;
   }
-
 }
+

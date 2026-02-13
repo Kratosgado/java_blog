@@ -45,7 +45,7 @@ GET {{host}}/posts?page=0&size=10 HTTP/1.1
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=sit&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
 
 
 ### Get trending posts

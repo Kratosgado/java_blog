@@ -42,7 +42,7 @@ public class PostService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
-  public PostDetails createPost(CreatePostRequest request, User user) {
+  public Post createPost(CreatePostRequest request, User user) {
     Post post = new Post();
     post.setUser(user);
     post.setTitle(request.title());
@@ -65,14 +65,14 @@ public class PostService {
       post.setTags(tags);
     }
 
-    return (PostDetails) postRepository.save(post);
+    return postRepository.save(post);
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(
       put = @CachePut(value = CacheNames.POSTS, key = "#result.slug"),
       evict = @CacheEvict(value = CacheNames.POSTLIST, allEntries = true))
-  public PostDetails updatePost(Long postId, UpdatePostRequest request, Long userId) {
+  public Post updatePost(Long postId, UpdatePostRequest request, Long userId) {
     Post post =
         postRepository
             .findById(postId)
@@ -103,7 +103,7 @@ public class PostService {
       post.setTags(tags);
     }
 
-    return (PostDetails) postRepository.save(post);
+    return postRepository.save(post);
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -113,16 +113,11 @@ public class PostService {
         @CacheEvict(value = CacheNames.POSTS, key = "#post.slug")
       })
   public void deletePost(Long postId, Long userId) {
-    Post post =
-        postRepository
-            .findById(postId)
-            .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-
-    if (!post.getUser().getId().equals(userId)) {
+    if (!isOwner(postId, userId)) {
       throw new ForbiddenException("You don't have permission to delete this post");
     }
 
-    postRepository.delete(post);
+    postRepository.deleteById(postId);
   }
 
   @Cacheable(value = CacheNames.POSTS, key = "#slug")
@@ -140,7 +135,7 @@ public class PostService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @CacheEvict(value = CacheNames.POSTLIST, allEntries = true)
-  public PostDetails publishPost(Long postId, Long userId) {
+  public Post publishPost(Long postId, Long userId) {
     Post post =
         postRepository
             .findById(postId)
@@ -151,7 +146,7 @@ public class PostService {
     }
 
     post.setStatus(PostStatus.published);
-    return (PostDetails) postRepository.save(post);
+    return postRepository.save(post);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
@@ -217,5 +212,9 @@ public class PostService {
     var postsPage =
         postRepository.findPublishedPostsByTagOptimized(tagId, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
+  }
+
+  public boolean isOwner(Long postId, Long userId) {
+    return postRepository.existsByIdAndUserId(postId, userId);
   }
 }

@@ -65,11 +65,11 @@ class AuthServiceTest {
     when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(true);
 
     // Act
-    User result = authService.login(loginRequest);
+    var result = authService.login(loginRequest);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testUser.getEmail(), result.getEmail());
+    assertEquals(testUser.getEmail(), result.email());
   }
 
   @Test
@@ -114,11 +114,11 @@ class AuthServiceTest {
     when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
-    User result = authService.register(registerRequest);
+    var result = authService.register(registerRequest);
 
     // Assert
     assertNotNull(result);
-    assertEquals(testUser.getEmail(), result.getEmail());
+    assertEquals(testUser.getEmail(), result.email());
   }
 
   @Test
@@ -127,8 +127,7 @@ class AuthServiceTest {
     // Arrange
     com.kratosgado.blog.dtos.response.UserResponse existingUser =
         org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.UserResponse.class);
-    when(userRepository.findByEmail(registerRequest.email()))
-        .thenReturn(Optional.of(existingUser));
+    when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(existingUser));
 
     // Act
     BlogException exception =

@@ -66,12 +66,6 @@ public class User {
   @Builder.Default
   private UserRole role = UserRole.READER;
 
-  /**
-   * Check if user has a specific role
-   *
-   * @param userRole UserRole enum to check
-   * @return true if user has the role
-   */
   public boolean hasRole(UserRole userRole) {
     return this.role == userRole;
   }
@@ -85,11 +79,6 @@ public class User {
     return authProvider != null && !authProvider.equals("local");
   }
 
-  /**
-   * Get role name as string
-   *
-   * @return Role name (e.g., "ADMIN", "AUTHOR", "READER")
-   */
   public String getRoleString() {
     return role.name();
   }

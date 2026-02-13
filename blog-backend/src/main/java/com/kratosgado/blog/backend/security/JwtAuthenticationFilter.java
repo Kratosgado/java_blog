@@ -46,15 +46,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    final String token = extractTokenFromRequest(request);
-    final String username;
+    final String authHeader = request.getHeader("Authorization");
+    final String jwt;
+    final String sub;
+
+    // If no Authorization header or doesn't start with "Bearer ", skip this filter
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    // Extract JWT token
+    jwt = authHeader.substring(7);
+
     try {
       // CHECK 1: Token Blacklist (O(1) HashMap lookup)
       // This check comes BEFORE extracting username to fail fast for revoked tokens
-      if (tokenBlacklistService.isBlacklisted(token)) {
+      if (tokenBlacklistService.isBlacklisted(jwt)) {
         log.warn(
             "Authentication attempt with blacklisted token. Token prefix: {}...",
-            token.substring(0, Math.min(20, token.length())));
+            jwt.substring(0, Math.min(20, jwt.length())));
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
         response
@@ -66,18 +77,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       // CHECK 2: Extract username from JWT
-      username = jwtUtil.extractUsername(token);
+      sub = jwtUtil.extractSub(jwt);
 
       // CHECK 3: Verify username exists and no authentication already set
-      if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        // CHECK 4: Load full User entity with roles from database
-        Optional<User> userOptional = userRepository.findBy(username);
+      if (sub != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        Optional<User> userOptional = userRepository.findById(Long.valueOf(sub));
 
         if (userOptional.isPresent()) {
           User user = userOptional.get();
-
-          // CHECK 5: Validate token signature and expiry
-          if (jwtUtil.validateToken(token, username)) {
+          if (jwtUtil.validateToken(jwt, sub)) {
             // Convert user role to Spring Security authority
             var authority = new SimpleGrantedAuthority(user.getRoleString());
             var authorities = java.util.List.of(authority);
@@ -91,22 +99,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             log.debug(
                 "JWT authentication successful for user: {} with role: {}",
-                username,
+                sub,
                 user.getRole().name());
           } else {
             // Token validation failed (signature mismatch or expired)
             log.warn(
                 "JWT validation failed for user: {}. Token may be expired or tampered. "
                     + "Token prefix: {}...",
-                username,
-                token.substring(0, Math.min(20, token.length())));
+                sub,
+                jwt.substring(0, Math.min(20, jwt.length())));
           }
         } else {
           // User not found in database
           log.warn(
               "User not found for JWT token: {}. Token prefix: {}...",
-              username,
-              token.substring(0, Math.min(20, token.length())));
+              sub,
+              jwt.substring(0, Math.min(20, jwt.length())));
         }
       }
 
@@ -114,19 +122,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       // Catch-all for any JWT processing errors
       log.error(
           "JWT authentication failed. Token prefix: {}..., Error: {}",
-          token.substring(0, Math.min(20, token.length())),
+          jwt.substring(0, Math.min(20, jwt.length())),
           e.getMessage(),
           e);
     }
 
     filterChain.doFilter(request, response);
-  }
-
-  private String extractTokenFromRequest(HttpServletRequest request) {
-    String bearerToken = request.getHeader("Authorization");
-    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-      return bearerToken.substring(7);
-    }
-    return null;
   }
 }
