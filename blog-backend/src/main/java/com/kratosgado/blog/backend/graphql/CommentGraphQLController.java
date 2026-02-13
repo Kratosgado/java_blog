@@ -1,8 +1,16 @@
 package com.kratosgado.blog.backend.graphql;
 
+import com.kratosgado.blog.backend.services.CommentService;
+import com.kratosgado.blog.backend.services.PostService;
+import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
+import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.models.User;
 import java.util.Collections;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -10,26 +18,12 @@ import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
-import com.kratosgado.blog.backend.services.CommentService;
-import com.kratosgado.blog.backend.services.PostService;
-import com.kratosgado.blog.dtos.request.CreateCommentRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
-import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
-import com.kratosgado.blog.dtos.response.PostResponse.PostView;
-import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.User;
-
 @Controller
+@RequiredArgsConstructor
 public class CommentGraphQLController {
 
   private final CommentService commentService;
   private final PostService postService;
-
-  public CommentGraphQLController(CommentService commentService, PostService postService) {
-    this.commentService = commentService;
-    this.postService = postService;
-  }
 
   @QueryMapping
   public Comment comment(@Argument String id) {
@@ -38,14 +32,13 @@ public class CommentGraphQLController {
 
   @QueryMapping
   public PageResponse<Comment> commentsByPost(
-      @Argument Long postId,
-      @Argument(name = "page") int page,
-      @Argument(name = "size") int size) {
+      @Argument Long postId, @Argument(name = "page") int page, @Argument(name = "size") int size) {
     return commentService.getPostComments(postId, new PageRequest(page, size, "id", "desc"));
   }
 
   @MutationMapping
-  public Comment createComment(@Argument CreateCommentRequest input, @AuthenticationPrincipal User user) {
+  public Comment createComment(
+      @Argument CreateCommentRequest input, @AuthenticationPrincipal User user) {
 
     return commentService.createComment(input, user);
   }
