@@ -79,7 +79,7 @@ public class User {
     return authProvider != null && !authProvider.equals("local");
   }
 
-  public String getRoleString() {
-    return role.name();
+  public String getAuthority() {
+    return "ROLE_" + role.name();
   }
 }

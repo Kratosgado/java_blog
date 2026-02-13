@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Requires ADMIN role for all endpoints
  *
- * <p>Test with:
- * - ADMIN user: Access granted (200 OK)
- * - AUTHOR/READER user: Access denied (403 Forbidden)
- * - No token: Unauthorized (401)
+ * <p>Test with: - ADMIN user: Access granted (200 OK) - AUTHOR/READER user: Access denied (403
+ * Forbidden) - No token: Unauthorized (401)
  */
 @RestController
 @RequestMapping("/admin")
@@ -42,11 +40,12 @@ public class AdminController {
     response.put("requiredRole", "ADMIN");
     response.put("authenticatedUser", authentication.getName());
     response.put("authorities", authentication.getAuthorities());
-    response.put("data", Map.of(
-        "totalUsers", 42,
-        "activeUsers", 35,
-        "adminUsers", 3
-    ));
+    response.put(
+        "data",
+        Map.of(
+            "totalUsers", 42,
+            "activeUsers", 35,
+            "adminUsers", 3));
     return response;
   }
 
@@ -55,19 +54,18 @@ public class AdminController {
   @Operation(
       summary = "Promote user role (Admin only)",
       description = "Promote a user to AUTHOR or ADMIN. Requires ADMIN role.")
-  public Map<String, Object> promoteUser(
-      @PathVariable Long id,
-      Authentication authentication) {
+  public Map<String, Object> promoteUser(@PathVariable Long id, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "User promoted successfully");
     response.put("endpoint", "POST /admin/users/{id}/promote");
     response.put("requiredRole", "ADMIN");
     response.put("authenticatedUser", authentication.getName());
-    response.put("data", Map.of(
-        "userId", id,
-        "previousRole", "READER",
-        "newRole", "AUTHOR"
-    ));
+    response.put(
+        "data",
+        Map.of(
+            "userId", id,
+            "previousRole", "READER",
+            "newRole", "AUTHOR"));
     return response;
   }
 
@@ -76,18 +74,13 @@ public class AdminController {
   @Operation(
       summary = "Delete user (Admin only)",
       description = "Delete a user from the system. Requires ADMIN role.")
-  public Map<String, Object> deleteUser(
-      @PathVariable Long id,
-      Authentication authentication) {
+  public Map<String, Object> deleteUser(@PathVariable Long id, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "User deleted successfully");
     response.put("endpoint", "DELETE /admin/users/{id}");
     response.put("requiredRole", "ADMIN");
     response.put("authenticatedUser", authentication.getName());
-    response.put("data", Map.of(
-        "userId", id,
-        "deletedAt", System.currentTimeMillis()
-    ));
+    response.put("data", Map.of("userId", id, "deletedAt", System.currentTimeMillis()));
     return response;
   }
 
@@ -102,12 +95,17 @@ public class AdminController {
     response.put("endpoint", "GET /admin/system/stats");
     response.put("requiredRole", "ADMIN");
     response.put("authenticatedUser", authentication.getName());
-    response.put("data", Map.of(
-        "totalPosts", 1250,
-        "totalComments", 8450,
-        "serverUptime", "15d 7h 23m",
-        "memoryUsage", "2.3GB / 8GB"
-    ));
+    response.put(
+        "data",
+        Map.of(
+            "totalPosts",
+            1250,
+            "totalComments",
+            8450,
+            "serverUptime",
+            "15d 7h 23m",
+            "memoryUsage",
+            "2.3GB / 8GB"));
     return response;
   }
 }
