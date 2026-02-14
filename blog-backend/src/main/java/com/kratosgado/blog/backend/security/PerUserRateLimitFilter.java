@@ -25,6 +25,11 @@ public class PerUserRateLimitFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
+    if (request.getRequestURI().startsWith("/api/docs")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // 1. Resolve the Key (User ID or IP)
     String key = resolveUserKey(request);
     log.info("Rate limiting request for user: {}", key);
