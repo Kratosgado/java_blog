@@ -11,7 +11,7 @@
 
 # @name getAllUsers
 
-GET {{host}}/users?page=1&size=10 HTTP/1.1
+GET {{hostData}}/users?page=1&size=10 HTTP/1.1
 Authorization: {{readerAuth}}
 
 > {%

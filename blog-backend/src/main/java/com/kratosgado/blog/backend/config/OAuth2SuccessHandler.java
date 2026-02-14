@@ -35,7 +35,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             oauth2User.getUserId(),
             oauth2User.getUsername(),
             oauth2User.getEmail(),
-            oauth2User.getRole());
+            oauth2User.getRole().name());
 
     // Return JWT in response or redirect with token
     response.setContentType("application/json");

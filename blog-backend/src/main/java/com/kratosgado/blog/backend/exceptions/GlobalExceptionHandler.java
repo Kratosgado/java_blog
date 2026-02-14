@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.exceptions;
 
 import com.kratosgado.blog.dtos.response.ResponseDto;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -105,6 +106,11 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ResponseDto<?>> handleAccessDenied(AccessDeniedException ex) {
     logger.error("Access denied: {}", ex.getMessage());
     return buildErrorResponse(HttpStatus.FORBIDDEN, "Access denied");
+  }
+
+  @ExceptionHandler(RequestNotPermitted.class)
+  public ResponseEntity<?> handleRateLimit(RequestNotPermitted ex) {
+    return buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Too many requests");
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

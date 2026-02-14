@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.security;
 
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import java.util.Collection;
 import java.util.List;
@@ -56,8 +57,8 @@ public class CustomOAuth2User implements OAuth2User {
     return user.getId();
   }
 
-  public String getRole() {
-    return user.getRole().name();
+  public UserRole getRole() {
+    return user.getRole();
   }
 
   public String getAuthority() {

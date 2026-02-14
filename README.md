@@ -91,7 +91,7 @@ mvn -pl blog-frontend javafx:run
 
 ### 3. Access the Application
 
-- **Swagger UI**: <http://localhost:8080/api/swagger-ui.html>
+- **Swagger UI**: <http://localhost:8080/api/docs/swagger-ui.html>
 - **GraphQL UI**: <http://localhost:8080/api/graphiql>
 - **Default User**: <alice@example.com> / password123
 
@@ -280,8 +280,8 @@ mvn test jacoco:report
 
 ## Pre-seeded Test Accounts
 
-| Email               | Password    | Role   |
-| ------------------- | ----------- | ------ |
+| Email                 | Password    | Role   |
+| --------------------- | ----------- | ------ |
 | <alice@example.com>   | password123 | AUTHOR |
 | <bob@example.com>     | password123 | READER |
 | <charlie@example.com> | password123 | AUTHOR |

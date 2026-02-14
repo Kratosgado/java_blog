@@ -63,7 +63,7 @@ GET {{host}}/categories/12 HTTP/1.1
 GET {{host}}/categories?page=0&size=10 HTTP/1.1
 
 > {%
-  var category = response.body.content[0];
+  var category = response.body.data.content[0];
   client.global.set("categoryId", category.id);
   client.global.set("categorySlug", category.slug);
 %}
@@ -74,13 +74,14 @@ GET {{host}}/categories?page=0&size=10 HTTP/1.1
 # @name getCategoryBySlug
 
 GET {{host}}/categories/slug/{{categorySlug}} HTTP/1.1
+Authorization: {{readerAuth}}
 
 
 ### Delete a category
 
 # @name deleteCategory
 
-DELETE {{host}}/categories/1 HTTP/1.1
+DELETE {{host}}/categories/{{categoryId}} HTTP/1.1
 Authorization: {{adminAuth}}
 
 
