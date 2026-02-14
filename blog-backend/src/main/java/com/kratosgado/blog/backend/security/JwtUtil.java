@@ -78,17 +78,17 @@ public class JwtUtil {
   }
 
   public AuthResponse signToken(User user) {
-    Map<String, Object> claims = Map.of("userId", user.getId(), "role", user.getRoleString());
+    Map<String, Object> claims = Map.of("userId", user.getId(), "role", user.getRole().name());
     String token = createToken(claims, user.getId().toString());
     return new AuthResponse(
-        token, user.getId(), user.getUsername(), user.getEmail(), user.getRoleString());
+        token, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
   public AuthResponse signToken(CustomOAuth2User user) {
     Map<String, Object> claims = Map.of("userId", user.getUserId(), "role", user.getRole());
     String token = createToken(claims, user.getUserId().toString());
     return new AuthResponse(
-        token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole());
+        token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
   public static record JwtPayload(String username, Long userId, String role) {}

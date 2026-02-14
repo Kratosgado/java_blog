@@ -80,6 +80,13 @@ jwt:
 cors:
   allowed-origins: http://localhost:8080,http://localhost:3000,http://localhost:4200,https://studio.apollographql.com
 
+resilience4j.ratelimiter:
+  configs:
+    default:
+      limitForPeriod: 5
+      limitRefreshPeriod: 10s
+      timeoutDuration: 0
+
 springdoc:
   api-docs:
     path: /docs/api-docs
