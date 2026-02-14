@@ -39,12 +39,8 @@ public class CategoryController {
     this.categoryService = categoryService;
   }
 
-  @SecuredCreateEndpoint
+  @SecuredCreateEndpoint(summary = "Create a new category", description = "Creates a new category. Requires authentication.")
   @PostMapping
-  @Operation(
-      summary = "Create a new category",
-      description = "Creates a new category. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
   @ResponseStatus(HttpStatus.CREATED)
   public Category createCategory(
       @Valid @RequestBody @Parameter(description = "Category creation request")
@@ -52,12 +48,8 @@ public class CategoryController {
     return categoryService.createCategory(request);
   }
 
-  @UpdateEndpoint
+  @UpdateEndpoint(summary = "Update a category", description = "Updates an existing category. Requires authentication.")
   @PutMapping("/{id}")
-  @Operation(
-      summary = "Update a category",
-      description = "Updates an existing category. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
   public Category updateCategory(
       @PathVariable("id") @Parameter(description = "Category ID") Long id,
       @Valid @RequestBody @Parameter(description = "Category update request")
@@ -65,51 +57,33 @@ public class CategoryController {
     return categoryService.updateCategory(id, request);
   }
 
+  @DeleteEndpoint(summary = "Delete a category", description = "Deletes a category by ID. Requires authentication.")
   @DeleteMapping("/{id}")
-  @DeleteEndpoint
-  @Operation(
-      summary = "Delete a category",
-      description = "Deletes a category by ID. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
   public void deleteCategory(@PathVariable("id") @Parameter(description = "Category ID") Long id) {
     categoryService.deleteCategory(id);
   }
 
   @GetMapping("/{id}")
-  @GetEndpoint
-  @Operation(
-      summary = "Get a category by ID",
-      description = "Retrieves a single category by its ID. Public access.")
+  @GetEndpoint(summary = "Get a category by ID", description = "Retrieves a single category by its ID. Public access.")
   public Category getCategory(@PathVariable("id") @Parameter(description = "Category ID") Long id) {
     return categoryService.getCategoryById(id);
   }
 
   @GetMapping("/slug/{slug}")
-  @GetEndpoint
-  @Operation(
-      summary = "Get a category by slug",
-      description = "Retrieves a single category by its slug. Public access.")
+  @GetEndpoint(summary = "Get a category by slug", description = "Retrieves a single category by its slug. Public access.")
   public Category getCategoryBySlug(
       @PathVariable @Parameter(description = "Category slug") String slug) {
     return categoryService.getCategoryBySlug(slug);
   }
 
   @GetMapping
-  @GetEndpoint
-  @Operation(
-      summary = "Get all categories",
-      description = "Retrieves a paginated list of all categories. Public access.")
+  @GetEndpoint(summary = "Get all categories", description = "Retrieves a paginated list of all categories. Public access.")
   public PageResponse<Category> getAllCategories(@ParameterObject PageRequest page) {
     return categoryService.getAllCategories(page);
   }
 
   @GetMapping("/with-post-count")
-  @GetEndpoint
-  @Operation(
-      summary = "Get all categories with post counts",
-      description =
-          "Retrieves a list of all categories including the number of posts in each. Public"
-              + " access.")
+  @GetEndpoint(summary = "Get all categories with post counts", description = "Retrieves a list of all categories including the number of posts in each. Public access.")
   public List<CategoryResponse> getCategoriesWithPostCount() {
     return categoryService.getAllCategoriesWithPostCount();
   }

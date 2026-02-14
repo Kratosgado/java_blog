@@ -40,11 +40,7 @@ public class CommentController {
   }
 
   @PostMapping
-  @SecuredUpdateEndpoint
-  @Operation(
-      summary = "Create a new comment",
-      description = "Creates a new comment on a post. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint(summary = "Create a new comment", description = "Creates a new comment on a post. Requires authentication.")
   @ResponseStatus(HttpStatus.CREATED)
   public Comment createComment(
       @Valid @RequestBody @Parameter(description = "Comment creation request")
@@ -54,50 +50,32 @@ public class CommentController {
   }
 
   @PutMapping("/{id}/approve")
-  @SecuredUpdateEndpoint
-  @Operation(
-      summary = "Approve a comment",
-      description = "Approves a pending comment. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint(summary = "Approve a comment", description = "Approves a pending comment. Requires authentication.")
   public Comment approveComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.approveComment(id);
   }
 
   @PutMapping("/{id}/reject")
-  @SecuredUpdateEndpoint
-  @Operation(
-      summary = "Reject a comment",
-      description = "Rejects a pending comment. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
+  @SecuredUpdateEndpoint(summary = "Reject a comment", description = "Rejects a pending comment. Requires authentication.")
   public Comment rejectComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.rejectComment(id);
   }
 
   @GetMapping("/{id}")
-  @GetEndpoint
-  @Operation(
-      summary = "Get a comment by ID",
-      description = "Retrieves a single comment by its ID. Public access.")
+  @GetEndpoint(summary = "Get a comment by ID", description = "Retrieves a single comment by its ID. Public access.")
   public Comment getComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.getCommentById(id);
   }
 
   @DeleteMapping("/{id}")
-  @DeleteEndpoint
-  @Operation(
-      summary = "Delete a comment",
-      description = "Deletes a comment by ID. Only the comment author can delete it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
+  @DeleteEndpoint(summary = "Delete a comment", description = "Deletes a comment by ID. Only the comment author can delete it.")
   public void deleteComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     commentService.deleteComment(id, userId);
   }
 
   @GetMapping("/post/{postId}")
-  @GetEndpoint
-  @Operation(
-      summary = "Get comments for a post",
-      description = "Retrieves all approved comments for a specific post. Public access.")
+  @GetEndpoint(summary = "Get comments for a post", description = "Retrieves all approved comments for a specific post. Public access.")
   public PageResponse<Comment> getPostComments(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
@@ -105,10 +83,7 @@ public class CommentController {
   }
 
   @GetMapping("/user/{userId}")
-  @GetEndpoint
-  @Operation(
-      summary = "Get comments by user",
-      description = "Retrieves all comments created by a specific user")
+  @GetEndpoint(summary = "Get comments by user", description = "Retrieves all comments created by a specific user")
   public PageResponse<CommentWithoutUser> getUserComments(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
@@ -116,10 +91,7 @@ public class CommentController {
   }
 
   @GetMapping("/post/{postId}/count")
-  @GetEndpoint
-  @Operation(
-      summary = "Get comment count for a post",
-      description = "Returns the number of approved comments for a post")
+  @GetEndpoint(summary = "Get comment count for a post", description = "Returns the number of approved comments for a post")
   public Long getPostCommentCount(@PathVariable @Parameter(description = "Post ID") Long postId) {
     return commentService.getPostCommentCount(postId);
   }

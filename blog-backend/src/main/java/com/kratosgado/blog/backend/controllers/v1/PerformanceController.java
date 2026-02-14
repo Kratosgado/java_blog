@@ -15,8 +15,7 @@ import com.kratosgado.blog.backend.utils.performance.PerformanceMonitor.Operatio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredGetEndpoint;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -55,8 +54,7 @@ public class PerformanceController {
    * Get all performance statistics.
    */
   @GetMapping("/stats")
-  @Operation(summary = "Get performance statistics", description = "Retrieves performance metrics for all tracked operations. Requires admin role.", security = @SecurityRequirement(name = "Bearer Authentication"))
-  @PreAuthorize("hasRole('ADMIN')")
+  @SecuredGetEndpoint(summary = "Get performance statistics", description = "Retrieves performance metrics for all tracked operations. Requires admin role.", roles = {com.kratosgado.blog.enums.UserRole.ADMIN})
   public ResponseEntity<Map<String, OperationStats>> getStats() {
     log.info("Retrieving performance statistics");
     Map<String, OperationStats> stats = performanceMonitor.getAllStats();
@@ -67,8 +65,7 @@ public class PerformanceController {
    * Get formatted performance report.
    */
   @GetMapping("/report")
-  @Operation(summary = "Get performance report", description = "Retrieves a formatted performance report as text. Requires admin role.", security = @SecurityRequirement(name = "Bearer Authentication"))
-  @PreAuthorize("hasRole('ADMIN')")
+  @SecuredGetEndpoint(summary = "Get performance report", description = "Retrieves a formatted performance report as text. Requires admin role.", roles = {com.kratosgado.blog.enums.UserRole.ADMIN})
   public ResponseEntity<String> getReport() {
     log.info("Generating performance report");
     String report = performanceMonitor.getFormattedReport();
@@ -79,8 +76,7 @@ public class PerformanceController {
    * Reset all performance metrics.
    */
   @DeleteMapping("/reset")
-  @Operation(summary = "Reset performance metrics", description = "Clears all collected performance metrics. Requires admin role.", security = @SecurityRequirement(name = "Bearer Authentication"))
-  @PreAuthorize("hasRole('ADMIN')")
+  @SecuredGetEndpoint(summary = "Reset performance metrics", description = "Clears all collected performance metrics. Requires admin role.", roles = {com.kratosgado.blog.enums.UserRole.ADMIN})
   public ResponseEntity<String> reset() {
     log.info("Resetting performance metrics");
     performanceMonitor.reset();
@@ -91,8 +87,7 @@ public class PerformanceController {
    * Enable or disable performance monitoring.
    */
   @GetMapping("/status")
-  @Operation(summary = "Get monitoring status", description = "Check if performance monitoring is enabled. Requires admin role.", security = @SecurityRequirement(name = "Bearer Authentication"))
-  @PreAuthorize("hasRole('ADMIN')")
+  @SecuredGetEndpoint(summary = "Get monitoring status", description = "Check if performance monitoring is enabled. Requires admin role.", roles = {com.kratosgado.blog.enums.UserRole.ADMIN})
   public ResponseEntity<MonitoringStatus> getStatus() {
     boolean enabled = performanceMonitor.isEnabled();
     Map<String, OperationStats> stats = performanceMonitor.getAllStats();

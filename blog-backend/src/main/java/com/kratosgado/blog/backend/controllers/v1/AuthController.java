@@ -6,6 +6,9 @@ import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.GetEndpoint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,12 +35,10 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/login")
-  @Operation(
+  @UpdateEndpoint(
       summary = "User Login",
       description =
-          "Authenticate user with email and password. Returns JWT token signed with HS256"
-              + " algorithm. Token includes user ID, email, and roles. Protected against"
-              + " brute-force attacks with account lockout after 5 failed attempts.")
+          "Authenticate user with email and password. Returns JWT token signed with HS256 algorithm. Token includes user ID, email, and roles. Protected against brute-force attacks with account lockout after 5 failed attempts.")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Login successful, JWT token returned"),
     @ApiResponse(
@@ -64,12 +65,10 @@ public class AuthController {
    * @return AuthResponse with JWT token and user details
    */
   @PostMapping("/register")
-  @Operation(
+  @UpdateEndpoint(
       summary = "User Registration",
       description =
-          "Register a new user account with email, username, and password. "
-              + "Automatically generates and returns JWT token for immediate authentication. "
-              + "New users are assigned READER role by default.")
+          "Register a new user account with email, username, and password. Automatically generates and returns JWT token for immediate authentication. New users are assigned READER role by default.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "201",
@@ -86,12 +85,10 @@ public class AuthController {
   }
 
   @GetMapping("/validate")
-  @Operation(
+  @GetEndpoint(
       summary = "Validate JWT Token",
       description =
-          "Validates a JWT token and returns whether it's valid. "
-              + "Checks token signature, expiration, and structure. "
-              + "Returns username if token is valid. Does not check blacklist status.")
+          "Validates a JWT token and returns whether it's valid. Checks token signature, expiration, and structure. Returns username if token is valid. Does not check blacklist status.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -108,20 +105,9 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "User Logout",
-      description =
-          "Blacklists JWT token to prevent reuse. Token is added to in-memory blacklist "
-              + "until its natural expiration. Blacklist operations are O(1) time complexity. "
-              + "Subsequent requests with this token will be rejected with 401 Unauthorized.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "Logout successful, token blacklisted"),
-    @ApiResponse(responseCode = "400", description = "Bad request - Invalid token format"),
-    @ApiResponse(
-        responseCode = "401",
-        description = "Unauthorized - Missing or invalid Authorization header")
-  })
+      description = "Blacklists JWT token to prevent reuse. Token is added to in-memory blacklist until its natural expiration. Subsequent requests with this token will be rejected with 401 Unauthorized.")
   public Map<String, Object> logout(
       @Parameter(
               description = "Authorization header with Bearer token",

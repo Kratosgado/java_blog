@@ -28,12 +28,9 @@ public class UserController {
   private final UserService userService;
 
   @PutMapping("/{id}/profile")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "Update user profile",
-      description =
-          "Updates a user's profile information. Only the user can update their own profile.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+      description = "Updates a user's profile information. Only the user can update their own profile.")
   public User updateProfile(
       @Valid @RequestBody @Parameter(description = "Profile update request")
           UpdateUserProfileRequest request) {
@@ -42,11 +39,9 @@ public class UserController {
   }
 
   @PutMapping("/{id}/avatar")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "Update user avatar",
-      description = "Updates a user's avatar. Only the user can update their own avatar.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+      description = "Updates a user's avatar. Only the user can update their own avatar.")
   public User updateAvatar(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Avatar update request")
@@ -56,11 +51,9 @@ public class UserController {
   }
 
   @PutMapping("/{id}/password")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "Change password",
-      description = "Changes a user's password. Only the user can change their own password.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+      description = "Changes a user's password. Only the user can change their own password.")
   public void changePassword(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Password change request")
