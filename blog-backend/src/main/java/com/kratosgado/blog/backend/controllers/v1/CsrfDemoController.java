@@ -1,5 +1,7 @@
 package com.kratosgado.blog.backend.controllers.v1;
 
+import com.kratosgado.blog.backend.annotations.OpenApi.GetEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,12 +51,7 @@ public class CsrfDemoController {
    * @return Map containing CSRF token and usage instructions
    */
   @GetMapping("/token")
-  @Operation(
-      summary = "Get CSRF Token",
-      description =
-          "Retrieve CSRF token for form submission. "
-              + "Note: CSRF is currently disabled in this API (stateless JWT). "
-              + "This endpoint demonstrates what would happen if CSRF was enabled.")
+  @GetEndpoint(summary = "Get CSRF Token", description = "Retrieve CSRF token for form submission. Note: CSRF is currently disabled in this API (stateless JWT). This endpoint demonstrates what would happen if CSRF was enabled.")
   public Map<String, Object> getCsrfToken(HttpServletRequest request) {
     CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 
@@ -95,11 +92,7 @@ public class CsrfDemoController {
    * @return Confirmation message
    */
   @PostMapping("/submit-form")
-  @Operation(
-      summary = "Submit Form (CSRF Demo)",
-      description =
-          "Demonstrates form submission that would require CSRF token if CSRF was enabled. "
-              + "Currently passes through because CSRF is disabled for our stateless JWT API.")
+  @UpdateEndpoint(summary = "Submit Form (CSRF Demo)", description = "Demonstrates form submission that would require CSRF token if CSRF was enabled. Currently passes through because CSRF is disabled for our stateless JWT API.")
   public Map<String, Object> submitForm(@RequestParam(defaultValue = "Test message") String message) {
     Map<String, Object> response = new HashMap<>();
     response.put("success", true);
@@ -118,9 +111,7 @@ public class CsrfDemoController {
    * @return Detailed explanation of CSRF protection and why it's disabled
    */
   @GetMapping("/info")
-  @Operation(
-      summary = "CSRF Protection Information",
-      description = "Get detailed explanation of CSRF protection and its configuration")
+  @GetEndpoint(summary = "CSRF Protection Information", description = "Get detailed explanation of CSRF protection and its configuration")
   public Map<String, Object> getInfo() {
     Map<String, Object> info = new HashMap<>();
 

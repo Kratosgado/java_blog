@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.controllers.v1;
 
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredGetEndpoint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,10 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReaderController {
 
   @GetMapping("/bookmarks")
-  @Operation(
-      summary = "Get user bookmarks",
-      description =
-          "Retrieve bookmarked posts for authenticated user. Requires any authenticated role.")
+  @SecuredGetEndpoint(summary = "Get user bookmarks", description = "Retrieve bookmarked posts for authenticated user. Requires any authenticated role.")
   public Map<String, Object> getBookmarks(Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Reader access granted");
@@ -47,9 +45,7 @@ public class ReaderController {
   }
 
   @PostMapping("/bookmarks/{postId}")
-  @Operation(
-      summary = "Add bookmark",
-      description = "Bookmark a post. Requires any authenticated role.")
+  @SecuredGetEndpoint(summary = "Add bookmark", description = "Bookmark a post. Requires any authenticated role.")
   public Map<String, Object> addBookmark(@PathVariable Long postId, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Bookmark added successfully");
@@ -61,9 +57,7 @@ public class ReaderController {
   }
 
   @DeleteMapping("/bookmarks/{postId}")
-  @Operation(
-      summary = "Remove bookmark",
-      description = "Remove a bookmarked post. Requires any authenticated role.")
+  @SecuredGetEndpoint(summary = "Remove bookmark", description = "Remove a bookmarked post. Requires any authenticated role.")
   public Map<String, Object> removeBookmark(
       @PathVariable Long postId, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
@@ -76,9 +70,7 @@ public class ReaderController {
   }
 
   @GetMapping("/profile")
-  @Operation(
-      summary = "Get user profile",
-      description = "Retrieve authenticated user's profile. Requires any authenticated role.")
+  @SecuredGetEndpoint(summary = "Get user profile", description = "Retrieve authenticated user's profile. Requires any authenticated role.")
   public Map<String, Object> getProfile(Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Profile retrieved successfully");

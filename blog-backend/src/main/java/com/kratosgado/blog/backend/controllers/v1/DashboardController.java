@@ -30,33 +30,20 @@ public class DashboardController {
   private final DashboardService dashboardService;
 
   @GetMapping("/stats")
-  @Operation(
-      summary = "Get dashboard statistics",
-      description = "Retrieves overall statistics for the dashboard. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get dashboard statistics", description = "Retrieves overall statistics for the dashboard. Requires authentication.")
   public StatCountResponse getStats() {
     return dashboardService.getDashboardStats();
   }
 
   @GetMapping("/user/stats")
-  @Operation(
-      summary = "Get user dashboard statistics",
-      description =
-          "Retrieves statistics for the current user's dashboard. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get user dashboard statistics", description = "Retrieves statistics for the current user's dashboard. Requires authentication.")
   public UserDashboardStatsResponse getUserStats() {
     Long userId = SecurityUtils.getCurrentUserId();
     return dashboardService.getUserDashboardStats(userId);
   }
 
   @GetMapping("/analytics")
-  @Operation(
-      summary = "Get analytics data",
-      description = "Retrieves analytics data for a date range. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get analytics data", description = "Retrieves analytics data for a date range. Requires authentication.")
   public AnalyticsResponse getAnalytics(
       @RequestParam(required = false)
           @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -78,34 +65,19 @@ public class DashboardController {
   }
 
   @GetMapping("/posts/distribution")
-  @Operation(
-      summary = "Get post status distribution",
-      description = "Retrieves distribution of posts by status. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get post status distribution", description = "Retrieves distribution of posts by status. Requires authentication.")
   public PostDistributionResponse getPostDistribution() {
     return dashboardService.getPostStatusDistribution();
   }
 
   @GetMapping("/engagement")
-  @Operation(
-      summary = "Get engagement statistics",
-      description =
-          "Retrieves engagement statistics like top posts and popular categories. Requires"
-              + " authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get engagement statistics", description = "Retrieves engagement statistics like top posts and popular categories. Requires authentication.")
   public EngagementStatsResponse getEngagement() {
     return dashboardService.getEngagementStats();
   }
 
   @GetMapping("/recent")
-  @Operation(
-      summary = "Get recent activity",
-      description =
-          "Retrieves recent activity like latest posts and comments. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @GetEndpoint
+  @GetEndpoint(summary = "Get recent activity", description = "Retrieves recent activity like latest posts and comments. Requires authentication.")
   public RecentActivityResponse getRecentActivity() {
     return dashboardService.getRecentActivity();
   }

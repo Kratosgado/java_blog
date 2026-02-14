@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.controllers.v1;
 
-import io.swagger.v3.oas.annotations.Operation;
+import com.kratosgado.blog.backend.annotations.OpenApi.SecuredGetEndpoint;
+import com.kratosgado.blog.enums.UserRole;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.HashMap;
@@ -29,10 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
   @GetMapping("/users")
-  @PreAuthorize("hasRole('ADMIN')")
-  @Operation(
-      summary = "Get all users (Admin only)",
-      description = "Retrieve list of all users. Requires ADMIN role.")
+  @SecuredGetEndpoint(summary = "Get all users (Admin only)", description = "Retrieve list of all users. Requires ADMIN role.", roles = {UserRole.ADMIN})
   public Map<String, Object> getAllUsers(Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "Admin access granted");
@@ -50,10 +48,7 @@ public class AdminController {
   }
 
   @PostMapping("/users/{id}/promote")
-  @PreAuthorize("hasRole('ADMIN')")
-  @Operation(
-      summary = "Promote user role (Admin only)",
-      description = "Promote a user to AUTHOR or ADMIN. Requires ADMIN role.")
+  @SecuredGetEndpoint(summary = "Promote user role (Admin only)", description = "Promote a user to AUTHOR or ADMIN. Requires ADMIN role.", roles = {UserRole.ADMIN})
   public Map<String, Object> promoteUser(@PathVariable Long id, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "User promoted successfully");
@@ -70,10 +65,7 @@ public class AdminController {
   }
 
   @DeleteMapping("/users/{id}")
-  @PreAuthorize("hasRole('ADMIN')")
-  @Operation(
-      summary = "Delete user (Admin only)",
-      description = "Delete a user from the system. Requires ADMIN role.")
+  @SecuredGetEndpoint(summary = "Delete user (Admin only)", description = "Delete a user from the system. Requires ADMIN role.", roles = {UserRole.ADMIN})
   public Map<String, Object> deleteUser(@PathVariable Long id, Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "User deleted successfully");
@@ -85,10 +77,7 @@ public class AdminController {
   }
 
   @GetMapping("/system/stats")
-  @PreAuthorize("hasRole('ADMIN')")
-  @Operation(
-      summary = "Get system statistics (Admin only)",
-      description = "Retrieve system-wide statistics. Requires ADMIN role.")
+  @SecuredGetEndpoint(summary = "Get system statistics (Admin only)", description = "Retrieve system-wide statistics. Requires ADMIN role.", roles = {UserRole.ADMIN})
   public Map<String, Object> getSystemStats(Authentication authentication) {
     Map<String, Object> response = new HashMap<>();
     response.put("message", "System statistics retrieved");

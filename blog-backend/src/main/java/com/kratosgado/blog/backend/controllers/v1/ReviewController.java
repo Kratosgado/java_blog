@@ -45,11 +45,7 @@ public class ReviewController {
   }
 
   @PostMapping
-  @Operation(
-      summary = "Create a new review",
-      description = "Creates a new review for a post. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredCreateEndpoint
+  @SecuredCreateEndpoint(summary = "Create a new review", description = "Creates a new review for a post. Requires authentication.")
   @ResponseStatus(HttpStatus.CREATED)
   public Review createReview(
       @Valid @RequestBody @Parameter(description = "Review creation request")
@@ -59,11 +55,7 @@ public class ReviewController {
   }
 
   @PutMapping("/{id}")
-  @Operation(
-      summary = "Update a review",
-      description = "Updates an existing review. Only the review author can update it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+  @SecuredUpdateEndpoint(summary = "Update a review", description = "Updates an existing review. Only the review author can update it.")
   public Review updateReview(
       @PathVariable @Parameter(description = "Review ID") String id,
       @Valid @RequestBody @Parameter(description = "Review update request")
@@ -73,30 +65,20 @@ public class ReviewController {
   }
 
   @DeleteMapping("/{id}")
-  @Operation(
-      summary = "Delete a review",
-      description = "Deletes a review by ID. Only the review author can delete it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @DeleteEndpoint
+  @DeleteEndpoint(summary = "Delete a review", description = "Deletes a review by ID. Only the review author can delete it.")
   public void deleteReview(@PathVariable @Parameter(description = "Review ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     reviewService.deleteReview(id, userId);
   }
 
   @GetMapping("/{id}")
-  @Operation(
-      summary = "Get a review by ID",
-      description = "Retrieves a single review by its ID. Public access.")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get a review by ID", description = "Retrieves a single review by its ID. Public access.")
   public Review getReview(@PathVariable @Parameter(description = "Review ID") String id) {
     return reviewService.getReviewById(id);
   }
 
   @GetMapping("/post/{postId}")
-  @Operation(
-      summary = "Get reviews for a post",
-      description = "Retrieves all reviews for a specific post. Public access.")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get reviews for a post", description = "Retrieves all reviews for a specific post. Public access.")
   public PageResponse<Review> getPostReviews(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
@@ -104,10 +86,7 @@ public class ReviewController {
   }
 
   @GetMapping("/user/{userId}")
-  @Operation(
-      summary = "Get reviews by user",
-      description = "Retrieves all reviews created by a specific user")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get reviews by user", description = "Retrieves all reviews created by a specific user")
   public PageResponse<ReviewWithoutUser> getUserReviews(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
@@ -115,10 +94,7 @@ public class ReviewController {
   }
 
   @GetMapping("/post/{postId}/stats")
-  @Operation(
-      summary = "Get review statistics for a post",
-      description = "Returns average rating and review count for a post")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get review statistics for a post", description = "Returns average rating and review count for a post")
   public Map<String, Object> getPostReviewStats(
       @PathVariable @Parameter(description = "Post ID") Long postId) {
     Double averageRating = reviewService.getAverageRating(postId);

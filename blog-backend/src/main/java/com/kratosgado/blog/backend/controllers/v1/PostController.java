@@ -15,16 +15,13 @@ import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +30,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,13 +44,10 @@ public class PostController {
   }
 
   @PostMapping
-  @Operation(
-      summary = "Create a new post",
+  @SecuredCreateEndpoint(
+      summary = "Create a new post (Secured)",
       description = "Creates a new blog post with the provided details. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredCreateEndpoint
-  @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Post createPost(
       @Valid @RequestBody @Parameter(description = "Post creation request")
           CreatePostRequest request,
@@ -63,12 +56,10 @@ public class PostController {
   }
 
   @PutMapping("/{id}")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "Update a post",
       description = "Updates an existing blog post. Only the post author can update it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
-  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Post updatePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @Valid @RequestBody @Parameter(description = "Post update request")
@@ -78,23 +69,19 @@ public class PostController {
   }
 
   @PutMapping("/{id}/publish")
-  @Operation(
+  @SecuredUpdateEndpoint(
       summary = "Publish a post",
-      description = "Updates a blog post status to published. Only the post author can publish it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+      description = "Updates a blog post status to published. Only the post author can publish it.")
   public Post publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.publishPost(id, userId);
   }
 
   @DeleteMapping("/{id}")
-  @Operation(
+  @DeleteEndpoint(
       summary = "Delete a post",
       description = "Deletes a blog post by ID. Only the post author can delete it.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @DeleteEndpoint
-  @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public void deletePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @AuthenticationPrincipal User user) {
@@ -102,50 +89,45 @@ public class PostController {
   }
 
   @GetMapping("/{id}")
-  @Operation(
+  @GetEndpoint(
       summary = "Get a post by ID",
       description = "Retrieves a single blog post by its ID. Public access.")
-  @GetEndpoint
   public PostDetails getPost(@PathVariable @Parameter(description = "Post ID") Long id) {
     return postService.getPostById(id);
   }
 
   @GetMapping("/slug/{slug}")
-  @Operation(
+  @GetEndpoint(
       summary = "Get a post by slug",
       description =
           "Retrieves a single blog post by its slug. Uses cache for better performance. Public"
               + " access.")
-  @GetEndpoint
   public PostDetails getPostBySlug(
       @PathVariable @Parameter(description = "Post slug") String slug) {
     return postService.getPostBySlug(slug);
   }
 
   @GetMapping()
-  @Operation(
+  @GetEndpoint(
       summary = "Get all published posts",
       description =
           "Retrieves a paginated list of published blog posts with sorting options. Public access.")
-  @GetEndpoint
   public PageResponse<PostView> getPosts(@ParameterObject PageRequest page) {
     return postService.getPublishedPosts(page);
   }
 
   @GetMapping("/search")
-  @Operation(
+  @GetEndpoint(
       summary = "Search posts",
       description = "Searches for posts by keyword in title and content")
-  @GetEndpoint
   public PageResponse<PostView> searchPosts(@ParameterObject SearchPageRequest request) {
     return postService.searchPostsV1(request);
   }
 
   @GetMapping("/user/{userId}")
-  @Operation(
+  @GetEndpoint(
       summary = "Get posts by user",
       description = "Retrieves all posts created by a specific user")
-  @GetEndpoint
   public PageResponse<PostWithoutUser> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
@@ -153,10 +135,9 @@ public class PostController {
   }
 
   @GetMapping("/category/{categoryId}")
-  @Operation(
+  @GetEndpoint(
       summary = "Get posts by category",
       description = "Retrieves all posts in a specific category")
-  @GetEndpoint
   public PageResponse<PostWithoutCategory> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
       @ParameterObject PageRequest page) {

@@ -40,7 +40,7 @@ public class TagController {
   }
 
   @PostMapping
-  @SecuredCreateEndpoint
+  @SecuredCreateEndpoint(summary = "Create a new tag", description = "Creates a new tag. Requires authentication.")
   @ResponseStatus(HttpStatus.CREATED)
   public Tag createTag(
       @Valid @RequestBody @Parameter(description = "Tag creation request")
@@ -49,11 +49,7 @@ public class TagController {
   }
 
   @PutMapping("/{id}")
-  @Operation(
-      summary = "Update a tag",
-      description = "Updates an existing tag. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @SecuredUpdateEndpoint
+  @SecuredUpdateEndpoint(summary = "Update a tag", description = "Updates an existing tag. Requires authentication.")
   public Tag updateTag(
       @PathVariable @Parameter(description = "Tag ID") Long id,
       @Valid @RequestBody @Parameter(description = "Tag update request") UpdateTagRequest request) {
@@ -61,55 +57,37 @@ public class TagController {
   }
 
   @DeleteMapping("/{id}")
-  @Operation(
-      summary = "Delete a tag",
-      description = "Deletes a tag by ID. Requires authentication.",
-      security = @SecurityRequirement(name = "bearer-jwt"))
-  @DeleteEndpoint
+  @DeleteEndpoint(summary = "Delete a tag", description = "Deletes a tag by ID. Requires authentication.")
   public void deleteTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
     tagService.deleteTag(id);
   }
 
   @GetMapping("/{id}")
-  @Operation(
-      summary = "Get a tag by ID",
-      description = "Retrieves a single tag by its ID. Public access.")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get a tag by ID", description = "Retrieves a single tag by its ID. Public access.")
   public Tag getTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
     return tagService.getTagById(id);
   }
 
   @GetMapping("/slug/{slug}")
-  @Operation(
-      summary = "Get a tag by slug",
-      description = "Retrieves a single tag by its slug. Public access.")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get a tag by slug", description = "Retrieves a single tag by its slug. Public access.")
   public Tag getTagBySlug(@PathVariable @Parameter(description = "Tag slug") String slug) {
     return tagService.getTagBySlug(slug);
   }
 
   @GetMapping
-  @Operation(
-      summary = "Get all tags",
-      description = "Retrieves a paginated list of all tags. Public access.")
-  @GetEndpoint
+  @GetEndpoint(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
   public PageResponse<Tag> getTags(@ParameterObject PageRequest page) {
     return tagService.getAllTags(page);
   }
 
   @GetMapping("/search")
-  @Operation(summary = "Search tags", description = "Searches for tags by keyword in name")
-  @GetEndpoint
+  @GetEndpoint(summary = "Search tags", description = "Searches for tags by keyword in name")
   public PageResponse<Tag> searchTags(@ParameterObject SearchPageRequest request) {
     return tagService.searchTags(request.getKeyword(), request);
   }
 
   @GetMapping("/with-post-count")
-  @GetEndpoint
-  @Operation(
-      summary = "Get all tags with post counts",
-      description =
-          "Retrieves a list of all tags including the number of posts for each. Public access.")
+  @GetEndpoint(summary = "Get all tags with post counts", description = "Retrieves a list of all tags including the number of posts for each. Public access.")
   public List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
     return tagService.getAllTagsWithPostCount();
   }
