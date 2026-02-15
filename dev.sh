@@ -56,8 +56,14 @@ migrate)
   fi
   ;;
 test)
-  echo "Running all tests..."
-  mvn -pl blog-backend clean test
+  # check if $2 is null
+  if [ -z "$2" ]; then
+    echo "Running all tests..."
+    mvn clean test -pl :blog-backend -am
+  else
+    echo "Running tests for $2..."
+    mvn clean test -pl :blog-backend -Dtest="$2"
+  fi
   ;;
 reset)
   echo "⚠️  This will DELETE all data and recreate databases!"

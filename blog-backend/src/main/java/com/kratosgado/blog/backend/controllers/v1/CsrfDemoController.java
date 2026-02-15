@@ -2,7 +2,6 @@ package com.kratosgado.blog.backend.controllers.v1;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.GetEndpoint;
 import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -25,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
  *   <li>Stateful session-based auth (CSRF enabled) - this demo
  * </ul>
  *
- * <p><strong>Why CSRF is disabled for JWT APIs:</strong> CSRF attacks exploit browser-based
- * session cookies that are automatically sent with requests. JWT tokens stored in localStorage or
+ * <p><strong>Why CSRF is disabled for JWT APIs:</strong> CSRF attacks exploit browser-based session
+ * cookies that are automatically sent with requests. JWT tokens stored in localStorage or
  * sessionStorage are not automatically sent by browsers, making them immune to CSRF attacks (but
  * vulnerable to XSS attacks instead, which is mitigated by proper input sanitization).
  *
@@ -43,15 +42,19 @@ public class CsrfDemoController {
   /**
    * GET endpoint to retrieve CSRF token
    *
-   * <p>In a CSRF-protected application, clients must:
-   * 1. First call this endpoint to get a CSRF token
-   * 2. Include the token in subsequent POST/PUT/DELETE requests
+   * <p>In a CSRF-protected application, clients must: 1. First call this endpoint to get a CSRF
+   * token 2. Include the token in subsequent POST/PUT/DELETE requests
    *
    * @param request HttpServletRequest to extract CSRF token
    * @return Map containing CSRF token and usage instructions
    */
   @GetMapping("/token")
-  @GetEndpoint(summary = "Get CSRF Token", description = "Retrieve CSRF token for form submission. Note: CSRF is currently disabled in this API (stateless JWT). This endpoint demonstrates what would happen if CSRF was enabled.")
+  @GetEndpoint(
+      summary = "Get CSRF Token",
+      description =
+          "Retrieve CSRF token for form submission. Note: CSRF is currently disabled in this API"
+              + " (stateless JWT). This endpoint demonstrates what would happen if CSRF was"
+              + " enabled.")
   public Map<String, Object> getCsrfToken(HttpServletRequest request) {
     CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 
@@ -84,23 +87,28 @@ public class CsrfDemoController {
   /**
    * POST endpoint demonstrating form submission with CSRF protection
    *
-   * <p>If CSRF was enabled, this endpoint would require a valid CSRF token in either:
-   * - Request header (X-CSRF-TOKEN)
-   * - Form parameter (_csrf)
+   * <p>If CSRF was enabled, this endpoint would require a valid CSRF token in either: - Request
+   * header (X-CSRF-TOKEN) - Form parameter (_csrf)
    *
    * @param message Sample form data
    * @return Confirmation message
    */
   @PostMapping("/submit-form")
-  @UpdateEndpoint(summary = "Submit Form (CSRF Demo)", description = "Demonstrates form submission that would require CSRF token if CSRF was enabled. Currently passes through because CSRF is disabled for our stateless JWT API.")
-  public Map<String, Object> submitForm(@RequestParam(defaultValue = "Test message") String message) {
+  @UpdateEndpoint(
+      summary = "Submit Form (CSRF Demo)",
+      description =
+          "Demonstrates form submission that would require CSRF token if CSRF was enabled."
+              + " Currently passes through because CSRF is disabled for our stateless JWT API.")
+  public Map<String, Object> submitForm(
+      @RequestParam(defaultValue = "Test message") String message) {
     Map<String, Object> response = new HashMap<>();
     response.put("success", true);
     response.put("message", "Form submitted successfully");
     response.put("receivedData", message);
     response.put(
         "note",
-        "This endpoint would reject requests without valid CSRF token if CSRF protection was enabled");
+        "This endpoint would reject requests without valid CSRF token if CSRF protection was"
+            + " enabled");
 
     return response;
   }
@@ -111,7 +119,9 @@ public class CsrfDemoController {
    * @return Detailed explanation of CSRF protection and why it's disabled
    */
   @GetMapping("/info")
-  @GetEndpoint(summary = "CSRF Protection Information", description = "Get detailed explanation of CSRF protection and its configuration")
+  @GetEndpoint(
+      summary = "CSRF Protection Information",
+      description = "Get detailed explanation of CSRF protection and its configuration")
   public Map<String, Object> getInfo() {
     Map<String, Object> info = new HashMap<>();
 
@@ -154,8 +164,8 @@ public class CsrfDemoController {
 
     info.put(
         "howToEnableCsrf",
-        "In SecurityConfig.java, replace .csrf(csrf -> csrf.disable()) with "
-            + ".csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))");
+        "In SecurityConfig.java, replace .csrf(csrf -> csrf.disable()) with .csrf(csrf ->"
+            + " csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))");
 
     return info;
   }

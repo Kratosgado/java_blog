@@ -6,17 +6,18 @@ import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,7 +31,8 @@ public class UserController {
   @PutMapping("/{id}/profile")
   @SecuredUpdateEndpoint(
       summary = "Update user profile",
-      description = "Updates a user's profile information. Only the user can update their own profile.")
+      description =
+          "Updates a user's profile information. Only the user can update their own profile.")
   public User updateProfile(
       @Valid @RequestBody @Parameter(description = "Profile update request")
           UpdateUserProfileRequest request) {
@@ -60,5 +62,12 @@ public class UserController {
           ChangePasswordRequest request) {
     Long currentUserId = SecurityUtils.getCurrentUserId();
     userService.changePassword(id, request.oldPassword(), request.newPassword(), currentUserId);
+  }
+
+  @PostMapping("/{id}/role")
+  @SecuredUpdateEndpoint(summary = "Update user role", description = "Admin updates a user's role")
+  public User updateUserRole(@PathVariable Long id, @Valid @RequestParam UserRole role) {
+    Long adminId = SecurityUtils.getCurrentUserId();
+    return userService.updateUserRole(id, role, adminId);
   }
 }

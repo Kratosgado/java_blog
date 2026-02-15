@@ -9,11 +9,10 @@ import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
@@ -40,7 +39,9 @@ public class CommentController {
   }
 
   @PostMapping
-  @SecuredUpdateEndpoint(summary = "Create a new comment", description = "Creates a new comment on a post. Requires authentication.")
+  @SecuredUpdateEndpoint(
+      summary = "Create a new comment",
+      description = "Creates a new comment on a post. Requires authentication.")
   @ResponseStatus(HttpStatus.CREATED)
   public Comment createComment(
       @Valid @RequestBody @Parameter(description = "Comment creation request")
@@ -50,32 +51,44 @@ public class CommentController {
   }
 
   @PutMapping("/{id}/approve")
-  @SecuredUpdateEndpoint(summary = "Approve a comment", description = "Approves a pending comment. Requires authentication.")
+  @SecuredUpdateEndpoint(
+      summary = "Approve a comment",
+      description = "Approves a pending comment. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Comment approveComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.approveComment(id);
   }
 
   @PutMapping("/{id}/reject")
-  @SecuredUpdateEndpoint(summary = "Reject a comment", description = "Rejects a pending comment. Requires authentication.")
+  @SecuredUpdateEndpoint(
+      summary = "Reject a comment",
+      description = "Rejects a pending comment. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Comment rejectComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.rejectComment(id);
   }
 
   @GetMapping("/{id}")
-  @GetEndpoint(summary = "Get a comment by ID", description = "Retrieves a single comment by its ID. Public access.")
+  @GetEndpoint(
+      summary = "Get a comment by ID",
+      description = "Retrieves a single comment by its ID. Public access.")
   public Comment getComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     return commentService.getCommentById(id);
   }
 
   @DeleteMapping("/{id}")
-  @DeleteEndpoint(summary = "Delete a comment", description = "Deletes a comment by ID. Only the comment author can delete it.")
+  @DeleteEndpoint(
+      summary = "Delete a comment",
+      description = "Deletes a comment by ID. Only the comment author can delete it.")
   public void deleteComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     commentService.deleteComment(id, userId);
   }
 
   @GetMapping("/post/{postId}")
-  @GetEndpoint(summary = "Get comments for a post", description = "Retrieves all approved comments for a specific post. Public access.")
+  @GetEndpoint(
+      summary = "Get comments for a post",
+      description = "Retrieves all approved comments for a specific post. Public access.")
   public PageResponse<Comment> getPostComments(
       @PathVariable @Parameter(description = "Post ID") Long postId,
       @ParameterObject PageRequest page) {
@@ -83,7 +96,9 @@ public class CommentController {
   }
 
   @GetMapping("/user/{userId}")
-  @GetEndpoint(summary = "Get comments by user", description = "Retrieves all comments created by a specific user")
+  @GetEndpoint(
+      summary = "Get comments by user",
+      description = "Retrieves all comments created by a specific user")
   public PageResponse<CommentWithoutUser> getUserComments(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
@@ -91,7 +106,9 @@ public class CommentController {
   }
 
   @GetMapping("/post/{postId}/count")
-  @GetEndpoint(summary = "Get comment count for a post", description = "Returns the number of approved comments for a post")
+  @GetEndpoint(
+      summary = "Get comment count for a post",
+      description = "Returns the number of approved comments for a post")
   public Long getPostCommentCount(@PathVariable @Parameter(description = "Post ID") Long postId) {
     return commentService.getPostCommentCount(postId);
   }

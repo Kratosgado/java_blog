@@ -68,8 +68,16 @@ public class JwtUtil {
   public JwtPayload extractPayload(String token) {
     var claims =
         Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
+    
+    // Handle userId which might be serialized as Double or other number types
+    Object userIdObj = claims.get("userId");
+    Long userId = null;
+    if (userIdObj instanceof Number) {
+      userId = ((Number) userIdObj).longValue();
+    }
+    
     return new JwtPayload(
-        claims.getSubject(), claims.get("userId", Long.class), claims.get("role", String.class));
+        claims.getSubject(), userId, claims.get("role", String.class));
   }
 
   public Boolean validateToken(String token, String sub) {
