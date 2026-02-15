@@ -1,11 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kratosgado.blog.backend.exceptions.ForbiddenException;
 import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
@@ -18,9 +12,13 @@ import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.models.Comment;
 import com.kratosgado.blog.models.User;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -37,14 +35,15 @@ public class CommentService {
       throw new ResourceNotFoundException("Post", "id", request.postId());
     }
 
-    Comment comment = Comment.builder()
-        .postId(request.postId())
-        .userId(user.getId())
-        .content(request.content())
-        .status(CommentStatus.pending)
-        .authorName(user.getUsername())
-        .authorAvatarUrl(user.getAvatarUrl())
-        .build();
+    Comment comment =
+        Comment.builder()
+            .postId(request.postId())
+            .userId(user.getId())
+            .content(request.content())
+            .status(CommentStatus.pending)
+            .authorName(user.getUsername())
+            .authorAvatarUrl(user.getAvatarUrl())
+            .build();
     comment.onCreate();
 
     Comment saved = commentRepository.save(comment);
@@ -55,8 +54,10 @@ public class CommentService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment approveComment(String commentId) {
-    Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
+    Comment comment =
+        commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.approved);
     comment.onUpdate();
@@ -68,8 +69,10 @@ public class CommentService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Comment rejectComment(String commentId) {
-    Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
+    Comment comment =
+        commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     comment.setStatus(CommentStatus.rejected);
     comment.onUpdate();
@@ -81,8 +84,10 @@ public class CommentService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteComment(String commentId, Long userId) {
-    Comment comment = commentRepository.findById(commentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
+    Comment comment =
+        commentRepository
+            .findById(commentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
 
     if (!comment.getUserId().equals(userId)) {
       throw new ForbiddenException("You are not allowed to delete this comment");
@@ -94,27 +99,27 @@ public class CommentService {
   }
 
   public Comment getCommentById(String commentId) {
-    return commentRepository.findById(commentId)
+    return commentRepository
+        .findById(commentId)
         .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
   }
 
   public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
-    Page<Comment> commentPage = commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
+    Page<Comment> commentPage =
+        commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
 
     return DtoMapper.toPageResponse(commentPage);
   }
 
-  public PageResponse<Comment> getAllPostComments(Long postId,
-      PageRequest pageRequest) {
+  public PageResponse<Comment> getAllPostComments(Long postId, PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
 
     return DtoMapper.toPageResponse(commentPage);
   }
 
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId,
-      PageRequest pageRequest) {
+  public PageResponse<CommentWithoutUser> getUserComments(Long userId, PageRequest pageRequest) {
     Pageable pageable = pageRequest.toPageable();
     Page<CommentWithoutUser> commentPage = commentRepository.findByUserId(userId, pageable);
 

@@ -14,6 +14,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import static org.mockito.Mockito.mock;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,7 +25,9 @@ import java.util.List;
 /**
  * Test Security Configuration without OAuth2
  *
- * <p>This configuration is used for integration tests to avoid OAuth2ClientRegistrationRepository
+ * <p>
+ * This configuration is used for integration tests to avoid
+ * OAuth2ClientRegistrationRepository
  * dependency which isn't needed for JWT authentication testing.
  */
 @TestConfiguration
@@ -37,17 +41,16 @@ public class TestSecurityConfig {
 
   @Bean
   @Primary
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
     return http
         // CSRF disabled for stateless JWT authentication
         .csrf(AbstractHttpConfigurer::disable)
 
         // Session management: Stateless (JWT doesn't need sessions)
-        .sessionManagement(session ->
-            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
         // CORS configuration
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .cors(cors -> cors.configurationSource(testCorsConfigurationSource()))
 
         // Authorization rules
         .authorizeHttpRequests(auth -> auth
@@ -61,8 +64,8 @@ public class TestSecurityConfig {
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/graphiql",
-                "/graphql"
-            ).permitAll()
+                "/graphql")
+            .permitAll()
 
             // Role-based access control
             .requestMatchers("/v*/admin/**").hasRole("ADMIN")
@@ -70,8 +73,7 @@ public class TestSecurityConfig {
             .requestMatchers("/v*/reader/**").hasAnyRole("READER", "AUTHOR", "ADMIN")
 
             // All other endpoints require authentication
-            .anyRequest().authenticated()
-        )
+            .anyRequest().authenticated())
 
         // Add JWT filter before UsernamePasswordAuthenticationFilter
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -80,21 +82,24 @@ public class TestSecurityConfig {
   }
 
   @Bean
+  public ClientRegistrationRepository clientRegistrationRepository() {
+    return mock(ClientRegistrationRepository.class);
+  }
+
+  @Bean
   @Primary
-  public CorsConfigurationSource corsConfigurationSource() {
+  public CorsConfigurationSource testCorsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
     // Allow specific origins
     configuration.setAllowedOrigins(List.of(
         "http://localhost:3000",
         "http://localhost:8081",
-        "http://localhost:4200"
-    ));
+        "http://localhost:4200"));
 
     // Allow specific HTTP methods
     configuration.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
-    ));
+        "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
     // Allow specific headers
     configuration.setAllowedHeaders(List.of(
@@ -102,8 +107,7 @@ public class TestSecurityConfig {
         "Content-Type",
         "Accept",
         "X-Requested-With",
-        "Cache-Control"
-    ));
+        "Cache-Control"));
 
     // Allow credentials (cookies, authorization headers)
     configuration.setAllowCredentials(true);
@@ -118,7 +122,7 @@ public class TestSecurityConfig {
 
   @Bean
   @Primary
-  public BCryptPasswordEncoder passwordEncoder() {
+  public BCryptPasswordEncoder testPasswordEncoder() {
     return new BCryptPasswordEncoder();
   }
 }

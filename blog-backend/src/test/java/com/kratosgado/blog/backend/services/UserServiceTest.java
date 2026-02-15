@@ -41,11 +41,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @DisplayName("UserService Tests")
 class UserServiceTest {
 
-  @Mock private UserRepository userRepository;
+  @Mock
+  private UserRepository userRepository;
 
-  @Mock private BCryptPasswordEncoder passwordEncoder;
+  @Mock
+  private BCryptPasswordEncoder passwordEncoder;
 
-  @InjectMocks private UserService userService;
+  @InjectMocks
+  private UserService userService;
 
   private User testUser;
   private UserResponse mockUserResponse;
@@ -61,7 +64,8 @@ class UserServiceTest {
     testUser.setBio("Test bio");
 
     // Create mock UserResponse for projection-based methods
-    // Use lenient() to avoid UnnecessaryStubbingException in tests that don't use all stubs
+    // Use lenient() to avoid UnnecessaryStubbingException in tests that don't use
+    // all stubs
     mockUserResponse = org.mockito.Mockito.mock(UserResponse.class);
     org.mockito.Mockito.lenient().when(mockUserResponse.getId()).thenReturn(1L);
     org.mockito.Mockito.lenient().when(mockUserResponse.getEmail()).thenReturn("test@example.com");
@@ -95,7 +99,7 @@ class UserServiceTest {
     return Stream.of(
         Arguments.of(false, false), // without password flag
         Arguments.of(true, true) // with password flag
-        );
+    );
   }
 
   @ParameterizedTest
@@ -122,13 +126,11 @@ class UserServiceTest {
         exception = assertThrows(BlogException.class, () -> userService.getUserById(1L));
         break;
       case "byEmail":
-        exception =
-            assertThrows(
-                BlogException.class, () -> userService.getUserByEmail("nonexistent@example.com"));
+        exception = assertThrows(
+            BlogException.class, () -> userService.getUserByEmail("nonexistent@example.com"));
         break;
       case "byUsername":
-        exception =
-            assertThrows(BlogException.class, () -> userService.getUserByUsername("nonexistent"));
+        exception = assertThrows(BlogException.class, () -> userService.getUserByUsername("nonexistent"));
         break;
       default:
         throw new IllegalArgumentException("Unknown operation: " + operation);
@@ -172,13 +174,12 @@ class UserServiceTest {
   @DisplayName("Should get all users")
   void getAllUsers_ShouldReturnPageOfUsers() {
     // Arrange
-    com.kratosgado.blog.dtos.request.PageRequest pageRequest =
-        com.kratosgado.blog.dtos.request.PageRequest.builder()
-            .page(0)
-            .size(10)
-            .sortBy("id")
-            .sortDir("DESC")
-            .build();
+    com.kratosgado.blog.dtos.request.PageRequest pageRequest = com.kratosgado.blog.dtos.request.PageRequest.builder()
+        .page(0)
+        .size(10)
+        .sortBy("id")
+        .sortDir("DESC")
+        .build();
     Page<UserResponse> page = new PageImpl<>(List.of(mockUserResponse));
     when(userRepository.findAllBy(any(Pageable.class))).thenReturn(page);
 
@@ -194,8 +195,8 @@ class UserServiceTest {
   @DisplayName("Should successfully update user profile")
   void updateUserProfile_WithValidData_ShouldReturnUpdatedUser() {
     // Arrange
-    UpdateUserProfileRequest updateRequest =
-        new UpdateUserProfileRequest("newusername", "New bio", "https://example.com", "New York");
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest("newusername", "New bio",
+        "https://example.com", "New York");
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.findByUsername("newusername")).thenReturn(Optional.empty());
     when(userRepository.save(any(User.class))).thenReturn(testUser);
@@ -214,8 +215,7 @@ class UserServiceTest {
   @DisplayName("Should throw exception when updating to existing username")
   void updateUserProfile_WithExistingUsername_ShouldThrowException() {
     // Arrange
-    UpdateUserProfileRequest updateRequest =
-        new UpdateUserProfileRequest("existinguser", null, null, null);
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest("existinguser", null, null, null);
     UserResponse existingUserResponse = org.mockito.Mockito.mock(UserResponse.class);
 
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -223,8 +223,7 @@ class UserServiceTest {
         .thenReturn(Optional.of(existingUserResponse));
 
     // Act
-    BlogException exception =
-        assertThrows(BlogException.class, () -> userService.updateUserProfile(updateRequest, 1L));
+    BlogException exception = assertThrows(BlogException.class, () -> userService.updateUserProfile(updateRequest, 1L));
 
     // Assert
     assertTrue(exception.getMessage().contains("already exists"));
@@ -234,8 +233,7 @@ class UserServiceTest {
   @DisplayName("Should allow updating profile with same username")
   void updateUserProfile_WithSameUsername_ShouldSucceed() {
     // Arrange
-    UpdateUserProfileRequest updateRequest =
-        new UpdateUserProfileRequest("testuser", "Updated bio", null, null);
+    UpdateUserProfileRequest updateRequest = new UpdateUserProfileRequest("testuser", "Updated bio", null, null);
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.save(any(User.class))).thenReturn(testUser);
 
@@ -252,8 +250,7 @@ class UserServiceTest {
   @DisplayName("Should only update non-null fields")
   void updateUserProfile_WithPartialData_ShouldOnlyUpdateNonNullFields() {
     // Arrange
-    UpdateUserProfileRequest partialUpdate =
-        new UpdateUserProfileRequest(null, "Only bio updated", null, null);
+    UpdateUserProfileRequest partialUpdate = new UpdateUserProfileRequest(null, "Only bio updated", null, null);
     String originalUsername = testUser.getUsername();
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.save(any(User.class))).thenReturn(testUser);
@@ -280,15 +277,13 @@ class UserServiceTest {
     BlogException exception;
     switch (operation) {
       case "updateAvatar":
-        exception =
-            assertThrows(
-                BlogException.class, () -> userService.updateUserAvatar(1L, newAvatarUrl, 2L));
+        exception = assertThrows(
+            BlogException.class, () -> userService.updateUserAvatar(1L, newAvatarUrl, 2L));
         break;
       case "changePassword":
-        exception =
-            assertThrows(
-                BlogException.class,
-                () -> userService.changePassword(1L, oldPassword, newPassword, 2L));
+        exception = assertThrows(
+            BlogException.class,
+            () -> userService.changePassword(1L, oldPassword, newPassword, 2L));
         break;
       default:
         throw new IllegalArgumentException("Unknown operation: " + operation);
@@ -316,5 +311,32 @@ class UserServiceTest {
     assertNotNull(result);
     assertNull(result.getPassword());
     assertEquals(newAvatarUrl, testUser.getAvatarUrl());
+  }
+
+  @Test
+  @DisplayName("Should successfully update user role")
+  void updateUserRole_WithValidUser_ShouldUpdateRole() {
+    // Arrange
+    when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+    when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+    // Act
+    User result = userService.updateUserRole(1L, UserRole.AUTHOR, 99L);
+
+    // Assert
+    assertNotNull(result);
+    assertNull(result.getPassword());
+    assertEquals(UserRole.AUTHOR, testUser.getRole());
+  }
+
+  @Test
+  @DisplayName("Should throw exception when updating role for non-existent user")
+  void updateUserRole_UserNotFound_ShouldThrowException() {
+    // Arrange
+    when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    BlogException ex = assertThrows(BlogException.class, () -> userService.updateUserRole(999L, UserRole.ADMIN, 1L));
+    assertTrue(ex.getMessage().contains("User not found"));
   }
 }

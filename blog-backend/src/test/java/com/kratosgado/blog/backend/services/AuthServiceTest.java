@@ -5,10 +5,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
+import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
+import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import java.util.Optional;
@@ -25,15 +30,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @DisplayName("AuthService Tests")
 class AuthServiceTest {
 
-  @Mock private UserRepository userRepository;
+  @Mock
+  private UserRepository userRepository;
 
-  @Mock private PasswordEncoder passwordEncoder;
+  @Mock
+  private PasswordEncoder passwordEncoder;
 
-  @Mock private LoginAttemptService loginAttemptService;
+  @Mock
+  private JwtUtil jwtUtil;
 
-  @InjectMocks private AuthService authService;
+  @Mock
+  private LoginAttemptService loginAttemptService;
+
+  @Mock
+  private TokenBlacklistService tokenBlacklistService;
+
+  @InjectMocks
+  private AuthService authService;
 
   private User testUser;
+  private AuthResponse testAuthResponse;
   private LoginRequest loginRequest;
   private RegisterRequest registerRequest;
 
@@ -46,23 +62,31 @@ class AuthServiceTest {
     testUser.setPassword("encodedPassword");
     testUser.setRole(UserRole.READER);
 
+    testAuthResponse = new AuthResponse(
+        "mock-jwt-token",
+        1L,
+        "testuser",
+        "test@example.com",
+        "READER");
+
     loginRequest = new LoginRequest("test@example.com", "password123");
-    registerRequest =
-        new RegisterRequest(
-            "test@example.com",
-            "testuser",
-            "https://example.com/avatar.png",
-            "password123",
-            "password123");
+    registerRequest = new RegisterRequest(
+        "test@example.com",
+        "testuser",
+        "https://example.com/avatar.png",
+        "password123",
+        "password123");
   }
 
   @Test
   @DisplayName("Should successfully login with valid credentials")
-  void login_WithValidCredentials_ShouldReturnUser() {
+  void login_WithValidCredentials_ShouldReturnAuthResponse() {
     // Arrange
     when(loginAttemptService.isBlocked(loginRequest.email())).thenReturn(false);
     when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.of(testUser));
-    when(passwordEncoder.matches(loginRequest.password(), testUser.getPassword())).thenReturn(true);
+    when(passwordEncoder.matches(loginRequest.password(),
+        testUser.getPassword())).thenReturn(true);
+    when(jwtUtil.signToken(testUser)).thenReturn(testAuthResponse);
 
     // Act
     var result = authService.login(loginRequest);
@@ -70,6 +94,7 @@ class AuthServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testUser.getEmail(), result.email());
+    assertEquals(testUser.getUsername(), result.username());
   }
 
   @Test
@@ -80,8 +105,7 @@ class AuthServiceTest {
     when(userRepository.findBy(loginRequest.email())).thenReturn(Optional.empty());
 
     // Act
-    BlogException exception =
-        assertThrows(BlogException.class, () -> authService.login(loginRequest));
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
 
     // Assert
     assertEquals("Invalid email or password", exception.getMessage());
@@ -98,8 +122,7 @@ class AuthServiceTest {
         .thenReturn(false);
 
     // Act
-    BlogException exception =
-        assertThrows(BlogException.class, () -> authService.login(loginRequest));
+    UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
 
     // Assert
     assertEquals("Invalid email or password", exception.getMessage());
@@ -107,11 +130,12 @@ class AuthServiceTest {
 
   @Test
   @DisplayName("Should successfully register new user")
-  void register_WithValidData_ShouldReturnUser() {
+  void register_WithValidData_ShouldReturnAuthResponse() {
     // Arrange
     when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
     when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPassword");
     when(userRepository.save(any(User.class))).thenReturn(testUser);
+    when(jwtUtil.signToken(any(User.class))).thenReturn(testAuthResponse);
 
     // Act
     var result = authService.register(registerRequest);
@@ -119,19 +143,19 @@ class AuthServiceTest {
     // Assert
     assertNotNull(result);
     assertEquals(testUser.getEmail(), result.email());
+    assertEquals(testUser.getUsername(), result.username());
   }
 
   @Test
   @DisplayName("Should throw exception when email already exists during registration")
   void register_WithExistingEmail_ShouldThrowException() {
     // Arrange
-    com.kratosgado.blog.dtos.response.UserResponse existingUser =
-        org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.UserResponse.class);
+    UserResponse existingUser = org.mockito.Mockito.mock(UserResponse.class);
     when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.of(existingUser));
 
     // Act
-    BlogException exception =
-        assertThrows(BlogException.class, () -> authService.register(registerRequest));
+    ResourceAlreadyExistsException exception = assertThrows(ResourceAlreadyExistsException.class,
+        () -> authService.register(registerRequest));
 
     // Assert
     assertEquals("Email already exists", exception.getMessage());
@@ -139,7 +163,7 @@ class AuthServiceTest {
   }
 
   @Test
-  @DisplayName("Should set default role as USER during registration")
+  @DisplayName("Should set default role as READER during registration")
   void register_ShouldSetDefaultRole() {
     // Arrange
     when(userRepository.findByEmail(registerRequest.email())).thenReturn(Optional.empty());
@@ -148,13 +172,54 @@ class AuthServiceTest {
         .thenAnswer(
             invocation -> {
               User savedUser = invocation.getArgument(0);
-              // The service doesn't set a role, so we can't test this behavior
+              assertEquals(UserRole.READER, savedUser.getRole(), "Default role should be READER");
               return savedUser;
             });
+    when(jwtUtil.signToken(any(User.class))).thenReturn(testAuthResponse);
 
     // Act
     authService.register(registerRequest);
 
     // Assert - verification done in mock answer
+  }
+
+  @Test
+  @DisplayName("Should throw exception when account is blocked during login")
+  void login_WithBlockedAccount_ShouldThrowException() {
+    // Arrange
+    when(loginAttemptService.isBlocked(loginRequest.email())).thenReturn(true);
+    when(loginAttemptService.getRemainingLockoutTime(loginRequest.email())).thenReturn(300000L); // 5 minutes
+    when(loginAttemptService.getAttemptCount(loginRequest.email())).thenReturn(5);
+
+    // Act
+    InvalidRequestException exception = assertThrows(InvalidRequestException.class,
+        () -> authService.login(loginRequest));
+
+    // Assert
+    assertTrue(exception.getMessage().contains("Account temporarily locked"));
+    assertTrue(exception.getMessage().contains("300 seconds"));
+    verifyNoInteractions(userRepository);
+    verifyNoInteractions(passwordEncoder);
+  }
+
+  @Test
+  @DisplayName("Should throw exception when passwords do not match during registration")
+  void register_WithMismatchedPasswords_ShouldThrowException() {
+    // Arrange
+    RegisterRequest mismatchedRequest = new RegisterRequest(
+        "test@example.com",
+        "testuser",
+        "https://example.com/avatar.png",
+        "password123",
+        "password456");
+
+    // Act
+    InvalidRequestException exception = assertThrows(InvalidRequestException.class,
+        () -> authService.register(mismatchedRequest));
+
+    // Assert
+    assertEquals("Passwords do not match", exception.getMessage());
+    verifyNoInteractions(userRepository);
+    verifyNoInteractions(passwordEncoder);
   }
 }

@@ -31,23 +31,28 @@ public class AuthService {
   /**
    * Authenticate user with brute-force protection
    *
-   * <p><b>Security Features:</b>
+   * <p>
+   * <b>Security Features:</b>
    *
    * <ul>
-   *   <li>Brute-force protection: Account lockout after max failed attempts
-   *   <li>Failed attempt tracking: Records all authentication failures
-   *   <li>Automatic unlock: Time-based recovery after lockout period
-   *   <li>Rate limiting: Prevents credential stuffing attacks
+   * <li>Brute-force protection: Account lockout after max failed attempts
+   * <li>Failed attempt tracking: Records all authentication failures
+   * <li>Automatic unlock: Time-based recovery after lockout period
+   * <li>Rate limiting: Prevents credential stuffing attacks
    * </ul>
    *
-   * <p><b>Algorithm:</b> 1. Check if account is blocked (O(1) HashMap lookup) 2. If blocked → throw
-   * 429 Too Many Requests with remaining lockout time 3. If not blocked → proceed with
-   * authentication 4. On success → clear failed attempt history 5. On failure → record failed
+   * <p>
+   * <b>Algorithm:</b> 1. Check if account is blocked (O(1) HashMap lookup) 2. If
+   * blocked → throw
+   * 429 Too Many Requests with remaining lockout time 3. If not blocked → proceed
+   * with
+   * authentication 4. On success → clear failed attempt history 5. On failure →
+   * record failed
    * attempt (may trigger lockout)
    *
    * @param request Login credentials (email and password)
    * @return Authenticated User entity
-   * @throws UnauthorizedException if credentials are invalid (401)
+   * @throws UnauthorizedException   if credentials are invalid (401)
    * @throws InvalidRequestException if account is locked (429)
    */
   public AuthResponse login(LoginRequest request) {
@@ -67,16 +72,15 @@ public class AuthService {
     }
 
     // STEP 2: Fetch user from database
-    var user =
-        userRepository
-            .findBy(email)
-            .orElseThrow(
-                () -> {
-                  // User not found - record failed attempt to prevent username enumeration timing
-                  // attacks
-                  loginAttemptService.recordFailedAttempt(email);
-                  return new UnauthorizedException("Invalid email or password");
-                });
+    var user = userRepository
+        .findBy(email)
+        .orElseThrow(
+            () -> {
+              // User not found - record failed attempt to prevent username enumeration timing
+              // attacks
+              loginAttemptService.recordFailedAttempt(email);
+              return new UnauthorizedException("Invalid email or password");
+            });
 
     // STEP 3: Verify password
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -151,16 +155,18 @@ public class AuthService {
   }
 
   public Map<String, Object> validateToken(String authHeader) {
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-      String token = authHeader.substring(7);
-      var payload = jwtUtil.extractPayload(token);
+    try {
+      if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String token = authHeader.substring(7);
+        var payload = jwtUtil.extractPayload(token);
 
-      if (jwtUtil.validateToken(token, payload.userId().toString())) {
-        Map<String, Object> data =
-            Map.of(
-                "valid", true, "sub", payload.userId().toString(), "username", payload.username());
-        return data;
+        if (jwtUtil.validateToken(token, payload.userId().toString())) {
+          Map<String, Object> data = Map.of(
+              "valid", true, "sub", payload.userId().toString(), "username", payload.username());
+          return data;
+        }
       }
+    } catch (Exception e) {
     }
     return Map.of("valid", false);
   }

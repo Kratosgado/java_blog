@@ -1,22 +1,72 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
 spring:
+  application:
+    name: Blog Backend API (Test)
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/blog_db}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASS:postgres}
+    url: jdbc:postgresql://localhost:5432/blog_db_test
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
   data:
     mongodb:
       host: localhost
       port: 27017
-      database: ${MONGO_DB_NAME:blog_nosql}
+      database: blog_reviews_test
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  graphql:
+    graphiql:
+      enabled: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+            scope: profile,email
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
+logging:
+  level:
+    root: WARN
+    com.kratosgado.blog: INFO
+    org.springframework.web: INFO
 
 jwt:
-  secret: ${JWT_SECRET:test-secret-key}
-  expiration: ${JWT_EXPIRATION:86400000}
+  secret: test-secret-key-for-testing-purposes-only
+  expiration: 3600000
 
 cors:
-  allowed-origins: ${CORS_ORIGINS:http://localhost:8080}
+  allowed-origins: http://localhost:8081
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: health

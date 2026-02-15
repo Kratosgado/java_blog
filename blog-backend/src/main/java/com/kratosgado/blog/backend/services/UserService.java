@@ -10,6 +10,7 @@ import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,10 +37,9 @@ public class UserService {
   }
 
   public User getUserById(Long id, boolean withPassword) {
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user = userRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     if (!withPassword) {
       user.setPassword(null);
     }
@@ -61,17 +61,15 @@ public class UserService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  @Caching(
-      evict = {
-        @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
-        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
-      })
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public User updateUserProfile(
       com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user = userRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.findByUsername(request.username()).isPresent()) {
@@ -96,20 +94,18 @@ public class UserService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  @Caching(
-      evict = {
-        @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
-        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
-      })
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, allEntries = true),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public User updateUserAvatar(Long id, String avatarUrl, Long currentUserId) {
     if (!id.equals(currentUserId)) {
       throw new ForbiddenException("You are not authorized to update this user's avatar");
     }
 
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user = userRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     user.setAvatarUrl(avatarUrl);
     User updatedUser = userRepository.save(user);
@@ -118,20 +114,18 @@ public class UserService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  @Caching(
-      evict = {
-        @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#id"),
-        @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
-      })
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#id"),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
   public void changePassword(Long id, String oldPassword, String newPassword, Long currentUserId) {
     if (!id.equals(currentUserId)) {
       throw new ForbiddenException("You are not authorized to change this user's password");
     }
 
-    User user =
-        userRepository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user = userRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
       throw new InvalidRequestException("Invalid current password");
@@ -146,5 +140,20 @@ public class UserService {
     Pageable pageable = pageRequest.toPageable();
     Page<UserResponse> userPage = userRepository.findAllBy(pageable);
     return DtoMapper.toPageResponse(userPage);
+  }
+
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  @Caching(evict = {
+      @CacheEvict(value = BlogConstants.CacheNames.USERS, key = "#userId"),
+      @CacheEvict(value = BlogConstants.CacheNames.USERLIST, allEntries = true)
+  })
+  public User updateUserRole(Long userId, UserRole newRole, Long adminId) {
+    User user = userRepository
+        .findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    user.setRole(newRole);
+    User updated = userRepository.save(user);
+    updated.setPassword(null);
+    return updated;
   }
 }
