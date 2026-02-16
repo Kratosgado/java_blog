@@ -4,13 +4,18 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.enums.UserRole;
+import com.kratosgado.blog.models.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -41,15 +46,59 @@ import org.springframework.test.context.ActiveProfiles;
 @DisplayName("User Controller Integration Tests")
 public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+
   private static final String USERS_BASE_URL = "/v1/users";
 
-  // Test user constants
-  private static final Long TEST_USER_ID = 1L;
+  // Test user constants - IDs will be set after saving
+  private Long TEST_USER_ID;
   private static final String TEST_USER_EMAIL = "testuser@example.com";
-  private static final Long TEST_OTHER_USER_ID = 2L;
+  private Long TEST_OTHER_USER_ID;
   private static final String TEST_OTHER_USER_EMAIL = "otheruser@example.com";
-  private static final Long TEST_ADMIN_ID = 3L;
+  private Long TEST_ADMIN_ID;
   private static final String TEST_ADMIN_EMAIL = "admin@example.com";
+
+  private User testUser;
+  private User otherUser;
+  private User adminUser;
+
+  @BeforeEach
+  @Override
+  void baseSetUp() {
+    // Clean up database
+    userRepository.deleteAll();
+
+    // Create test user (READER role)
+    testUser = new User();
+    testUser.setEmail(TEST_USER_EMAIL);
+    testUser.setUsername("testuser");
+    testUser.setPassword(passwordEncoder.encode("password123"));
+    testUser.setRole(UserRole.READER);
+    testUser = userRepository.save(testUser);
+    TEST_USER_ID = testUser.getId();
+
+    // Create other user (READER role)
+    otherUser = new User();
+    otherUser.setEmail(TEST_OTHER_USER_EMAIL);
+    otherUser.setUsername("otheruser");
+    otherUser.setPassword(passwordEncoder.encode("password123"));
+    otherUser.setRole(UserRole.READER);
+    otherUser = userRepository.save(otherUser);
+    TEST_OTHER_USER_ID = otherUser.getId();
+
+    // Create admin user (ADMIN role)
+    adminUser = new User();
+    adminUser.setEmail(TEST_ADMIN_EMAIL);
+    adminUser.setUsername("adminuser");
+    adminUser.setPassword(passwordEncoder.encode("password123"));
+    adminUser.setRole(UserRole.ADMIN);
+    adminUser = userRepository.save(adminUser);
+    TEST_ADMIN_ID = adminUser.getId();
+  }
 
   @Nested
   @DisplayName("Update Profile Tests")
@@ -73,10 +122,10 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.username").value("newusername"))
-          .andExpect(jsonPath("$.bio").value("Updated bio about myself"))
-          .andExpect(jsonPath("$.website").value("https://newwebsite.com"))
-          .andExpect(jsonPath("$.location").value("New York, USA"));
+          .andExpect(jsonPath("$.data.username").value("newusername"))
+          .andExpect(jsonPath("$.data.bio").value("Updated bio about myself"))
+          .andExpect(jsonPath("$.data.website").value("https://newwebsite.com"))
+          .andExpect(jsonPath("$.data.location").value("New York, USA"));
     }
 
     @Test
@@ -92,7 +141,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.username").value("newusername"));
+          .andExpect(jsonPath("$.data.username").value("newusername"));
     }
 
     @Test
@@ -164,7 +213,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.username").value(username));
+          .andExpect(jsonPath("$.data.username").value(username));
     }
   }
 
@@ -186,7 +235,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.avatarUrl").value("https://newavatar.com/image.jpg"));
+          .andExpect(jsonPath("$.data.avatarUrl").value("https://newavatar.com/image.jpg"));
     }
 
     @Test
@@ -256,7 +305,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.avatarUrl").value(avatarUrl));
+          .andExpect(jsonPath("$.data.avatarUrl").value(avatarUrl));
     }
   }
 
@@ -265,12 +314,12 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
   class ChangePasswordTests {
 
     @Test
-    @DisplayName("Should change own password successfully")
+    @DisplayName("Should successfully change own password")
     void changePassword_OwnPassword_ShouldReturn200() throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
-              TEST_USER_ID, "OldP@ssw0rd123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
+              TEST_USER_ID, "password123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
 
       mockMvc
           .perform(
@@ -384,7 +433,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .header("Authorization", token)
                   .param("role", role.name()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.role").value(role.name()));
+          .andExpect(jsonPath("$.data.role").value(role.name()));
     }
 
     @Test
@@ -580,7 +629,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.username").value(username));
+          .andExpect(jsonPath("$.data.username").value(username));
     }
   }
 }
