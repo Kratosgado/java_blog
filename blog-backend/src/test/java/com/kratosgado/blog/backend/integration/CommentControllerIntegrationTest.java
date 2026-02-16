@@ -1,6 +1,5 @@
 package com.kratosgado.blog.backend.integration;
 
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -12,36 +11,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 
-/**
- * Integration tests for Comment Controller endpoints. Tests comment creation, approval/rejection,
- * retrieval, deletion, and pagination. Uses MongoDB for comment storage.
- *
- * <p>Coverage:
- *
- * <ul>
- *   <li>Comment creation with authentication
- *   <li>Comment approval/rejection (AUTHOR/ADMIN only)
- *   <li>Get comment by ID
- *   <li>Get comments by post ID with pagination
- *   <li>Get comments by user ID with pagination
- *   <li>Comment count for posts
- *   <li>Delete comment (owner only)
- *   <li>Authorization checks
- * </ul>
- */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
 @DisplayName("Comment Controller Integration Tests")
 public class CommentControllerIntegrationTest extends BaseIntegrationTest {
 
   private static final String COMMENTS_BASE_URL = "/v1/comments";
-  
+
   // Test user constants
   private static final Long TEST_USER_ID = 1L;
   private static final String TEST_USER_EMAIL = "testuser@example.com";
@@ -67,10 +43,10 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.content").value("Great article!"))
-          .andExpect(jsonPath("$.postId").value(1))
-          .andExpect(jsonPath("$.userId").exists())
-          .andExpect(jsonPath("$.status").value("pending"));
+          .andExpect(jsonPath("$.data.content").value("Great article!"))
+          .andExpect(jsonPath("$.data.postId").value(1))
+          .andExpect(jsonPath("$.data.userId").exists())
+          .andExpect(jsonPath("$.data.status").value("pending"));
     }
 
     @Test
@@ -87,7 +63,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "   "})
+    @ValueSource(strings = { "", "   " })
     @DisplayName("Should fail with blank content")
     void createComment_WithBlankContent_ShouldReturn400(String content) throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
@@ -148,7 +124,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
                   .header("Authorization", "Bearer " + token))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("approved"));
+          .andExpect(jsonPath("$.data.status").value("approved"));
     }
 
     @Test
@@ -162,7 +138,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
                   .header("Authorization", "Bearer " + token))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("approved"));
+          .andExpect(jsonPath("$.data.status").value("approved"));
     }
 
     @Test
@@ -189,7 +165,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
               put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
                   .header("Authorization", "Bearer " + token))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("rejected"));
+          .andExpect(jsonPath("$.data.status").value("rejected"));
     }
 
     @Test
@@ -218,8 +194,8 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(get(COMMENTS_BASE_URL + "/" + commentId))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id").value(commentId))
-          .andExpect(jsonPath("$.content").exists());
+          .andExpect(jsonPath("$.data.id").value(commentId))
+          .andExpect(jsonPath("$.data.content").exists());
     }
 
     @Test
@@ -245,13 +221,13 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .param("sortBy", "createdAt")
                   .param("sortDirection", "DESC"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").isArray())
-          .andExpect(jsonPath("$.totalElements").exists())
-          .andExpect(jsonPath("$.totalPages").exists());
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.totalElements").exists())
+          .andExpect(jsonPath("$.data.totalPages").exists());
     }
 
     @ParameterizedTest
-    @CsvSource({"0,5", "1,10", "0,20", "2,15"})
+    @CsvSource({ "0,5", "1,10", "0,20", "2,15" })
     @DisplayName("Should get post comments with various page sizes")
     void getPostComments_WithVariousPageSizes_ShouldReturn200(int page, int size)
         throws Exception {
@@ -263,7 +239,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .param("page", String.valueOf(page))
                   .param("size", String.valueOf(size)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").isArray());
+          .andExpect(jsonPath("$.data.content").isArray());
     }
 
     @Test
@@ -277,8 +253,8 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .param("page", "0")
                   .param("size", "10"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").isArray())
-          .andExpect(jsonPath("$.totalElements").exists());
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.totalElements").exists());
     }
 
     @Test
@@ -304,17 +280,16 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       CreateCommentRequest createRequest = new CreateCommentRequest(1L, "Test comment to delete");
 
-      String response =
-          mockMvc
-              .perform(
-                  post(COMMENTS_BASE_URL)
-                      .header("Authorization", "Bearer " + token)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content(objectMapper.writeValueAsString(createRequest)))
-              .andExpect(status().isCreated())
-              .andReturn()
-              .getResponse()
-              .getContentAsString();
+      String response = mockMvc
+          .perform(
+              post(COMMENTS_BASE_URL)
+                  .header("Authorization", "Bearer " + token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(createRequest)))
+          .andExpect(status().isCreated())
+          .andReturn()
+          .getResponse()
+          .getContentAsString();
 
       String commentId = objectMapper.readTree(response).get("id").asText();
 
@@ -366,7 +341,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   class PaginationEdgeCaseTests {
 
     @ParameterizedTest
-    @CsvSource({"-1,10", "0,-5", "-1,-5", "0,0"})
+    @CsvSource({ "-1,10", "0,-5", "-1,-5", "0,0" })
     @DisplayName("Should handle invalid pagination parameters")
     void getPostComments_WithInvalidPagination_ShouldReturn400(int page, int size)
         throws Exception {
@@ -388,9 +363,9 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(get(COMMENTS_BASE_URL + "/post/" + postId).param("page", "0").param("size", "10"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").isArray())
-          .andExpect(jsonPath("$.content").isEmpty())
-          .andExpect(jsonPath("$.totalElements").value(0));
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.content").isEmpty())
+          .andExpect(jsonPath("$.data.totalElements").value(0));
     }
 
     @Test
@@ -405,7 +380,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {50, 100, 200})
+    @ValueSource(ints = { 50, 100, 200 })
     @DisplayName("Should handle large page sizes (with max limit)")
     void getPostComments_WithLargePageSize_ShouldApplyMaxLimit(int size) throws Exception {
       Long postId = 1L;
@@ -416,7 +391,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .param("page", "0")
                   .param("size", String.valueOf(size)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content").isArray());
+          .andExpect(jsonPath("$.data.content").isArray());
     }
   }
 

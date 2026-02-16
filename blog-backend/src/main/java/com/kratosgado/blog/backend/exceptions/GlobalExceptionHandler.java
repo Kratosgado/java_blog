@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -134,6 +135,16 @@ public class GlobalExceptionHandler {
             ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
 
     logger.error("Type mismatch: {}", message);
+    return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  public ResponseEntity<ResponseDto<?>> handleMissingParameter(
+      MissingServletRequestParameterException ex) {
+    String message =
+        String.format("Required parameter '%s' is missing", ex.getParameterName());
+
+    logger.error("Missing parameter: {}", message);
     return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
   }
 

@@ -34,9 +34,9 @@ public class UserController {
       description =
           "Updates a user's profile information. Only the user can update their own profile.")
   public User updateProfile(
+      @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Profile update request")
           UpdateUserProfileRequest request) {
-    Long id = SecurityUtils.getCurrentUserId();
     return userService.updateUserProfile(request, id);
   }
 
@@ -66,7 +66,9 @@ public class UserController {
 
   @PostMapping("/{id}/role")
   @SecuredUpdateEndpoint(summary = "Update user role", description = "Admin updates a user's role")
-  public User updateUserRole(@PathVariable Long id, @Valid @RequestParam UserRole role) {
+  public User updateUserRole(
+      @PathVariable @Parameter(description = "User ID") Long id,
+      @RequestParam(required = true) @Parameter(description = "New role for the user") UserRole role) {
     Long adminId = SecurityUtils.getCurrentUserId();
     return userService.updateUserRole(id, role, adminId);
   }
