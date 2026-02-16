@@ -16,10 +16,10 @@ public record PageResponse<T>(
   List<T> content,
 
   @Schema(description = "Current page number (0-indexed)", example = "0")
-  int page,
+  int currentPage,
 
   @Schema(description = "Number of items per page", example = "10")
-  int size,
+  int pageSize,
 
   @Schema(description = "Total number of items across all pages", example = "156")
   long totalElements,

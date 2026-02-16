@@ -71,7 +71,8 @@ public class PostController {
   @PutMapping("/{id}/publish")
   @SecuredUpdateEndpoint(
       summary = "Publish a post",
-      description = "Updates a blog post status to published. Only the post author can publish it.")
+      description = "Updates a blog post status to published. Only the post author can publish it.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Post publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
     return postService.publishPost(id, userId);

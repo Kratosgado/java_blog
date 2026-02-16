@@ -18,9 +18,9 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
   Optional<Tag> findByName(String name);
   Optional<Tag> findBySlug(String slug);
 
-  @Query("SELECT new com.kratosgado.blog.dtos.response.TagResponse(t.id, t.name, t.slug, COUNT(p)) " +
+  @Query("SELECT new com.kratosgado.blog.dtos.response.TagResponse(t.id, t.name, t.slug, t.description, COUNT(p)) " +
          "FROM Tag t LEFT JOIN t.posts p " +
-         "GROUP BY t.id, t.name, t.slug")
+         "GROUP BY t.id, t.name, t.slug, t.description")
   List<TagResponse> findAllWithPostCount();
 
   @Query("SELECT t FROM Tag t WHERE t.name LIKE %:keyword% OR t.description LIKE %:keyword%")

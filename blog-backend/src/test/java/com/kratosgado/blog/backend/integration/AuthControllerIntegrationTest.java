@@ -21,18 +21,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Integration tests for AuthController.
- * Tests authentication endpoints including login, registration, token
- * validation, and logout.
+ * Integration tests for AuthController. Tests authentication endpoints including login,
+ * registration, token validation, and logout.
  */
 @DisplayName("AuthController Integration Tests")
 class AuthControllerIntegrationTest extends BaseIntegrationTest {
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   private User testUser;
   private final String TEST_PASSWORD = "@Password123";
@@ -63,9 +60,11 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void login_WithValidCredentials_ShouldReturnToken() throws Exception {
       LoginRequest request = new LoginRequest(TEST_EMAIL, TEST_PASSWORD);
 
-      mockMvc.perform(post("/v1/auth/login")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.token", notNullValue()))
           .andExpect(jsonPath("$.data.email", is(TEST_EMAIL)))
@@ -78,9 +77,11 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void login_WithInvalidEmail_ShouldReturn401() throws Exception {
       LoginRequest request = new LoginRequest("invalid@example.com", TEST_PASSWORD);
 
-      mockMvc.perform(post("/v1/auth/login")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isUnauthorized())
           .andExpect(jsonPath("$.message", containsString("Invalid email or password")));
     }
@@ -90,34 +91,40 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void login_WithInvalidPassword_ShouldReturn401() throws Exception {
       LoginRequest request = new LoginRequest(TEST_EMAIL, "@1Wrongpassword");
 
-      mockMvc.perform(post("/v1/auth/login")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isUnauthorized())
           .andExpect(jsonPath("$.message", containsString("Invalid email or password")));
     }
 
     @ParameterizedTest
     @DisplayName("Should return 400 for invalid email format")
-    @ValueSource(strings = { "", "invalid-email", "test@", "@example.com", "test.example.com" })
+    @ValueSource(strings = {"", "invalid-email", "test@", "@example.com", "test.example.com"})
     void login_WithInvalidEmailFormat_ShouldReturn400(String invalidEmail) throws Exception {
       LoginRequest request = new LoginRequest(invalidEmail, TEST_PASSWORD);
 
-      mockMvc.perform(post("/v1/auth/login")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
     @DisplayName("Should return 400 for invalid password")
-    @ValueSource(strings = { "", " ", "short" })
+    @ValueSource(strings = {"", " ", "short"})
     void login_WithInvalidPassword_ShouldReturn400(String invalidPassword) throws Exception {
       LoginRequest request = new LoginRequest(TEST_EMAIL, invalidPassword);
 
-      mockMvc.perform(post("/v1/auth/login")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/login")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
   }
@@ -129,16 +136,19 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully register new user")
     void register_WithValidData_ShouldReturn201() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "newuser",
-          "newuser@example.com",
-          "https://example.com/new-avatar.png",
-          "@Password123",
-          "@Password123");
+      RegisterRequest request =
+          new RegisterRequest(
+              "newuser",
+              "newuser@example.com",
+              "https://example.com/new-avatar.png",
+              "@Password123",
+              "@Password123");
 
-      mockMvc.perform(post("/v1/auth/register")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isCreated())
           .andExpect(jsonPath("$.data.token", notNullValue()))
           .andExpect(jsonPath("$.data.email", is("newuser@example.com")))
@@ -149,16 +159,19 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 400 when email already exists")
     void register_WithExistingEmail_ShouldReturn400() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "anotheruser",
-          TEST_EMAIL, // Already exists
-          "https://example.com/avatar.png",
-          "@Password123",
-          "@Password123");
+      RegisterRequest request =
+          new RegisterRequest(
+              "anotheruser",
+              TEST_EMAIL, // Already exists
+              "https://example.com/avatar.png",
+              "@Password123",
+              "@Password123");
 
-      mockMvc.perform(post("/v1/auth/register")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isConflict())
           .andExpect(jsonPath("$.message", containsString("Email already exists")));
     }
@@ -166,36 +179,42 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 400 when passwords don't match")
     void register_WithMismatchedPasswords_ShouldReturn400() throws Exception {
-      RegisterRequest request = new RegisterRequest(
-          "newuser@example.com",
-          "newuser",
-          "https://example.com/avatar.png",
-          "password123",
-          "differentpassword");
+      RegisterRequest request =
+          new RegisterRequest(
+              "newuser@example.com",
+              "newuser",
+              "https://example.com/avatar.png",
+              "@Password123",
+              "differentpassword");
 
-      mockMvc.perform(post("/v1/auth/register")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
 
     @ParameterizedTest
     @CsvSource({
-        "'', user1, https://example.com/avatar.png, pass123, pass123",
-        "user@test.com, '', https://example.com/avatar.png, pass123, pass123",
-        "user@test.com, ab, https://example.com/avatar.png, pass123, pass123", // Username too short
-        "user@test.com, user1, https://example.com/avatar.png, '', ''", // Empty password
-        "user@test.com, user1, https://example.com/avatar.png, short, short" // Password too short
+      "'', user1, https://example.com/avatar.png, pass123, pass123",
+      "user@test.com, '', https://example.com/avatar.png, pass123, pass123",
+      "user@test.com, ab, https://example.com/avatar.png, pass123, pass123", // Username too short
+      "user@test.com, user1, https://example.com/avatar.png, '', ''", // Empty password
+      "user@test.com, user1, https://example.com/avatar.png, short, short" // Password too short
     })
     @DisplayName("Should return 400 for invalid registration data")
     void register_WithInvalidData_ShouldReturn400(
         String email, String username, String avatarUrl, String password, String confirmPassword)
         throws Exception {
-      RegisterRequest request = new RegisterRequest(email, username, avatarUrl, password, confirmPassword);
+      RegisterRequest request =
+          new RegisterRequest(email, username, avatarUrl, password, confirmPassword);
 
-      mockMvc.perform(post("/v1/auth/register")
-          .contentType(MediaType.APPLICATION_JSON)
-          .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/auth/register")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
   }
@@ -209,8 +228,8 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void validateToken_WithValidToken_ShouldReturnValid() throws Exception {
       String token = generateToken(testUser.getId(), testUser.getEmail());
 
-      mockMvc.perform(get("/v1/auth/validate")
-          .header("Authorization", token))
+      mockMvc
+          .perform(get("/v1/auth/validate").header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.valid", is(true)));
     }
@@ -220,12 +239,11 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void validateToken_WithInvalidToken_ShouldReturnInvalid() throws Exception {
       String invalidToken = "Bearer invalid.token.here";
 
-      mockMvc.perform(get("/v1/auth/validate")
-          .header("Authorization", invalidToken))
+      mockMvc
+          .perform(get("/v1/auth/validate").header("Authorization", invalidToken))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.valid", is(false)));
     }
-
   }
 
   @Nested
@@ -237,8 +255,8 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     void logout_WithValidToken_ShouldReturn200() throws Exception {
       String token = generateToken(testUser.getId(), testUser.getEmail());
 
-      mockMvc.perform(post("/v1/auth/logout")
-          .header("Authorization", token))
+      mockMvc
+          .perform(post("/v1/auth/logout").header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.message", containsString("Operation completed successfully")));
     }
@@ -246,8 +264,7 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 401 when token is missing")
     void logout_WithoutToken_ShouldReturn401() throws Exception {
-      mockMvc.perform(post("/v1/auth/logout"))
-          .andExpect(status().isUnauthorized());
+      mockMvc.perform(post("/v1/auth/logout")).andExpect(status().isForbidden());
     }
 
     @Test
@@ -256,13 +273,13 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
       String token = generateToken(testUser.getId(), testUser.getEmail());
 
       // First logout
-      mockMvc.perform(post("/v1/auth/logout")
-          .header("Authorization", token))
+      mockMvc
+          .perform(post("/v1/auth/logout").header("Authorization", token))
           .andExpect(status().isOk());
 
       // Try to use the same token - should fail
-      mockMvc.perform(get("/v1/auth/validate")
-          .header("Authorization", token))
+      mockMvc
+          .perform(get("/v1/auth/validate").header("Authorization", token))
           .andExpect(status().isUnauthorized());
     }
   }

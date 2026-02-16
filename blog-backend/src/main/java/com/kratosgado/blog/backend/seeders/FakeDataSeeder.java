@@ -130,7 +130,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     return User.builder()
         .username(username)
         .email(faker.internet().emailAddress(username))
-        .password(BCrypt.withDefaults().hashToString(12, "password123@".toCharArray()))
+        .password(BCrypt.withDefaults().hashToString(12, "@Password123@".toCharArray()))
         .avatarUrl(faker.avatar().image())
         .role(faker.options().option(UserRole.class)) // First user is admin
         .build();

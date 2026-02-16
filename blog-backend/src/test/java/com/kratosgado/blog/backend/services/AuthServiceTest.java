@@ -69,13 +69,13 @@ class AuthServiceTest {
         "test@example.com",
         "READER");
 
-    loginRequest = new LoginRequest("test@example.com", "password123");
+    loginRequest = new LoginRequest("test@example.com", "@Password123");
     registerRequest = new RegisterRequest(
         "test@example.com",
         "testuser",
         "https://example.com/avatar.png",
-        "password123",
-        "password123");
+        "@Password123",
+        "@Password123");
   }
 
   @Test
@@ -210,7 +210,7 @@ class AuthServiceTest {
         "test@example.com",
         "testuser",
         "https://example.com/avatar.png",
-        "password123",
+        "@Password123",
         "password456");
 
     // Act

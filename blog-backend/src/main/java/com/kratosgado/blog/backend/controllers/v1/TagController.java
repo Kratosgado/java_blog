@@ -10,10 +10,9 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.Tag;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
@@ -40,7 +39,10 @@ public class TagController {
   }
 
   @PostMapping
-  @SecuredCreateEndpoint(summary = "Create a new tag", description = "Creates a new tag. Requires authentication.")
+  @SecuredCreateEndpoint(
+      summary = "Create a new tag",
+      description = "Creates a new tag. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   @ResponseStatus(HttpStatus.CREATED)
   public Tag createTag(
       @Valid @RequestBody @Parameter(description = "Tag creation request")
@@ -49,7 +51,10 @@ public class TagController {
   }
 
   @PutMapping("/{id}")
-  @SecuredUpdateEndpoint(summary = "Update a tag", description = "Updates an existing tag. Requires authentication.")
+  @SecuredUpdateEndpoint(
+      summary = "Update a tag",
+      description = "Updates an existing tag. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public Tag updateTag(
       @PathVariable @Parameter(description = "Tag ID") Long id,
       @Valid @RequestBody @Parameter(description = "Tag update request") UpdateTagRequest request) {
@@ -57,25 +62,34 @@ public class TagController {
   }
 
   @DeleteMapping("/{id}")
-  @DeleteEndpoint(summary = "Delete a tag", description = "Deletes a tag by ID. Requires authentication.")
+  @DeleteEndpoint(
+      summary = "Delete a tag",
+      description = "Deletes a tag by ID. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
   public void deleteTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
     tagService.deleteTag(id);
   }
 
   @GetMapping("/{id}")
-  @GetEndpoint(summary = "Get a tag by ID", description = "Retrieves a single tag by its ID. Public access.")
+  @GetEndpoint(
+      summary = "Get a tag by ID",
+      description = "Retrieves a single tag by its ID. Public access.")
   public Tag getTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
     return tagService.getTagById(id);
   }
 
   @GetMapping("/slug/{slug}")
-  @GetEndpoint(summary = "Get a tag by slug", description = "Retrieves a single tag by its slug. Public access.")
+  @GetEndpoint(
+      summary = "Get a tag by slug",
+      description = "Retrieves a single tag by its slug. Public access.")
   public Tag getTagBySlug(@PathVariable @Parameter(description = "Tag slug") String slug) {
     return tagService.getTagBySlug(slug);
   }
 
   @GetMapping
-  @GetEndpoint(summary = "Get all tags", description = "Retrieves a paginated list of all tags. Public access.")
+  @GetEndpoint(
+      summary = "Get all tags",
+      description = "Retrieves a paginated list of all tags. Public access.")
   public PageResponse<Tag> getTags(@ParameterObject PageRequest page) {
     return tagService.getAllTags(page);
   }
@@ -87,7 +101,10 @@ public class TagController {
   }
 
   @GetMapping("/with-post-count")
-  @GetEndpoint(summary = "Get all tags with post counts", description = "Retrieves a list of all tags including the number of posts for each. Public access.")
+  @GetEndpoint(
+      summary = "Get all tags with post counts",
+      description =
+          "Retrieves a list of all tags including the number of posts for each. Public access.")
   public List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
     return tagService.getAllTagsWithPostCount();
   }

@@ -32,7 +32,8 @@ public class UserController {
   @SecuredUpdateEndpoint(
       summary = "Update user profile",
       description =
-          "Updates a user's profile information. Only the user can update their own profile.")
+          "Updates a user's profile information. Only the user can update their own profile.",
+      roles = {UserRole.READER, UserRole.AUTHOR, UserRole.ADMIN})
   public User updateProfile(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Profile update request")
@@ -43,7 +44,8 @@ public class UserController {
   @PutMapping("/{id}/avatar")
   @SecuredUpdateEndpoint(
       summary = "Update user avatar",
-      description = "Updates a user's avatar. Only the user can update their own avatar.")
+      description = "Updates a user's avatar. Only the user can update their own avatar.",
+      roles = {UserRole.READER, UserRole.AUTHOR, UserRole.ADMIN})
   public User updateAvatar(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Avatar update request")
@@ -55,7 +57,8 @@ public class UserController {
   @PutMapping("/{id}/password")
   @SecuredUpdateEndpoint(
       summary = "Change password",
-      description = "Changes a user's password. Only the user can change their own password.")
+      description = "Changes a user's password. Only the user can change their own password.",
+      roles = {UserRole.READER, UserRole.AUTHOR, UserRole.ADMIN})
   public void changePassword(
       @PathVariable @Parameter(description = "User ID") Long id,
       @Valid @RequestBody @Parameter(description = "Password change request")
@@ -68,7 +71,8 @@ public class UserController {
   @SecuredUpdateEndpoint(summary = "Update user role", description = "Admin updates a user's role")
   public User updateUserRole(
       @PathVariable @Parameter(description = "User ID") Long id,
-      @RequestParam(required = true) @Parameter(description = "New role for the user") UserRole role) {
+      @RequestParam(required = true) @Parameter(description = "New role for the user")
+          UserRole role) {
     Long adminId = SecurityUtils.getCurrentUserId();
     return userService.updateUserRole(id, role, adminId);
   }
