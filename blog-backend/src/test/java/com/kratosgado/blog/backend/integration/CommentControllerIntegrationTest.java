@@ -3,15 +3,21 @@ package com.kratosgado.blog.backend.integration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.enums.UserRole;
+import com.kratosgado.blog.models.User;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DisplayName("Comment Controller Integration Tests")
 public class CommentControllerIntegrationTest extends BaseIntegrationTest {
@@ -23,8 +29,32 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   private static final String TEST_USER_EMAIL = "testuser@example.com";
   private static final Long TEST_AUTHOR_ID = 2L;
   private static final String TEST_AUTHOR_EMAIL = "author@example.com";
-  private static final Long TEST_ADMIN_ID = 3L;
+  private static Long TEST_ADMIN_ID;
   private static final String TEST_ADMIN_EMAIL = "admin@example.com";
+
+  private User testUser;
+  private User adminUser;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private PasswordEncoder passwordEncoder;
+
+  @BeforeEach
+  @Override
+  void baseSetUp() {
+    // Clean up database
+    userRepository.deleteAll();
+    // Create admin user (ADMIN role)
+    adminUser = new User();
+    adminUser.setEmail(TEST_ADMIN_EMAIL);
+    adminUser.setUsername("adminuser");
+    adminUser.setPassword(passwordEncoder.encode("password123"));
+    adminUser.setRole(UserRole.ADMIN);
+    adminUser = userRepository.save(adminUser);
+    TEST_ADMIN_ID = adminUser.getId();
+  }
 
   @Nested
   @DisplayName("Create Comment Tests")
@@ -39,7 +69,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
-                  .header("Authorization", "Bearer " + token)
+                  .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isCreated())
@@ -72,7 +102,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
-                  .header("Authorization", "Bearer " + token)
+                  .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest());
@@ -87,7 +117,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
-                  .header("Authorization", "Bearer " + token)
+                  .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(requestJson))
           .andExpect(status().isBadRequest());
@@ -102,7 +132,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
-                  .header("Authorization", "Bearer " + token)
+                  .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isNotFound());
@@ -122,7 +152,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.status").value("approved"));
     }
@@ -136,7 +166,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.status").value("approved"));
     }
@@ -150,7 +180,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isForbidden());
     }
 
@@ -163,7 +193,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.status").value("rejected"));
     }
@@ -177,7 +207,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isNotFound());
     }
   }
@@ -283,7 +313,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       String response = mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
-                  .header("Authorization", "Bearer " + token)
+                  .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(createRequest)))
           .andExpect(status().isCreated())
@@ -297,7 +327,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk());
     }
 
@@ -318,7 +348,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isForbidden());
     }
 
@@ -331,7 +361,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isNotFound());
     }
   }
@@ -408,7 +438,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk());
     }
 
@@ -421,7 +451,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isOk());
     }
 
@@ -434,7 +464,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isForbidden());
     }
 
@@ -447,7 +477,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", "Bearer " + token))
+                  .header("Authorization", token))
           .andExpect(status().isForbidden());
     }
   }
