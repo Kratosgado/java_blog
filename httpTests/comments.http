@@ -16,8 +16,13 @@ Authorization: {{readerAuth}}
 
 {
   "content": "Great article! Very helpful information about Spring Boot 3.",
-  "postId": 1
+  "postId": "{{postId}}"
 }
+
+> {%
+  var commentId = response.body.data.id;
+  client.global.set("commentId", commentId);
+%}
 
 
 ### Create a reply to a comment
@@ -130,7 +135,7 @@ Content-Type: application/json
 
 # @name approveComment
 
-PUT {{host}}/comments/1/approve HTTP/1.1
+PUT {{host}}/comments/{{commentId}}/approve HTTP/1.1
 Authorization: {{readerAuth}}
 
 

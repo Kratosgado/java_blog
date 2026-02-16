@@ -72,6 +72,7 @@ git checkout -b docs/update-name
 ### 2. Implement Changes
 
 **Code Style Guidelines**:
+
 - Follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
 - Use meaningful variable and method names
 - Add JavaDoc for public APIs
@@ -79,6 +80,7 @@ git checkout -b docs/update-name
 - Maximum line length: 120 characters
 
 **Project Structure**:
+
 ```
 blog-backend/
 ├── controllers/          # REST endpoints
@@ -95,12 +97,14 @@ blog-backend/
 ### 3. Write Tests
 
 **Test Requirements**:
+
 - Unit tests for services
 - Integration tests for repositories
 - Controller tests with MockMvc
 - Test coverage minimum: 70% for new code
 
 **Test Structure**:
+
 ```java
 public class PostServiceTest {
     @Mock
@@ -130,6 +134,7 @@ public class PostServiceTest {
 ```
 
 **Run Tests**:
+
 ```bash
 # Run all tests
 mvn test
@@ -147,6 +152,7 @@ mvn test jacoco:report
 ### 4. Commit Changes
 
 **Commit Message Format**:
+
 ```
 type(scope): subject
 
@@ -156,6 +162,7 @@ footer
 ```
 
 **Type Options**:
+
 - `feat` - New feature
 - `fix` - Bug fix
 - `docs` - Documentation
@@ -166,6 +173,7 @@ footer
 - `chore` - Build/dependency changes
 
 **Example**:
+
 ```bash
 git add .
 git commit -m "feat(post): add draft post functionality
@@ -194,6 +202,7 @@ git push origin feat/your-feature-name
 ### PR Title
 
 Clear and descriptive:
+
 - ✅ "Add full-text search for posts"
 - ✅ "Fix N+1 query problem in PostService"
 - ❌ "Update code"
@@ -203,24 +212,30 @@ Clear and descriptive:
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Related Issues
+
 Closes #123
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 How to test the changes:
+
 1. Start application
 2. Navigate to...
 3. Verify...
 
 ## Checklist
+
 - [ ] Tests added/updated
 - [ ] Documentation updated
 - [ ] No breaking changes
@@ -321,10 +336,10 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('READER', 'AUTHOR', 'ADMIN')")
-    @Operation(summary = "Create a comment",
-               security = @SecurityRequirement(name = "bearer-jwt"))
+   @SecuredCreateEndpoint(
+      summary = "Create a comment",
+      description = "Creates a new comment on a post. Requires authentication.",
+      roles = {UserRole.AUTHOR, UserRole.ADMIN})
     public CommentResponse createComment(
         @Valid @RequestBody CreateCommentRequest request,
         @AuthenticationPrincipal User user) {
@@ -332,7 +347,9 @@ public class CommentController {
     }
 
     @GetMapping("/post/{postId}")
-    @Operation(summary = "Get comments for post")
+    @GetEndpoint(
+      summary = "Get comments for a post",
+      description = "Retrieves all approved comments for a specific post. Public access.")
     public Page<CommentResponse> getComments(
         @PathVariable Long postId,
         @ParameterObject Pageable pageable) {
@@ -436,6 +453,7 @@ public Post createPost(CreatePostRequest request, User author) {
 ### README Updates
 
 Update relevant documentation:
+
 - API endpoints documentation
 - Feature descriptions
 - Configuration options
@@ -446,27 +464,33 @@ Update relevant documentation:
 ### Reporting Issues
 
 **Create an issue** for:
+
 - Bug reports
 - Feature requests
 - Documentation improvements
 - Performance concerns
 
 **Issue Template**:
+
 ```markdown
 ## Description
+
 What is the issue?
 
 ## Steps to Reproduce
+
 1. First step
 2. Second step
 3. Expected vs actual result
 
 ## Environment
+
 - Java version
 - OS
 - Browser (if applicable)
 
 ## Screenshots
+
 If applicable, add screenshots
 ```
 
@@ -516,7 +540,7 @@ mvn clean package
 
 - **Questions**: Use GitHub Discussions
 - **Issues**: Create GitHub Issue
-- **Security**: Email security@example.com (do not create public issue)
+- **Security**: Email <security@example.com> (do not create public issue)
 - **Chat**: Slack/Discord (if available)
 
 ## Maintainers

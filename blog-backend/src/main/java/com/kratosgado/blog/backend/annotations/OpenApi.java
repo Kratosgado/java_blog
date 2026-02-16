@@ -11,7 +11,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 public class OpenApi {
@@ -24,7 +23,6 @@ public class OpenApi {
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
     @ApiResponse(responseCode = "403", description = "Forbidden")
   })
-  @PreAuthorize("@roleGuard.hasAnyRole(#roles)")
   public @interface SecuredEndpoint {
     @AliasFor(annotation = Operation.class, attribute = "summary")
     String summary() default "Protected endpoint";

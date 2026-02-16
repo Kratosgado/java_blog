@@ -23,7 +23,7 @@ Authorization: {{readerAuth}}
   "tagIds": [
     6
   ],
-  "title": "Gettg whtsjk is Started booting  Spring 3"
+  "title": "Ge dwhtsjk  Started booting  Spring 3"
 }
 
 
@@ -42,6 +42,19 @@ Authorization: {{readerAuth}}
 }
 
 
+### Get all published posts (with pagination and sorting)
+
+# @name getPosts
+
+GET {{host}}/posts?page=1&size=3&sort=id,asc HTTP/1.1
+
+> {%
+  const post = response.body.data.content[0];
+  client.global.set("postId", post.id);
+  client.global.set("postSlug", post.slug);
+%}
+
+
 ### Get a single post by ID
 
 # @name getPost
@@ -54,13 +67,6 @@ GET {{host}}/posts/100012 HTTP/1.1
 # @name getPostBySlug
 
 GET {{host}}/posts/slug/death-be-not-proud-in-deleniti-fugit-enim-ut-totam HTTP/1.1
-
-
-### Get all published posts (with pagination and sorting)
-
-# @name getPosts
-
-GET {{host}}/posts?page=1&size=3&sort=id,asc HTTP/1.1
 
 
 ### Get posts with different sorting

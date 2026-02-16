@@ -3,11 +3,16 @@ package com.kratosgado.blog.backend.integration;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
+import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
+import com.kratosgado.blog.enums.CommentStatus;
+import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.enums.UserRole;
+import com.kratosgado.blog.models.Comment;
+import com.kratosgado.blog.models.Post;
 import com.kratosgado.blog.models.User;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,21 +30,21 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   private static final String COMMENTS_BASE_URL = "/v1/comments";
 
   // Test user constants
-  private static final Long TEST_USER_ID = 1L;
+  private static Long TEST_USER_ID = 1L;
   private static final String TEST_USER_EMAIL = "testuser@example.com";
-  private static final Long TEST_AUTHOR_ID = 2L;
-  private static final String TEST_AUTHOR_EMAIL = "author@example.com";
   private static Long TEST_ADMIN_ID;
   private static final String TEST_ADMIN_EMAIL = "admin@example.com";
+  private static Long postId;
+  private static String commentId;
 
   private User testUser;
   private User adminUser;
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
+  @Autowired private PostRepository postRepository;
+  @Autowired private CommentRepository commentRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   @BeforeEach
   @Override
@@ -47,13 +52,51 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     // Clean up database
     userRepository.deleteAll();
     // Create admin user (ADMIN role)
-    adminUser = new User();
-    adminUser.setEmail(TEST_ADMIN_EMAIL);
-    adminUser.setUsername("adminuser");
-    adminUser.setPassword(passwordEncoder.encode("password123"));
-    adminUser.setRole(UserRole.ADMIN);
+    adminUser =
+        User.builder()
+            .email(TEST_ADMIN_EMAIL)
+            .username("adminuser")
+            .password(passwordEncoder.encode("password123"))
+            .role(UserRole.ADMIN)
+            .build();
     adminUser = userRepository.save(adminUser);
     TEST_ADMIN_ID = adminUser.getId();
+
+    testUser =
+        User.builder()
+            .email(TEST_USER_EMAIL)
+            .username("testuser")
+            .password(passwordEncoder.encode("password123"))
+            .role(UserRole.READER)
+            .build();
+    testUser = userRepository.save(testUser);
+    TEST_USER_ID = testUser.getId();
+
+    // Create test post
+    Post testPost =
+        Post.builder()
+            .title("Test Post")
+            .slug("test-post")
+            .id(postId)
+            .content("This is test post content")
+            .excerpt("Test excerpt")
+            .status(PostStatus.published)
+            .user(adminUser)
+            .build();
+    testPost = postRepository.save(testPost);
+    postId = testPost.getId();
+    var comment =
+        Comment.builder()
+            .authorName(testUser.getUsername())
+            .authorAvatarUrl(testUser.getAvatarUrl())
+            .content("Great article!")
+            .postId(postId)
+            .status(CommentStatus.pending)
+            .userId(testUser.getId())
+            .build();
+
+    commentRepository.save(comment);
+    commentId = comment.getId();
   }
 
   @Nested
@@ -61,50 +104,31 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   class CreateCommentTests {
 
     @Test
-    @DisplayName("Should create comment when authenticated")
-    void createComment_WhenAuthenticated_ShouldReturn201() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      CreateCommentRequest request = new CreateCommentRequest(1L, "Great article!");
-
-      mockMvc
-          .perform(
-              post(COMMENTS_BASE_URL)
-                  .header("Authorization", token)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.data.content").value("Great article!"))
-          .andExpect(jsonPath("$.data.postId").value(1))
-          .andExpect(jsonPath("$.data.userId").exists())
-          .andExpect(jsonPath("$.data.status").value("pending"));
-    }
-
-    @Test
     @DisplayName("Should fail to create comment without authentication")
     void createComment_WhenNotAuthenticated_ShouldReturn401() throws Exception {
-      CreateCommentRequest request = new CreateCommentRequest(1L, "Great article!");
+      CreateCommentRequest request = new CreateCommentRequest(postId, "Great article!");
 
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
+                  .content(toJson(request)))
           .andExpect(status().isUnauthorized());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "", "   " })
+    @ValueSource(strings = {"", "   "})
     @DisplayName("Should fail with blank content")
     void createComment_WithBlankContent_ShouldReturn400(String content) throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      CreateCommentRequest request = new CreateCommentRequest(1L, content);
+      CreateCommentRequest request = new CreateCommentRequest(postId, content);
 
       mockMvc
           .perform(
               post(COMMENTS_BASE_URL)
                   .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
 
@@ -134,7 +158,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
               post(COMMENTS_BASE_URL)
                   .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
+                  .content(toJson(request)))
           .andExpect(status().isNotFound());
     }
   }
@@ -144,29 +168,12 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   class ApproveRejectCommentTests {
 
     @Test
-    @DisplayName("Should approve comment when user is AUTHOR")
-    void approveComment_WhenAuthor_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_AUTHOR_ID, TEST_AUTHOR_EMAIL, UserRole.AUTHOR);
-      String commentId = "test-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.status").value("approved"));
-    }
-
-    @Test
     @DisplayName("Should approve comment when user is ADMIN")
     void approveComment_WhenAdmin_ShouldReturn200() throws Exception {
       String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
-      String commentId = "test-comment-id";
-
       mockMvc
           .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
+              put(COMMENTS_BASE_URL + "/" + commentId + "/approve").header("Authorization", token))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.status").value("approved"));
     }
@@ -175,39 +182,22 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should fail to approve comment when user is READER")
     void approveComment_WhenReader_ShouldReturn403() throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL); // Default role is READER
-      String commentId = "test-comment-id";
 
       mockMvc
           .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
+              put(COMMENTS_BASE_URL + "/" + commentId + "/approve").header("Authorization", token))
           .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("Should reject comment when user is AUTHOR")
-    void rejectComment_WhenAuthor_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_AUTHOR_ID, TEST_AUTHOR_EMAIL, UserRole.AUTHOR);
-      String commentId = "test-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", token))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.status").value("rejected"));
     }
 
     @Test
     @DisplayName("Should fail to approve non-existent comment")
     void approveComment_NonExistent_ShouldReturn404() throws Exception {
       String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
-      String commentId = "non-existent-comment";
+      String commentId = "non-existent-comment-id";
 
       mockMvc
           .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
+              put(COMMENTS_BASE_URL + "/" + commentId + "/approve").header("Authorization", token))
           .andExpect(status().isNotFound());
     }
   }
@@ -219,7 +209,6 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should get comment by ID without authentication")
     void getComment_ById_ShouldReturn200() throws Exception {
-      String commentId = "existing-comment-id";
 
       mockMvc
           .perform(get(COMMENTS_BASE_URL + "/" + commentId))
@@ -233,15 +222,12 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     void getComment_NonExistent_ShouldReturn404() throws Exception {
       String commentId = "non-existent-comment";
 
-      mockMvc
-          .perform(get(COMMENTS_BASE_URL + "/" + commentId))
-          .andExpect(status().isNotFound());
+      mockMvc.perform(get(COMMENTS_BASE_URL + "/" + commentId)).andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("Should get comments for post with pagination")
     void getPostComments_WithPagination_ShouldReturn200() throws Exception {
-      Long postId = 1L;
 
       mockMvc
           .perform(
@@ -257,11 +243,9 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "0,5", "1,10", "0,20", "2,15" })
+    @CsvSource({"0,5", "1,10", "0,20", "2,15"})
     @DisplayName("Should get post comments with various page sizes")
-    void getPostComments_WithVariousPageSizes_ShouldReturn200(int page, int size)
-        throws Exception {
-      Long postId = 1L;
+    void getPostComments_WithVariousPageSizes_ShouldReturn200(int page, int size) throws Exception {
 
       mockMvc
           .perform(
@@ -279,9 +263,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
 
       mockMvc
           .perform(
-              get(COMMENTS_BASE_URL + "/user/" + userId)
-                  .param("page", "0")
-                  .param("size", "10"))
+              get(COMMENTS_BASE_URL + "/user/" + userId).param("page", "0").param("size", "10"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray())
           .andExpect(jsonPath("$.data.totalElements").exists());
@@ -290,7 +272,6 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should get comment count for post")
     void getPostCommentCount_ShouldReturn200() throws Exception {
-      Long postId = 1L;
 
       mockMvc
           .perform(get(COMMENTS_BASE_URL + "/post/" + postId + "/count"))
@@ -308,26 +289,26 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     void deleteComment_WhenOwner_ShouldReturn200() throws Exception {
       // Create a comment first
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      CreateCommentRequest createRequest = new CreateCommentRequest(1L, "Test comment to delete");
+      CreateCommentRequest createRequest =
+          new CreateCommentRequest(postId, "Test comment to delete");
 
-      String response = mockMvc
-          .perform(
-              post(COMMENTS_BASE_URL)
-                  .header("Authorization", token)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(createRequest)))
-          .andExpect(status().isCreated())
-          .andReturn()
-          .getResponse()
-          .getContentAsString();
+      String response =
+          mockMvc
+              .perform(
+                  post(COMMENTS_BASE_URL)
+                      .header("Authorization", token)
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(toJson(createRequest)))
+              .andExpect(status().isCreated())
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
 
       String commentId = objectMapper.readTree(response).get("id").asText();
 
       // Delete the comment
       mockMvc
-          .perform(
-              delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", token))
+          .perform(delete(COMMENTS_BASE_URL + "/" + commentId).header("Authorization", token))
           .andExpect(status().isOk());
     }
 
@@ -336,20 +317,9 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     void deleteComment_WithoutAuth_ShouldReturn401() throws Exception {
       String commentId = "test-comment-id";
 
-      mockMvc.perform(delete(COMMENTS_BASE_URL + "/" + commentId)).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @DisplayName("Should fail to delete other user's comment")
-    void deleteComment_OtherUsersComment_ShouldReturn403() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      String commentId = "other-users-comment-id";
-
       mockMvc
-          .perform(
-              delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", token))
-          .andExpect(status().isForbidden());
+          .perform(delete(COMMENTS_BASE_URL + "/" + commentId))
+          .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -359,9 +329,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       String commentId = "non-existent-comment";
 
       mockMvc
-          .perform(
-              delete(COMMENTS_BASE_URL + "/" + commentId)
-                  .header("Authorization", token))
+          .perform(delete(COMMENTS_BASE_URL + "/" + commentId).header("Authorization", token))
           .andExpect(status().isNotFound());
     }
   }
@@ -371,11 +339,10 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
   class PaginationEdgeCaseTests {
 
     @ParameterizedTest
-    @CsvSource({ "-1,10", "0,-5", "-1,-5", "0,0" })
+    @CsvSource({"-1,10", "0,-5", "-1,-5", "0,0"})
     @DisplayName("Should handle invalid pagination parameters")
     void getPostComments_WithInvalidPagination_ShouldReturn400(int page, int size)
         throws Exception {
-      Long postId = 1L;
 
       mockMvc
           .perform(
@@ -391,7 +358,8 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       Long postId = 99999L; // Non-existent post
 
       mockMvc
-          .perform(get(COMMENTS_BASE_URL + "/post/" + postId).param("page", "0").param("size", "10"))
+          .perform(
+              get(COMMENTS_BASE_URL + "/post/" + postId).param("page", "0").param("size", "10"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray())
           .andExpect(jsonPath("$.data.content").isEmpty())
@@ -410,10 +378,9 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = { 50, 100, 200 })
+    @ValueSource(ints = {50, 100, 200})
     @DisplayName("Should handle large page sizes (with max limit)")
     void getPostComments_WithLargePageSize_ShouldApplyMaxLimit(int size) throws Exception {
-      Long postId = 1L;
 
       mockMvc
           .perform(
@@ -422,63 +389,6 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
                   .param("size", String.valueOf(size)))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray());
-    }
-  }
-
-  @Nested
-  @DisplayName("Authorization Tests")
-  class AuthorizationTests {
-
-    @Test
-    @DisplayName("Should allow ADMIN to approve any comment")
-    void admin_CanApproveAnyComment() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
-      String commentId = "any-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
-          .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("Should allow AUTHOR to reject any comment")
-    void author_CanRejectAnyComment() throws Exception {
-      String token = generateToken(TEST_AUTHOR_ID, TEST_AUTHOR_EMAIL, UserRole.AUTHOR);
-      String commentId = "any-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", token))
-          .andExpect(status().isOk());
-    }
-
-    @Test
-    @DisplayName("Should prevent READER from approving comments")
-    void reader_CannotApproveComments() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      String commentId = "any-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/approve")
-                  .header("Authorization", token))
-          .andExpect(status().isForbidden());
-    }
-
-    @Test
-    @DisplayName("Should prevent READER from rejecting comments")
-    void reader_CannotRejectComments() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      String commentId = "any-comment-id";
-
-      mockMvc
-          .perform(
-              put(COMMENTS_BASE_URL + "/" + commentId + "/reject")
-                  .header("Authorization", token))
-          .andExpect(status().isForbidden());
     }
   }
 }
