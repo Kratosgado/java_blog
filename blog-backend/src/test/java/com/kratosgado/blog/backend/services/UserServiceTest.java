@@ -202,13 +202,20 @@ class UserServiceTest {
     when(userRepository.save(any(User.class))).thenReturn(testUser);
 
     // Act
-    User result = userService.updateUserProfile(updateRequest, 1L);
+    try (var mockedSecurityUtils =
+        org.mockito.Mockito.mockStatic(com.kratosgado.blog.backend.security.SecurityUtils.class)) {
+      mockedSecurityUtils
+          .when(com.kratosgado.blog.backend.security.SecurityUtils::getCurrentUserId)
+          .thenReturn(1L);
+
+      User result = userService.updateUserProfile(updateRequest, 1L);
 
     // Assert
-    assertNotNull(result);
-    assertNull(result.getPassword());
-    assertEquals("newusername", testUser.getUsername());
-    assertEquals("New bio", testUser.getBio());
+      assertNotNull(result);
+      assertNull(result.getPassword());
+      assertEquals("newusername", testUser.getUsername());
+      assertEquals("New bio", testUser.getBio());
+    }
   }
 
   @Test
@@ -222,11 +229,20 @@ class UserServiceTest {
     when(userRepository.findByUsername("existinguser"))
         .thenReturn(Optional.of(existingUserResponse));
 
-    // Act
-    BlogException exception = assertThrows(BlogException.class, () -> userService.updateUserProfile(updateRequest, 1L));
+    // Act & Assert
+    try (var mockedSecurityUtils =
+        org.mockito.Mockito.mockStatic(com.kratosgado.blog.backend.security.SecurityUtils.class)) {
+      mockedSecurityUtils
+          .when(com.kratosgado.blog.backend.security.SecurityUtils::getCurrentUserId)
+          .thenReturn(1L);
 
-    // Assert
-    assertTrue(exception.getMessage().contains("already exists"));
+      BlogException exception =
+          assertThrows(
+              BlogException.class,
+              () -> userService.updateUserProfile(updateRequest, 1L));
+
+      assertTrue(exception.getMessage().contains("already exists"));
+    }
   }
 
   @Test
@@ -237,13 +253,18 @@ class UserServiceTest {
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-    // Act
-    User result = userService.updateUserProfile(updateRequest, 1L);
+    try (var mockedSecurityUtils =
+        org.mockito.Mockito.mockStatic(com.kratosgado.blog.backend.security.SecurityUtils.class)) {
+      mockedSecurityUtils
+          .when(com.kratosgado.blog.backend.security.SecurityUtils::getCurrentUserId)
+          .thenReturn(1L);
 
-    // Assert
-    assertNotNull(result);
-    assertEquals("Updated bio", testUser.getBio());
-    verify(userRepository, never()).findByUsername(anyString());
+      User result = userService.updateUserProfile(updateRequest, 1L);
+
+      assertNotNull(result);
+      assertEquals("Updated bio", testUser.getBio());
+      verify(userRepository, never()).findByUsername(anyString());
+    }
   }
 
   @Test
@@ -255,13 +276,18 @@ class UserServiceTest {
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.save(any(User.class))).thenReturn(testUser);
 
-    // Act
-    User result = userService.updateUserProfile(partialUpdate, 1L);
+    try (var mockedSecurityUtils =
+        org.mockito.Mockito.mockStatic(com.kratosgado.blog.backend.security.SecurityUtils.class)) {
+      mockedSecurityUtils
+          .when(com.kratosgado.blog.backend.security.SecurityUtils::getCurrentUserId)
+          .thenReturn(1L);
 
-    // Assert
-    assertNotNull(result);
-    assertEquals(originalUsername, testUser.getUsername());
-    assertEquals("Only bio updated", testUser.getBio());
+      User result = userService.updateUserProfile(partialUpdate, 1L);
+
+      assertNotNull(result);
+      assertEquals(originalUsername, testUser.getUsername());
+      assertEquals("Only bio updated", testUser.getBio());
+    }
   }
 
   @ParameterizedTest
@@ -317,13 +343,16 @@ class UserServiceTest {
   @DisplayName("Should successfully update user role")
   void updateUserRole_WithValidUser_ShouldUpdateRole() {
     // Arrange
+    User adminUser = new User();
+    adminUser.setId(99L);
+    adminUser.setRole(UserRole.ADMIN);
+
+    when(userRepository.findById(99L)).thenReturn(Optional.of(adminUser));
     when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
     when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-    // Act
     User result = userService.updateUserRole(1L, UserRole.AUTHOR, 99L);
 
-    // Assert
     assertNotNull(result);
     assertNull(result.getPassword());
     assertEquals(UserRole.AUTHOR, testUser.getRole());
@@ -332,11 +361,17 @@ class UserServiceTest {
   @Test
   @DisplayName("Should throw exception when updating role for non-existent user")
   void updateUserRole_UserNotFound_ShouldThrowException() {
-    // Arrange
+    User adminUser = new User();
+    adminUser.setId(1L);
+    adminUser.setRole(UserRole.ADMIN);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
     when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-    // Act & Assert
-    BlogException ex = assertThrows(BlogException.class, () -> userService.updateUserRole(999L, UserRole.ADMIN, 1L));
+    BlogException ex =
+        assertThrows(
+            BlogException.class,
+            () -> userService.updateUserRole(999L, UserRole.ADMIN, 1L));
     assertTrue(ex.getMessage().contains("User not found"));
   }
 }

@@ -1,8 +1,9 @@
 package com.kratosgado.blog.backend.integration;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
@@ -14,43 +15,26 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
-/**
- * Integration tests for User Controller endpoints. Tests user profile management, avatar updates,
- * password changes, and role management.
- *
- * <p>Coverage:
- *
- * <ul>
- *   <li>Update user profile (username, bio, website, location)
- *   <li>Update user avatar
- *   <li>Change password with validation
- *   <li>Update user role (Admin only)
- *   <li>Authorization checks (users can only modify their own data)
- *   <li>Input validation
- * </ul>
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("User Controller Integration Tests")
 public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   private static final String USERS_BASE_URL = "/v1/users";
 
@@ -76,7 +60,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     testUser = new User();
     testUser.setEmail(TEST_USER_EMAIL);
     testUser.setUsername("testuser");
-    testUser.setPassword(passwordEncoder.encode("password123"));
+    testUser.setPassword(passwordEncoder.encode("@Password123"));
     testUser.setRole(UserRole.READER);
     testUser = userRepository.save(testUser);
     TEST_USER_ID = testUser.getId();
@@ -85,7 +69,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     otherUser = new User();
     otherUser.setEmail(TEST_OTHER_USER_EMAIL);
     otherUser.setUsername("otheruser");
-    otherUser.setPassword(passwordEncoder.encode("password123"));
+    otherUser.setPassword(passwordEncoder.encode("@Password123"));
     otherUser.setRole(UserRole.READER);
     otherUser = userRepository.save(otherUser);
     TEST_OTHER_USER_ID = otherUser.getId();
@@ -94,7 +78,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     adminUser = new User();
     adminUser.setEmail(TEST_ADMIN_EMAIL);
     adminUser.setUsername("adminuser");
-    adminUser.setPassword(passwordEncoder.encode("password123"));
+    adminUser.setPassword(passwordEncoder.encode("@Password123"));
     adminUser.setRole(UserRole.ADMIN);
     adminUser = userRepository.save(adminUser);
     TEST_ADMIN_ID = adminUser.getId();
@@ -110,10 +94,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest(
-              "newusername",
-              "Updated bio about myself",
-              "https://newwebsite.com",
-              "New York, USA");
+              "newusername", "Updated bio about myself", "https://newwebsite.com", "New York, USA");
 
       mockMvc
           .perform(
@@ -132,7 +113,8 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should update profile with partial data")
     void updateProfile_PartialData_ShouldReturn200() throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      UpdateUserProfileRequest request = new UpdateUserProfileRequest("newusername", null, null, null);
+      UpdateUserProfileRequest request =
+          new UpdateUserProfileRequest("newusername", null, null, null);
 
       mockMvc
           .perform(
@@ -274,8 +256,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     void updateAvatar_BlankUrl_ShouldReturn400(String avatarUrl) throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       String requestJson =
-          String.format(
-              "{\"userId\": %d, \"avatarUrl\": \"%s\"}", TEST_USER_ID, avatarUrl);
+          String.format("{\"userId\": %d, \"avatarUrl\": \"%s\"}", TEST_USER_ID, avatarUrl);
 
       mockMvc
           .perform(
@@ -319,7 +300,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
-              TEST_USER_ID, "password123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
+              TEST_USER_ID, "@Password123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
 
       mockMvc
           .perform(
@@ -336,10 +317,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
-              TEST_OTHER_USER_ID,
-              "OldP@ssw0rd123",
-              "NewSecureP@ssw0rd456",
-              "NewSecureP@ssw0rd456");
+              TEST_OTHER_USER_ID, "OldP@ssw0rd123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
 
       mockMvc
           .perform(
@@ -479,8 +457,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
 
       mockMvc
           .perform(
-              post(USERS_BASE_URL + "/" + TEST_USER_ID + "/role")
-                  .header("Authorization", token))
+              post(USERS_BASE_URL + "/" + TEST_USER_ID + "/role").header("Authorization", token))
           .andExpect(status().isBadRequest());
     }
 
@@ -565,7 +542,8 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     void updateProfile_UsernameTooLong_ShouldReturn400() throws Exception {
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
       String longUsername = "a".repeat(51); // Max is 50
-      UpdateUserProfileRequest request = new UpdateUserProfileRequest(longUsername, null, null, null);
+      UpdateUserProfileRequest request =
+          new UpdateUserProfileRequest(longUsername, null, null, null);
 
       mockMvc
           .perform(

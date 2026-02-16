@@ -56,7 +56,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
         User.builder()
             .email(TEST_ADMIN_EMAIL)
             .username("adminuser")
-            .password(passwordEncoder.encode("password123"))
+            .password(passwordEncoder.encode("@Password123"))
             .role(UserRole.ADMIN)
             .build();
     adminUser = userRepository.save(adminUser);
@@ -66,7 +66,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
         User.builder()
             .email(TEST_USER_EMAIL)
             .username("testuser")
-            .password(passwordEncoder.encode("password123"))
+            .password(passwordEncoder.encode("@Password123"))
             .role(UserRole.READER)
             .build();
     testUser = userRepository.save(testUser);

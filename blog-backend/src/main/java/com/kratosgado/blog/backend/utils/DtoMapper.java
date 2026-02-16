@@ -9,8 +9,14 @@ import com.kratosgado.blog.dtos.response.PageResponse;
 public class DtoMapper {
 
   public static <T> PageResponse<T> toPageResponse(Page<T> page) {
-    return new PageResponse<>(page.getContent(), page.getNumber(), page.getNumber(),
-        page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    return new PageResponse<>(
+        page.getContent(),
+        page.getNumber(),
+        page.getSize(),
+        page.getTotalElements(),
+        page.getTotalPages(),
+        page.isFirst(),
+        page.isLast());
   }
 
   public static <T> PageResponse<T> toPageResponse(List<T> content, int page, int size, int totalElements) {

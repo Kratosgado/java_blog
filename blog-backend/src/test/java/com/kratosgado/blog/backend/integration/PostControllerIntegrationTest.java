@@ -23,33 +23,27 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Integration tests for PostController.
- * Tests post CRUD operations, search, filtering, and authorization.
+ * Integration tests for PostController. Tests post CRUD operations, search, filtering, and
+ * authorization.
  */
 @DisplayName("PostController Integration Tests")
 class PostControllerIntegrationTest extends BaseIntegrationTest {
 
-  @Autowired
-  private PostRepository postRepository;
+  @Autowired private PostRepository postRepository;
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
-  @Autowired
-  private CategoryRepository categoryRepository;
+  @Autowired private CategoryRepository categoryRepository;
 
-  @Autowired
-  private TagRepository tagRepository;
+  @Autowired private TagRepository tagRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   private User authorUser;
   private User readerUser;
@@ -70,7 +64,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     authorUser = new User();
     authorUser.setEmail("author@example.com");
     authorUser.setUsername("author");
-    authorUser.setPassword(passwordEncoder.encode("password123"));
+    authorUser.setPassword(passwordEncoder.encode("@Password123"));
     authorUser.setRole(UserRole.AUTHOR);
     authorUser.setAvatarUrl("https://example.com/author.png");
     authorUser = userRepository.save(authorUser);
@@ -79,7 +73,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     readerUser = new User();
     readerUser.setEmail("reader@example.com");
     readerUser.setUsername("reader");
-    readerUser.setPassword(passwordEncoder.encode("password123"));
+    readerUser.setPassword(passwordEncoder.encode("@Password123"));
     readerUser.setRole(UserRole.READER);
     readerUser = userRepository.save(readerUser);
 
@@ -116,95 +110,83 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully create post with AUTHOR role")
     void createPost_AsAuthor_ShouldReturn201() throws Exception {
-      CreatePostRequest request = new CreatePostRequest(
-          "New Post Title",
-          "This is the content of the new post",
-          "Brief excerpt",
-          testCategory.getId(),
-          "https://example.com/cover.jpg",
-          "draft",
-          new Long[]{testTag.getId()}
-      );
+      CreatePostRequest request =
+          new CreatePostRequest(
+              "New Post Title",
+              "This is the content of the new post",
+              "Brief excerpt",
+              testCategory.getId(),
+              "https://example.com/cover.jpg",
+              "draft",
+              new Long[] {testTag.getId()});
 
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(post("/v1/posts")
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/posts")
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.title", is("New Post Title")))
-          .andExpect(jsonPath("$.content", is("This is the content of the new post")))
-          .andExpect(jsonPath("$.status", is("draft")))
-          .andExpect(jsonPath("$.user.id", is(authorUser.getId().intValue())));
+          .andExpect(jsonPath("$.data.title", is("New Post Title")))
+          .andExpect(jsonPath("$.data.content", is("This is the content of the new post")))
+          .andExpect(jsonPath("$.data.status", is("draft")))
+          .andExpect(jsonPath("$.data.user.id", is(authorUser.getId().intValue())));
     }
 
     @Test
     @DisplayName("Should return 403 when READER tries to create post")
     void createPost_AsReader_ShouldReturn403() throws Exception {
-      CreatePostRequest request = new CreatePostRequest(
-          "New Post",
-          "Content",
-          "Excerpt",
-          testCategory.getId(),
-          null,
-          "draft",
-          new Long[]{}
-      );
+      CreatePostRequest request =
+          new CreatePostRequest(
+              "New Post", "Content", "Excerpt", testCategory.getId(), null, "draft", new Long[] {});
 
       String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.READER);
 
-      mockMvc.perform(post("/v1/posts")
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/posts")
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("Should return 401 when not authenticated")
     void createPost_Unauthenticated_ShouldReturn401() throws Exception {
-      CreatePostRequest request = new CreatePostRequest(
-          "New Post",
-          "Content",
-          "Excerpt",
-          testCategory.getId(),
-          null,
-          "draft",
-          new Long[]{}
-      );
+      CreatePostRequest request =
+          new CreatePostRequest(
+              "New Post", "Content", "Excerpt", testCategory.getId(), null, "draft", new Long[] {});
 
-      mockMvc.perform(post("/v1/posts")
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/posts").contentType(MediaType.APPLICATION_JSON).content(toJson(request)))
           .andExpect(status().isUnauthorized());
     }
 
     @ParameterizedTest
     @CsvSource({
-        "'', Content, Excerpt", // Empty title
-        "Title, '', Excerpt", // Empty content
-        "AB, Content, Excerpt" // Title too short
+      "'', Content, Excerpt", // Empty title
+      "Title, '', Excerpt", // Empty content
+      "AB, Content, Excerpt" // Title too short
     })
     @DisplayName("Should return 400 for invalid post data")
     void createPost_WithInvalidData_ShouldReturn400(String title, String content, String excerpt)
         throws Exception {
-      CreatePostRequest request = new CreatePostRequest(
-          "New Post",
-          "Content",
-          "Excerpt",
-          testCategory.getId(),
-          null,
-          "draft",
-          new Long[]{}
-      );
+      CreatePostRequest request =
+          new CreatePostRequest(
+              title, content, excerpt, testCategory.getId(), null, "draft", new Long[] {});
 
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(post("/v1/posts")
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              post("/v1/posts")
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isBadRequest());
     }
   }
@@ -216,69 +198,75 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully update own post")
     void updatePost_OwnPost_ShouldReturn200() throws Exception {
-      UpdatePostRequest request = new UpdatePostRequest(
-          "Updated Title",
-          "Updated content",
-          "Updated excerpt",
-          testCategory.getId(),
-          "https://example.com/new-cover.jpg",
-          PostStatus.published,
-          new Long[]{testTag.getId()}
-      );
+      UpdatePostRequest request =
+          new UpdatePostRequest(
+              "Updated Title",
+              "Updated content",
+              "Updated excerpt",
+              testCategory.getId(),
+              "https://example.com/new-cover.jpg",
+              PostStatus.published,
+              new Long[] {testTag.getId()});
 
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(put("/v1/posts/" + testPost.getId())
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              put("/v1/posts/" + testPost.getId())
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.title", is("Updated Title")))
-          .andExpect(jsonPath("$.content", is("Updated content")))
-          .andExpect(jsonPath("$.status", is("published")));
+          .andExpect(jsonPath("$.data.title", is("Updated Title")))
+          .andExpect(jsonPath("$.data.content", is("Updated content")))
+          .andExpect(jsonPath("$.data.status", is("published")));
     }
 
     @Test
     @DisplayName("Should return 403 when updating another user's post")
     void updatePost_OtherUsersPost_ShouldReturn403() throws Exception {
-      UpdatePostRequest request = new UpdatePostRequest(
-          "Updated Title",
-          "Updated content",
-          "Updated excerpt",
-          testCategory.getId(),
-          null,
-          PostStatus.published,
-          new Long[]{}
-      );
+      UpdatePostRequest request =
+          new UpdatePostRequest(
+              "Updated Title",
+              "Updated content",
+              "Updated excerpt",
+              testCategory.getId(),
+              null,
+              PostStatus.published,
+              new Long[] {});
 
       String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(put("/v1/posts/" + testPost.getId())
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              put("/v1/posts/" + testPost.getId())
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("Should return 404 for non-existent post")
     void updatePost_NonExistentPost_ShouldReturn404() throws Exception {
-      UpdatePostRequest request = new UpdatePostRequest(
-          "Updated Title",
-          "Updated content",
-          "Updated excerpt",
-          testCategory.getId(),
-          null,
-          PostStatus.published,
-          new Long[]{}
-      );
+      UpdatePostRequest request =
+          new UpdatePostRequest(
+              "Updated Title",
+              "Updated content",
+              "Updated excerpt",
+              testCategory.getId(),
+              null,
+              PostStatus.published,
+              new Long[] {});
 
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(put("/v1/posts/999999")
-              .header("Authorization", token)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(toJson(request)))
+      mockMvc
+          .perform(
+              put("/v1/posts/999999")
+                  .header("Authorization", token)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(toJson(request)))
           .andExpect(status().isNotFound());
     }
   }
@@ -303,10 +291,11 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
 
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(put("/v1/posts/" + draftPost.getId() + "/publish")
-              .header("Authorization", token))
+      mockMvc
+          .perform(
+              put("/v1/posts/" + draftPost.getId() + "/publish").header("Authorization", token))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status", is("published")));
+          .andExpect(jsonPath("$.data.status", is("published")));
     }
 
     @Test
@@ -314,8 +303,8 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     void publishPost_OtherUsersPost_ShouldReturn403() throws Exception {
       String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(put("/v1/posts/" + testPost.getId() + "/publish")
-              .header("Authorization", token))
+      mockMvc
+          .perform(put("/v1/posts/" + testPost.getId() + "/publish").header("Authorization", token))
           .andExpect(status().isForbidden());
     }
   }
@@ -329,8 +318,8 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     void deletePost_OwnPost_ShouldReturn200() throws Exception {
       String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(delete("/v1/posts/" + testPost.getId())
-              .header("Authorization", token))
+      mockMvc
+          .perform(delete("/v1/posts/" + testPost.getId()).header("Authorization", token))
           .andExpect(status().isOk());
     }
 
@@ -339,16 +328,15 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     void deletePost_OtherUsersPost_ShouldReturn403() throws Exception {
       String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
 
-      mockMvc.perform(delete("/v1/posts/" + testPost.getId())
-              .header("Authorization", token))
+      mockMvc
+          .perform(delete("/v1/posts/" + testPost.getId()).header("Authorization", token))
           .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("Should return 401 when not authenticated")
     void deletePost_Unauthenticated_ShouldReturn401() throws Exception {
-      mockMvc.perform(delete("/v1/posts/" + testPost.getId()))
-          .andExpect(status().isUnauthorized());
+      mockMvc.perform(delete("/v1/posts/" + testPost.getId())).andExpect(status().isUnauthorized());
     }
   }
 
@@ -359,35 +347,35 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully get post by ID")
     void getPost_ById_ShouldReturn200() throws Exception {
-      mockMvc.perform(get("/v1/posts/" + testPost.getId()))
+      mockMvc
+          .perform(get("/v1/posts/" + testPost.getId()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id", is(testPost.getId().intValue())))
-          .andExpect(jsonPath("$.title", is("Test Post")))
-          .andExpect(jsonPath("$.slug", is("test-post")));
+          .andExpect(jsonPath("$.data.id", is(testPost.getId().intValue())))
+          .andExpect(jsonPath("$.data.title", is("Test Post")))
+          .andExpect(jsonPath("$.data.slug", is("test-post")));
     }
 
     @Test
     @DisplayName("Should successfully get post by slug")
     void getPost_BySlug_ShouldReturn200() throws Exception {
-      mockMvc.perform(get("/v1/posts/slug/" + testPost.getSlug()))
+      mockMvc
+          .perform(get("/v1/posts/slug/" + testPost.getSlug()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.id", is(testPost.getId().intValue())))
-          .andExpect(jsonPath("$.title", is("Test Post")))
-          .andExpect(jsonPath("$.slug", is("test-post")));
+          .andExpect(jsonPath("$.data.id", is(testPost.getId().intValue())))
+          .andExpect(jsonPath("$.data.title", is("Test Post")))
+          .andExpect(jsonPath("$.data.slug", is("test-post")));
     }
 
     @Test
     @DisplayName("Should return 404 for non-existent post ID")
     void getPost_NonExistentId_ShouldReturn404() throws Exception {
-      mockMvc.perform(get("/v1/posts/999999"))
-          .andExpect(status().isNotFound());
+      mockMvc.perform(get("/v1/posts/999999")).andExpect(status().isNotFound());
     }
 
     @Test
     @DisplayName("Should return 404 for non-existent slug")
     void getPost_NonExistentSlug_ShouldReturn404() throws Exception {
-      mockMvc.perform(get("/v1/posts/slug/non-existent-slug"))
-          .andExpect(status().isNotFound());
+      mockMvc.perform(get("/v1/posts/slug/non-existent-slug")).andExpect(status().isNotFound());
     }
   }
 
@@ -398,41 +386,36 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should get paginated list of published posts")
     void getPosts_Default_ShouldReturnPublished() throws Exception {
-      mockMvc.perform(get("/v1/posts")
-              .param("page", "0")
-              .param("size", "10"))
+      mockMvc
+          .perform(get("/v1/posts").param("page", "0").param("size", "10"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-          .andExpect(jsonPath("$.totalElements", greaterThanOrEqualTo(1)))
-          .andExpect(jsonPath("$.content[0].title", notNullValue()));
+          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
+          .andExpect(jsonPath("$.data.totalElements", greaterThanOrEqualTo(1)))
+          .andExpect(jsonPath("$.data.content[0].title", notNullValue()));
     }
 
     @ParameterizedTest
-    @CsvSource({
-        "0, 5",
-        "0, 10",
-        "0, 20",
-        "1, 10"
-    })
+    @CsvSource({"0, 5", "0, 10", "0, 20", "1, 10"})
     @DisplayName("Should respect pagination parameters")
     void getPosts_WithPagination_ShouldRespectParams(int page, int size) throws Exception {
-      mockMvc.perform(get("/v1/posts")
-              .param("page", String.valueOf(page))
-              .param("size", String.valueOf(size)))
+      mockMvc
+          .perform(
+              get("/v1/posts")
+                  .param("page", String.valueOf(page))
+                  .param("size", String.valueOf(size)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.currentPage", is(page)))
-          .andExpect(jsonPath("$.pageSize", is(size)));
+          .andExpect(jsonPath("$.data.currentPage", is(page)))
+          .andExpect(jsonPath("$.data.pageSize", is(size)));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"title", "createdAt", "updatedAt"})
     @DisplayName("Should support sorting by different fields")
     void getPosts_WithSorting_ShouldSort(String sortBy) throws Exception {
-      mockMvc.perform(get("/v1/posts")
-              .param("sortBy", sortBy)
-              .param("sortDir", "ASC"))
+      mockMvc
+          .perform(get("/v1/posts").param("sortBy", sortBy).param("sortDir", "ASC"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", notNullValue()));
+          .andExpect(jsonPath("$.data.content", notNullValue()));
     }
   }
 
@@ -443,30 +426,30 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should find posts by keyword in title")
     void searchPosts_ByTitle_ShouldReturnMatches() throws Exception {
-      mockMvc.perform(get("/v1/posts/search")
-              .param("keyword", "Test"))
+      mockMvc
+          .perform(get("/v1/posts/search").param("keyword", "Test"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-          .andExpect(jsonPath("$.content[0].title", containsString("Test")));
+          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
+          .andExpect(jsonPath("$.data.content[0].title", containsString("Test")));
     }
 
     @Test
     @DisplayName("Should return empty list for non-matching keyword")
     void searchPosts_NoMatch_ShouldReturnEmpty() throws Exception {
-      mockMvc.perform(get("/v1/posts/search")
-              .param("keyword", "NonExistentKeyword123"))
+      mockMvc
+          .perform(get("/v1/posts/search").param("keyword", "NonExistentKeyword123"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(0)));
+          .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"test", "TEST", "TeSt"})
     @DisplayName("Should be case-insensitive")
     void searchPosts_CaseInsensitive_ShouldReturnMatches(String keyword) throws Exception {
-      mockMvc.perform(get("/v1/posts/search")
-              .param("keyword", keyword))
+      mockMvc
+          .perform(get("/v1/posts/search").param("keyword", keyword))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))));
+          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))));
     }
   }
 
@@ -477,18 +460,20 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should get posts by user ID")
     void getUserPosts_ValidUser_ShouldReturnPosts() throws Exception {
-      mockMvc.perform(get("/v1/posts/user/" + authorUser.getId()))
+      mockMvc
+          .perform(get("/v1/posts/user/" + authorUser.getId()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-          .andExpect(jsonPath("$.content[0].title", notNullValue()));
+          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
+          .andExpect(jsonPath("$.data.content[0].title", notNullValue()));
     }
 
     @Test
     @DisplayName("Should return empty list for user with no posts")
     void getUserPosts_UserWithNoPosts_ShouldReturnEmpty() throws Exception {
-      mockMvc.perform(get("/v1/posts/user/" + readerUser.getId()))
+      mockMvc
+          .perform(get("/v1/posts/user/" + readerUser.getId()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(0)));
+          .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
   }
 
@@ -499,10 +484,11 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should get posts by category ID")
     void getCategoryPosts_ValidCategory_ShouldReturnPosts() throws Exception {
-      mockMvc.perform(get("/v1/posts/category/" + testCategory.getId()))
+      mockMvc
+          .perform(get("/v1/posts/category/" + testCategory.getId()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
-          .andExpect(jsonPath("$.content[0].title", notNullValue()));
+          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))))
+          .andExpect(jsonPath("$.data.content[0].title", notNullValue()));
     }
 
     @Test
@@ -513,9 +499,10 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
       emptyCategory.setSlug("empty-category");
       emptyCategory = categoryRepository.save(emptyCategory);
 
-      mockMvc.perform(get("/v1/posts/category/" + emptyCategory.getId()))
+      mockMvc
+          .perform(get("/v1/posts/category/" + emptyCategory.getId()))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content", hasSize(0)));
+          .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
   }
 }

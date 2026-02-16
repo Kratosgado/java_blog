@@ -24,5 +24,5 @@ public record TagResponse(
     String description,
 
     @Schema(description = "Number of posts with this tag", example = "28")
-    Integer postCount) {
+    Long postCount) {
 }
