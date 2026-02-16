@@ -1,11 +1,5 @@
 package com.kratosgado.blog.services;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.inject.Inject;
 import com.kratosgado.blog.config.ApiConfig;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
@@ -15,6 +9,10 @@ import com.kratosgado.blog.models.User;
 import com.kratosgado.blog.utils.context.AuthContext;
 import com.kratosgado.blog.utils.http.BaseApiClient.ApiException;
 import com.kratosgado.blog.utils.http.CommentApiClient;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommentService {
   private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
@@ -64,10 +62,7 @@ public class CommentService {
     }
   }
 
-  /**
-   * Get comments by post ID (convenience method for controllers - returns all as
-   * list)
-   */
+  /** Get comments by post ID (convenience method for controllers - returns all as list) */
   public List<Comment> getCommentsByPostId(Long postId) {
     ensureAuthToken();
     try {
@@ -96,9 +91,7 @@ public class CommentService {
     }
   }
 
-  /**
-   * Get all comments (for admin management)
-   */
+  /** Get all comments (for admin management) */
   public List<Comment> getAllComments() {
     ensureAuthToken();
     try {
@@ -111,7 +104,8 @@ public class CommentService {
       }
 
       // Fetch a large page to get all comments
-      PageResponse<Comment> response = commentApiClient.getCommentsByUserId(currentUser.getId(), 0, 10000);
+      PageResponse<Comment> response =
+          commentApiClient.getCommentsByUserId(currentUser.getId(), 0, 10000);
       return response.content();
     } catch (IOException e) {
       logger.error("Failed to get all comments due to network error", e);
@@ -122,9 +116,7 @@ public class CommentService {
     }
   }
 
-  /**
-   * Get comment count for a post
-   */
+  /** Get comment count for a post */
   public int getCommentCountForPost(Long postId) {
     ensureAuthToken();
     try {
