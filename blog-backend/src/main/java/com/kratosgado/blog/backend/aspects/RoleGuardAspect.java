@@ -33,8 +33,6 @@ public class RoleGuardAspect {
     MethodSignature signature = (MethodSignature) joinPoint.getSignature();
     UserRole[] roles = extractRoles(signature);
 
-    log.debug("Checking role access for method: {} with roles: {}", signature.getName(), roles);
-
     if (!hasAnyRole(roles)) {
       throw new ForbiddenException(
           "You do not have permission to access this endpoint. Required roles: "

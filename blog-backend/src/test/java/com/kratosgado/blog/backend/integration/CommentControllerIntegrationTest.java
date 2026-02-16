@@ -150,7 +150,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail with non-existent post ID")
     void createComment_WithNonExistentPostId_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL);
       CreateCommentRequest request = new CreateCommentRequest(99999L, "Test comment");
 
       mockMvc
@@ -268,16 +268,6 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
           .andExpect(jsonPath("$.data.content").isArray())
           .andExpect(jsonPath("$.data.totalElements").exists());
     }
-
-    @Test
-    @DisplayName("Should get comment count for post")
-    void getPostCommentCount_ShouldReturn200() throws Exception {
-
-      mockMvc
-          .perform(get(COMMENTS_BASE_URL + "/post/" + postId + "/count"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$").isNumber());
-    }
   }
 
   @Nested
@@ -289,23 +279,6 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     void deleteComment_WhenOwner_ShouldReturn200() throws Exception {
       // Create a comment first
       String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
-      CreateCommentRequest createRequest =
-          new CreateCommentRequest(postId, "Test comment to delete");
-
-      String response =
-          mockMvc
-              .perform(
-                  post(COMMENTS_BASE_URL)
-                      .header("Authorization", token)
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content(toJson(createRequest)))
-              .andExpect(status().isCreated())
-              .andReturn()
-              .getResponse()
-              .getContentAsString();
-
-      String commentId = objectMapper.readTree(response).get("id").asText();
-
       // Delete the comment
       mockMvc
           .perform(delete(COMMENTS_BASE_URL + "/" + commentId).header("Authorization", token))
@@ -325,7 +298,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to delete non-existent comment")
     void deleteComment_NonExistent_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL);
       String commentId = "non-existent-comment";
 
       mockMvc
@@ -374,7 +347,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
       mockMvc
           .perform(get(COMMENTS_BASE_URL + "/post/" + postId + "/count"))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$").value(0));
+          .andExpect(jsonPath("$.data").value(0));
     }
 
     @ParameterizedTest

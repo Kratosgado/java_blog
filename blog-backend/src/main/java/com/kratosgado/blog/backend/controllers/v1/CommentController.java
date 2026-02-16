@@ -39,7 +39,8 @@ public class CommentController {
   @PostMapping
   @SecuredUpdateEndpoint(
       summary = "Create a new comment",
-      description = "Creates a new comment on a post. Requires authentication.")
+      description = "Creates a new comment on a post. Requires authentication.",
+      roles = {UserRole.READER, UserRole.AUTHOR, UserRole.ADMIN})
   @ResponseStatus(HttpStatus.CREATED)
   public Comment createComment(
       @Valid @RequestBody @Parameter(description = "Comment creation request")
@@ -77,7 +78,8 @@ public class CommentController {
   @DeleteMapping("/{id}")
   @DeleteEndpoint(
       summary = "Delete a comment",
-      description = "Deletes a comment by ID. Only the comment author can delete it.")
+      description = "Deletes a comment by ID. Only the comment author can delete it.",
+      roles = {UserRole.READER, UserRole.AUTHOR, UserRole.ADMIN})
   public void deleteComment(@PathVariable @Parameter(description = "Comment ID") String id) {
     Long userId = SecurityUtils.getCurrentUserId();
     commentService.deleteComment(id, userId);
