@@ -110,14 +110,19 @@ public class PostService {
   @Caching(
       evict = {
         @CacheEvict(value = CacheNames.POSTLIST, allEntries = true),
-        @CacheEvict(value = CacheNames.POSTS, key = "#post.slug")
+        @CacheEvict(value = CacheNames.POSTS, key = "#result.slug")
       })
-  public void deletePost(Long postId, Long userId) {
-    if (!isOwner(postId, userId)) {
+  public Post deletePost(Long postId, Long userId) {
+    Post post =
+        postRepository
+            .findById(postId)
+            .orElseThrow(() -> new ResourceNotFoundException("Post", "id", postId));
+    if (!post.getUser().getId().equals(userId)) {
       throw new ForbiddenException("You don't have permission to delete this post");
     }
 
     postRepository.deleteById(postId);
+    return post;
   }
 
   @Cacheable(value = CacheNames.POSTS, key = "#slug")
@@ -212,9 +217,5 @@ public class PostService {
     var postsPage =
         postRepository.findPublishedPostsByTagOptimized(tagId, pageRequest.toPageable());
     return DtoMapper.toPageResponse(postsPage);
-  }
-
-  public boolean isOwner(Long postId, Long userId) {
-    return postRepository.existsByIdAndUserId(postId, userId);
   }
 }

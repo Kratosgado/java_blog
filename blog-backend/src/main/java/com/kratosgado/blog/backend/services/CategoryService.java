@@ -1,12 +1,5 @@
 package com.kratosgado.blog.backend.services;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
 import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
@@ -17,9 +10,13 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.models.Category;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -35,18 +32,21 @@ public class CategoryService {
       throw new ResourceAlreadyExistsException("Category with this name already exists");
     }
 
-    Category category = Category.builder()
-        .name(request.name())
-        .slug(slug)
-        .description(request.description())
-        .build();
+    Category category =
+        Category.builder()
+            .name(request.name())
+            .slug(slug)
+            .description(request.description())
+            .build();
     return categoryRepository.save(category);
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public Category updateCategory(Long categoryId, CreateCategoryRequest request) {
-    Category category = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    Category category =
+        categoryRepository
+            .findById(categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
     String slug = BlogUtils.toSlug(request.name());
 
@@ -63,16 +63,21 @@ public class CategoryService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void deleteCategory(Long categoryId) {
+    if (!categoryRepository.existsById(categoryId)) {
+      throw new ResourceNotFoundException("Category not found");
+    }
     categoryRepository.deleteById(categoryId);
   }
 
   public Category getCategoryById(Long categoryId) {
-    return categoryRepository.findById(categoryId)
+    return categoryRepository
+        .findById(categoryId)
         .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
   }
 
   public Category getCategoryBySlug(String slug) {
-    return categoryRepository.findBySlug(slug)
+    return categoryRepository
+        .findBySlug(slug)
         .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
   }
 

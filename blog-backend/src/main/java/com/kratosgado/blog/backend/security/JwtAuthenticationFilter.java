@@ -10,7 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,10 +34,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *   <li>Comprehensive security event logging
  * </ul>
  */
-@Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+  private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
   private final JwtUtil jwtUtil;
   private final UserRepository userRepository;
   private final TokenBlacklistService tokenBlacklistService;

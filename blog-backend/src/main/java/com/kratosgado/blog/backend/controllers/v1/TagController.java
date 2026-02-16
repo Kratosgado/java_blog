@@ -10,6 +10,8 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
+import com.kratosgado.blog.dtos.response.TagResponse;
 import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.models.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -44,10 +46,11 @@ public class TagController {
       description = "Creates a new tag. Requires authentication.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
   @ResponseStatus(HttpStatus.CREATED)
-  public Tag createTag(
+  public ResponseDto<Tag> createTag(
       @Valid @RequestBody @Parameter(description = "Tag creation request")
           CreateTagRequest request) {
-    return tagService.createTag(request);
+    Tag tag = tagService.createTag(request);
+    return ResponseDto.success(HttpStatus.CREATED.value(), "Tag created successfully", tag);
   }
 
   @PutMapping("/{id}")
@@ -55,10 +58,11 @@ public class TagController {
       summary = "Update a tag",
       description = "Updates an existing tag. Requires authentication.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public Tag updateTag(
+  public ResponseDto<Tag> updateTag(
       @PathVariable @Parameter(description = "Tag ID") Long id,
       @Valid @RequestBody @Parameter(description = "Tag update request") UpdateTagRequest request) {
-    return tagService.updateTag(id, request);
+    Tag tag = tagService.updateTag(id, request);
+    return ResponseDto.success("Tag updated successfully", tag);
   }
 
   @DeleteMapping("/{id}")
@@ -66,38 +70,44 @@ public class TagController {
       summary = "Delete a tag",
       description = "Deletes a tag by ID. Requires authentication.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public void deleteTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
+  public ResponseDto<Void> deleteTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
     tagService.deleteTag(id);
+    return ResponseDto.success("Tag deleted successfully", null);
   }
 
   @GetMapping("/{id}")
   @GetEndpoint(
       summary = "Get a tag by ID",
       description = "Retrieves a single tag by its ID. Public access.")
-  public Tag getTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
-    return tagService.getTagById(id);
+  public ResponseDto<Tag> getTag(@PathVariable @Parameter(description = "Tag ID") Long id) {
+    Tag tag = tagService.getTagById(id);
+    return ResponseDto.success(tag);
   }
 
   @GetMapping("/slug/{slug}")
   @GetEndpoint(
       summary = "Get a tag by slug",
       description = "Retrieves a single tag by its slug. Public access.")
-  public Tag getTagBySlug(@PathVariable @Parameter(description = "Tag slug") String slug) {
-    return tagService.getTagBySlug(slug);
+  public ResponseDto<Tag> getTagBySlug(
+      @PathVariable @Parameter(description = "Tag slug") String slug) {
+    Tag tag = tagService.getTagBySlug(slug);
+    return ResponseDto.success(tag);
   }
 
   @GetMapping
   @GetEndpoint(
       summary = "Get all tags",
       description = "Retrieves a paginated list of all tags. Public access.")
-  public PageResponse<Tag> getTags(@ParameterObject PageRequest page) {
-    return tagService.getAllTags(page);
+  public ResponseDto<PageResponse<Tag>> getTags(@ParameterObject PageRequest page) {
+    PageResponse<Tag> tags = tagService.getAllTags(page);
+    return ResponseDto.success(tags);
   }
 
   @GetMapping("/search")
   @GetEndpoint(summary = "Search tags", description = "Searches for tags by keyword in name")
-  public PageResponse<Tag> searchTags(@ParameterObject SearchPageRequest request) {
-    return tagService.searchTags(request.getKeyword(), request);
+  public ResponseDto<PageResponse<Tag>> searchTags(@ParameterObject SearchPageRequest request) {
+    PageResponse<Tag> tags = tagService.searchTags(request.getKeyword(), request);
+    return ResponseDto.success(tags);
   }
 
   @GetMapping("/with-post-count")
@@ -105,7 +115,8 @@ public class TagController {
       summary = "Get all tags with post counts",
       description =
           "Retrieves a list of all tags including the number of posts for each. Public access.")
-  public List<com.kratosgado.blog.dtos.response.TagResponse> getTagsWithPostCount() {
-    return tagService.getAllTagsWithPostCount();
+  public ResponseDto<List<TagResponse>> getTagsWithPostCount() {
+    List<TagResponse> tags = tagService.getAllTagsWithPostCount();
+    return ResponseDto.success(tags);
   }
 }

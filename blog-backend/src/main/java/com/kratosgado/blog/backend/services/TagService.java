@@ -74,9 +74,12 @@ public class TagService {
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
   @Caching(
-      put = @CachePut(value = CacheNames.TAGS, key = "#result.id"),
+      put = @CachePut(value = CacheNames.TAGS, key = "#id"),
       evict = @CacheEvict(value = CacheNames.TAGLIST, allEntries = true))
   public void deleteTag(Long id) {
+    if (!tagRepository.existsById(id)) {
+      throw new ResourceNotFoundException("Tag", "id", id);
+    }
     tagRepository.deleteById(id);
   }
 

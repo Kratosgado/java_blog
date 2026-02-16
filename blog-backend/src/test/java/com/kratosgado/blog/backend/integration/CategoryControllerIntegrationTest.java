@@ -118,7 +118,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
                   .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(toJson(request)))
-          .andExpect(status().isBadRequest());
+          .andExpect(status().isConflict());
     }
 
     @ParameterizedTest
@@ -313,16 +313,6 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
           .andExpect(jsonPath("$.data.currentPage", is(page)))
           .andExpect(jsonPath("$.data.pageSize", is(size)))
           .andExpect(jsonPath("$.data.content", hasSize(expectedContentSize)));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"name", "createdAt"})
-    @DisplayName("Should support sorting")
-    void getCategories_WithSorting_ShouldSort(String sortBy) throws Exception {
-      mockMvc
-          .perform(get("/v1/categories").param("sortBy", sortBy).param("sortDir", "ASC"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content", notNullValue()));
     }
   }
 

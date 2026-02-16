@@ -11,6 +11,7 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.SearchPageRequest;
 import com.kratosgado.blog.dtos.request.UpdatePostRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
@@ -22,6 +23,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,11 +50,12 @@ public class PostController {
       summary = "Create a new post (Secured)",
       description = "Creates a new blog post with the provided details. Requires authentication.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public Post createPost(
+  public ResponseDto<Post> createPost(
       @Valid @RequestBody @Parameter(description = "Post creation request")
           CreatePostRequest request,
       @AuthenticationPrincipal User user) {
-    return postService.createPost(request, user);
+    Post post = postService.createPost(request, user);
+    return ResponseDto.success(HttpStatus.CREATED.value(), "Post created successfully", post);
   }
 
   @PutMapping("/{id}")
@@ -60,12 +63,13 @@ public class PostController {
       summary = "Update a post",
       description = "Updates an existing blog post. Only the post author can update it.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public Post updatePost(
+  public ResponseDto<Post> updatePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @Valid @RequestBody @Parameter(description = "Post update request")
           UpdatePostRequest request) {
     Long userId = SecurityUtils.getCurrentUserId();
-    return postService.updatePost(id, request, userId);
+    Post post = postService.updatePost(id, request, userId);
+    return ResponseDto.success("Post updated successfully", post);
   }
 
   @PutMapping("/{id}/publish")
@@ -73,9 +77,10 @@ public class PostController {
       summary = "Publish a post",
       description = "Updates a blog post status to published. Only the post author can publish it.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public Post publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
+  public ResponseDto<Post> publishPost(@PathVariable @Parameter(description = "Post ID") Long id) {
     Long userId = SecurityUtils.getCurrentUserId();
-    return postService.publishPost(id, userId);
+    Post post = postService.publishPost(id, userId);
+    return ResponseDto.success("Post published successfully", post);
   }
 
   @DeleteMapping("/{id}")
@@ -83,18 +88,20 @@ public class PostController {
       summary = "Delete a post",
       description = "Deletes a blog post by ID. Only the post author can delete it.",
       roles = {UserRole.AUTHOR, UserRole.ADMIN})
-  public void deletePost(
+  public ResponseDto<Void> deletePost(
       @PathVariable @Parameter(description = "Post ID") Long id,
       @AuthenticationPrincipal User user) {
     postService.deletePost(id, user.getId());
+    return ResponseDto.success("Post deleted successfully", null);
   }
 
   @GetMapping("/{id}")
   @GetEndpoint(
       summary = "Get a post by ID",
       description = "Retrieves a single blog post by its ID. Public access.")
-  public PostDetails getPost(@PathVariable @Parameter(description = "Post ID") Long id) {
-    return postService.getPostById(id);
+  public ResponseDto<PostDetails> getPost(@PathVariable @Parameter(description = "Post ID") Long id) {
+    PostDetails post = postService.getPostById(id);
+    return ResponseDto.success(post);
   }
 
   @GetMapping("/slug/{slug}")
@@ -103,9 +110,10 @@ public class PostController {
       description =
           "Retrieves a single blog post by its slug. Uses cache for better performance. Public"
               + " access.")
-  public PostDetails getPostBySlug(
+  public ResponseDto<PostDetails> getPostBySlug(
       @PathVariable @Parameter(description = "Post slug") String slug) {
-    return postService.getPostBySlug(slug);
+    PostDetails post = postService.getPostBySlug(slug);
+    return ResponseDto.success(post);
   }
 
   @GetMapping()
@@ -113,35 +121,39 @@ public class PostController {
       summary = "Get all published posts",
       description =
           "Retrieves a paginated list of published blog posts with sorting options. Public access.")
-  public PageResponse<PostView> getPosts(@ParameterObject PageRequest page) {
-    return postService.getPublishedPosts(page);
+  public ResponseDto<PageResponse<PostView>> getPosts(@ParameterObject PageRequest page) {
+    PageResponse<PostView> posts = postService.getPublishedPosts(page);
+    return ResponseDto.success(posts);
   }
 
   @GetMapping("/search")
   @GetEndpoint(
       summary = "Search posts",
       description = "Searches for posts by keyword in title and content")
-  public PageResponse<PostView> searchPosts(@ParameterObject SearchPageRequest request) {
-    return postService.searchPostsV1(request);
+  public ResponseDto<PageResponse<PostView>> searchPosts(@ParameterObject SearchPageRequest request) {
+    PageResponse<PostView> posts = postService.searchPostsV1(request);
+    return ResponseDto.success(posts);
   }
 
   @GetMapping("/user/{userId}")
   @GetEndpoint(
       summary = "Get posts by user",
       description = "Retrieves all posts created by a specific user")
-  public PageResponse<PostWithoutUser> getUserPosts(
+  public ResponseDto<PageResponse<PostWithoutUser>> getUserPosts(
       @PathVariable @Parameter(description = "User ID") Long userId,
       @ParameterObject PageRequest page) {
-    return postService.getUserPosts(userId, page);
+    PageResponse<PostWithoutUser> posts = postService.getUserPosts(userId, page);
+    return ResponseDto.success(posts);
   }
 
   @GetMapping("/category/{categoryId}")
   @GetEndpoint(
       summary = "Get posts by category",
       description = "Retrieves all posts in a specific category")
-  public PageResponse<PostWithoutCategory> getCategoryPosts(
+  public ResponseDto<PageResponse<PostWithoutCategory>> getCategoryPosts(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
       @ParameterObject PageRequest page) {
-    return postService.getPostsByCategory(categoryId, page);
+    PageResponse<PostWithoutCategory> posts = postService.getPostsByCategory(categoryId, page);
+    return ResponseDto.success(posts);
   }
 }

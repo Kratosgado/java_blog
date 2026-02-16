@@ -9,12 +9,12 @@ import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
+import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.models.Category;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,62 +29,87 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/categories")
+@RequiredArgsConstructor
 @io.swagger.v3.oas.annotations.tags.Tag(
     name = "Categories",
     description = "Category management APIs")
 public class CategoryController {
   private final CategoryService categoryService;
 
-  public CategoryController(CategoryService categoryService) {
-    this.categoryService = categoryService;
-  }
-
-  @SecuredCreateEndpoint(summary = "Create a new category", description = "Creates a new category. Requires authentication.")
+  @SecuredCreateEndpoint(
+      summary = "Create a new category",
+      description = "Creates a new category. Requires authentication.")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public Category createCategory(
+  public ResponseDto<Category> createCategory(
       @Valid @RequestBody @Parameter(description = "Category creation request")
           CreateCategoryRequest request) {
-    return categoryService.createCategory(request);
+    Category category = categoryService.createCategory(request);
+    return ResponseDto.success(
+        HttpStatus.CREATED.value(), "Category created successfully", category);
   }
 
-  @UpdateEndpoint(summary = "Update a category", description = "Updates an existing category. Requires authentication.")
+  @UpdateEndpoint(
+      summary = "Update a category",
+      description = "Updates an existing category. Requires authentication.")
   @PutMapping("/{id}")
-  public Category updateCategory(
+  public ResponseDto<Category> updateCategory(
       @PathVariable("id") @Parameter(description = "Category ID") Long id,
       @Valid @RequestBody @Parameter(description = "Category update request")
           CreateCategoryRequest request) {
-    return categoryService.updateCategory(id, request);
+    Category category = categoryService.updateCategory(id, request);
+    return ResponseDto.success("Category updated successfully", category);
   }
 
-  @DeleteEndpoint(summary = "Delete a category", description = "Deletes a category by ID. Requires authentication.")
+  @DeleteEndpoint(
+      summary = "Delete a category",
+      description = "Deletes a category by ID. Requires authentication.")
   @DeleteMapping("/{id}")
-  public void deleteCategory(@PathVariable("id") @Parameter(description = "Category ID") Long id) {
+  public ResponseDto<Void> deleteCategory(
+      @PathVariable("id") @Parameter(description = "Category ID") Long id) {
     categoryService.deleteCategory(id);
+    return ResponseDto.success("Category deleted successfully", null);
   }
 
   @GetMapping("/{id}")
-  @GetEndpoint(summary = "Get a category by ID", description = "Retrieves a single category by its ID. Public access.")
-  public Category getCategory(@PathVariable("id") @Parameter(description = "Category ID") Long id) {
-    return categoryService.getCategoryById(id);
+  @GetEndpoint(
+      summary = "Get a category by ID",
+      description = "Retrieves a single category by its ID. Public access.")
+  public ResponseDto<Category> getCategory(
+      @PathVariable("id") @Parameter(description = "Category ID") Long id) {
+    Category category = categoryService.getCategoryById(id);
+    return ResponseDto.success(category);
   }
 
   @GetMapping("/slug/{slug}")
-  @GetEndpoint(summary = "Get a category by slug", description = "Retrieves a single category by its slug. Public access.")
-  public Category getCategoryBySlug(
+  @GetEndpoint(
+      summary = "Get a category by slug",
+      description = "Retrieves a single category by its slug. Public access.")
+  public ResponseDto<Category> getCategoryBySlug(
       @PathVariable @Parameter(description = "Category slug") String slug) {
-    return categoryService.getCategoryBySlug(slug);
+    Category category = categoryService.getCategoryBySlug(slug);
+    return ResponseDto.success(category);
   }
 
   @GetMapping
-  @GetEndpoint(summary = "Get all categories", description = "Retrieves a paginated list of all categories. Public access.")
-  public PageResponse<Category> getAllCategories(@ParameterObject PageRequest page) {
-    return categoryService.getAllCategories(page);
+  @GetEndpoint(
+      summary = "Get all categories",
+      description = "Retrieves a paginated list of all categories. Public access.")
+  public ResponseDto<PageResponse<Category>> getAllCategories(@ParameterObject PageRequest page) {
+    PageResponse<Category> categories = categoryService.getAllCategories(page);
+    return ResponseDto.success(categories);
   }
 
   @GetMapping("/with-post-count")
-  @GetEndpoint(summary = "Get all categories with post counts", description = "Retrieves a list of all categories including the number of posts in each. Public access.")
-  public List<CategoryResponse> getCategoriesWithPostCount() {
-    return categoryService.getAllCategoriesWithPostCount();
+  @GetEndpoint(
+      summary = "Get all categories with post counts",
+      description =
+          "Retrieves a list of all categories including the number of posts in each. Public"
+              + " access.")
+  public ResponseDto<PageResponse<CategoryResponse>> getCategoriesWithPostCount() {
+    List<CategoryResponse> categories = categoryService.getAllCategoriesWithPostCount();
+    PageResponse<CategoryResponse> pageResponse =
+        new PageResponse<>(categories, 0, categories.size(), categories.size(), 1, true, true);
+    return ResponseDto.success(pageResponse);
   }
 }
