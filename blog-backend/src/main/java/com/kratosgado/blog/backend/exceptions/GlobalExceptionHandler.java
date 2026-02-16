@@ -141,8 +141,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<ResponseDto<?>> handleMissingParameter(
       MissingServletRequestParameterException ex) {
-    String message =
-        String.format("Required parameter '%s' is missing", ex.getParameterName());
+    String message = String.format("Required parameter '%s' is missing", ex.getParameterName());
 
     logger.error("Missing parameter: {}", message);
     return buildErrorResponse(HttpStatus.BAD_REQUEST, message);

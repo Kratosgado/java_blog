@@ -9,6 +9,7 @@ The blogging platform implements comprehensive security measures including JWT-b
 ### What is JWT?
 
 JWT (JSON Web Token) is a stateless authentication mechanism that allows secure information transmission. Each token is:
+
 - **Self-contained**: Includes user claims
 - **Digitally signed**: Cannot be tampered with
 - **Stateless**: No server session storage required
@@ -20,6 +21,7 @@ Header.Payload.Signature
 ```
 
 **Decoded Example**:
+
 ```json
 // Header
 {
@@ -49,7 +51,7 @@ HMACSHA256(base64UrlEncode(header) + "." + base64UrlEncode(payload), secret)
 ```yaml
 jwt:
   secret: ${JWT_SECRET:your-secret-key-min-256-bits}
-  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
   algorithm: HS256
 ```
 
@@ -63,6 +65,7 @@ JWT_EXPIRATION=86400000  # 24 hours
 ### Token Generation & Validation
 
 **Token Generation** (on login/register):
+
 ```java
 // Service layer
 public AuthResponse login(LoginRequest request) {
@@ -85,6 +88,7 @@ public String generateToken(User user) {
 ```
 
 **Token Validation** (on each request):
+
 ```java
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -132,12 +136,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 ### Token Expiration Handling
 
 **Client-Side Strategy**:
+
 1. Store token in localStorage or sessionStorage
 2. Before each request, check expiration time
 3. If expired, redirect to login
 4. Refresh token logic (future enhancement)
 
 **Server-Side Strategy**:
+
 1. Validate expiration on every request
 2. Reject expired tokens with 401 Unauthorized
 3. Client must login again
@@ -171,6 +177,7 @@ ADMIN (Full access)
 ### Authorization Configuration
 
 **Security Config**:
+
 ```java
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -210,18 +217,19 @@ public class SecurityConfig {
 
 ### Method-Level Authorization
 
-**Using @PreAuthorize**:
+**Using @SecuredEndpoint Annotation**:
+
 ```java
 @RestController
 public class PostController {
     @PostMapping("/posts")
-    @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+    @SecuredEndpoint(roles = {UserRole.AUTHOR, UserRole.ADMIN})
     public Post createPost(@RequestBody CreatePostRequest request) {
         // Only AUTHOR or ADMIN can execute
     }
 
     @PutMapping("/posts/{id}")
-    @PreAuthorize("hasRole('AUTHOR') or hasRole('ADMIN')")
+    @SecuredEndpoint(roles = {UserRole.AUTHOR, UserRole.ADMIN})
     public Post updatePost(@PathVariable Long id) {
         // Additional check: author can only update own posts
         Long userId = SecurityUtils.getCurrentUserId();
@@ -317,6 +325,7 @@ public CorsConfigurationSource corsConfigurationSource() {
 ```
 
 **Key Points**:
+
 - ✅ **Browser-Enforced**: CORS is enforced by the browser, not the server
 - ✅ **Preflight Optimization**: 1-hour cache reduces redundant OPTIONS requests
 - ✅ **Specific Headers**: Only necessary headers allowed (never use wildcard `*` with credentials)
@@ -376,11 +385,13 @@ CSRF is a **server-side security vulnerability** where an attacker tricks a user
 | **Protection** | CSRF tokens required | Input sanitization + CORS |
 
 **Configuration**:
+
 ```java
 http.csrf(csrf -> csrf.disable())
 ```
 
 **Why Our JWT API is Safe**:
+
 1. ✅ **No Automatic Transmission**: JWTs must be manually added to Authorization header
 2. ✅ **Stateless**: No server-side session; tokens are self-contained
 3. ✅ **CORS Protection**: Strict CORS policy prevents unauthorized domains
@@ -388,15 +399,15 @@ http.csrf(csrf -> csrf.disable())
 
 ### CORS vs CSRF: Key Differences
 
-| Feature | CORS | CSRF |
-|---------|------|---------|
-| **What it protects** | Data confidentiality (reading responses) | Action integrity (preventing unwanted requests) |
-| **Enforced by** | Browser (client-side) | Server (backend validation) |
-| **Attack scenario** | Malicious site tries to read API responses | Malicious site tricks user into submitting request |
-| **Vulnerability** | Same-Origin Policy bypass | Automatic cookie submission |
-| **Protection mechanism** | Allow/deny specific origins | Validate unique token per session |
-| **Applies to** | All cross-origin requests | State-changing requests (POST/PUT/DELETE) |
-| **Our implementation** | ✅ Enabled with strict origin list | ❌ Disabled (stateless JWT API) |
+| Feature                  | CORS                                       | CSRF                                               |
+| ------------------------ | ------------------------------------------ | -------------------------------------------------- |
+| **What it protects**     | Data confidentiality (reading responses)   | Action integrity (preventing unwanted requests)    |
+| **Enforced by**          | Browser (client-side)                      | Server (backend validation)                        |
+| **Attack scenario**      | Malicious site tries to read API responses | Malicious site tricks user into submitting request |
+| **Vulnerability**        | Same-Origin Policy bypass                  | Automatic cookie submission                        |
+| **Protection mechanism** | Allow/deny specific origins                | Validate unique token per session                  |
+| **Applies to**           | All cross-origin requests                  | State-changing requests (POST/PUT/DELETE)          |
+| **Our implementation**   | ✅ Enabled with strict origin list         | ❌ Disabled (stateless JWT API)                    |
 
 ---
 
@@ -495,8 +506,8 @@ Prevent credential stuffing and brute-force attacks with account lockout after N
 ```yaml
 security:
   login:
-    max-attempts: 5                 # Lockout after 5 failed attempts
-    lockout-duration-ms: 900000     # 15 minutes
+    max-attempts: 5 # Lockout after 5 failed attempts
+    lockout-duration-ms: 900000 # 15 minutes
 ```
 
 ### Implementation
@@ -623,12 +634,12 @@ public PasswordEncoder passwordEncoder() {
 
 ### Cost Factor Analysis
 
-| Factor | Iterations | Hash Time | Security Level |
-|--------|-----------|-----------|-----------------|
-| 10 (default) | 1,024 | ~100ms | Acceptable |
-| 12 (our config) | 4,096 | ~400ms | **Recommended** |
-| 14 | 16,384 | ~1,600ms | Very Strong |
-| 16 | 65,536 | ~6,400ms | Overkill |
+| Factor          | Iterations | Hash Time | Security Level  |
+| --------------- | ---------- | --------- | --------------- |
+| 10 (default)    | 1,024      | ~100ms    | Acceptable      |
+| 12 (our config) | 4,096      | ~400ms    | **Recommended** |
+| 14              | 16,384     | ~1,600ms  | Very Strong     |
+| 16              | 65,536     | ~6,400ms  | Overkill        |
 
 ### Why Cost Factor 12?
 

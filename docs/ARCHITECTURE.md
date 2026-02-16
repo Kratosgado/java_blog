@@ -136,19 +136,21 @@ blog-backend
 **Responsibility**: Handle HTTP requests, request validation, response formatting
 
 **Components**:
+
 - REST Controllers (v1, v2 packages)
 - GraphQL Controllers
 - RBAC-specific controllers (AdminController, AuthorController, ReaderController)
 - OpenAPI annotations for Swagger documentation
 
 **Pattern**:
+
 ```java
 @RestController
 @RequestMapping("/posts")
 @Tag(name = "Posts", description = "Post management")
 public class PostController {
     @PostMapping
-    @PreAuthorize("hasRole('AUTHOR')")
+    @SecuredCreateEndpoint
     public Post createPost(@Valid @RequestBody CreatePostRequest request) {
         return postService.createPost(request);
     }
@@ -162,6 +164,7 @@ public class PostController {
 **Responsibility**: Implement business logic, transaction management, caching
 
 **Key Annotations**:
+
 - `@Service` - Service stereotype
 - `@Transactional` - Declarative transaction management
 - `@Cacheable` - Read from cache
@@ -169,6 +172,7 @@ public class PostController {
 - `@Caching` - Combine multiple cache operations
 
 **Pattern**:
+
 ```java
 @Service
 @Transactional(readOnly = true)
@@ -191,6 +195,7 @@ public class PostService {
 ### 3. Data Access Layer (Repositories)
 
 **PostgreSQL Repositories**:
+
 - Location: `blog-backend/src/main/java/.../repositories/jpa/`
 - Extend: `JpaRepository<Entity, ID>`
 - Features:
@@ -200,6 +205,7 @@ public class PostService {
   - Pagination & sorting support
 
 **MongoDB Repositories**:
+
 - Location: `blog-backend/src/main/java/.../repositories/mongo/`
 - Manual implementation using MongoClient
 - Features:
@@ -208,6 +214,7 @@ public class PostService {
   - Flexible schema support
 
 **DAO Pattern Example**:
+
 ```java
 public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
@@ -228,6 +235,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 #### PostgreSQL (Relational Data)
 
 **Core Tables**:
+
 - `users` - User accounts and authentication
 - `posts` - Blog articles
 - `tags` - Post tags
@@ -235,6 +243,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 - `post_tags` - Many-to-many junction table
 
 **Optimization Features**:
+
 - 20+ B-Tree indexes on foreign keys, search fields, timestamps
 - GIN indexes for full-text search
 - Views for pre-computed aggregations
@@ -243,10 +252,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 #### MongoDB (Document Data)
 
 **Collections**:
+
 - `comments` - Threaded comments with flexible metadata
 - `reviews` - Post reviews with nested ratings
 
 **Optimization Features**:
+
 - Compound indexes on frequently queried fields
 - Flexible schema for evolving data structures
 
@@ -254,13 +265,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 ### When to Use Each Database
 
-| Aspect | PostgreSQL | MongoDB |
-|--------|------------|---------|
-| **Data Type** | Structured, relational | Semi-structured, flexible |
-| **Schema** | Fixed schema, migrations | Dynamic schema, no migrations |
-| **Transactions** | ACID transactions | Single-document atomicity |
-| **Queries** | SQL with joins | JSON queries, aggregation |
-| **Use Cases** | Users, Posts, Tags | Comments, Reviews |
+| Aspect           | PostgreSQL               | MongoDB                       |
+| ---------------- | ------------------------ | ----------------------------- |
+| **Data Type**    | Structured, relational   | Semi-structured, flexible     |
+| **Schema**       | Fixed schema, migrations | Dynamic schema, no migrations |
+| **Transactions** | ACID transactions        | Single-document atomicity     |
+| **Queries**      | SQL with joins           | JSON queries, aggregation     |
+| **Use Cases**    | Users, Posts, Tags       | Comments, Reviews             |
 
 ### Data Flow
 
@@ -333,7 +344,7 @@ HTTP Request
     │   ├─→ Load user from database
     │   └─→ Set Security Context
     │
-    ├─→ Controller @PreAuthorize
+    ├─→ Controller @RoleGuardAspect
     │   ├─→ Check user roles
     │   ├─→ Verify permissions
     │   └─→ Grant/deny access
@@ -528,18 +539,18 @@ public class GlobalExceptionHandler {
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Language** | Java 21 |
-| **Framework** | Spring Boot 3.2.1 |
-| **ORM** | Hibernate (JPA) |
-| **Caching** | Spring Cache + Caffeine |
-| **Database** | PostgreSQL 14+, MongoDB 6.0+ |
-| **Security** | Spring Security, JWT |
-| **API** | REST (SpringDoc OpenAPI), GraphQL |
-| **Frontend** | JavaFX 21 |
-| **Build** | Maven 3.8+ |
-| **Testing** | JUnit 5, Mockito |
+| Layer         | Technology                        |
+| ------------- | --------------------------------- |
+| **Language**  | Java 21                           |
+| **Framework** | Spring Boot 3.2.1                 |
+| **ORM**       | Hibernate (JPA)                   |
+| **Caching**   | Spring Cache + Caffeine           |
+| **Database**  | PostgreSQL 14+, MongoDB 6.0+      |
+| **Security**  | Spring Security, JWT              |
+| **API**       | REST (SpringDoc OpenAPI), GraphQL |
+| **Frontend**  | JavaFX 21                         |
+| **Build**     | Maven 3.8+                        |
+| **Testing**   | JUnit 5, Mockito                  |
 
 ## Related Documentation
 
