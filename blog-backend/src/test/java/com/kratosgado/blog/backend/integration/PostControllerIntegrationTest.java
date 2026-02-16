@@ -128,7 +128,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
                   .header("Authorization", token)
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(toJson(request)))
-          .andExpect(status().isOk())
+          .andExpect(status().isCreated())
           .andExpect(jsonPath("$.data.title", is("New Post Title")))
           .andExpect(jsonPath("$.data.content", is("This is the content of the new post")))
           .andExpect(jsonPath("$.data.status", is("draft")))

@@ -6,13 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
+import com.kratosgado.blog.backend.exceptions.BlogException;
+import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
+import com.kratosgado.blog.dtos.request.CreateTagRequest;
+import com.kratosgado.blog.dtos.request.PageRequest;
+import com.kratosgado.blog.dtos.request.UpdateTagRequest;
+import com.kratosgado.blog.models.Tag;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -30,22 +34,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import com.kratosgado.blog.backend.exceptions.BlogException;
-import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
-import com.kratosgado.blog.dtos.request.CreateTagRequest;
-import com.kratosgado.blog.dtos.request.PageRequest;
-import com.kratosgado.blog.dtos.request.UpdateTagRequest;
-import com.kratosgado.blog.models.Tag;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TagService Tests")
 class TagServiceTest {
 
-  @Mock
-  private TagRepository tagRepository;
+  @Mock private TagRepository tagRepository;
 
-  @InjectMocks
-  private TagService tagService;
+  @InjectMocks private TagService tagService;
 
   private Tag testTag;
 
@@ -62,8 +57,8 @@ class TagServiceTest {
     when(tagRepository.findBySlug("java")).thenReturn(Optional.of(testTag));
 
     // Act
-    BlogException exception = assertThrows(BlogException.class,
-        () -> tagService.createTag(request));
+    BlogException exception =
+        assertThrows(BlogException.class, () -> tagService.createTag(request));
 
     // Assert
     assertTrue(exception.getMessage().contains("already exists"));
@@ -85,25 +80,26 @@ class TagServiceTest {
     }
 
     // Act & Assert
-    assertThrows(RuntimeException.class, () -> {
-      switch (operation) {
-        case "update":
-          tagService.updateTag(1L, new UpdateTagRequest("Java", "Description"));
-          break;
-        case "getById":
-          tagService.getTagById(1L);
-          break;
-        case "getBySlug":
-          tagService.getTagBySlug("nonexistent");
-          break;
-        case "delete":
-          doThrow(new RuntimeException("Tag not found")).when(tagRepository).deleteById(eq(1L));
-          tagService.deleteTag(1L);
-          break;
-        default:
-          throw new IllegalArgumentException("Unknown operation: " + operation);
-      }
-    });
+    assertThrows(
+        RuntimeException.class,
+        () -> {
+          switch (operation) {
+            case "update":
+              tagService.updateTag(1L, new UpdateTagRequest("Java", "Description"));
+              break;
+            case "getById":
+              tagService.getTagById(1L);
+              break;
+            case "getBySlug":
+              tagService.getTagBySlug("nonexistent");
+              break;
+            case "delete":
+              tagService.deleteTag(1L);
+              break;
+            default:
+              throw new IllegalArgumentException("Unknown operation: " + operation);
+          }
+        });
   }
 
   static Stream<Arguments> tagNotFoundTestCases() {
@@ -146,7 +142,8 @@ class TagServiceTest {
   @DisplayName("Should get all tags with pagination")
   void getAllTags_ShouldReturnPageOfTags() {
     // Arrange
-    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
+    PageRequest pageRequest =
+        PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
     Page<Tag> page = new PageImpl<>(List.of(testTag));
     when(tagRepository.findAll(any(Pageable.class))).thenReturn(page);
 
@@ -163,7 +160,8 @@ class TagServiceTest {
   void searchTags_WithKeyword_ShouldReturnPageOfTags() {
     // Arrange
     String keyword = "java";
-    PageRequest pageRequest = PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
+    PageRequest pageRequest =
+        PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
     Page<Tag> page = new PageImpl<>(List.of(testTag));
     when(tagRepository.searchByKeyword(eq(keyword), any(Pageable.class))).thenReturn(page);
 
@@ -200,22 +198,15 @@ class TagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({
-        "java, 3",
-        "python, 2",
-        "web, 5",
-        "mobile, 1",
-        "nonexistent, 0"
-    })
+    @CsvSource({"java, 3", "python, 2", "web, 5", "mobile, 1", "nonexistent, 0"})
     @DisplayName("Should return correct number of results for search keywords")
     void searchTags_WithKeyword_ShouldReturnExpectedCount(String keyword, int expectedCount) {
       // Arrange
       PageRequest pageRequest =
           PageRequest.builder().page(0).size(10).sortBy("name").sortDir("ASC").build();
-      List<Tag> tags = java.util.Collections.nCopies(
-          expectedCount,
-          new Tag(1L, keyword, keyword, keyword + " description")
-      );
+      List<Tag> tags =
+          java.util.Collections.nCopies(
+              expectedCount, new Tag(1L, keyword, keyword, keyword + " description"));
       Page<Tag> page = new PageImpl<>(tags);
       when(tagRepository.searchByKeyword(eq(keyword), any(Pageable.class))).thenReturn(page);
 
@@ -233,23 +224,16 @@ class TagServiceTest {
   class ParameterizedPaginationTests {
 
     @ParameterizedTest
-    @CsvSource({
-        "0, 10, name, ASC",
-        "1, 20, id, DESC",
-        "0, 5, createdAt, ASC",
-        "2, 15, name, DESC"
-    })
+    @CsvSource({"0, 10, name, ASC", "1, 20, id, DESC", "0, 5, createdAt, ASC", "2, 15, name, DESC"})
     @DisplayName("Should handle various pagination parameters")
     void getAllTags_WithVariousPaginationParams_ShouldReturnCorrectPage(
         int page, int size, String sortBy, String sortDir) {
       // Arrange
       PageRequest pageRequest =
           PageRequest.builder().page(page).size(size).sortBy(sortBy).sortDir(sortDir).build();
-      Page<Tag> mockPage = new PageImpl<>(
-          List.of(testTag),
-          org.springframework.data.domain.PageRequest.of(page, size),
-          10
-      );
+      Page<Tag> mockPage =
+          new PageImpl<>(
+              List.of(testTag), org.springframework.data.domain.PageRequest.of(page, size), 10);
       when(tagRepository.findAll(any(Pageable.class))).thenReturn(mockPage);
 
       // Act
@@ -269,18 +253,18 @@ class TagServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'Java', 'java'",
-        "'Spring Boot', 'spring-boot'",
-        "'Machine Learning', 'machine-learning'",
-        "'C++', 'c'",
-        "'Node.js', 'nodejs'"
+      "'Java', 'java'",
+      "'Spring Boot', 'spring-boot'",
+      "'Machine Learning', 'machine-learning'",
+      "'C++', 'c'",
+      "'Node.js', 'nodejs'"
     })
     @DisplayName("Should generate correct slugs from tag names")
     void createTag_WithVariousNames_ShouldGenerateCorrectSlugs(String name, String expectedSlug) {
       // Arrange
       CreateTagRequest request = new CreateTagRequest(name, "Description");
       Tag tag = new Tag(1L, name, expectedSlug, "Description");
-      
+
       when(tagRepository.findBySlug(expectedSlug)).thenReturn(Optional.empty());
       when(tagRepository.save(any(Tag.class))).thenReturn(tag);
 
@@ -299,16 +283,17 @@ class TagServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'Updated Java', 'Updated Java description'",
-        "'Java SE', 'Java Standard Edition'",
-        "'Core Java', null"
+      "'Updated Java', 'Updated Java description'",
+      "'Java SE', 'Java Standard Edition'",
+      "'Core Java', null"
     })
     @DisplayName("Should update tag with various field combinations")
     void updateTag_WithVariousFields_ShouldUpdateCorrectly(String name, String description) {
       // Arrange
       UpdateTagRequest request = new UpdateTagRequest(name, description);
-      Tag updatedTag = new Tag(1L, name, "java", description != null ? description : testTag.getDescription());
-      
+      Tag updatedTag =
+          new Tag(1L, name, "java", description != null ? description : testTag.getDescription());
+
       when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
       when(tagRepository.save(any(Tag.class))).thenReturn(updatedTag);
 

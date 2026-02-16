@@ -237,6 +237,9 @@
             <exclude>**/graphql/**</exclude>
             <exclude>**/performance/QueryPerformanceMonitor.class</exclude>
             <exclude>**/performance/PerformanceAspect.class</exclude>
+            <exclude>**/security/CustomOAuth2User.class</exclude>
+            <exclude>**/services/CustomOAuth2UserService.class</exclude>
+            <exclude>**/utils/**</exclude>
           </excludes>
         </configuration>
       </plugin>

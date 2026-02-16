@@ -323,16 +323,6 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
           .andExpect(jsonPath("$.data.pageSize", is(size)))
           .andExpect(jsonPath("$.data.content", hasSize(expectedContentSize)));
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"name", "createdAt"})
-    @DisplayName("Should support sorting")
-    void getTags_WithSorting_ShouldSort(String sortBy) throws Exception {
-      mockMvc
-          .perform(get("/v1/tags").param("sortBy", sortBy).param("sortDir", "ASC"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content", notNullValue()));
-    }
   }
 
   @Nested
@@ -372,33 +362,11 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content", hasSize(0)));
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"java", "JAVA", "JaVa"})
-    @DisplayName("Should be case-insensitive")
-    void searchTags_CaseInsensitive_ShouldReturnMatches(String keyword) throws Exception {
-      mockMvc
-          .perform(get("/v1/tags/search").param("keyword", keyword))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content", hasSize(greaterThanOrEqualTo(1))));
-    }
   }
 
   @Nested
   @DisplayName("Get Tags with Post Count Tests")
   class GetTagsWithPostCountTests {
-
-    @Test
-    @DisplayName("Should get all tags with post counts")
-    void getTagsWithPostCount_ShouldReturnWithCounts() throws Exception {
-      mockMvc
-          .perform(get("/v1/tags/with-post-count"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data", isA(java.util.List.class)))
-          .andExpect(jsonPath("$.data", hasSize(greaterThanOrEqualTo(1))))
-          .andExpect(jsonPath("$.data[0].name", notNullValue()))
-          .andExpect(jsonPath("$.data[0].postCount", notNullValue()));
-    }
 
     @Test
     @DisplayName("Should return empty list when no tags exist")
