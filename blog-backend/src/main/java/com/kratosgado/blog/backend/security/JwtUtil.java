@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.security;
 
 import com.kratosgado.blog.dtos.response.AuthResponse;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

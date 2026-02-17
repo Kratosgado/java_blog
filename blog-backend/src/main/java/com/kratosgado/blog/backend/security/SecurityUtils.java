@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.security;
 
 import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;

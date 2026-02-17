@@ -4,11 +4,12 @@ import com.kratosgado.blog.backend.exceptions.*;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -123,7 +124,7 @@ public class UserService {
   }
 
   public PageResponse<UserResponse> getAllUsers(PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
+    Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<UserResponse> userPage = userRepository.findAllBy(pageable);
     return DtoMapper.toPageResponse(userPage);
   }

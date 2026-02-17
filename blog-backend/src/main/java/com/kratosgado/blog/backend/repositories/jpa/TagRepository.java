@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.dtos.response.TagResponse;
-import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.backend.models.Tag;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Long> {

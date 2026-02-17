@@ -13,7 +13,7 @@ import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.dtos.response.TagResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.backend.models.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.List;

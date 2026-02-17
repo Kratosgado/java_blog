@@ -1,54 +1,42 @@
 package com.kratosgado.blog.controllers;
 
 import com.google.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.kratosgado.blog.models.Tag;
 import com.kratosgado.blog.services.TagService;
-
-import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
-import javafx.scene.control.TextField;
-import javafx.scene.paint.Color;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TagsManagementController {
   private static final Logger logger = LoggerFactory.getLogger(TagsManagementController.class);
 
-  @FXML
-  private Button createTagBtn;
+  @FXML private Button createTagBtn;
 
-  @FXML
-  private VBox tagFormContainer;
+  @FXML private VBox tagFormContainer;
 
-  @FXML
-  private Label formTitleLabel;
+  @FXML private Label formTitleLabel;
 
-  @FXML
-  private TextField tagNameField;
+  @FXML private TextField tagNameField;
 
-  @FXML
-  private ColorPicker tagColorPicker;
+  @FXML private ColorPicker tagColorPicker;
 
-  @FXML
-  private TextArea tagDescriptionArea;
+  @FXML private TextArea tagDescriptionArea;
 
-  @FXML
-  private Button saveTagBtn;
+  @FXML private Button saveTagBtn;
 
-  @FXML
-  private Button cancelFormBtn;
+  @FXML private Button cancelFormBtn;
 
-  @FXML
-  private FlowPane tagsFlowPane;
+  @FXML private FlowPane tagsFlowPane;
 
   private final TagService tagService;
   private Tag currentTag;
@@ -95,13 +83,13 @@ public class TagsManagementController {
     card.setAlignment(Pos.TOP_LEFT);
     card.setPrefWidth(200);
     card.setStyle(
-        "-fx-background-color: white; " +
-            "-fx-padding: 20; " +
-            "-fx-background-radius: 12; " +
-            "-fx-border-color: #e5e7eb; " +
-            "-fx-border-radius: 12; " +
-            "-fx-border-width: 1; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);");
+        "-fx-background-color: white; "
+            + "-fx-padding: 20; "
+            + "-fx-background-radius: 12; "
+            + "-fx-border-color: #e5e7eb; "
+            + "-fx-border-radius: 12; "
+            + "-fx-border-width: 1; "
+            + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0, 0, 2);");
 
     // Tag name with color indicator
     HBox headerBox = new HBox(10);
@@ -139,22 +127,22 @@ public class TagsManagementController {
 
     Button editBtn = new Button("Edit");
     editBtn.setStyle(
-        "-fx-background-color: -primary-color; " +
-            "-fx-text-fill: white; " +
-            "-fx-background-radius: 6; " +
-            "-fx-padding: 6 12; " +
-            "-fx-cursor: hand; " +
-            "-fx-font-size: 12px;");
+        "-fx-background-color: -primary-color; "
+            + "-fx-text-fill: white; "
+            + "-fx-background-radius: 6; "
+            + "-fx-padding: 6 12; "
+            + "-fx-cursor: hand; "
+            + "-fx-font-size: 12px;");
     editBtn.setOnAction(e -> editTag(tag));
 
     Button deleteBtn = new Button("Delete");
     deleteBtn.setStyle(
-        "-fx-background-color: #374151; " +
-            "-fx-text-fill: white; " +
-            "-fx-background-radius: 6; " +
-            "-fx-padding: 6 12; " +
-            "-fx-cursor: hand; " +
-            "-fx-font-size: 12px;");
+        "-fx-background-color: #374151; "
+            + "-fx-text-fill: white; "
+            + "-fx-background-radius: 6; "
+            + "-fx-padding: 6 12; "
+            + "-fx-cursor: hand; "
+            + "-fx-font-size: 12px;");
     deleteBtn.setOnAction(e -> deleteTag(tag.getId()));
 
     actionsBox.getChildren().addAll(editBtn, deleteBtn);
@@ -185,11 +173,13 @@ public class TagsManagementController {
 
       if (currentTag == null) {
         // Create new tag
-        tagService.createTag(new com.kratosgado.blog.dtos.request.CreateTagRequest(name, description));
+        tagService.createTag(
+            new com.kratosgado.blog.dtos.request.CreateTagRequest(name, description));
         logger.info("New tag created: {}", name);
       } else {
         // Update existing tag
-        tagService.updateTag(currentTag.getId(),
+        tagService.updateTag(
+            currentTag.getId(),
             new com.kratosgado.blog.dtos.request.UpdateTagRequest(name, description));
         logger.info("Tag updated: {}", name);
       }
@@ -198,7 +188,8 @@ public class TagsManagementController {
       cancelForm();
     } catch (Exception ex) {
       logger.error("Failed to save tag", ex);
-      com.kratosgado.blog.utils.DialogUtils.showError("Save Error", "Failed to save tag: " + ex.getMessage());
+      com.kratosgado.blog.utils.DialogUtils.showError(
+          "Save Error", "Failed to save tag: " + ex.getMessage());
     }
   }
 

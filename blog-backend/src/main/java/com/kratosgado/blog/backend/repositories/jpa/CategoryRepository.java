@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.dtos.response.CategoryResponse;
-import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.backend.models.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {

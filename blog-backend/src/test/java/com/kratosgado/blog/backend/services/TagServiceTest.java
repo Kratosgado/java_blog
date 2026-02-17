@@ -13,7 +13,7 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.dtos.request.CreateTagRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateTagRequest;
-import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.backend.models.Tag;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;

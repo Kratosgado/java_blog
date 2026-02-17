@@ -6,10 +6,11 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.TagResponse;
-import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.backend.models.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,7 +105,7 @@ public class TagService {
 
   @Cacheable(value = CacheNames.TAGLIST, key = "'getAllTags-' + #pageRequest.toString()")
   public PageResponse<Tag> getAllTags(PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
+    Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<Tag> tagPage = tagRepository.findAll(pageable);
 
     return DtoMapper.toPageResponse(tagPage);
@@ -114,7 +115,7 @@ public class TagService {
       value = CacheNames.TAGLIST,
       key = "'searchTags-' + #keyword + '-' + #pageRequest.toString()")
   public PageResponse<Tag> searchTags(String keyword, PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
+    Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<Tag> tagPage = tagRepository.searchByKeyword(keyword, pageable);
 
     return DtoMapper.toPageResponse(tagPage);
