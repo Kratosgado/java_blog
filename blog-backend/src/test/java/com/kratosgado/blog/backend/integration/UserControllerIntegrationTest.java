@@ -10,7 +10,7 @@ import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserAvatarRequest;
 import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -6,12 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 /**
- * Base request DTO for pagination and sorting. Provides common pagination parameters that can be
- * converted to Spring Data Pageable. Used as a base class for all paginated API requests.
+ * Base request DTO for pagination and sorting. Provides common pagination parameters.
+ * Used as a base class for all paginated API requests.
  */
 @Schema(description = "Request parameters for pagination and sorting")
 @Data
@@ -50,10 +48,5 @@ public class PageRequest {
 
   public int getOffset() {
     return page * size;
-  }
-
-  public Pageable toPageable() {
-    Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-    return org.springframework.data.domain.PageRequest.of(page, size, sort);
   }
 }

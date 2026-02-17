@@ -6,7 +6,7 @@ import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.models.Post;
+import com.kratosgado.blog.backend.models.Post;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;

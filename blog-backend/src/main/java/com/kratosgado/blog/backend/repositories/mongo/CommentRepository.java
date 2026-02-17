@@ -1,8 +1,8 @@
 package com.kratosgado.blog.backend.repositories.mongo;
 
+import com.kratosgado.blog.backend.models.Comment;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.enums.CommentStatus;
-import com.kratosgado.blog.models.Comment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

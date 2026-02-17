@@ -3,7 +3,7 @@ package com.kratosgado.blog.backend.services;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.security.CustomOAuth2User;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

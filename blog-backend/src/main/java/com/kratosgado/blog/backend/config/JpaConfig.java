@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @Configuration
-@EntityScan(basePackages = "com.kratosgado.blog.models")
+@EntityScan(basePackages = "com.kratosgado.blog.backend.models")
 @EnableJpaRepositories(basePackages = "com.kratosgado.blog.backend.repositories.jpa")
 @EnableAsync
-public class JpaConfig {
-}
+public class JpaConfig {}

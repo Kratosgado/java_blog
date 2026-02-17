@@ -9,7 +9,7 @@ import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,11 @@
-package com.kratosgado.blog.models;
+package com.kratosgado.blog.backend.models;
 
 import java.time.LocalDateTime;
 
-import com.kratosgado.blog.enums.CommentStatus;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,30 +18,40 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Comment {
+@Document(collection = "reviews")
+public class Review {
+  @Id
   private String id;
 
+  @Field("post_id")
+  @Indexed
   private Long postId;
 
+  @Field("user_id")
+  @Indexed
   private Long userId;
 
-  private String content;
+  private int rating; // 1-5 stars
 
-  private CommentStatus status;
+  private String title;
+
+  private String content;
 
   private String authorName;
   private String authorAvatarUrl;
 
+  @Field("created_at")
+  @Indexed
   private LocalDateTime createdAt;
 
+  @Field("updated_at")
   private LocalDateTime updatedAt;
+
+  private boolean helpful = false;
 
   public void onCreate() {
     createdAt = LocalDateTime.now();
     updatedAt = LocalDateTime.now();
-    if (status == null) {
-      status = CommentStatus.pending;
-    }
   }
 
   public void onUpdate() {

@@ -1,9 +1,7 @@
 package com.kratosgado.blog.dtos.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.kratosgado.blog.models.User;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.data.rest.core.config.Projection;
 
 /**
  * Response DTO for user profile information. Excludes sensitive information like password hash.
@@ -11,9 +9,6 @@ import org.springframework.data.rest.core.config.Projection;
  */
 @Schema(description = "User profile information response")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Projection(
-    name = "user",
-    types = {User.class})
 public interface UserResponse {
   @Schema(description = "Unique user identifier", example = "1")
   Long getId();

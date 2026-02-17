@@ -2,7 +2,7 @@ package com.kratosgado.blog.backend.security;
 
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.services.TokenBlacklistService;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

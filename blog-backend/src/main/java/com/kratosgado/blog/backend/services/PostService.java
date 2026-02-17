@@ -9,6 +9,7 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.CreatePostRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.SearchPageRequest;
@@ -19,9 +20,9 @@ import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.Tag;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.Post;
+import com.kratosgado.blog.backend.models.Tag;
+import com.kratosgado.blog.backend.models.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -156,7 +157,7 @@ public class PostService {
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> getPublishedPosts(PageRequest pageRequest) {
-    var postsPage = postRepository.findByStatus(PostStatus.published, pageRequest.toPageable());
+    var postsPage = postRepository.findByStatus(PostStatus.published, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -164,7 +165,7 @@ public class PostService {
   public PageResponse<PostView> searchPosts(SearchPageRequest pageRequest) {
     // Use optimized full-text search with PostgreSQL tsvector
     var postsPage =
-        postRepository.searchPublishedPosts(pageRequest.getKeyword(), pageRequest.toPageable());
+        postRepository.searchPublishedPosts(pageRequest.getKeyword(), PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -173,20 +174,20 @@ public class PostService {
     // Use optimized full-text search with PostgreSQL tsvector
     var postsPage =
         postRepository.searchPublishedPostsSimple(
-            pageRequest.getKeyword(), pageRequest.toPageable());
+            pageRequest.getKeyword(), PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostWithoutUser> getUserPosts(Long userId, PageRequest pageRequest) {
-    var postsPage = postRepository.findByUserId(userId, pageRequest.toPageable());
+    var postsPage = postRepository.findByUserId(userId, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
   @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostWithoutCategory> getPostsByCategory(
       Long categoryId, PageRequest pageRequest) {
-    var postsPage = postRepository.findByCategoryId(categoryId, pageRequest.toPageable());
+    var postsPage = postRepository.findByCategoryId(categoryId, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -195,7 +196,7 @@ public class PostService {
     // Default to trending in last 30 days
     java.time.LocalDateTime sinceDate = java.time.LocalDateTime.now().minusDays(30);
     var postsPage =
-        postRepository.findTrendingPosts(PostStatus.published, sinceDate, pageRequest.toPageable());
+        postRepository.findTrendingPosts(PostStatus.published, sinceDate, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -205,7 +206,7 @@ public class PostService {
   public PageResponse<PostView> getPublishedPostsByCategoryOptimized(
       Long categoryId, PageRequest pageRequest) {
     var postsPage =
-        postRepository.findPublishedPostsByCategoryOptimized(categoryId, pageRequest.toPageable());
+        postRepository.findPublishedPostsByCategoryOptimized(categoryId, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 
@@ -215,7 +216,7 @@ public class PostService {
   public PageResponse<PostView> getPublishedPostsByTagOptimized(
       Long tagId, PageRequest pageRequest) {
     var postsPage =
-        postRepository.findPublishedPostsByTagOptimized(tagId, pageRequest.toPageable());
+        postRepository.findPublishedPostsByTagOptimized(tagId, PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(postsPage);
   }
 }

@@ -5,7 +5,7 @@ import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateCategoryRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.backend.models.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;

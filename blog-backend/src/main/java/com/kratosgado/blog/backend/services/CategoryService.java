@@ -5,11 +5,12 @@ import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.CreateCategoryRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CategoryResponse;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.models.Category;
+import com.kratosgado.blog.backend.models.Category;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +83,7 @@ public class CategoryService {
   }
 
   public PageResponse<Category> getAllCategories(PageRequest pageRequest) {
-    Page<Category> categoryPage = categoryRepository.findAll(pageRequest.toPageable());
+    Page<Category> categoryPage = categoryRepository.findAll(PageUtil.toPageable(pageRequest));
     return DtoMapper.toPageResponse(categoryPage);
   }
 

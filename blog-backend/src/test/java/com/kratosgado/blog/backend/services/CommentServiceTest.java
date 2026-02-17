@@ -30,9 +30,9 @@ import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.enums.CommentStatus;
-import com.kratosgado.blog.models.Comment;
-import com.kratosgado.blog.models.Post;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.Comment;
+import com.kratosgado.blog.backend.models.Post;
+import com.kratosgado.blog.backend.models.User;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("CommentService Tests")

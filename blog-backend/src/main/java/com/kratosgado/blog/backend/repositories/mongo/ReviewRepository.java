@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
-import com.kratosgado.blog.models.Review;
+import com.kratosgado.blog.backend.models.Review;
 
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
