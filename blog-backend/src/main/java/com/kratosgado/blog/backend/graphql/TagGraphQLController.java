@@ -3,7 +3,7 @@ package com.kratosgado.blog.backend.graphql;
 import com.kratosgado.blog.backend.services.TagService;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.models.Tag;
+import com.kratosgado.blog.backend.models.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;

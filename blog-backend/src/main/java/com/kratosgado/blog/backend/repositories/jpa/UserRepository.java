@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.repositories.jpa;
 
 import com.kratosgado.blog.dtos.response.UserResponse;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Optional;

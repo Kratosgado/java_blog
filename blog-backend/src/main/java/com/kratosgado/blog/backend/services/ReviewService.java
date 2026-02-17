@@ -12,13 +12,14 @@ import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.backend.utils.DtoMapper;
+import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
-import com.kratosgado.blog.models.Review;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.Review;
+import com.kratosgado.blog.backend.models.User;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -102,7 +103,7 @@ public class ReviewService {
   }
 
   public PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
+    Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<Review> reviewPage = reviewRepository.findByPostId(postId, pageable);
 
     return DtoMapper.toPageResponse(reviewPage);
@@ -110,7 +111,7 @@ public class ReviewService {
 
   public PageResponse<ReviewWithoutUser> getUserReviews(Long userId,
       PageRequest pageRequest) {
-    Pageable pageable = pageRequest.toPageable();
+    Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<ReviewWithoutUser> reviewPage = reviewRepository.findByUserId(userId, pageable);
     return DtoMapper.toPageResponse(reviewPage);
 

@@ -15,7 +15,7 @@ import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.models.User;
+import com.kratosgado.blog.backend.models.User;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

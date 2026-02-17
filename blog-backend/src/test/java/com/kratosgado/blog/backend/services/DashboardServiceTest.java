@@ -1,9 +1,9 @@
 package com.kratosgado.blog.backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.kratosgado.blog.backend.models.Comment;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
@@ -13,6 +13,7 @@ import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
 import com.kratosgado.blog.dtos.response.AnalyticsResponse;
 import com.kratosgado.blog.dtos.response.EngagementStatsResponse;
 import com.kratosgado.blog.dtos.response.PostDistributionResponse;
+import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.RecentActivityResponse;
 import com.kratosgado.blog.dtos.response.StatCountResponse;
 import com.kratosgado.blog.dtos.response.UserDashboardStatsResponse;
@@ -25,50 +26,48 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class DashboardServiceTest {
 
-  @Mock
-  private PostRepository postRepository;
+  @Mock private PostRepository postRepository;
 
-  @Mock
-  private UserRepository userRepository;
+  @Mock private UserRepository userRepository;
 
-  @Mock
-  private TagRepository tagRepository;
+  @Mock private TagRepository tagRepository;
 
-  @Mock
-  private CommentRepository commentRepository;
+  @Mock private CommentRepository commentRepository;
 
-  @Mock
-  private ReviewRepository reviewRepository;
+  @Mock private ReviewRepository reviewRepository;
 
-  @Mock
-  private CategoryRepository categoryRepository;
+  @Mock private CategoryRepository categoryRepository;
 
-  @InjectMocks
-  private DashboardService dashboardService;
+  @InjectMocks private DashboardService dashboardService;
 
   private com.kratosgado.blog.dtos.response.PostResponse.PostView postView1;
   private com.kratosgado.blog.dtos.response.PostResponse.PostView postView2;
 
   @BeforeEach
   void setUp() {
-    postView1 = org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.PostResponse.PostView.class, org.mockito.Mockito.withSettings().lenient());
-    org.mockito.Mockito.lenient().when(postView1.getId()).thenReturn(1L);
-    org.mockito.Mockito.lenient().when(postView1.getTitle()).thenReturn("Post 1");
-    org.mockito.Mockito.lenient().when(postView1.getViews()).thenReturn(100);
-    org.mockito.Mockito.lenient().when(postView1.getLikesCount()).thenReturn(10);
+    postView1 =
+        Mockito.mock(
+            com.kratosgado.blog.dtos.response.PostResponse.PostView.class,
+            Mockito.withSettings().lenient());
+    Mockito.lenient().when(postView1.getId()).thenReturn(1L);
+    Mockito.lenient().when(postView1.getTitle()).thenReturn("Post 1");
+    Mockito.lenient().when(postView1.getViews()).thenReturn(100);
+    Mockito.lenient().when(postView1.getLikesCount()).thenReturn(10);
 
-    postView2 = org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.PostResponse.PostView.class, org.mockito.Mockito.withSettings().lenient());
-    org.mockito.Mockito.lenient().when(postView2.getId()).thenReturn(2L);
-    org.mockito.Mockito.lenient().when(postView2.getTitle()).thenReturn("Post 2");
-    org.mockito.Mockito.lenient().when(postView2.getViews()).thenReturn(50);
-    org.mockito.Mockito.lenient().when(postView2.getLikesCount()).thenReturn(5);
+    postView2 =
+        Mockito.mock(
+            com.kratosgado.blog.dtos.response.PostResponse.PostView.class,
+            Mockito.withSettings().lenient());
+    Mockito.lenient().when(postView2.getId()).thenReturn(2L);
+    Mockito.lenient().when(postView2.getTitle()).thenReturn("Post 2");
+    Mockito.lenient().when(postView2.getViews()).thenReturn(50);
+    Mockito.lenient().when(postView2.getLikesCount()).thenReturn(5);
   }
 
   @Test
@@ -112,8 +111,7 @@ class DashboardServiceTest {
     LocalDateTime start = LocalDateTime.now().minusDays(7);
     LocalDateTime end = LocalDateTime.now();
 
-    when(postRepository.findTopNByOrderByViewsDesc(10))
-        .thenReturn(List.of(postView1, postView2));
+    when(postRepository.findTopNByOrderByViewsDesc(10)).thenReturn(List.of(postView1, postView2));
     when(postRepository.countByStatus(PostStatus.published)).thenReturn(2L);
 
     AnalyticsResponse response = dashboardService.getAnalytics(start, end);
@@ -130,8 +128,7 @@ class DashboardServiceTest {
     LocalDateTime start = LocalDateTime.now().minusDays(7);
     LocalDateTime end = LocalDateTime.now();
 
-    when(postRepository.findTopNByOrderByViewsDesc(10))
-        .thenReturn(List.of(postView1));
+    when(postRepository.findTopNByOrderByViewsDesc(10)).thenReturn(List.of(postView1));
     when(postRepository.countByStatus(PostStatus.published)).thenReturn(0L);
 
     AnalyticsResponse response = dashboardService.getAnalytics(start, end);
@@ -157,14 +154,12 @@ class DashboardServiceTest {
   @Test
   @DisplayName("getEngagementStats should map post and category projections correctly")
   void getEngagementStats_shouldReturnEngagementSummaries() {
-    when(postRepository.findTopNByOrderByViewsDesc(5))
-        .thenReturn(List.of(postView1, postView2));
+    when(postRepository.findTopNByOrderByViewsDesc(5)).thenReturn(List.of(postView1, postView2));
 
     com.kratosgado.blog.dtos.response.CategoryResponse categoryProjection =
         new com.kratosgado.blog.dtos.response.CategoryResponse(1L, "Tech", "tech", "desc", 3L);
 
-    when(categoryRepository.findAllWithPostCount())
-        .thenReturn(List.of(categoryProjection));
+    when(categoryRepository.findAllWithPostCount()).thenReturn(List.of(categoryProjection));
 
     EngagementStatsResponse response = dashboardService.getEngagementStats();
 
@@ -177,25 +172,21 @@ class DashboardServiceTest {
   @Test
   @DisplayName("getRecentActivity should return latest posts and comments")
   void getRecentActivity_shouldReturnRecentPostsAndComments() {
-    com.kratosgado.blog.dtos.response.PostResponse.PostView recentPost =
-        org.mockito.Mockito.mock(com.kratosgado.blog.dtos.response.PostResponse.PostView.class);
-    org.mockito.Mockito.when(recentPost.getId()).thenReturn(1L);
-    org.mockito.Mockito.when(recentPost.getTitle()).thenReturn("Recent Post");
-    org.mockito.Mockito.when(recentPost.getSlug()).thenReturn("recent-post");
-    org.mockito.Mockito.when(recentPost.getCreatedAt())
-        .thenReturn(LocalDateTime.of(2024, 1, 1, 10, 0));
+    PostView recentPost = Mockito.mock(PostView.class);
+    Mockito.when(recentPost.getId()).thenReturn(1L);
+    Mockito.when(recentPost.getTitle()).thenReturn("Recent Post");
+    Mockito.when(recentPost.getSlug()).thenReturn("recent-post");
+    Mockito.when(recentPost.getCreatedAt()).thenReturn(LocalDateTime.of(2024, 1, 1, 10, 0));
 
-    com.kratosgado.blog.models.Comment recentComment = new com.kratosgado.blog.models.Comment();
+    Comment recentComment = new Comment();
     recentComment.setId("c1");
     recentComment.setPostId(1L);
     recentComment.setAuthorName("johndoe");
     recentComment.setContent("Nice post");
     recentComment.setCreatedAt(LocalDateTime.of(2024, 1, 2, 12, 0));
 
-    when(postRepository.findTopNByOrderByCreatedAtDesc(5))
-        .thenReturn(List.of(recentPost));
-    when(commentRepository.findTopNByOrderByCreatedAtDesc(5))
-        .thenReturn(List.of(recentComment));
+    when(postRepository.findTopNByOrderByCreatedAtDesc(5)).thenReturn(List.of(recentPost));
+    when(commentRepository.findTopNByOrderByCreatedAtDesc(5)).thenReturn(List.of(recentComment));
 
     RecentActivityResponse response = dashboardService.getRecentActivity();
 
