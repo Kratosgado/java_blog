@@ -32,7 +32,7 @@ public class OpenAPIConfig {
     return GroupedOpenApi.builder()
         .group("v2")
         .pathsToExclude("/data/**")
-        .pathsToMatch("/api/v2/**")
+        .pathsToMatch("/v2/**")
         .build();
   }
 
