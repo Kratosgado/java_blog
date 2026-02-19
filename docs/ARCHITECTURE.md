@@ -533,9 +533,8 @@ public class GlobalExceptionHandler {
    - Featured images
    - User avatars
 
-3. **OAuth2** (Future)
+3. **OAuth2**
    - Google login
-   - GitHub login
 
 ## Technology Stack
 

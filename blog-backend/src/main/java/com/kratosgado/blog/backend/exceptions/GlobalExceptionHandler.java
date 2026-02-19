@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(InvalidRequestException.class)
   public ResponseEntity<ResponseDto<?>> handleInvalidRequest(InvalidRequestException ex) {
     logger.error("Invalid request: {}", ex.getMessage());
-    return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    return buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
