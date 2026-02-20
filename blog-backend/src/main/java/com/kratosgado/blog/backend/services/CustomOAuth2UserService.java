@@ -1,9 +1,9 @@
 package com.kratosgado.blog.backend.services;
 
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.security.CustomOAuth2User;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.backend.models.User;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -46,26 +46,23 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    */
   private OAuth2User processOAuth2User(OAuth2UserRequest userRequest, OAuth2User oauth2User) {
     log.info("Processing OAuth2 user: {}", oauth2User.getName());
-    String registrationId = userRequest.getClientRegistration().getRegistrationId(); // "google"
+    String provider = userRequest.getClientRegistration().getRegistrationId(); // "google"
     Map<String, Object> attributes = oauth2User.getAttributes();
 
-    // Extract user information based on provider
-    OAuth2UserInfo userInfo = extractUserInfo(registrationId, attributes);
+    OAuth2UserInfo userInfo = extractUserInfo(provider, attributes);
 
     // Check if user exists by provider ID
-    Optional<User> userOptional =
-        userRepository.findByAuthProviderAndProviderId(registrationId, userInfo.providerId());
+    Optional<User> userOptional = userRepository.findBy(userInfo.email());
 
     User user;
     if (userOptional.isPresent()) {
       user = userOptional.get();
-      log.info("OAuth2 user found: {} ({})", user.getEmail(), registrationId);
-      // Update user information (email, name, avatar may have changed)
-      user = updateExistingUser(user, userInfo);
+      log.info("OAuth2 user found: {} ({})", user.getEmail(), provider);
+      if (!user.getAuthProvider().equals(provider)) {
+        user = updateWithOAuthInfo(user, userInfo, provider);
+      }
     } else {
-      // Create new user
-      log.info("Creating new OAuth2 user: {} ({})", userInfo.email(), registrationId);
-      user = createNewUser(registrationId, userInfo);
+      user = createNewUser(provider, userInfo);
     }
 
     return new CustomOAuth2User(user, oauth2User.getAttributes(), oauth2User.getAuthorities());
@@ -74,17 +71,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   /**
    * Extract user information from OAuth2 attributes based on provider
    *
-   * @param registrationId OAuth2 provider ID (google, github, etc.)
+   * @param provider OAuth2 provider ID (google, github, etc.)
    * @param attributes OAuth2 user attributes from provider
    * @return OAuth2UserInfo containing extracted user details
    */
-  private OAuth2UserInfo extractUserInfo(String registrationId, Map<String, Object> attributes) {
-    switch (registrationId.toLowerCase()) {
+  private OAuth2UserInfo extractUserInfo(String provider, Map<String, Object> attributes) {
+    switch (provider.toLowerCase()) {
       case "google":
         return extractGoogleUserInfo(attributes);
       // Add more providers here (GitHub, Facebook, etc.)
       default:
-        throw new OAuth2AuthenticationException("Unsupported OAuth2 provider: " + registrationId);
+        throw new OAuth2AuthenticationException("Unsupported OAuth2 provider: " + provider);
     }
   }
 
@@ -121,6 +118,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    * @return Created and persisted User entity
    */
   private User createNewUser(String provider, OAuth2UserInfo userInfo) {
+    log.info("Creating new OAuth2 user: {} ({})", userInfo.email(), provider);
     // Generate unique username from email
     String username = generateUniqueUsername(userInfo.email());
 
@@ -150,25 +148,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
    * @param userInfo Latest OAuth2 user information
    * @return Updated and persisted User entity
    */
-  private User updateExistingUser(User existingUser, OAuth2UserInfo userInfo) {
-    boolean updated = false;
+  private User updateWithOAuthInfo(User existingUser, OAuth2UserInfo userInfo, String provider) {
+    existingUser.setAuthProvider(provider);
+    existingUser.setProviderId(userInfo.providerId());
 
-    // Update email if changed
-    if (!existingUser.getEmail().equals(userInfo.email())) {
-      existingUser.setEmail(userInfo.email());
-      updated = true;
-    }
-
-    // Update avatar URL if changed
-    if (userInfo.avatarUrl() != null && !userInfo.avatarUrl().equals(existingUser.getAvatarUrl())) {
-      existingUser.setAvatarUrl(userInfo.avatarUrl());
-      updated = true;
-    }
-
-    if (updated) {
-      existingUser = userRepository.save(existingUser);
-      log.info("Updated OAuth2 user: {}", existingUser.getEmail());
-    }
+    existingUser = userRepository.save(existingUser);
+    log.info("Updated OAuth2 user: {}", existingUser.getEmail());
 
     return existingUser;
   }
