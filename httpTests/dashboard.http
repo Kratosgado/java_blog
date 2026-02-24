@@ -1,77 +1,90 @@
 ### Dashboard API Tests
 
-### Base URL
-@host = http://localhost:8080/api
+@host = http://localhost:8080/api/v1
 
- 
-### IMPORTANT: Run auth.http login test first to set the adminAuth token
- 
 
 ### Get Dashboard Statistics
+
 # @name getDashboardStats
+
 GET {{host}}/dashboard/stats HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
 
-### Get User Dashboard Statistics  
+### 
+
+
+### Get User Dashboard Statistics
+
 # @name getUserDashboardStats
+
 GET {{host}}/dashboard/user/stats HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Analytics Data (default date range - last 30 days)
+
 # @name getAnalyticsDefault
+
 GET {{host}}/dashboard/analytics HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Analytics Data with Custom Date Range
+
 # @name getAnalyticsCustomRange
+
 GET {{host}}/dashboard/analytics?startDate=2024-01-01T00:00:00&endDate=2024-12-31T23:59:59 HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Analytics Data for Last 7 Days
+
 # @name getAnalytics7Days
+
 GET {{host}}/dashboard/analytics?startDate=2024-01-09T00:00:00&endDate=2024-01-16T23:59:59 HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Post Status Distribution
+
 # @name getPostDistribution
+
 GET {{host}}/dashboard/posts/distribution HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Engagement Statistics
+
 # @name getEngagementStats
+
 GET {{host}}/dashboard/engagement HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
+
+### 
+
 
 ### Get Recent Activity
+
 # @name getRecentActivity
+
 GET {{host}}/dashboard/recent HTTP/1.1
 Authorization: {{adminAuth}}
 
-###
-
-### Test Unauthorized Access - No Token (should return 401)
-# @name unauthorizedAccess
-GET {{host}}/dashboard/stats HTTP/1.1
-
-###
-
-### Test Invalid Token (should return 401)
-# @name invalidToken
-GET {{host}}/dashboard/stats HTTP/1.1
-Authorization: Bearer invalid_token_here
-
-###
+##

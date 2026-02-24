@@ -1,6 +1,12 @@
 package com.kratosgado.blog.backend.seeders;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.kratosgado.blog.backend.models.Category;
+import com.kratosgado.blog.backend.models.Comment;
+import com.kratosgado.blog.backend.models.Post;
+import com.kratosgado.blog.backend.models.Review;
+import com.kratosgado.blog.backend.models.Tag;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
@@ -11,12 +17,6 @@ import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.enums.CommentStatus;
 import com.kratosgado.blog.enums.PostStatus;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.backend.models.Category;
-import com.kratosgado.blog.backend.models.Comment;
-import com.kratosgado.blog.backend.models.Post;
-import com.kratosgado.blog.backend.models.Review;
-import com.kratosgado.blog.backend.models.Tag;
-import com.kratosgado.blog.backend.models.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -220,6 +220,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     post.setExcerpt(faker.lorem().sentence(20));
     post.setStatus(faker.options().option(PostStatus.class));
     post.setViews(faker.number().numberBetween(0, 5000));
+    post.setLikesCount(faker.number().numberBetween(0, 1000));
     post.setCoverImage(faker.internet().image());
 
     // Relationships

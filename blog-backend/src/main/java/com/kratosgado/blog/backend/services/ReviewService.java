@@ -1,129 +1,28 @@
 package com.kratosgado.blog.backend.services;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.kratosgado.blog.backend.exceptions.ForbiddenException;
-import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
-import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
-import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
-import com.kratosgado.blog.backend.utils.PageUtil;
+import com.kratosgado.blog.backend.models.Review;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.dtos.request.CreateReviewRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.request.UpdateReviewRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.ReviewResponse.ReviewWithoutUser;
-import com.kratosgado.blog.backend.models.Review;
-import com.kratosgado.blog.backend.models.User;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+public interface ReviewService {
 
-@Service
-@Slf4j
-@AllArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
-public class ReviewService {
+  Review createReview(CreateReviewRequest request, User user);
 
-  private final ReviewRepository reviewRepository;
-  private final PostRepository postRepository;
+  Review updateReview(String id, UpdateReviewRequest request, Long userId);
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public Review createReview(CreateReviewRequest request, User user) {
-    if (!postRepository.existsById(request.postId())) {
-      throw new ResourceNotFoundException("Post", "id", request.postId());
-    }
+  void deleteReview(String id, Long userId);
 
-    if (reviewRepository.existsByPostIdAndUserId(request.postId(), user.getId())) {
-      throw new ResourceAlreadyExistsException("Review already exists for this post by this user");
-    }
+  Review getReviewById(String id);
 
-    Review review = Review.builder()
-        .postId(request.postId())
-        .userId(user.getId())
-        .rating(request.rating())
-        .title(request.title())
-        .content(request.content())
-        .authorName(user.getUsername())
-        .authorAvatarUrl(user.getAvatarUrl())
-        .build();
-    review.onCreate();
+  PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest);
 
-    Review saved = reviewRepository.save(review);
-    log.debug("Created review with ID: {}", saved.getId());
-    return saved;
-  }
+  PageResponse<ReviewWithoutUser> getUserReviews(Long userId, PageRequest pageRequest);
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public Review updateReview(String id, UpdateReviewRequest request, Long userId) {
-    Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
+  Double getAverageRating(Long postId);
 
-    if (!review.getUserId().equals(userId)) {
-      throw new ForbiddenException("You are not allowed to update this review");
-    }
-
-    if (request.rating() != null) {
-      review.setRating(request.rating());
-    }
-    if (request.title() != null) {
-      review.setTitle(request.title());
-    }
-    if (request.content() != null) {
-      review.setContent(request.content());
-    }
-    review.onUpdate();
-
-    Review updated = reviewRepository.save(review);
-    log.debug("Updated review with ID: {}", id);
-    return updated;
-  }
-
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public void deleteReview(String id, Long userId) {
-    Review review = reviewRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
-
-    if (!review.getUserId().equals(userId)) {
-      throw new ForbiddenException("You are not allowed to delete this review");
-    }
-
-    reviewRepository.delete(review);
-    log.debug("Deleted review with ID: {}", id);
-  }
-
-  public Review getReviewById(String id) {
-    return reviewRepository.findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
-  }
-
-  public PageResponse<Review> getPostReviews(Long postId, PageRequest pageRequest) {
-    Pageable pageable = PageUtil.toPageable(pageRequest);
-    Page<Review> reviewPage = reviewRepository.findByPostId(postId, pageable);
-
-    return DtoMapper.toPageResponse(reviewPage);
-  }
-
-  public PageResponse<ReviewWithoutUser> getUserReviews(Long userId,
-      PageRequest pageRequest) {
-    Pageable pageable = PageUtil.toPageable(pageRequest);
-    Page<ReviewWithoutUser> reviewPage = reviewRepository.findByUserId(userId, pageable);
-    return DtoMapper.toPageResponse(reviewPage);
-
-  }
-
-  public Double getAverageRating(Long postId) {
-    Double avg = reviewRepository.getAverageRating(postId);
-    return avg != null ? avg : 0.0;
-  }
-
-  public Long getReviewCount(Long postId) {
-    return reviewRepository.countByPostId(postId);
-  }
-
+  Long getReviewCount(Long postId);
 }

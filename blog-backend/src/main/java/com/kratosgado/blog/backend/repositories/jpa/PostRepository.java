@@ -1,12 +1,12 @@
 package com.kratosgado.blog.backend.repositories.jpa;
 
+import com.kratosgado.blog.backend.models.Post;
 import com.kratosgado.blog.dtos.response.PostResponse.PostDetails;
 import com.kratosgado.blog.dtos.response.PostResponse.PostView;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutCategory;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutTag;
 import com.kratosgado.blog.dtos.response.PostResponse.PostWithoutUser;
 import com.kratosgado.blog.enums.PostStatus;
-import com.kratosgado.blog.backend.models.Post;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -64,9 +64,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
           + "LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%')))")
   Page<PostView> searchPublishedPostsSimple(@Param("query") String query, Pageable pageable);
 
-  @Query(
-      value = "SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit",
-      nativeQuery = true)
+  @Query("SELECT p FROM Post p WHERE p.status = 'published' ORDER BY p.views DESC LIMIT :limit")
   List<PostView> findTopNByOrderByViewsDesc(@Param("limit") int limit);
 
   @Modifying
@@ -85,10 +83,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   @Query(
       value =
-          "SELECT p.* FROM posts p "
-              + "WHERE p.status = :#{#status.name()} AND p.created_at >= :sinceDate "
-              + "ORDER BY p.views DESC, p.created_at DESC",
-      nativeQuery = true)
+          "SELECT p from Post p where p.status = :status and p.createdAt >= :sinceDate order by"
+              + " p.views desc, p.createdAt desc")
+  @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
   Page<PostView> findTrendingPosts(
       @Param("status") PostStatus status,
       @Param("sinceDate") java.time.LocalDateTime sinceDate,

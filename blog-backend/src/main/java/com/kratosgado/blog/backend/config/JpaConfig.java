@@ -3,10 +3,9 @@ package com.kratosgado.blog.backend.config;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 @Configuration
 @EntityScan(basePackages = "com.kratosgado.blog.backend.models")
 @EnableJpaRepositories(basePackages = "com.kratosgado.blog.backend.repositories.jpa")
-@EnableAsync
+// @EnableAsync
 public class JpaConfig {}

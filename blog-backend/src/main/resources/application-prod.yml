@@ -34,7 +34,9 @@ spring:
         format_sql: false
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      host: ${MONGODB_HOST}
+      port: ${MONGODB_PORT}
+      database: ${MONGO_DB_NAME}
   servlet:
     multipart:
       max-file-size: 10MB
@@ -54,7 +56,7 @@ logging:
     max-history: 30
 
 jwt:
-  secret: ${JWT_SECRET:change-this-secret-key-in-production}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 
 cors:

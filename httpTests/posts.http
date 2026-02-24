@@ -59,14 +59,14 @@ GET {{host}}/posts?page=1&size=3&sort=id,asc HTTP/1.1
 
 # @name getPost
 
-GET {{host}}/posts/100012 HTTP/1.1
+GET {{host}}/posts/{{postId}} HTTP/1.1
 
 
 ### Get a single post by slug (cached endpoint)
 
 # @name getPostBySlug
 
-GET {{host}}/posts/slug/death-be-not-proud-in-deleniti-fugit-enim-ut-totam HTTP/1.1
+GET {{host}}/posts/slug/{{postSlug}} HTTP/1.1
 
 
 ### Get posts with different sorting
@@ -80,7 +80,7 @@ GET {{host}}/posts?page=1&size=4&sortBy=title&sortDir=ASC HTTP/1.1
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=no&page=0&size=10 HTTP/1.1
 
 
 ### Get posts by user
