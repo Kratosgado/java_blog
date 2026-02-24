@@ -10,6 +10,7 @@ import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
+import com.kratosgado.blog.backend.utils.BlogConstants.Miliseconds;
 import com.kratosgado.blog.backend.utils.BlogUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.backend.utils.PageUtil;
@@ -49,7 +50,7 @@ public class PostServiceImpl implements PostService {
   private final AtomicReference<PageResponse<PostView>> trendingPostsCache =
       new AtomicReference<>();
 
-  @Scheduled(fixedRate = 60000) // Refresh every minute
+  @Scheduled(fixedRate = Miliseconds.SIX_HOURS)
   @Transactional(readOnly = true)
   @jakarta.annotation.PostConstruct
   public void refreshTrendingPostsCache() {

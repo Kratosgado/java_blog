@@ -1,7 +1,7 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.dtos.response.AuthResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -68,16 +68,11 @@ public class JwtUtil {
   public JwtPayload extractPayload(String token) {
     var claims =
         Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
-    
-    // Handle userId which might be serialized as Double or other number types
-    Object userIdObj = claims.get("userId");
-    Long userId = null;
-    if (userIdObj instanceof Number) {
-      userId = ((Number) userIdObj).longValue();
-    }
-    
+
+    String email = (String) claims.get("email");
+
     return new JwtPayload(
-        claims.getSubject(), userId, claims.get("role", String.class));
+        email, Long.valueOf(claims.getSubject()), claims.get("role", String.class));
   }
 
   public Boolean validateToken(String token, String sub) {
@@ -86,18 +81,18 @@ public class JwtUtil {
   }
 
   public AuthResponse signToken(User user) {
-    Map<String, Object> claims = Map.of("userId", user.getId(), "role", user.getRole().name());
+    Map<String, Object> claims = Map.of("email", user.getEmail(), "role", user.getRole().name());
     String token = createToken(claims, user.getId().toString());
     return new AuthResponse(
         token, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
   public AuthResponse signToken(CustomOAuth2User user) {
-    Map<String, Object> claims = Map.of("userId", user.getUserId(), "role", user.getRole());
+    Map<String, Object> claims = Map.of("email", user.getEmail(), "role", user.getRole());
     String token = createToken(claims, user.getUserId().toString());
     return new AuthResponse(
         token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
-  public static record JwtPayload(String username, Long userId, String role) {}
+  public static record JwtPayload(String email, Long userId, String role) {}
 }

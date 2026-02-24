@@ -71,6 +71,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   @Query("UPDATE Post p SET p.views = p.views + 1 WHERE p.slug = :slug")
   void incrementViews(@Param("slug") String slug);
 
+  @Modifying
+  @Query("UPDATE Post p SET p.views = p.views + :count WHERE p.slug = :slug")
+  void incrementViewsBy(@Param("slug") String slug, @Param("count") int count);
+
   long countByStatus(PostStatus status);
 
   long countByUserId(Long userId);

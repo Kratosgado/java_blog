@@ -3,13 +3,13 @@ package com.kratosgado.blog.backend.services;
 import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
 import com.kratosgado.blog.backend.exceptions.ResourceAlreadyExistsException;
 import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.security.JwtUtil;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.backend.models.User;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -31,28 +31,23 @@ public class AuthServiceImpl implements AuthService {
   /**
    * Authenticate user with brute-force protection
    *
-   * <p>
-   * <b>Security Features:</b>
+   * <p><b>Security Features:</b>
    *
    * <ul>
-   * <li>Brute-force protection: Account lockout after max failed attempts
-   * <li>Failed attempt tracking: Records all authentication failures
-   * <li>Automatic unlock: Time-based recovery after lockout period
-   * <li>Rate limiting: Prevents credential stuffing attacks
+   *   <li>Brute-force protection: Account lockout after max failed attempts
+   *   <li>Failed attempt tracking: Records all authentication failures
+   *   <li>Automatic unlock: Time-based recovery after lockout period
+   *   <li>Rate limiting: Prevents credential stuffing attacks
    * </ul>
    *
-   * <p>
-   * <b>Algorithm:</b> 1. Check if account is blocked (O(1) HashMap lookup) 2. If
-   * blocked → throw
-   * 429 Too Many Requests with remaining lockout time 3. If not blocked → proceed
-   * with
-   * authentication 4. On success → clear failed attempt history 5. On failure →
-   * record failed
+   * <p><b>Algorithm:</b> 1. Check if account is blocked (O(1) HashMap lookup) 2. If blocked → throw
+   * 429 Too Many Requests with remaining lockout time 3. If not blocked → proceed with
+   * authentication 4. On success → clear failed attempt history 5. On failure → record failed
    * attempt (may trigger lockout)
    *
    * @param request Login credentials (email and password)
    * @return Authenticated User entity
-   * @throws UnauthorizedException   if credentials are invalid (401)
+   * @throws UnauthorizedException if credentials are invalid (401)
    * @throws InvalidRequestException if account is locked (429)
    */
   public AuthResponse login(LoginRequest request) {
@@ -72,15 +67,16 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // STEP 2: Fetch user from database
-    var user = userRepository
-        .findBy(email)
-        .orElseThrow(
-            () -> {
-              // User not found - record failed attempt to prevent username enumeration timing
-              // attacks
-              loginAttemptService.recordFailedAttempt(email);
-              return new UnauthorizedException("Invalid email or password");
-            });
+    var user =
+        userRepository
+            .findBy(email)
+            .orElseThrow(
+                () -> {
+                  // User not found - record failed attempt to prevent username enumeration timing
+                  // attacks
+                  loginAttemptService.recordFailedAttempt(email);
+                  return new UnauthorizedException("Invalid email or password");
+                });
 
     // STEP 3: Verify password
     if (!passwordEncoder.matches(request.password(), user.getPassword())) {
@@ -102,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     // STEP 4: Authentication successful - clear failed attempt history
-    loginAttemptService.recordSuccessfulAttempt(email);
+    loginAttemptService.recordSuccessfulAttempt(user);
 
     return jwtUtil.signToken(user);
   }
@@ -161,8 +157,8 @@ public class AuthServiceImpl implements AuthService {
         var payload = jwtUtil.extractPayload(token);
 
         if (jwtUtil.validateToken(token, payload.userId().toString())) {
-          Map<String, Object> data = Map.of(
-              "valid", true, "sub", payload.userId().toString(), "username", payload.username());
+          Map<String, Object> data =
+              Map.of("valid", true, "sub", payload.userId().toString(), "email", payload.email());
           return data;
         }
       }

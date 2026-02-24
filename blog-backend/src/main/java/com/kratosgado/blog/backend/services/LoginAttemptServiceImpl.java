@@ -1,5 +1,8 @@
 package com.kratosgado.blog.backend.services;
 
+import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.backend.utils.BlogConstants.Miliseconds;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,33 +21,34 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
   /**
    * Storage for login attempt records
    *
-   * <p>Key: Username (case-insensitive) or IP address
+   * <p>Key: email (case-insensitive) or IP address
    *
    * <p>Value: LoginAttemptRecord with attempt count and timestamp
    */
   private final ConcurrentHashMap<String, LoginAttemptRecord> attemptCache =
       new ConcurrentHashMap<>();
 
-  public void recordFailedAttempt(String username) {
-    String key = normalizeKey(username);
+  private final ConcurrentHashMap<String, User> loggedInUsers = new ConcurrentHashMap<>();
+
+  public void recordFailedAttempt(String email) {
 
     attemptCache.compute(
-        key,
+        email,
         (k, existingRecord) -> {
           if (existingRecord == null) {
             // First failed attempt
-            log.debug("Recording first failed login attempt for: {}", username);
+            log.debug("Recording first failed login attempt for: {}", email);
             return new LoginAttemptRecord(1, System.currentTimeMillis());
           } else {
             // Subsequent failed attempt
             int newAttemptCount = existingRecord.attemptCount + 1;
-            log.debug("Recording failed login attempt #{} for: {}", newAttemptCount, username);
+            log.debug("Recording failed login attempt #{} for: {}", newAttemptCount, email);
 
             // Check if lockout threshold reached
             if (newAttemptCount >= MAX_ATTEMPTS) {
               log.warn(
                   "⚠ ACCOUNT LOCKED | User: {} | Failed attempts: {} | Lockout duration: {}ms",
-                  username,
+                  email,
                   newAttemptCount,
                   LOCKOUT_DURATION_MS);
             }
@@ -54,21 +58,24 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
         });
   }
 
-  public void recordSuccessfulAttempt(String username) {
-    String key = normalizeKey(username);
-    LoginAttemptRecord removed = attemptCache.remove(key);
+  public void recordSuccessfulAttempt(User user) {
+    LoginAttemptRecord removed = attemptCache.remove(user.getEmail());
+    loggedInUsers.put(user.getEmail(), user);
 
     if (removed != null) {
       log.info(
           "✓ Cleared failed login attempts for: {} (had {} failed attempts)",
-          username,
+          user.getEmail(),
           removed.attemptCount);
     }
   }
 
-  public boolean isBlocked(String username) {
-    String key = normalizeKey(username);
-    LoginAttemptRecord record = attemptCache.get(key);
+  public Optional<User> getLoggedInUser(String email) {
+    return Optional.ofNullable(loggedInUsers.get(email));
+  }
+
+  public boolean isBlocked(String email) {
+    LoginAttemptRecord record = attemptCache.get(email);
 
     // No failed attempts recorded
     if (record == null) {
@@ -81,11 +88,9 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
 
     if (timeSinceFirstAttempt > LOCKOUT_DURATION_MS) {
       // Lockout expired - remove record and allow login
-      attemptCache.remove(key);
+      attemptCache.remove(email);
       log.info(
-          "⏱ Lockout expired for: {} after {}ms. Account unlocked.",
-          username,
-          timeSinceFirstAttempt);
+          "⏱ Lockout expired for: {} after {}ms. Account unlocked.", email, timeSinceFirstAttempt);
       return false;
     }
 
@@ -96,7 +101,7 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
       long remainingLockoutTime = LOCKOUT_DURATION_MS - timeSinceFirstAttempt;
       log.warn(
           "⊘ LOGIN BLOCKED | User: {} | Attempts: {} | Remaining lockout: {}ms",
-          username,
+          email,
           record.attemptCount,
           remainingLockoutTime);
     }
@@ -104,9 +109,8 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     return blocked;
   }
 
-  public long getRemainingLockoutTime(String username) {
-    String key = normalizeKey(username);
-    LoginAttemptRecord record = attemptCache.get(key);
+  public long getRemainingLockoutTime(String email) {
+    LoginAttemptRecord record = attemptCache.get(email);
 
     if (record == null || record.attemptCount < MAX_ATTEMPTS) {
       return 0;
@@ -119,13 +123,12 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     return Math.max(0, remainingTime);
   }
 
-  public int getAttemptCount(String username) {
-    String key = normalizeKey(username);
-    LoginAttemptRecord record = attemptCache.get(key);
+  public int getAttemptCount(String email) {
+    LoginAttemptRecord record = attemptCache.get(email);
     return record != null ? record.attemptCount : 0;
   }
 
-  @Scheduled(fixedRate = 1800000) // Run every 30 minutes
+  @Scheduled(fixedRate = Miliseconds.SIX_HOURS) // Run every 30 minutes
   public void cleanupOldRecords() {
     log.info("Starting login attempt cache cleanup...");
     long currentTime = System.currentTimeMillis();
@@ -157,16 +160,6 @@ public class LoginAttemptServiceImpl implements LoginAttemptService {
     int size = attemptCache.size();
     attemptCache.clear();
     log.warn("⚠ All login attempt records cleared! Unlocked {} accounts.", size);
-  }
-
-  /**
-   * Normalize key for case-insensitive username tracking
-   *
-   * @param key Username or IP address
-   * @return Normalized lowercase key
-   */
-  private String normalizeKey(String key) {
-    return key != null ? key.toLowerCase().trim() : "";
   }
 
   private record LoginAttemptRecord(int attemptCount, long firstAttemptTimestamp) {}

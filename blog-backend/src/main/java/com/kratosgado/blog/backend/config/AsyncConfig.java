@@ -1,31 +1,45 @@
 package com.kratosgado.blog.backend.config;
 
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecutor;
 
 @Configuration
 @EnableAsync
 @EnableScheduling
-public class AsyncConfig {
+public class AsyncConfig implements AsyncConfigurer {
 
-  @Bean(name = "taskExecutor")
+  @PostConstruct
+  public void init() {
+    // Enable SecurityContext propagation to child threads
+    SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+  }
+
+  @Bean(name = {"taskExecutor", "asyncExecutor"})
+  @Primary
   public Executor taskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-    // Core pool size: Number of threads to keep in the pool, even if they are idle.
-    // Set to 20 to handle a moderate number of concurrent requests without delay.
-    executor.setCorePoolSize(20);
-    // Max pool size: Maximum number of threads to allow in the pool.
-    // Set to 100 to handle bursts of traffic.
-    executor.setMaxPoolSize(100);
-    // Queue capacity: The queue to use for holding tasks before they are executed.
-    // Set to 500 to buffer tasks when all core threads are busy.
-    executor.setQueueCapacity(500);
-    executor.setThreadNamePrefix("BlogBackend-");
+    executor.setCorePoolSize(8);
+    executor.setMaxPoolSize(30);
+    executor.setQueueCapacity(200);
+    executor.setThreadNamePrefix("BlogAsync-");
     executor.initialize();
-    return executor;
+    
+    // Wrap executor to propagate SecurityContext
+    return new DelegatingSecurityContextAsyncTaskExecutor(executor);
+  }
+
+  @Override
+  public Executor getAsyncExecutor() {
+    // Return the same bean for @Async methods
+    return taskExecutor();
   }
 }

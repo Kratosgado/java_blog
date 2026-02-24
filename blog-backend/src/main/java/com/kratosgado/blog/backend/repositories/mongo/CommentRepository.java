@@ -22,5 +22,5 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
   long countByUserId(Long userId);
 
   @Query(value = "{}", sort = "{ 'created_at' : -1 }")
-  java.util.List<Comment> findTopNByOrderByCreatedAtDesc(int limit);
+  java.util.List<Comment> findTopNByOrderByCreatedAtDesc(Pageable pageable);
 }

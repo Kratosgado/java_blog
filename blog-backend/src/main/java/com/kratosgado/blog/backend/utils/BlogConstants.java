@@ -1,4 +1,3 @@
-
 package com.kratosgado.blog.backend.utils;
 
 public class BlogConstants {
@@ -24,4 +23,8 @@ public class BlogConstants {
     public static final String COMMENTLIST = "commentList";
   }
 
+  public static class ExecutorNames {
+    public static final String taskExecutor = "taskExecutor";
+    public static final String notificationExecutor = "notificationExecutor";
+  }
 }
