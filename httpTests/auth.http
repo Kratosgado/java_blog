@@ -79,7 +79,7 @@ Content-Type: application/json
 ### Validate token
 
 GET {{host}}/auth/validate HTTP/1.1
-Authorization: {{readerAuth}}
+Authorization: {{adminAuth}}
 
 
 ### Logout

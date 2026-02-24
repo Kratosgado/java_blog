@@ -6,18 +6,11 @@
 @host = http://localhost:8080/api/v2
 
 
-### Get all published posts (paginated)
-
-# @name getPosts
-
-GET {{host}}/posts?page=0&size=10 HTTP/1.1
-
-
 ### Search posts (Optimized FTS)
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=no&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
 
 
 ### Get trending posts

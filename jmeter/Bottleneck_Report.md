@@ -43,7 +43,7 @@ The following table summarizes the performance of the tested endpoints, sorted b
 
 1. **High Overall Latency:** The global average response time is **4.4 seconds**, with maximums reaching over **20 seconds**. This indicates severe performance degradation under the tested load.
 2. **Low Throughput:** The total throughput is only **~10.8 requests per second**, which is exceptionally low for a typical Spring Boot application, suggesting threads are blocked or waiting on slow resources (likely the database).
-3. **Error Rates:** Several endpoints exhibit error rates above 1%, peaking at **3.24%** for `/dashboard/engagement` and **3.07%** for `/dashboard/analytics`. These are likely timeouts or connection pool exhaustion errors due to the high latency.
+3. **Error Rates:** Several endpoints exhibit error rates above 1%, peaking at **3.24%** for `/dashboard/engagement` and **3.07%** for `/dashboard/analytics`. These are timeouts after connection was closed.
 
 ## 4. Identified Bottleneck Areas
 
