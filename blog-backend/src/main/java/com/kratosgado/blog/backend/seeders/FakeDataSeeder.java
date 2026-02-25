@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -50,6 +51,7 @@ public class FakeDataSeeder implements CommandLineRunner {
   private final ReviewRepository reviewRepository;
 
   @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void run(String... args) {
     log.info("Starting data seeding...");
 
@@ -64,17 +66,17 @@ public class FakeDataSeeder implements CommandLineRunner {
     log.info("Data seeding completed successfully!");
   }
 
-  @Transactional(isolation = Isolation.SERIALIZABLE)
+  @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
   private void clearDatabase() {
     log.info("Clearing database...");
     jdbcTemplate.execute(
-        "TRUNCATE TABLE post_tags, posts, categories, users RESTART IDENTITY CASCADE");
+        "TRUNCATE TABLE post_tags, posts, tags, categories, users RESTART IDENTITY CASCADE");
     commentRepository.deleteAll();
     reviewRepository.deleteAll();
     log.info("Database cleared successfully!");
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   private void performDataSeeding() {
     log.info("Performing data seeding...");
 
@@ -88,7 +90,7 @@ public class FakeDataSeeder implements CommandLineRunner {
     List<Tag> tags = seedTags(6);
     log.info("Seeded {} tags", tags.size());
 
-    List<Post> posts = seedPosts(100000, users, categories, tags);
+    List<Post> posts = seedPosts(10000, users, categories, tags);
     log.info("Seeded {} posts", posts.size());
 
     int commentCount = seedComments(500, posts, users);

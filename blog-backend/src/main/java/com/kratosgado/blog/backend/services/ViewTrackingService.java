@@ -1,7 +1,12 @@
 package com.kratosgado.blog.backend.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kratosgado.blog.backend.exceptions.InvalidRequestException;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.utils.BlogConstants.Miliseconds;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ViewTrackingService {
 
   private final PostRepository postRepository;
+  private final ObjectMapper objectMapper; // Autowired Jackson mapper
 
-  // Thread-safe map to buffer view counts
   private final ConcurrentHashMap<String, Integer> viewBuffer = new ConcurrentHashMap<>();
 
   @Async
@@ -30,23 +35,23 @@ public class ViewTrackingService {
   @Scheduled(fixedDelay = Miliseconds.ONE_MINUTE)
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public void flushViews() {
-    if (viewBuffer.isEmpty()) {
-      return;
-    }
+    if (viewBuffer.isEmpty()) return;
+    // Extract and clear the buffer
+    List<Map<String, Object>> updateList = new ArrayList<>();
+    viewBuffer.forEach(
+        (slug, count) -> {
+          Integer currentCount = viewBuffer.remove(slug);
+          if (currentCount != null) {
+            updateList.add(Map.of("slug", slug, "count", currentCount));
+          }
+        });
 
-    // Create a snapshot of the current buffer and clear it
-    Map<String, Integer> snapshot = new ConcurrentHashMap<>(viewBuffer);
-    viewBuffer.clear();
-
-    // Update the database with the buffered counts
-    for (Map.Entry<String, Integer> entry : snapshot.entrySet()) {
-      String slug = entry.getKey();
-      int count = entry.getValue();
-
-      // We need a new method in PostRepository to increment by a specific amount
-      // For now, we can just call the existing incrementViews method 'count' times
-      // or better, add a new method to PostRepository.
-      postRepository.incrementViewsBy(slug, count);
+    try {
+      String json = objectMapper.writeValueAsString(updateList);
+      postRepository.incrementViewsBy(json);
+    } catch (JsonProcessingException e) {
+      // Log error and handle retry/recovery
+      throw new InvalidRequestException("Failed to serialize view updates", e);
     }
   }
 }

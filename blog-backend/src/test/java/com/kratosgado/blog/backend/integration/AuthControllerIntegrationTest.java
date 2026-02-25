@@ -226,7 +226,7 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully validate valid token")
     void validateToken_WithValidToken_ShouldReturnValid() throws Exception {
-      String token = generateToken(testUser.getId(), testUser.getEmail());
+      String token = generateToken(testUser);
 
       mockMvc
           .perform(get("/v1/auth/validate").header("Authorization", token))
@@ -253,7 +253,7 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully logout with valid token")
     void logout_WithValidToken_ShouldReturn200() throws Exception {
-      String token = generateToken(testUser.getId(), testUser.getEmail());
+      String token = generateToken(testUser);
 
       mockMvc
           .perform(post("/v1/auth/logout").header("Authorization", token))
@@ -270,7 +270,7 @@ class AuthControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Subsequent requests with blacklisted token should fail")
     void logout_BlacklistedToken_ShouldNotBeUsable() throws Exception {
-      String token = generateToken(testUser.getId(), testUser.getEmail());
+      String token = generateToken(testUser);
 
       // First logout
       mockMvc
