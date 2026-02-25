@@ -46,7 +46,7 @@
         </collectionProp>
       </HeaderManager>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group">
         <intProp name="ThreadGroup.num_threads">50</intProp>
         <intProp name="ThreadGroup.ramp_time">30</intProp>
         <longProp name="ThreadGroup.duration">300</longProp>
@@ -105,40 +105,77 @@
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract post id" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">post_id</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all post ids" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">post_id_list</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.content[*].id</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             <stringProp name="JSONPostProcessor.defaultValues">1</stringProp>
           </JSONPostProcessor>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract post slug" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">post_slug</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all post slugs" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">post_slug_list</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.content[*].slug</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             <stringProp name="JSONPostProcessor.defaultValues">example-slug</stringProp>
           </JSONPostProcessor>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract category id" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">category_id</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all category ids" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">category_id_list</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.content[*].category.id</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             <stringProp name="JSONPostProcessor.defaultValues">1</stringProp>
           </JSONPostProcessor>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract tag id" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">tag_id</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all tag ids" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">tag_id_list</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.content[*].tags[*].id</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             <stringProp name="JSONPostProcessor.defaultValues">1</stringProp>
           </JSONPostProcessor>
           <hashTree/>
-          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract user id" enabled="true">
-            <stringProp name="JSONPostProcessor.referenceNames">user_id</stringProp>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all user ids" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">user_id_list</stringProp>
             <stringProp name="JSONPostProcessor.jsonPathExprs">$.data.content[*].user.id</stringProp>
-            <stringProp name="JSONPostProcessor.match_numbers">0</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
             <stringProp name="JSONPostProcessor.defaultValues">1</stringProp>
           </JSONPostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Select Random Post" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="script">// Get the match count for post_id_list
+def postIdCount = vars.get(&quot;post_id_list_matchNr&quot;) as Integer
+
+if (postIdCount != null &amp;&amp; postIdCount &gt; 0) {
+    // Generate random index (1-based for JMeter variables)
+    def randomIndex = new Random().nextInt(postIdCount) + 1
+    
+    // Set the selected values
+    vars.put(&quot;post_id&quot;, vars.get(&quot;post_id_list_&quot; + randomIndex))
+    vars.put(&quot;post_slug&quot;, vars.get(&quot;post_slug_list_&quot; + randomIndex))
+    vars.put(&quot;category_id&quot;, vars.get(&quot;category_id_list_&quot; + randomIndex))
+    vars.put(&quot;user_id&quot;, vars.get(&quot;user_id_list_&quot; + randomIndex))
+    
+    // Handle tag_id (might not exist for all posts)
+    def tagId = vars.get(&quot;tag_id_list_&quot; + randomIndex)
+    if (tagId != null) {
+        vars.put(&quot;tag_id&quot;, tagId)
+    } else {
+        vars.put(&quot;tag_id&quot;, &quot;1&quot;)
+    }
+    
+    log.info(&quot;Selected random post index: &quot; + randomIndex + &quot; out of &quot; + postIdCount)
+    log.info(&quot;post_id: &quot; + vars.get(&quot;post_id&quot;))
+    log.info(&quot;post_slug: &quot; + vars.get(&quot;post_slug&quot;))
+} else {
+    log.warn(&quot;No posts found, using default values&quot;)
+    vars.put(&quot;post_id&quot;, &quot;1&quot;)
+    vars.put(&quot;post_slug&quot;, &quot;example-slug&quot;)
+    vars.put(&quot;category_id&quot;, &quot;1&quot;)
+    vars.put(&quot;tag_id&quot;, &quot;1&quot;)
+    vars.put(&quot;user_id&quot;, &quot;1&quot;)
+}
+</stringProp>
+          </JSR223PostProcessor>
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /posts/slug/{slug}" enabled="true">
