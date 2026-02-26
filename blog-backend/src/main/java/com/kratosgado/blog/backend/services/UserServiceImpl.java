@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.services;
 
 import com.kratosgado.blog.backend.exceptions.*;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.utils.DtoMapper;
@@ -9,7 +10,6 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.enums.UserRole;
-import com.kratosgado.blog.backend.models.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +25,17 @@ public class UserServiceImpl implements UserService {
 
   private final UserRepository userRepository;
   private final BCryptPasswordEncoder passwordEncoder;
+  private final NotificationService notificationService;
 
   public User getUserById(Long id) {
     return getUserById(id, false);
   }
 
   public User getUserById(Long id, boolean withPassword) {
-    User user = userRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     if (!withPassword) {
       user.setPassword(null);
     }
@@ -53,7 +55,8 @@ public class UserServiceImpl implements UserService {
   }
 
   @Transactional(isolation = Isolation.READ_COMMITTED)
-  public User updateUserProfile(com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
+  public User updateUserProfile(
+      com.kratosgado.blog.dtos.request.UpdateUserProfileRequest request, Long id) {
     // Get the current user ID from security context
     Long currentUserId = SecurityUtils.getCurrentUserId();
 
@@ -63,9 +66,10 @@ public class UserServiceImpl implements UserService {
       throw new ForbiddenException("You are not authorized to update this user's profile");
     }
 
-    User user = userRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (request.username() != null && !request.username().equals(user.getUsername())) {
       if (userRepository.findByUsername(request.username()).isPresent()) {
@@ -95,9 +99,10 @@ public class UserServiceImpl implements UserService {
       throw new ForbiddenException("You are not authorized to update this user's avatar");
     }
 
-    User user = userRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     user.setAvatarUrl(avatarUrl);
     User updatedUser = userRepository.save(user);
@@ -111,9 +116,10 @@ public class UserServiceImpl implements UserService {
       throw new ForbiddenException("You are not authorized to change this user's password");
     }
 
-    User user = userRepository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+    User user =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
     if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
       throw new InvalidRequestException("Invalid current password");
@@ -132,21 +138,34 @@ public class UserServiceImpl implements UserService {
   @Transactional(isolation = Isolation.READ_COMMITTED)
   public User updateUserRole(Long userId, UserRole newRole, Long adminId) {
     // Verify the current user is an admin
-    User admin = userRepository
-        .findById(adminId)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", adminId));
+    User admin =
+        userRepository
+            .findById(adminId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", adminId));
 
     if (admin.getRole() != UserRole.ADMIN) {
       throw new ForbiddenException("Only admins can update user roles");
     }
 
     // Get the target user and update their role
-    User user = userRepository
-        .findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
     user.setRole(newRole);
     User updated = userRepository.save(user);
     updated.setPassword(null);
     return updated;
+  }
+
+  @Transactional(isolation = Isolation.READ_COMMITTED)
+  public void requestPasswordReset(String email) {
+    if (!userRepository.existsByEmail(email)) {
+      throw new ResourceNotFoundException("User", "email", email);
+    }
+    // In a real implementation, we would generate a unique token, save it with expiration, etc.
+    String token = java.util.UUID.randomUUID().toString();
+
+    notificationService.sendPasswordResetNotification(email, token);
   }
 }

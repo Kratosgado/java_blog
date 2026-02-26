@@ -1,6 +1,7 @@
 package com.kratosgado.blog.backend.controllers.v1;
 
 import com.kratosgado.blog.backend.annotations.OpenApi.SecuredUpdateEndpoint;
+import com.kratosgado.blog.backend.annotations.OpenApi.UpdateEndpoint;
 import com.kratosgado.blog.backend.security.SecurityUtils;
 import com.kratosgado.blog.backend.services.UserService;
 import com.kratosgado.blog.dtos.request.ChangePasswordRequest;
@@ -75,5 +76,13 @@ public class UserController {
           UserRole role) {
     Long adminId = SecurityUtils.getCurrentUserId();
     return userService.updateUserRole(id, role, adminId);
+  }
+
+  @PostMapping("/password-reset-request")
+  @UpdateEndpoint(summary = "Request password reset", description = "Sends a password reset email to the user. This is a public endpoint.")
+  public void requestPasswordReset(
+      @RequestParam(required = true) @Parameter(description = "User email for password reset")
+          String email) {
+    userService.requestPasswordReset(email);
   }
 }

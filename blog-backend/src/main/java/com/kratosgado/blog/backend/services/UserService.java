@@ -26,4 +26,6 @@ public interface UserService {
   PageResponse<UserResponse> getAllUsers(PageRequest pageRequest);
 
   User updateUserRole(Long userId, UserRole newRole, Long adminId);
+
+  void requestPasswordReset(String email);
 }

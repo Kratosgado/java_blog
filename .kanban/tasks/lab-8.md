@@ -14,21 +14,7 @@ kanban-plugin: basic
 
 ## Todo
 
-- [ ] Check using cache to update post views
-
-- [ ] Refactor long-running operations (analytics, feed aggregation, notification dispatch) using `@Async`, `CompletableFuture`, or `ExecutorService` (Epic 2 – US 2.1)
-
-- [ ] Configure thread pools for optimal concurrency and handle async exceptions properly (Epic 2 – US 2.1)
-
-- [ ] Propagate security context in async methods (`DelegatingSecurityContextExecutor` or MODE_INHERITABLETHREADLOCAL) (Epic 2 – US 2.1)
-
-- [ ] Ensure system remains responsive during multiple simultaneous authenticated requests (Epic 2 – US 2.1)
-
-- [ ] Run concurrent API tests with Postman/JMeter → verify stability, no data loss/corruption, reduced avg response time vs baseline (Epic 2 – US 2.2)
-
 - [ ] Replace non-thread-safe collections with `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue` etc. for shared resources (Epic 3 – US 3.1)
-
-- [ ] Add synchronized blocks, `ReentrantLock`, or other primitives where concurrent modification occurs (Epic 3 – US 3.1)
 
 - [ ] Verify thread safety via concurrent test scenarios (e.g. multi-threaded JUnit tests) – no race conditions or corruption (Epic 3 – US 3.1)
 
@@ -77,6 +63,12 @@ kanban-plugin: basic
 - [ ] Create a bottleneck summary report with findings, screenshots, flame graphs, and highlighted optimization areas (Epic 1 – US 1.2)
 
 - [ ] [[Add `@EnableAsync` and configure a custom `ThreadPoolTaskExecutor` bean with optimal settings (Epic 2 – US 2.1)]]
+
+- [ ] Refactor long-running operations (analytics, feed aggregation, notification dispatch) using `@Async`, `CompletableFuture`, or `ExecutorService` (Epic 2 – US 2.1)
+
+- [ ] Configure thread pools for optimal concurrency and handle async exceptions properly (Epic 2 – US 2.1)
+
+- [ ] Run concurrent API tests with Postman/JMeter → verify stability, no data loss/corruption, reduced avg response time vs baseline (Epic 2 – US 2.2)
 
 
 %% kanban:settings

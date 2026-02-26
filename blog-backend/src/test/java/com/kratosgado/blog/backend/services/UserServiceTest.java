@@ -19,6 +19,7 @@ import com.kratosgado.blog.dtos.request.UpdateUserProfileRequest;
 import com.kratosgado.blog.dtos.response.UserResponse;
 import com.kratosgado.blog.enums.UserRole;
 import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.backend.services.NotificationService;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -47,8 +48,11 @@ class UserServiceTest {
   @Mock
   private BCryptPasswordEncoder passwordEncoder;
 
+  @Mock
+  private NotificationService notificationService;
+
   @InjectMocks
-  private UserService userService;
+  private UserServiceImpl userService;
 
   private User testUser;
   private UserResponse mockUserResponse;
@@ -373,5 +377,31 @@ class UserServiceTest {
             BlogException.class,
             () -> userService.updateUserRole(999L, UserRole.ADMIN, 1L));
     assertTrue(ex.getMessage().contains("User not found"));
+  }
+
+  @Test
+  @DisplayName("Should request password reset successfully")
+  void requestPasswordReset_WithValidEmail_ShouldSendNotification() {
+    // Arrange
+    String email = "test@example.com";
+    when(userRepository.existsByEmail(email)).thenReturn(true);
+    
+    // Act
+    userService.requestPasswordReset(email);
+    
+    // Assert
+    verify(notificationService).sendPasswordResetNotification(eq(email), anyString());
+  }
+
+  @Test
+  @DisplayName("Should throw exception when requesting password reset for non-existent email")
+  void requestPasswordReset_WithInvalidEmail_ShouldThrowException() {
+    // Arrange
+    String email = "nonexistent@example.com";
+    when(userRepository.existsByEmail(email)).thenReturn(false);
+    
+    // Act & Assert
+    assertThrows(BlogException.class, () -> userService.requestPasswordReset(email));
+    verifyNoInteractions(notificationService);
   }
 }
