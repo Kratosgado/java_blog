@@ -27,15 +27,19 @@ All REST endpoints return a standardized JSON wrapper using `ResponseDto<T>` (se
 Examples:
 
 Success (200):
+
 ```json
 {
   "status": 200,
   "message": "OK",
-  "data": { /* resource */ }
+  "data": {
+    /* resource */
+  }
 }
 ```
 
 Created (201):
+
 ```json
 {
   "status": 201,
@@ -45,6 +49,7 @@ Created (201):
 ```
 
 Validation / Error:
+
 ```json
 {
   "status": 400,
@@ -56,115 +61,148 @@ Validation / Error:
 ## Authentication (`/api/v1/auth`)
 
 POST /auth/login
+
 - Public. Body: `{ email, password }`.
 - Response: `ResponseDto.data` contains token + user details. `status` = 200.
 
 POST /auth/register
+
 - Public. Body: `{ email, username, password }`.
 - Response: `status` = 201, `data` contains token + user.
 
 GET /auth/validate
+
 - Optional bearer token. Response: `status` = 200 and validation result in `data`.
 
 POST /auth/logout
+
 - Protected. Blacklists token. Response: `status` = 200, `message` confirms logout.
 
 Security notes
+
 - BCrypt password hashing. Login protection (temporary lockouts after multiple failures).
 
 ## Posts (`/api/v1/posts`)
 
 POST /posts
+
 - Protected (AUTHOR|ADMIN). Body: create post fields.
 - Response: `status` = 201, `data` contains created post projection.
 
 GET /posts
+
 - Public. Pagination via `page`, `size`, `sortBy`, `sortDirection`.
 - Response: `status` = 200, `data` is paginated list of `PostView` projection. Cached (list cache).
 
 GET /posts/{id}
+
 - Public. Response: `data` = `PostDetails`. `404` sets `status` in wrapper.
 
 GET /posts/slug/{slug}
+
 - Public. Response: `data` = `PostDetails`. Cached (POSTS cache, 10-day TTL).
 
 GET /posts/search
-- Public. Full-text search (Postgres tsvector). Returns paginated `data`.
+
+- Public. (v1) uses LIKE query.
+- Public. (v2) Full-text search (Postgres tsvector). Returns paginated `data`.
 
 PUT /posts/{id}
+
 - Protected (author or admin). Response: `status` = 200, `data` updated post. Cache updated/evicted accordingly.
 
 PUT /posts/{id}/publish
+
 - Protected. Changes post to published. Response: `200` and updated `data`.
 
 DELETE /posts/{id}
+
 - Protected (author or admin). Response: `status` = 204 (no data). Caches cleared.
 
 ## Users (`/api/v1/users`)
 
 GET /users/{id}
+
 - Public. Response: `status` = 200, `data` = user profile projection.
 
 GET /users
+
 - Public. Paginated list in `data`.
 
 ## Categories (`/api/v1/categories`)
 
 GET /categories
+
 - Public. `status` = 200, `data` list. Cached (2-hour TTL).
 
 GET /categories/{id}
+
 - Public. `data` = category.
 
 POST /categories
+
 - ADMIN only. `status` = 201, `data` created category.
 
 PUT /categories/{id}
+
 - ADMIN only. `status` = 200, `data` updated category.
 
 DELETE /categories/{id}
+
 - ADMIN only. `status` = 204.
 
 ## Tags (`/api/v1/tags`)
 
 GET /tags
+
 - Public. `status` = 200, `data` list. Cached (1-hour TTL).
 
 GET /tags/{id}
+
 - Public. `data` = tag.
 
 POST /tags
+
 - AUTHOR|ADMIN. `status` = 201, `data` created tag.
 
 PUT /tags/{id}
+
 - AUTHOR|ADMIN. `status` = 200, `data` updated tag.
 
 DELETE /tags/{id}
+
 - AUTHOR|ADMIN. `status` = 204.
 
 ## Comments (`/api/v1/comments`) — MongoDB
 
 GET /comments/post/{postId}
+
 - Public. `status` = 200, `data` = list of comments (from MongoDB).
 
 POST /comments
+
 - Protected (any authenticated). `status` = 201, `data` created comment.
 
 PUT /comments/{id}
+
 - Protected (author or admin). `status` = 200, `data` updated comment.
 
 DELETE /comments/{id}
+
 - Protected (author or admin). `status` = 204.
 
 ## Reviews (`/api/v1/reviews`) — MongoDB
 
 GET /reviews/post/{postId}
+
 - Public. `status` = 200, `data` list of reviews.
 
 POST /reviews
+
 - Protected. Create/update a review. `status` = 201.
 
 DELETE /reviews/{id}
+
 - Protected (author or admin). `status` = 204.
 
 ## Role-Based Access Control (RBAC)
@@ -179,15 +217,19 @@ Example admin endpoints:
 ## Performance & Cache Endpoints (`/api/v1/performance`, `/api/v1/cache`)
 
 GET /performance/metrics
+
 - Public. `status` = 200, `data` = performance stats.
 
 GET /performance/cache
+
 - Public. `status` = 200, `data` = cache statistics.
 
 GET /cache/stats
+
 - Public. `status` = 200, `data` = cache stats.
 
 POST /cache/clear
+
 - ADMIN only. Clears caches. `status` = 200, `message` confirms action.
 
 ## Error Handling
@@ -197,21 +239,30 @@ All endpoints return the `ResponseDto` wrapper. Errors set `status` and `message
 Common examples:
 
 Unauthorized (401):
+
 ```json
 { "status": 401, "message": "Missing or invalid Authorization header" }
 ```
 
 Forbidden (403):
+
 ```json
-{ "status": 403, "message": "User does not have ADMIN role required for this endpoint" }
+{
+  "status": 403,
+  "message": "User does not have ADMIN role required for this endpoint"
+}
 ```
 
 Validation Error (400):
+
 ```json
 {
   "status": 400,
   "message": "Validation failed",
-  "errors": { "email": "Invalid email format", "password": "Password must be at least 8 characters" }
+  "errors": {
+    "email": "Invalid email format",
+    "password": "Password must be at least 8 characters"
+  }
 }
 ```
 
