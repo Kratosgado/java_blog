@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -50,15 +49,6 @@ public class LoggingAspect {
         "<<< Completed controller method: {} with result: {}",
         joinPoint.getSignature().toShortString(),
         result != null ? result.getClass().getSimpleName() : "null");
-  }
-
-  @AfterThrowing(pointcut = "controllerLayer() || graphqlControllerLayer()", throwing = "exception")
-  public void logControllerException(JoinPoint joinPoint, Exception exception) {
-    log.error(
-        "!!! Exception in controller method: {} - Message: {}",
-        joinPoint.getSignature().toShortString(),
-        exception.getMessage(),
-        exception);
   }
 
   @Around("serviceLayer()")

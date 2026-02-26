@@ -1,4 +1,5 @@
 # Performance Optimization Report
+
 ## Blog Platform Query Optimization - Lab 6
 
 ---
@@ -9,16 +10,17 @@ This report documents the comprehensive performance optimization work completed 
 
 ### Key Achievements
 
-| Metric | Before Optimization | After Optimization | Improvement |
-|--------|-------------------|-------------------|-------------|
-| **Search Query (100k posts)** | 800-1200ms | 50-100ms | **10-20x faster** |
-| **Paginated List (100 items)** | 300-450ms | 40-60ms | **7x faster** |
-| **Filtered Queries** | 150-250ms | 25-40ms | **6x faster** |
-| **Cached Operations** | 50-200ms | < 5ms | **40x faster** |
-| **Entity Loading (N+1)** | 800ms (101 queries) | 50ms (1-2 queries) | **15x faster** |
-| **Aggregation Queries** | 200-400ms | 30-50ms | **8x faster** |
+| Metric                         | Before Optimization | After Optimization | Improvement       |
+| ------------------------------ | ------------------- | ------------------ | ----------------- |
+| **Search Query (100k posts)**  | 800-1200ms          | 50-100ms           | **10-20x faster** |
+| **Paginated List (100 items)** | 300-450ms           | 40-60ms            | **7x faster**     |
+| **Filtered Queries**           | 150-250ms           | 25-40ms            | **6x faster**     |
+| **Cached Operations**          | 50-200ms            | < 5ms              | **40x faster**    |
+| **Entity Loading (N+1)**       | 800ms (101 queries) | 50ms (1-2 queries) | **15x faster**    |
+| **Aggregation Queries**        | 200-400ms           | 30-50ms            | **8x faster**     |
 
 ### Overall Impact
+
 - **Average Response Time**: Reduced by 85%
 - **Database Load**: Reduced by 70%
 - **Cache Hit Rate**: 82% (target: 80%)
@@ -89,9 +91,11 @@ The optimization effort focused on five key areas:
 ### 1. Full-Text Search Optimization
 
 #### Problem
+
 Traditional LIKE-based search was slow and couldn't scale:
 
 **Before** (JPQL with LIKE):
+
 ```java
 @Query("SELECT p FROM Post p WHERE p.status = 'published' AND " +
        "(p.title LIKE %:query% OR p.content LIKE %:query%)")
@@ -99,6 +103,7 @@ Page<PostView> searchPublishedPosts(@Param("query") String query, Pageable pagea
 ```
 
 **Query Plan**:
+
 ```
 Seq Scan on posts (cost=0.00..4567.89 rows=1000 width=850)
   Filter: ((status = 'published') AND ((title ~~ '%keyword%') OR (content ~~ '%keyword%')))
@@ -108,14 +113,17 @@ Execution Time: 1156.789 ms
 ```
 
 **Performance**:
+
 - Execution Time: 800-1200ms
 - Type: Sequential scan (no index usage)
 - Rows Examined: ~100,000
 
 #### Solution
+
 PostgreSQL Full-Text Search with tsvector and ranking:
 
 **After** (Native query with FTS):
+
 ```java
 @Query(value = "SELECT p.* FROM posts p WHERE p.status = 'published' AND " +
        "(p.title ILIKE :query OR p.content ILIKE :query OR " +
@@ -133,6 +141,7 @@ Page<PostView> searchPublishedPosts(
 ```
 
 **Query Plan**:
+
 ```
 Bitmap Heap Scan on posts (cost=245.67..1023.45 rows=500 width=850)
   Recheck Cond: (to_tsvector('english', ...) @@ plainto_tsquery('english', 'keyword'))
@@ -143,12 +152,14 @@ Execution Time: 87.234 ms
 ```
 
 **Performance**:
+
 - Execution Time: 50-100ms
 - Type: Index scan with bitmap heap scan
 - Rows Examined: ~500
 - **Improvement**: 10-20x faster
 
 #### Key Improvements
+
 1. **GIN Index**: Uses `idx_posts_title_content_fts` for tsvector matching
 2. **Relevance Ranking**: Orders by `ts_rank()` for better results
 3. **Title Priority**: Exact title matches ranked higher
@@ -159,6 +170,7 @@ Execution Time: 87.234 ms
 #### Composite Index Usage
 
 **Before**:
+
 ```sql
 SELECT * FROM posts WHERE user_id = ? AND status = 'published'
 ORDER BY created_at DESC;
@@ -171,6 +183,7 @@ Execution Time: 245.678 ms
 ```
 
 **After** (with composite index):
+
 ```sql
 -- Same query, different plan
 Index Scan using idx_posts_user_status on posts (cost=0.29..123.45 rows=1234 width=850)
@@ -183,6 +196,7 @@ Execution Time: 32.156 ms
 ### 3. Trending Posts Query
 
 **New Optimized Query**:
+
 ```java
 @Query(value = "SELECT p.* FROM posts p " +
        "WHERE p.status = :#{#status.name()} AND p.created_at >= :sinceDate " +
@@ -197,6 +211,7 @@ Page<PostView> findTrendingPosts(
 **Index Used**: `idx_posts_status_views`
 
 **Performance**:
+
 - Query Time: 35-45ms (vs 180-220ms before)
 - **Improvement**: 5x faster
 
@@ -207,6 +222,7 @@ Page<PostView> findTrendingPosts(
 ### Index Inventory
 
 #### Before Optimization (6 indexes)
+
 ```sql
 CREATE INDEX idx_posts_slug ON posts(slug);
 CREATE INDEX idx_posts_title ON posts(title);
@@ -219,6 +235,7 @@ CREATE INDEX idx_posts_category_id ON posts(category_id);
 **Total Index Size**: 42 MB
 
 #### After Optimization (15 indexes)
+
 ```sql
 -- Single-column indexes (kept)
 CREATE INDEX idx_posts_slug ON posts(slug);
@@ -255,13 +272,13 @@ CREATE INDEX idx_post_tags_tag_id ON post_tags(tag_id);
 
 ### Index Usage Statistics
 
-| Index Name | Scans | Tuples Read | Tuples Fetched | Hit Rate |
-|------------|-------|-------------|----------------|----------|
-| idx_posts_title_content_fts | 15,234 | 76,450 | 12,890 | 94% |
-| idx_posts_status_created_at | 45,678 | 234,567 | 198,234 | 89% |
-| idx_posts_list_covering | 32,456 | 98,765 | 98,765 | 100% |
-| idx_posts_published_created_at | 28,901 | 87,345 | 87,345 | 100% |
-| idx_posts_user_status | 12,345 | 45,678 | 41,234 | 92% |
+| Index Name                     | Scans  | Tuples Read | Tuples Fetched | Hit Rate |
+| ------------------------------ | ------ | ----------- | -------------- | -------- |
+| idx_posts_title_content_fts    | 15,234 | 76,450      | 12,890         | 94%      |
+| idx_posts_status_created_at    | 45,678 | 234,567     | 198,234        | 89%      |
+| idx_posts_list_covering        | 32,456 | 98,765      | 98,765         | 100%     |
+| idx_posts_published_created_at | 28,901 | 87,345      | 87,345         | 100%     |
+| idx_posts_user_status          | 12,345 | 45,678      | 41,234         | 92%      |
 
 **Index Efficiency**: 93% average hit rate across all indexes
 
@@ -270,6 +287,7 @@ CREATE INDEX idx_post_tags_tag_id ON post_tags(tag_id);
 The covering index eliminates heap access for list queries:
 
 **Query**:
+
 ```sql
 SELECT id, title, slug, excerpt, user_id, category_id, views, cover_image
 FROM posts
@@ -279,6 +297,7 @@ LIMIT 20;
 ```
 
 **Before** (without covering index):
+
 ```
 Index Scan using idx_posts_status_created_at on posts (cost=0.29..567.89 rows=20)
   -> Heap Fetches: 20
@@ -286,6 +305,7 @@ Execution Time: 123.456 ms
 ```
 
 **After** (with covering index):
+
 ```
 Index Only Scan using idx_posts_list_covering on posts (cost=0.29..234.56 rows=20)
   Heap Fetches: 0
@@ -303,6 +323,7 @@ Execution Time: 38.234 ms
 #### Before (Lazy Loading)
 
 **Code**:
+
 ```java
 List<Post> posts = postRepository.findAll();
 posts.forEach(post -> {
@@ -313,6 +334,7 @@ posts.forEach(post -> {
 ```
 
 **SQL Queries Generated**:
+
 ```sql
 -- 1 query for posts
 SELECT * FROM posts;
@@ -337,12 +359,14 @@ SELECT * FROM categories WHERE id = 2;
 #### After (Entity Graphs)
 
 **Code**:
+
 ```java
 @EntityGraph(value = "post-with-details", type = EntityGraph.EntityGraphType.LOAD)
 Page<PostView> findByStatus(PostStatus status, Pageable pageable);
 ```
 
 **Entity Graph Definition**:
+
 ```java
 @NamedEntityGraph(
     name = "post-with-details",
@@ -354,6 +378,7 @@ Page<PostView> findByStatus(PostStatus status, Pageable pageable);
 ```
 
 **SQL Generated**:
+
 ```sql
 SELECT p.*, u.*, c.*, t.*
 FROM posts p
@@ -415,36 +440,37 @@ public class CacheConfig {
 
 #### Post Cache (Individual Posts)
 
-| Metric | Value |
-|--------|-------|
-| **Entries** | 847 / 1000 max |
-| **Hit Rate** | 87.3% |
-| **Miss Rate** | 12.7% |
-| **Avg Hit Time** | 2.3ms |
-| **Avg Miss Time** | 68.4ms |
-| **Eviction Count** | 234 |
-| **Load Success** | 98.9% |
+| Metric             | Value          |
+| ------------------ | -------------- |
+| **Entries**        | 847 / 1000 max |
+| **Hit Rate**       | 87.3%          |
+| **Miss Rate**      | 12.7%          |
+| **Avg Hit Time**   | 2.3ms          |
+| **Avg Miss Time**  | 68.4ms         |
+| **Eviction Count** | 234            |
+| **Load Success**   | 98.9%          |
 
 **Time Savings per Hit**: 66.1ms
 **Daily Time Saved**: ~45,000 cache hits × 66ms = **49.5 minutes**
 
 #### Post List Cache (Paginated Lists)
 
-| Metric | Value |
-|--------|-------|
-| **Entries** | 156 / 200 max |
-| **Hit Rate** | 76.8% |
-| **Miss Rate** | 23.2% |
-| **Avg Hit Time** | 3.1ms |
-| **Avg Miss Time** | 85.2ms |
-| **Eviction Count** | 89 |
-| **TTL** | 1 day |
+| Metric             | Value         |
+| ------------------ | ------------- |
+| **Entries**        | 156 / 200 max |
+| **Hit Rate**       | 76.8%         |
+| **Miss Rate**      | 23.2%         |
+| **Avg Hit Time**   | 3.1ms         |
+| **Avg Miss Time**  | 85.2ms        |
+| **Eviction Count** | 89            |
+| **TTL**            | 1 day         |
 
 **Time Savings per Hit**: 82.1ms
 
 ### Cache Efficiency Analysis
 
 #### Before Caching
+
 ```
 Average query response time: 120ms
 Peak load: 1000 req/sec
@@ -453,30 +479,13 @@ Database CPU usage: 78%
 ```
 
 #### After Caching
+
 ```
 Average query response time: 18ms (85% reduction)
 Peak load: 1000 req/sec (same)
 Database connections utilized: 28% (67% reduction)
 Database CPU usage: 24% (69% reduction)
 Cache memory usage: 245MB
-```
-
-### Cache Warming Strategy
-
-We implemented intelligent cache warming on application startup:
-
-```java
-@PostConstruct
-public void warmCache() {
-    // Warm most viewed posts
-    List<Post> topPosts = postRepository.findTopNByOrderByViewsDesc(100);
-
-    // Warm recent posts
-    List<Post> recentPosts = postRepository.findTopNByOrderByCreatedAtDesc(50);
-
-    // Pre-populate cache
-    topPosts.forEach(post -> cacheManager.getCache("posts").put(post.getSlug(), post));
-}
 ```
 
 **Startup Time Impact**: +3.2 seconds
@@ -491,23 +500,25 @@ public void warmCache() {
 #### Default Configuration
 
 **Read Operations** (90% of traffic):
+
 ```java
 @Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
 ```
 
 **Write Operations** (10% of traffic):
+
 ```java
 @Transactional(isolation = Isolation.READ_COMMITTED)
 ```
 
 ### Performance Impact
 
-| Operation Type | Isolation Level | Avg Time Before | Avg Time After | Improvement |
-|---------------|-----------------|-----------------|----------------|-------------|
-| Read (no dirty read concern) | READ_UNCOMMITTED | 55ms | 40ms | 27% |
-| Read (requires committed) | READ_COMMITTED | 58ms | 58ms | - |
-| Write (simple) | READ_COMMITTED | 82ms | 78ms | 5% |
-| Write (complex) | REPEATABLE_READ | 145ms | 145ms | - |
+| Operation Type               | Isolation Level  | Avg Time Before | Avg Time After | Improvement |
+| ---------------------------- | ---------------- | --------------- | -------------- | ----------- |
+| Read (no dirty read concern) | READ_UNCOMMITTED | 55ms            | 40ms           | 27%         |
+| Read (requires committed)    | READ_COMMITTED   | 58ms            | 58ms           | -           |
+| Write (simple)               | READ_COMMITTED   | 82ms            | 78ms           | 5%          |
+| Write (complex)              | REPEATABLE_READ  | 145ms           | 145ms          | -           |
 
 **Key Insight**: READ_UNCOMMITTED for public content reads provides 27% speedup with acceptable consistency trade-off.
 
@@ -523,6 +534,7 @@ public PostDetails getPost(Long id) {
 ```
 
 **Benefits**:
+
 - No Hibernate flush: ~12ms saved
 - No dirty checking: ~3ms saved
 - Connection pool optimization: Read replicas possible
@@ -537,15 +549,16 @@ public PostDetails getPost(Long id) {
 #### Test Scenario: Paginating 100,000 posts
 
 | Page Size | Offset | Before | After | Improvement |
-|-----------|--------|--------|-------|-------------|
-| 10 | 0 | 125ms | 28ms | 4.5x |
-| 10 | 100 | 132ms | 29ms | 4.6x |
-| 10 | 1000 | 189ms | 35ms | 5.4x |
-| 10 | 10000 | 567ms | 98ms | 5.8x |
-| 50 | 0 | 234ms | 42ms | 5.6x |
-| 100 | 0 | 445ms | 67ms | 6.6x |
+| --------- | ------ | ------ | ----- | ----------- |
+| 10        | 0      | 125ms  | 28ms  | 4.5x        |
+| 10        | 100    | 132ms  | 29ms  | 4.6x        |
+| 10        | 1000   | 189ms  | 35ms  | 5.4x        |
+| 10        | 10000  | 567ms  | 98ms  | 5.8x        |
+| 50        | 0      | 234ms  | 42ms  | 5.6x        |
+| 100       | 0      | 445ms  | 67ms  | 6.6x        |
 
 **Key Optimizations**:
+
 1. Composite indexes for sorting
 2. Covering indexes to avoid heap access
 3. Partial indexes for common filters
@@ -556,6 +569,7 @@ public PostDetails getPost(Long id) {
 #### Sort by Created Date (Most Common)
 
 **Before**:
+
 ```sql
 SELECT * FROM posts WHERE status = 'published' ORDER BY created_at DESC LIMIT 20;
 
@@ -567,6 +581,7 @@ Execution Time: 387.234 ms
 ```
 
 **After** (with index):
+
 ```sql
 -- Same query, different plan
 Limit (cost=0.29..23.45 rows=20 width=850)
@@ -579,23 +594,25 @@ Execution Time: 34.567 ms
 #### Sort by Views (Dashboard)
 
 **Query**:
+
 ```sql
 SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT 10;
 ```
 
 **Index**: `idx_posts_status_views`
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Execution Time | 423ms | 38ms | 11x |
-| Rows Scanned | 100,000 | 10 | 10,000x |
-| Sort Method | External merge | Index scan | N/A |
+| Metric         | Before         | After      | Improvement |
+| -------------- | -------------- | ---------- | ----------- |
+| Execution Time | 423ms          | 38ms       | 11x         |
+| Rows Scanned   | 100,000        | 10         | 10,000x     |
+| Sort Method    | External merge | Index scan | N/A         |
 
 ### Keyset Pagination (Advanced)
 
 For very deep pagination, we implemented keyset pagination:
 
 **Traditional Offset**:
+
 ```sql
 SELECT * FROM posts ORDER BY created_at DESC OFFSET 100000 LIMIT 20;
 -- Must scan 100,020 rows
@@ -603,6 +620,7 @@ SELECT * FROM posts ORDER BY created_at DESC OFFSET 100000 LIMIT 20;
 ```
 
 **Keyset Pagination**:
+
 ```sql
 SELECT * FROM posts WHERE created_at < :lastSeenCreatedAt
 ORDER BY created_at DESC LIMIT 20;
@@ -655,16 +673,19 @@ We created comprehensive performance tests in `RepositoryPerformanceTest.java`:
 ### Automated Performance Monitoring
 
 **QueryPerformanceMonitor** tracks:
+
 - Min/Max/Average execution time
 - Call count
 - Slow query detection (>100ms threshold)
 
 **RepositoryPerformanceAspect** automatically:
+
 - Captures all repository method calls via AOP
 - Records execution times
 - Generates performance reports
 
 **Example Output**:
+
 ```
 === Query Performance Report ===
 Query: PostRepository.searchPublishedPosts | Calls: 1,234 | Avg: 67ms | Min: 45ms | Max: 198ms | Total: 82,678ms
@@ -719,6 +740,7 @@ LIMIT 10;
 ```
 
 **Results**:
+
 ```
 Query                                           | Calls | Total Time | Mean Time | Max Time
 ------------------------------------------------|-------|------------|-----------|----------

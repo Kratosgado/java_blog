@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -24,11 +23,10 @@ public class ViewTrackingService {
   private final ObjectMapper objectMapper; // Autowired Jackson mapper
 
   //
-  private final ConcurrentHashMap<String, AtomicInteger> viewBuffer = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, Integer> viewBuffer = new ConcurrentHashMap<>();
 
   public void incrementViews(String slug) {
-    // Increment the view count in the buffer atomically
-    viewBuffer.computeIfAbsent(slug, s -> new AtomicInteger(0)).incrementAndGet();
+    viewBuffer.compute(slug, (k, v) -> v == null ? 1 : v + 1);
   }
 
   // Flush the buffer to the database every 10 seconds
@@ -40,7 +38,7 @@ public class ViewTrackingService {
     List<Map<String, Object>> updateList = new ArrayList<>();
     viewBuffer.forEach(
         (slug, count) -> {
-          Integer currentCount = viewBuffer.get(slug).intValue();
+          Integer currentCount = viewBuffer.get(slug);
           if (currentCount != null) {
             updateList.add(Map.of("slug", slug, "count", currentCount));
           }

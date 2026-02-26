@@ -46,7 +46,7 @@
         </collectionProp>
       </HeaderManager>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users Thread Group" enabled="true">
         <intProp name="ThreadGroup.num_threads">7000</intProp>
         <intProp name="ThreadGroup.ramp_time">100</intProp>
         <longProp name="ThreadGroup.duration">300</longProp>
@@ -59,7 +59,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /posts (list)" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /posts (list)">
           <stringProp name="HTTPSampler.path">/api/v1/posts</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
@@ -249,7 +249,7 @@ if (postIdCount != null &amp;&amp; postIdCount &gt; 0) {
             <collectionProp name="HeaderManager.headers">
               <elementProp name="authorization" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImdhZG9AZ21haWwuY29tIiwicm9sZSI6IkFETUlOIiwic3ViIjoiMjEiLCJpYXQiOjE3NzIxMDE0MjcsImV4cCI6MTc3MjE4NzgyN30.zv7nPAVBKJowfREemiyF906xNNaX688vDaFG5Zyw4_c</stringProp>
+                <stringProp name="Header.value">Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiQURNSU4iLCJlbWFpbCI6ImdhZG9AZ21haWwuY29tIiwic3ViIjoiMjEiLCJpYXQiOjE3NzIxMDM1MDMsImV4cCI6MTc3MjE4OTkwM30.MXyKFyhc6XcrsG__7WKSZ7U-MibBtGTlcAdz47QnGaA</stringProp>
               </elementProp>
               <elementProp name="content-type-2" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -258,7 +258,7 @@ if (postIdCount != null &amp;&amp; postIdCount &gt; 0) {
             </collectionProp>
           </HeaderManager>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /comments">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /comments" enabled="true">
             <stringProp name="HTTPSampler.path">/api/v1/comments</stringProp>
             <stringProp name="HTTPSampler.method">POST</stringProp>
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
