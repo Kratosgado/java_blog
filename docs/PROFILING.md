@@ -11,6 +11,27 @@ The application exposes runtime metrics including:
 - **Throughput**: Requests per second (RPS).
 - **Latency**: Average response time per 5-second interval.
 
+Profiling is in 2 forms, depending on the profiling tool you use:
+
+- **External Tools(VisualVM and Jmeter)**:
+- **Internal Visual**: A simple dashboard is available at: `http://localhost:8080/metrics.html`
+
+## Profiling Tools
+
+Profiling tools are available for:
+
+- **VisualVM**: VisualVM is a Java-based profiling tool that provides a graphical interface for analyzing the performance of Java applications. It allows you to monitor CPU usage, memory usage, and thread activity.
+- **JMeter**: JMeter is a popular open-source tool for load testing and performance testing. It allows you to simulate user behavior and measure response times, throughput, and other performance metrics.
+
+## Procedure
+
+1. Run the application, VisualVM and Jmeter.
+2. To use a default admin token for authenticated endpoints like the dashboard, Login as admin and copy the token from the response.
+3. Load the jmeter test plan from ./jmeter/blog-api-test-plan.jmx
+4. Set the Authorization header with the token from step 2.
+5. Switch to the blog server's process in VisualVM to start recording.
+6. Switch to the jmeter and run the test plan.
+
 ## Accessing Metrics
 
 ### 1. Metrics Dashboard (Visual)
