@@ -1,11 +1,11 @@
 package com.kratosgado.blog.backend.config;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 @EnableAsync
@@ -13,6 +13,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class AsyncConfig implements AsyncConfigurer {
   @Override
   public Executor getAsyncExecutor() {
-    return Executors.newVirtualThreadPerTaskExecutor();
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(8);
+    executor.setMaxPoolSize(30);
+    executor.setQueueCapacity(200);
+    executor.setThreadNamePrefix("BlogAsync-");
+    executor.initialize();
+    return executor;
   }
 }

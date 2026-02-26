@@ -10,7 +10,7 @@
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=est&page=0&size=10 HTTP/1.1
 
 
 ### Get trending posts

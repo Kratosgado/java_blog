@@ -2,8 +2,11 @@ package com.kratosgado.blog.backend.services;
 
 import com.kratosgado.blog.backend.exceptions.ForbiddenException;
 import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
+import com.kratosgado.blog.backend.models.Comment;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.backend.utils.DtoMapper;
 import com.kratosgado.blog.backend.utils.PageUtil;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
@@ -11,10 +14,9 @@ import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
 import com.kratosgado.blog.enums.CommentStatus;
-import com.kratosgado.blog.backend.models.Comment;
-import com.kratosgado.blog.backend.models.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -105,6 +107,7 @@ public class CommentServiceImpl implements CommentService {
         .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
   }
 
+  @Cacheable(value = CacheNames.COMMENTLIST, key = "#postId + #pageRequest.toString()")
   public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
     Pageable pageable = PageUtil.toPageable(pageRequest);
     Page<Comment> commentPage =

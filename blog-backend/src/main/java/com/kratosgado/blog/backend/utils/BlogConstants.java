@@ -21,6 +21,7 @@ public class BlogConstants {
     public static final String REVIEWLIST = "reviewList";
     public static final String REVIEWS = "reviews";
     public static final String COMMENTLIST = "commentList";
+    public static final String DASHBOARDSTATS = "dashboardStats";
   }
 
   public static class ExecutorNames {

@@ -6,6 +6,7 @@ import com.kratosgado.blog.backend.repositories.jpa.TagRepository;
 import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
 import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
 import com.kratosgado.blog.backend.repositories.mongo.ReviewRepository;
+import com.kratosgado.blog.backend.utils.BlogConstants.CacheNames;
 import com.kratosgado.blog.dtos.response.AnalyticsResponse;
 import com.kratosgado.blog.dtos.response.EngagementStatsResponse;
 import com.kratosgado.blog.dtos.response.PostDistributionResponse;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -34,6 +36,7 @@ public class DashboardServiceImpl implements DashboardService {
   private final ReviewRepository reviewRepository;
   private final CategoryRepository categoryRepository;
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'dashboard-stats'")
   public StatCountResponse getDashboardStats() {
     return new StatCountResponse(
         postRepository.count(),
@@ -43,6 +46,7 @@ public class DashboardServiceImpl implements DashboardService {
         reviewRepository.count());
   }
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'user-dashboard-stats'")
   public UserDashboardStatsResponse getUserDashboardStats(Long userId) {
     return new UserDashboardStatsResponse(
         postRepository.countByUserId(userId),
@@ -51,6 +55,7 @@ public class DashboardServiceImpl implements DashboardService {
         postRepository.sumViewsByUserId(userId));
   }
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'analytics'")
   public AnalyticsResponse getAnalytics(LocalDateTime startDate, LocalDateTime endDate) {
     long totalViews = 0;
     var topPosts =
@@ -71,6 +76,7 @@ public class DashboardServiceImpl implements DashboardService {
     return new AnalyticsResponse(totalPosts, totalViews, averageViews, topPosts);
   }
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'post-status-distribution'")
   public PostDistributionResponse getPostStatusDistribution() {
     return new PostDistributionResponse(
         postRepository.countByStatus(PostStatus.published),
@@ -78,6 +84,7 @@ public class DashboardServiceImpl implements DashboardService {
         postRepository.countByStatus(PostStatus.private_post));
   }
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'engagement-stats'")
   public EngagementStatsResponse getEngagementStats() {
     List<EngagementStatsResponse.PostEngagementSummary> topByViews =
         postRepository.findTopNByOrderByViewsDesc(5).stream()
@@ -107,6 +114,7 @@ public class DashboardServiceImpl implements DashboardService {
     return new EngagementStatsResponse(topByViews, topByLikes, popularCategories);
   }
 
+  @Cacheable(value = CacheNames.DASHBOARDSTATS, key = "'recent-activity'")
   public RecentActivityResponse getRecentActivity() {
     List<RecentActivityResponse.RecentPost> latestPosts =
         postRepository.findTopNByOrderByCreatedAtDesc(5).stream()

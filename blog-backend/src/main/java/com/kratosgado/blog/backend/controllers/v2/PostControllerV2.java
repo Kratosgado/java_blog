@@ -42,7 +42,7 @@ public class PostControllerV2 {
 
   @GetMapping("/category/{categoryId}/optimized")
   @GetEndpoint(
-      summary = "Get posts by category (Optimized)",
+      summary = "Get posts by category ",
       description = "Retrieves published posts by category using optimized query")
   public PageResponse<PostView> getCategoryPostsOptimized(
       @PathVariable @Parameter(description = "Category ID") Long categoryId,
@@ -52,7 +52,7 @@ public class PostControllerV2 {
 
   @GetMapping("/tag/{tagId}/optimized")
   @GetEndpoint(
-      summary = "Get posts by tag (Optimized)",
+      summary = "Get posts by tag ",
       description = "Retrieves published posts by tag using optimized query")
   public PageResponse<PostView> getTagPostsOptimized(
       @PathVariable @Parameter(description = "Tag ID") Long tagId,

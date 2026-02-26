@@ -27,7 +27,8 @@ public class CacheConfig {
             buildCache(CacheNames.TAGS, 1, TimeUnit.HOURS, 500),
             buildCache(CacheNames.TAGLIST, 1, TimeUnit.HOURS, 500),
             buildCache(CacheNames.COMMENTS, 1, TimeUnit.HOURS, 100),
-            buildCache(CacheNames.COMMENTLIST, 1, TimeUnit.HOURS, 100));
+            buildCache(CacheNames.COMMENTLIST, 1, TimeUnit.HOURS, 100),
+            buildCache(CacheNames.DASHBOARDSTATS, 1, TimeUnit.MINUTES, 100));
 
     cacheManager.setCaches(caches);
     return cacheManager;

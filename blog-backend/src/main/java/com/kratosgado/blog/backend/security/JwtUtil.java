@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.security;
 
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.dtos.response.AuthResponse;
 import io.jsonwebtoken.Claims;
@@ -57,11 +58,17 @@ public class JwtUtil {
   }
 
   public JwtPayload extractPayload(String token) {
+
     Claims claims = extractAllClaims(token);
+    if (claims.getExpiration().before(new Date())) {
+      throw new UnauthorizedException("Token has expired");
+    }
+
     return new JwtPayload(
         claims.get("email", String.class),
         Long.valueOf(claims.getSubject()),
-        claims.get("role", String.class));
+        claims.get("role", String.class),
+        claims.getExpiration());
   }
 
   public boolean validateToken(String token, String sub) {
@@ -82,5 +89,5 @@ public class JwtUtil {
         token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
-  public record JwtPayload(String email, Long userId, String role) {}
+  public record JwtPayload(String email, Long userId, String role, Date expiration) {}
 }

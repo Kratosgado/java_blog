@@ -226,7 +226,7 @@ public class PostServiceImpl implements PostService {
     return DtoMapper.toPageResponse(postsPage);
   }
 
-  // @Cacheable(value = CacheNames.POSTLIST)
+  @Cacheable(value = CacheNames.POSTLIST)
   public PageResponse<PostView> searchPostsV1(SearchPageRequest pageRequest) {
     // Use optimized full-text search with PostgreSQL tsvector
     var postsPage =

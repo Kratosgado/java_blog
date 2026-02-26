@@ -14,21 +14,7 @@ kanban-plugin: basic
 
 ## Todo
 
-- [ ] fix view tracking, it occurs once per cache #bug
-
-- [ ] Confirm the secured Spring Boot backend is running locally with JWT/OAuth2/Spring Security enabled (Prep)
-
-- [ ] [[Enable Spring Boot Actuator + Micrometer Prometheus for metrics exposure (Epic 5 – US 5.1)]]
-
-- [ ] [[Add `@EnableAsync` and configure a custom `ThreadPoolTaskExecutor` bean with optimal settings (Epic 2 – US 2.1)]]
-
-- [ ] Run initial CPU, memory, thread, and latency profiling session on the existing secured backend (Epic 1 – US 1.1)
-
-- [ ] Identify key bottlenecks in post retrieval, comment loading, user analytics, feed aggregation, notification dispatch APIs (Epic 1 – US 1.1)
-
-- [ ] Record baseline performance metrics: average response time, CPU usage %, memory footprint, GC pauses, thread usage (Epic 1 – US 1.1 / US 1.2)
-
-- [ ] Create a bottleneck summary report with findings, screenshots, flame graphs, and highlighted optimization areas (Epic 1 – US 1.2)
+- [ ] Check using cache to update post views
 
 - [ ] Refactor long-running operations (analytics, feed aggregation, notification dispatch) using `@Async`, `CompletableFuture`, or `ExecutorService` (Epic 2 – US 2.1)
 
@@ -74,11 +60,23 @@ kanban-plugin: basic
 
 ## Work in progress
 
-- [ ] Set up a Postman collection or JMeter script with authenticated requests to simulate concurrent load (50–200 users) (Epic 2 – US 2.2 / Epic 5 – US 5.2)
+## Completed
+
+- [ ] Confirm the secured Spring Boot backend is running locally with JWT/OAuth2/Spring Security enabled (Prep)
 
 - [ ] Install and verify profiling tools: VisualVM, JProfiler (or alternative), Java Flight Recorder, async-profiler (Epic 1 – US 1.1)
 
-## Completed
+- [ ] fix view tracking, it occurs once per cache #bug
+
+- [ ] Run initial CPU, memory, thread, and latency profiling session on the existing secured backend (Epic 1 – US 1.1)
+
+- [ ] Identify key bottlenecks in post retrieval, comment loading, user analytics, feed aggregation, notification dispatch APIs (Epic 1 – US 1.1)
+
+- [ ] Record baseline performance metrics: average response time, CPU usage %, memory footprint, GC pauses, thread usage (Epic 1 – US 1.1 / US 1.2)
+
+- [ ] Create a bottleneck summary report with findings, screenshots, flame graphs, and highlighted optimization areas (Epic 1 – US 1.2)
+
+- [ ] [[Add `@EnableAsync` and configure a custom `ThreadPoolTaskExecutor` bean with optimal settings (Epic 2 – US 2.1)]]
 
 
 %% kanban:settings

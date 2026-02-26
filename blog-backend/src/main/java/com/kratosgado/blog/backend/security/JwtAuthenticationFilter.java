@@ -84,30 +84,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (userOptional.isPresent()) {
           User user = userOptional.get();
-          if (jwtUtil.validateToken(jwt, payload.userId().toString())) {
-            // Convert user role to Spring Security authority
-            var authority = new SimpleGrantedAuthority(user.getAuthority());
-            var authorities = java.util.List.of(authority);
+          var authority = new SimpleGrantedAuthority(user.getAuthority());
+          var authorities = java.util.List.of(authority);
 
-            UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, authorities);
+          UsernamePasswordAuthenticationToken authToken =
+              new UsernamePasswordAuthenticationToken(user, null, authorities);
 
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // Set authentication in security context
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          // Set authentication in security context
+          SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug(
-                "JWT authentication successful for user: {} with role: {}",
-                payload,
-                user.getRole().name());
-          } else {
-            // Token validation failed (signature mismatch or expired)
-            log.warn(
-                "JWT validation failed for user: {}. Token may be expired or tampered. "
-                    + "Token prefix: {}...",
-                payload,
-                jwt.substring(0, Math.min(20, jwt.length())));
-          }
+          log.debug(
+              "JWT authentication successful for user: {} with role: {}",
+              payload,
+              user.getRole().name());
+
         } else {
           // User not found in database
           log.warn(
