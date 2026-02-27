@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Metrics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .chart-container { width: 80%; margin: 20px auto; }
+        .controls { text-align: center; margin-bottom: 20px; }
+        input { padding: 5px; width: 300px; }
+        button { padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>System Metrics</h2>
+        <input type="text" id="token" placeholder="Enter JWT Token (Bearer ...)">
+        <button onclick="fetchMetrics()">Refresh</button>
+        <button onclick="toggleAutoRefresh()">Auto Refresh</button>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="metricsChart"></canvas>
+    </div>
+
+    <script>
+        let chart;
+        let autoRefreshInterval;
+
+        async function fetchMetrics() {
+            const token = document.getElementById('token').value;
+            if (!token) {
+                alert("Please enter a JWT token");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/admin/metrics', {
+                    headers: {
+                        'Authorization': token.startsWith('Bearer ') ? token : 'Bearer ' + token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch metrics: ' + response.status);
+                }
+
+                const data = await response.json();
+                updateChart(data);
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+            }
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            
+            // Format timestamps
+            const labels = data.cpuUsage.map(p => new Date(p.timestamp).toLocaleTimeString());
+            
+            const datasets = [
+                {
+                    label: 'CPU Usage (%)',
+                    data: data.cpuUsage.map(p => p.value * 100),
+                    borderColor: 'rgb(255, 99, 132)',
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Memory (MB)',
+                    data: data.memoryUsage.map(p => p.value),
+                    borderColor: 'rgb(54, 162, 235)',
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Throughput (RPS)',
+                    data: data.activeRequests.map(p => p.value), // Assuming activeRequests maps to throughput in my service impl
+                    borderColor: 'rgb(75, 192, 192)',
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Latency (ms)',
+                    data: data.responseTime.map(p => p.value),
+                    borderColor: 'rgb(153, 102, 255)',
+                    yAxisID: 'y1'
+                }
+            ];
+
+            if (chart) {
+                chart.data.labels = labels;
+                chart.data.datasets = datasets;
+                chart.update();
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: labels, datasets: datasets },
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'CPU % / RPS' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                title: { display: true, text: 'Memory (MB) / Latency (ms)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function toggleAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+                alert("Auto refresh stopped");
+            } else {
+                fetchMetrics();
+                autoRefreshInterval = setInterval(fetchMetrics, 5000);
+                alert("Auto refresh started (5s)");
+            }
+        }
+    </script>
+</body>
+</html>

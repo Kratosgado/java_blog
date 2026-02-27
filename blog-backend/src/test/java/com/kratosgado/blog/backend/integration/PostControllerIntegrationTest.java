@@ -120,7 +120,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
               "draft",
               new Long[] {testTag.getId()});
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -142,7 +142,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
           new CreatePostRequest(
               "New Post", "Content", "Excerpt", testCategory.getId(), null, "draft", new Long[] {});
 
-      String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.READER);
+      String token = generateToken(readerUser);
 
       mockMvc
           .perform(
@@ -179,7 +179,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
           new CreatePostRequest(
               title, content, excerpt, testCategory.getId(), null, "draft", new Long[] {});
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -208,7 +208,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
               PostStatus.published,
               new Long[] {testTag.getId()});
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -235,7 +235,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
               PostStatus.published,
               new Long[] {});
 
-      String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(readerUser);
 
       mockMvc
           .perform(
@@ -259,7 +259,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
               PostStatus.published,
               new Long[] {});
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -289,7 +289,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
       draftPost.setCategory(testCategory);
       draftPost = postRepository.save(draftPost);
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -301,7 +301,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 403 when publishing another user's post")
     void publishPost_OtherUsersPost_ShouldReturn403() throws Exception {
-      String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(readerUser);
 
       mockMvc
           .perform(put("/v1/posts/" + testPost.getId() + "/publish").header("Authorization", token))
@@ -316,7 +316,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully delete own post")
     void deletePost_OwnPost_ShouldReturn200() throws Exception {
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(delete("/v1/posts/" + testPost.getId()).header("Authorization", token))
@@ -326,7 +326,7 @@ class PostControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 403 when deleting another user's post")
     void deletePost_OtherUsersPost_ShouldReturn403() throws Exception {
-      String token = generateToken(readerUser.getId(), readerUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(readerUser);
 
       mockMvc
           .perform(delete("/v1/posts/" + testPost.getId()).header("Authorization", token))

@@ -2,7 +2,6 @@ package com.kratosgado.blog.backend.config;
 
 import com.kratosgado.blog.backend.security.CustomOAuth2User;
 import com.kratosgado.blog.backend.security.JwtUtil;
-import com.kratosgado.blog.dtos.response.AuthResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,19 +25,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     var oauth2User = (CustomOAuth2User) authentication.getPrincipal();
     Map<String, Object> claims = new HashMap<>();
     claims.put("userId", oauth2User.getUserId());
-    claims.put("role", oauth2User.getRole()); // Include role: ADMIN, AUTHOR, READER
-
-    String jwtToken = jwtUtil.generateToken(oauth2User.getEmail(), claims);
-    var resBody =
-        new AuthResponse(
-            jwtToken,
-            oauth2User.getUserId(),
-            oauth2User.getUsername(),
-            oauth2User.getEmail(),
-            oauth2User.getRole().name());
+    claims.put("role", oauth2User.getRole());
 
     // Return JWT in response or redirect with token
     response.setContentType("application/json");
-    response.getWriter().write(resBody.toJson());
+    response.getWriter().write(jwtUtil.signToken(oauth2User).toJson());
   }
 }

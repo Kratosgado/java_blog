@@ -1,133 +1,29 @@
 package com.kratosgado.blog.backend.services;
 
-import com.kratosgado.blog.backend.exceptions.ForbiddenException;
-import com.kratosgado.blog.backend.exceptions.ResourceNotFoundException;
-import com.kratosgado.blog.backend.repositories.jpa.PostRepository;
-import com.kratosgado.blog.backend.repositories.mongo.CommentRepository;
-import com.kratosgado.blog.backend.utils.DtoMapper;
-import com.kratosgado.blog.backend.utils.PageUtil;
+import com.kratosgado.blog.backend.models.Comment;
+import com.kratosgado.blog.backend.models.User;
 import com.kratosgado.blog.dtos.request.CreateCommentRequest;
 import com.kratosgado.blog.dtos.request.PageRequest;
 import com.kratosgado.blog.dtos.response.CommentResponse.CommentWithoutUser;
 import com.kratosgado.blog.dtos.response.PageResponse;
-import com.kratosgado.blog.enums.CommentStatus;
-import com.kratosgado.blog.backend.models.Comment;
-import com.kratosgado.blog.backend.models.User;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@Slf4j
-@AllArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.READ_UNCOMMITTED)
-public class CommentService {
+public interface CommentService {
 
-  private final CommentRepository commentRepository;
-  private final PostRepository postRepository;
+  Comment createComment(CreateCommentRequest request, User user);
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public Comment createComment(CreateCommentRequest request, User user) {
-    if (!postRepository.existsById(request.postId())) {
-      throw new ResourceNotFoundException("Post", "id", request.postId());
-    }
+  Comment approveComment(String commentId);
 
-    Comment comment =
-        Comment.builder()
-            .postId(request.postId())
-            .userId(user.getId())
-            .content(request.content())
-            .status(CommentStatus.pending)
-            .authorName(user.getUsername())
-            .authorAvatarUrl(user.getAvatarUrl())
-            .build();
-    comment.onCreate();
+  Comment rejectComment(String commentId);
 
-    Comment saved = commentRepository.save(comment);
+  void deleteComment(String commentId, Long userId);
 
-    log.debug("Created comment with ID: {}", saved.getId());
-    return saved;
-  }
+  Comment getCommentById(String commentId);
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public Comment approveComment(String commentId) {
-    Comment comment =
-        commentRepository
-            .findById(commentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
+  PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest);
 
-    comment.setStatus(CommentStatus.approved);
-    comment.onUpdate();
-    comment = commentRepository.save(comment);
+  PageResponse<Comment> getAllPostComments(Long postId, PageRequest pageRequest);
 
-    log.debug("Approved comment with ID: {}", commentId);
-    return comment;
-  }
+  PageResponse<CommentWithoutUser> getUserComments(Long userId, PageRequest pageRequest);
 
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public Comment rejectComment(String commentId) {
-    Comment comment =
-        commentRepository
-            .findById(commentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-
-    comment.setStatus(CommentStatus.rejected);
-    comment.onUpdate();
-    comment = commentRepository.save(comment);
-
-    log.debug("Rejected comment with ID: {}", commentId);
-    return comment;
-  }
-
-  @Transactional(isolation = Isolation.READ_COMMITTED)
-  public void deleteComment(String commentId, Long userId) {
-    Comment comment =
-        commentRepository
-            .findById(commentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-
-    if (!comment.getUserId().equals(userId)) {
-      throw new ForbiddenException("You are not allowed to delete this comment");
-    }
-
-    commentRepository.delete(comment);
-
-    log.debug("Deleted comment with ID: {}", commentId);
-  }
-
-  public Comment getCommentById(String commentId) {
-    return commentRepository
-        .findById(commentId)
-        .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-  }
-
-  public PageResponse<Comment> getPostComments(Long postId, PageRequest pageRequest) {
-    Pageable pageable = PageUtil.toPageable(pageRequest);
-    Page<Comment> commentPage =
-        commentRepository.findByPostIdAndStatus(postId, CommentStatus.approved, pageable);
-
-    return DtoMapper.toPageResponse(commentPage);
-  }
-
-  public PageResponse<Comment> getAllPostComments(Long postId, PageRequest pageRequest) {
-    Pageable pageable = PageUtil.toPageable(pageRequest);
-    Page<Comment> commentPage = commentRepository.findByPostId(postId, pageable);
-
-    return DtoMapper.toPageResponse(commentPage);
-  }
-
-  public PageResponse<CommentWithoutUser> getUserComments(Long userId, PageRequest pageRequest) {
-    Pageable pageable = PageUtil.toPageable(pageRequest);
-    Page<CommentWithoutUser> commentPage = commentRepository.findByUserId(userId, pageable);
-
-    return DtoMapper.toPageResponse(commentPage);
-  }
-
-  public Long getPostCommentCount(Long postId) {
-    return commentRepository.countByPostIdAndStatus(postId, CommentStatus.approved);
-  }
+  Long getPostCommentCount(Long postId);
 }

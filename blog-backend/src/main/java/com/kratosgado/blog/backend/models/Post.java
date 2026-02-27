@@ -31,6 +31,10 @@ import lombok.Setter;
     name = "posts",
     indexes = {
       @Index(name = "idx_posts_slug", columnList = "slug"),
+      @Index(name = "idx_posts_user_id", columnList = "user_id"),
+      @Index(name = "idx_posts_category_id", columnList = "category_id"),
+      @Index(name = "idx_posts_created_at", columnList = "created_at"),
+      @Index(name = "idx_posts_status", columnList = "status")
     })
 @NamedEntityGraph(
     name = "post-with-details",

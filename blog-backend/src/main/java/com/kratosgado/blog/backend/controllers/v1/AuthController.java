@@ -8,7 +8,6 @@ import com.kratosgado.blog.backend.services.AuthService;
 import com.kratosgado.blog.dtos.request.LoginRequest;
 import com.kratosgado.blog.dtos.request.RegisterRequest;
 import com.kratosgado.blog.dtos.response.AuthResponse;
-import com.kratosgado.blog.dtos.response.ResponseDto;
 import com.kratosgado.blog.enums.UserRole;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -86,14 +85,14 @@ public class AuthController {
           "Validates a JWT token and returns whether it's valid. Checks token signature,"
               + " expiration, and structure. Returns username if token is valid. Does not check"
               + " blacklist status.")
-  public ResponseDto<Map<String, Object>> validateToken(
+  public Map<String, Object> validateToken(
       @Parameter(
               description = "Authorization header with Bearer token",
               required = true,
               example = "Bearer eyJhbGc...")
           @RequestHeader("Authorization")
           String authHeader) {
-    return ResponseDto.success(authService.validateToken(authHeader));
+    return authService.validateToken(authHeader);
   }
 
   @PostMapping("/logout")

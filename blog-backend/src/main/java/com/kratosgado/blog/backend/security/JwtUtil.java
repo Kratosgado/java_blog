@@ -1,13 +1,15 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.backend.exceptions.UnauthorizedException;
 import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.dtos.response.AuthResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
-import java.util.function.Function;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,89 +17,77 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtUtil {
 
-  @Value("${jwt.secret}")
-  private String secret;
+  private final SecretKey signingKey;
+  private final long expiration;
 
-  @Value("${jwt.expiration}")
-  private Long expiration;
-
-  private SecretKey getSigningKey() {
-    return Keys.hmacShaKeyFor(secret.getBytes());
+  public JwtUtil(
+      @Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") Long expiration) {
+    byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+    if (keyBytes.length < 32) {
+      throw new SecurityException("JWT secret must be at least 32 bytes");
+    }
+    this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+    this.expiration = expiration;
   }
 
   public String extractSub(String token) {
-    return extractClaim(token, Claims::getSubject);
+    return extractAllClaims(token).getSubject();
   }
 
   public Date extractExpiration(String token) {
-    return extractClaim(token, Claims::getExpiration);
-  }
-
-  public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-    final Claims claims = extractAllClaims(token);
-    return claimsResolver.apply(claims);
+    return extractAllClaims(token).getExpiration();
   }
 
   private Claims extractAllClaims(String token) {
-    return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
+    return Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token).getPayload();
   }
 
-  private Boolean isTokenExpired(String token) {
+  private boolean isTokenExpired(String token) {
     return extractExpiration(token).before(new Date());
   }
 
-  public String generateToken(String sub, Long userId) {
-    Map<String, Object> claims = Map.of("userId", userId);
-    return createToken(claims, sub);
-  }
-
-  public String generateToken(String sub, Map<String, Object> claims) {
-    return createToken(claims, sub);
-  }
-
   private String createToken(Map<String, Object> claims, String subject) {
+    Instant now = Instant.now();
     return Jwts.builder()
         .claims(claims)
         .subject(subject)
-        .issuedAt(new Date(System.currentTimeMillis()))
-        .expiration(new Date(System.currentTimeMillis() + expiration))
-        .signWith(getSigningKey())
+        .issuedAt(Date.from(now))
+        .expiration(Date.from(now.plusMillis(expiration)))
+        .signWith(signingKey)
         .compact();
   }
 
   public JwtPayload extractPayload(String token) {
-    var claims =
-        Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
-    
-    // Handle userId which might be serialized as Double or other number types
-    Object userIdObj = claims.get("userId");
-    Long userId = null;
-    if (userIdObj instanceof Number) {
-      userId = ((Number) userIdObj).longValue();
+
+    Claims claims = extractAllClaims(token);
+    if (claims.getExpiration().before(new Date())) {
+      throw new UnauthorizedException("Token has expired");
     }
-    
+
     return new JwtPayload(
-        claims.getSubject(), userId, claims.get("role", String.class));
+        claims.get("email", String.class),
+        Long.valueOf(claims.getSubject()),
+        claims.get("role", String.class),
+        claims.getExpiration());
   }
 
-  public Boolean validateToken(String token, String sub) {
-    final String extractedUsername = extractSub(token);
-    return (extractedUsername.equals(sub) && !isTokenExpired(token));
+  public boolean validateToken(String token, String sub) {
+    return extractSub(token).equals(sub) && !isTokenExpired(token);
   }
 
   public AuthResponse signToken(User user) {
-    Map<String, Object> claims = Map.of("userId", user.getId(), "role", user.getRole().name());
+    Map<String, Object> claims = Map.of("email", user.getEmail(), "role", user.getRole().name());
     String token = createToken(claims, user.getId().toString());
     return new AuthResponse(
         token, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
   public AuthResponse signToken(CustomOAuth2User user) {
-    Map<String, Object> claims = Map.of("userId", user.getUserId(), "role", user.getRole());
+    Map<String, Object> claims = Map.of("email", user.getEmail(), "role", user.getRole());
     String token = createToken(claims, user.getUserId().toString());
     return new AuthResponse(
         token, user.getUserId(), user.getUsername(), user.getEmail(), user.getRole().name());
   }
 
-  public static record JwtPayload(String username, Long userId, String role) {}
+  public record JwtPayload(String email, Long userId, String role, Date expiration) {}
 }

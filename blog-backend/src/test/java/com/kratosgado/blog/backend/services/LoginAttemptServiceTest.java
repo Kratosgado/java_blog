@@ -2,6 +2,7 @@ package com.kratosgado.blog.backend.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.kratosgado.blog.backend.models.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ class LoginAttemptServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new LoginAttemptService();
+    service = new LoginAttemptServiceImpl();
   }
 
   @Test
@@ -40,13 +41,14 @@ class LoginAttemptServiceTest {
   void recordSuccessfulAttempt_shouldClearAttempts() {
     setField("MAX_ATTEMPTS", 3);
     setField("LOCKOUT_DURATION_MS", 60_000L);
-    String username = "user@example.com";
+    String email = "user@example.com";
+    User user = User.builder().email(email).build();
 
-    service.recordFailedAttempt(username);
-    assertThat(service.getAttemptCount(username)).isEqualTo(1);
+    service.recordFailedAttempt(email);
+    assertThat(service.getAttemptCount(email)).isEqualTo(1);
 
-    service.recordSuccessfulAttempt(username);
-    assertThat(service.getAttemptCount(username)).isZero();
+    service.recordSuccessfulAttempt(user);
+    assertThat(service.getAttemptCount(email)).isZero();
   }
 
   @Test

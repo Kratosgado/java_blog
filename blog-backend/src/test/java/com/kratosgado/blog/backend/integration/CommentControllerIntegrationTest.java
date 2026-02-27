@@ -120,7 +120,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @ValueSource(strings = {"", "   "})
     @DisplayName("Should fail with blank content")
     void createComment_WithBlankContent_ShouldReturn400(String content) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       CreateCommentRequest request = new CreateCommentRequest(postId, content);
 
       mockMvc
@@ -135,7 +135,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail with null post ID")
     void createComment_WithNullPostId_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String requestJson = "{\"postId\": null, \"content\": \"Test comment\"}";
 
       mockMvc
@@ -150,7 +150,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail with non-existent post ID")
     void createComment_WithNonExistentPostId_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL);
+      String token = generateToken(adminUser);
       CreateCommentRequest request = new CreateCommentRequest(99999L, "Test comment");
 
       mockMvc
@@ -170,7 +170,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should approve comment when user is ADMIN")
     void approveComment_WhenAdmin_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
       mockMvc
           .perform(
               put(COMMENTS_BASE_URL + "/" + commentId + "/approve").header("Authorization", token))
@@ -181,7 +181,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to approve comment when user is READER")
     void approveComment_WhenReader_ShouldReturn403() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL); // Default role is READER
+      String token = generateToken(testUser); // Default role is READER
 
       mockMvc
           .perform(
@@ -192,7 +192,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to approve non-existent comment")
     void approveComment_NonExistent_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
       String commentId = "non-existent-comment-id";
 
       mockMvc
@@ -278,7 +278,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should delete own comment")
     void deleteComment_WhenOwner_ShouldReturn200() throws Exception {
       // Create a comment first
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       // Delete the comment
       mockMvc
           .perform(delete(COMMENTS_BASE_URL + "/" + commentId).header("Authorization", token))
@@ -298,7 +298,7 @@ public class CommentControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to delete non-existent comment")
     void deleteComment_NonExistent_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL);
+      String token = generateToken(adminUser);
       String commentId = "non-existent-comment";
 
       mockMvc

@@ -20,14 +20,15 @@ public class CacheConfig {
   public CacheManager cacheManager() {
     SimpleCacheManager cacheManager = new SimpleCacheManager();
 
-    // TODO: use reasonable ttls
-    List<CaffeineCache> caches = Arrays.asList(
-        buildCache(CacheNames.POSTS, 10, TimeUnit.DAYS, 1000),
-        buildCache(CacheNames.POSTLIST, 1, TimeUnit.DAYS, 200),
-        buildCache(CacheNames.TAGS, 1, TimeUnit.HOURS, 500),
-        buildCache(CacheNames.TAGLIST, 1, TimeUnit.HOURS, 500),
-        buildCache(CacheNames.COMMENTS, 1, TimeUnit.HOURS, 100),
-        buildCache(CacheNames.COMMENTLIST, 1, TimeUnit.HOURS, 100));
+    List<CaffeineCache> caches =
+        Arrays.asList(
+            buildCache(CacheNames.POSTS, 10, TimeUnit.DAYS, 1000),
+            buildCache(CacheNames.POSTLIST, 1, TimeUnit.DAYS, 200),
+            buildCache(CacheNames.TAGS, 1, TimeUnit.HOURS, 500),
+            buildCache(CacheNames.TAGLIST, 1, TimeUnit.HOURS, 500),
+            buildCache(CacheNames.COMMENTS, 1, TimeUnit.HOURS, 100),
+            buildCache(CacheNames.COMMENTLIST, 1, TimeUnit.HOURS, 100),
+            buildCache(CacheNames.DASHBOARDSTATS, 1, TimeUnit.MINUTES, 100));
 
     cacheManager.setCaches(caches);
     return cacheManager;

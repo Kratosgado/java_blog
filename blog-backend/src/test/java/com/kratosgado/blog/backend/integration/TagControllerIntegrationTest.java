@@ -76,7 +76,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     void createTag_Authenticated_ShouldReturn201() throws Exception {
       CreateTagRequest request = new CreateTagRequest("Spring Boot", "Spring Boot framework");
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -109,7 +109,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
               "Java", // Already exists
               "Another Java description");
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -126,7 +126,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     void createTag_InvalidName_ShouldReturn400(String invalidName) throws Exception {
       CreateTagRequest request = new CreateTagRequest(invalidName, "Description");
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -147,7 +147,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     void updateTag_Valid_ShouldReturn200() throws Exception {
       UpdateTagRequest request = new UpdateTagRequest("Java SE", "Java Standard Edition");
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -165,7 +165,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     void updateTag_OnlyName_ShouldReturn200() throws Exception {
       UpdateTagRequest request = new UpdateTagRequest("Java EE", null);
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -185,7 +185,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     void updateTag_NonExistent_ShouldReturn404() throws Exception {
       UpdateTagRequest request = new UpdateTagRequest("Updated Name", "Updated desc");
 
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(
@@ -217,7 +217,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully delete tag")
     void deleteTag_Valid_ShouldReturn200() throws Exception {
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(delete("/v1/tags/" + testTag.getId()).header("Authorization", token))
@@ -227,7 +227,7 @@ class TagControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 404 for non-existent tag")
     void deleteTag_NonExistent_ShouldReturn404() throws Exception {
-      String token = generateToken(authorUser.getId(), authorUser.getEmail(), UserRole.AUTHOR);
+      String token = generateToken(authorUser);
 
       mockMvc
           .perform(delete("/v1/tags/999999").header("Authorization", token))

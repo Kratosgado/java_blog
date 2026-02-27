@@ -75,7 +75,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
       CreateCategoryRequest request =
           new CreateCategoryRequest("Science", "Scientific articles and research");
 
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -110,7 +110,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
               "Technology", // Already exists
               "Another tech category");
 
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -127,7 +127,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
     void createCategory_InvalidName_ShouldReturn400(String invalidName) throws Exception {
       CreateCategoryRequest request = new CreateCategoryRequest(invalidName, "Description");
 
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -149,7 +149,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
       CreateCategoryRequest request =
           new CreateCategoryRequest("Updated Technology", "Updated description for tech");
 
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -168,7 +168,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
       CreateCategoryRequest request =
           new CreateCategoryRequest("Updated Name", "Updated description");
 
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -201,7 +201,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully delete category")
     void deleteCategory_Valid_ShouldReturn200() throws Exception {
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(delete("/v1/categories/" + testCategory.getId()).header("Authorization", token))
@@ -211,7 +211,7 @@ class CategoryControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should return 404 for non-existent category")
     void deleteCategory_NonExistent_ShouldReturn404() throws Exception {
-      String token = generateToken(adminUser.getId(), adminUser.getEmail(), UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(delete("/v1/categories/999999").header("Authorization", token))

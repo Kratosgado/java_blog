@@ -91,7 +91,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should update own profile successfully")
     void updateProfile_OwnProfile_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest(
               "newusername", "Updated bio about myself", "https://newwebsite.com", "New York, USA");
@@ -112,7 +112,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should update profile with partial data")
     void updateProfile_PartialData_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest("newusername", null, null, null);
 
@@ -144,7 +144,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @ValueSource(strings = {"ab", "a", ""})
     @DisplayName("Should fail with invalid username length")
     void updateProfile_InvalidUsernameLength_ShouldReturn400(String username) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserProfileRequest request = new UpdateUserProfileRequest(username, null, null, null);
 
       mockMvc
@@ -159,7 +159,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail when bio exceeds max length")
     void updateProfile_BioTooLong_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String longBio = "a".repeat(501); // Max is 500
       UpdateUserProfileRequest request = new UpdateUserProfileRequest(null, longBio, null, null);
 
@@ -181,7 +181,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should update profile with various valid inputs")
     void updateProfile_VariousValidInputs_ShouldReturn200(
         String username, String bio, String website, String location) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String bioValue = "null".equals(bio) ? null : bio;
       String websiteValue = "null".equals(website) ? null : website;
 
@@ -206,7 +206,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should update own avatar successfully")
     void updateAvatar_OwnAvatar_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserAvatarRequest request =
           new UpdateUserAvatarRequest(TEST_USER_ID, "https://newavatar.com/image.jpg");
 
@@ -223,7 +223,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to update other user's avatar")
     void updateAvatar_OtherUsersAvatar_ShouldReturn403() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserAvatarRequest request =
           new UpdateUserAvatarRequest(TEST_OTHER_USER_ID, "https://newavatar.com/image.jpg");
 
@@ -254,7 +254,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @ValueSource(strings = {"", "   "})
     @DisplayName("Should fail with blank avatar URL")
     void updateAvatar_BlankUrl_ShouldReturn400(String avatarUrl) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String requestJson =
           String.format("{\"userId\": %d, \"avatarUrl\": \"%s\"}", TEST_USER_ID, avatarUrl);
 
@@ -276,7 +276,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
         })
     @DisplayName("Should update avatar with various valid URLs")
     void updateAvatar_VariousValidUrls_ShouldReturn200(String avatarUrl) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserAvatarRequest request = new UpdateUserAvatarRequest(TEST_USER_ID, avatarUrl);
 
       mockMvc
@@ -297,7 +297,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should successfully change own password")
     void changePassword_OwnPassword_ShouldReturn200() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
               TEST_USER_ID, "@Password123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
@@ -314,7 +314,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail to change other user's password")
     void changePassword_OtherUsersPassword_ShouldReturn403() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
               TEST_OTHER_USER_ID, "OldP@ssw0rd123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
@@ -346,7 +346,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail when passwords don't match")
     void changePassword_PasswordMismatch_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
               TEST_USER_ID, "OldP@ssw0rd123", "NewSecureP@ssw0rd456", "DifferentP@ssw0rd789");
@@ -364,7 +364,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @ValueSource(strings = {"weak", "12345678", "password", "abcdefgh"})
     @DisplayName("Should fail with weak passwords")
     void changePassword_WeakPassword_ShouldReturn400(String newPassword) throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(TEST_USER_ID, "OldP@ssw0rd123", newPassword, newPassword);
 
@@ -380,7 +380,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail with incorrect old password")
     void changePassword_IncorrectOldPassword_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
               TEST_USER_ID, "WrongOldP@ssw0rd", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
@@ -403,7 +403,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @EnumSource(UserRole.class)
     @DisplayName("Should allow admin to update user role to any value")
     void updateUserRole_AsAdmin_ShouldReturn200(UserRole role) throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -417,7 +417,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail when non-admin tries to update role")
     void updateUserRole_AsNonAdmin_ShouldReturn403() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
 
       mockMvc
           .perform(
@@ -440,7 +440,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail with invalid role value")
     void updateUserRole_InvalidRole_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -453,7 +453,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail when role parameter is missing")
     void updateUserRole_MissingRole_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
 
       mockMvc
           .perform(
@@ -464,7 +464,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should fail when updating role for non-existent user")
     void updateUserRole_NonExistentUser_ShouldReturn404() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
       Long nonExistentUserId = 99999L;
 
       mockMvc
@@ -483,7 +483,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Admin should not be able to update other user's profile directly")
     void admin_CannotUpdateOtherUsersProfile() throws Exception {
-      String token = generateToken(TEST_ADMIN_ID, TEST_ADMIN_EMAIL, UserRole.ADMIN);
+      String token = generateToken(adminUser);
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest("hackedusername", null, null, null);
 
@@ -500,7 +500,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("User can only update their own avatar")
     void user_CanOnlyUpdateOwnAvatar() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserAvatarRequest request =
           new UpdateUserAvatarRequest(TEST_USER_ID, "https://avatar.com/img.jpg");
 
@@ -517,7 +517,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("User can only change their own password")
     void user_CanOnlyChangeOwnPassword() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       ChangePasswordRequest request =
           new ChangePasswordRequest(
               TEST_USER_ID, "OldP@ssw0rd123", "NewSecureP@ssw0rd456", "NewSecureP@ssw0rd456");
@@ -540,7 +540,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should reject username with over 50 characters")
     void updateProfile_UsernameTooLong_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String longUsername = "a".repeat(51); // Max is 50
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest(longUsername, null, null, null);
@@ -557,7 +557,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should reject website URL over 200 characters")
     void updateProfile_WebsiteTooLong_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String longWebsite = "https://example.com/" + "a".repeat(201); // Max is 200
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest(null, null, longWebsite, null);
@@ -574,7 +574,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @Test
     @DisplayName("Should reject location over 100 characters")
     void updateProfile_LocationTooLong_ShouldReturn400() throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       String longLocation = "a".repeat(101); // Max is 100
       UpdateUserProfileRequest request =
           new UpdateUserProfileRequest(null, null, null, longLocation);
@@ -597,7 +597,7 @@ public class UserControllerIntegrationTest extends BaseIntegrationTest {
     @DisplayName("Should accept usernames at boundary lengths")
     void updateProfile_BoundaryUsernames_ShouldReturn200(String username, String description)
         throws Exception {
-      String token = generateToken(TEST_USER_ID, TEST_USER_EMAIL);
+      String token = generateToken(testUser);
       UpdateUserProfileRequest request = new UpdateUserProfileRequest(username, null, null, null);
 
       mockMvc

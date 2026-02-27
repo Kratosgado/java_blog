@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.services;
 
+import com.kratosgado.blog.backend.utils.BlogConstants.Miliseconds;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +48,7 @@ public class TokenBlacklistService {
     return blacklist.size();
   }
 
-  @Scheduled(fixedRate = 3600000) // Run every hour
+  @Scheduled(fixedRate = Miliseconds.ONE_HOUR) // Run every hour
   public void cleanupExpiredTokens() {
     log.info("Starting scheduled blacklist cleanup...");
     long currentTime = System.currentTimeMillis();

@@ -55,6 +55,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/graphiql/**", "/graphql")
                     .permitAll()
+                    .requestMatchers("/metrics.html")
+                    .permitAll()
 
                     // Public read access to content
                     .requestMatchers(
@@ -66,6 +68,8 @@ public class SecurityConfig {
                         "/v*/users/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/v*/users/{id}")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/v*/users/password-reset-request")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/data/**", "/error")
                     .permitAll()

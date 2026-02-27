@@ -6,46 +6,11 @@
 @host = http://localhost:8080/api/v2
 
 
-### Create a new post
-
-# @name createPost
-
-POST {{host}}/posts HTTP/1.1
-Content-Type: application/json
-Authorization: {{readerAuth}}
-
-{
-  "categoryId": 1,
-  "content": "This is a post created using V2 API. It demonstrates the performance improvements and optimized full-text search capabilities.",
-  "excerpt": "V2 API Post excerpt",
-  "status": "published",
-  "tagIds": [
-    1,
-    2
-  ],
-  "title": "Optimized Post V2"
-}
-
-> {%
-  var postId = response.body.data.id;
-  client.global.set("postIdV2", postId);
-  var slug = response.body.data.slug;
-  client.global.set("postSlugV2", slug);
-%}
-
-
-### Get all published posts (paginated)
-
-# @name getPosts
-
-GET {{host}}/posts?page=0&size=10 HTTP/1.1
-
-
 ### Search posts (Optimized FTS)
 
 # @name searchPosts
 
-GET {{host}}/posts/search?keyword=booting&page=0&size=10 HTTP/1.1
+GET {{host}}/posts/search?keyword=est&page=0&size=10 HTTP/1.1
 
 
 ### Get trending posts
@@ -67,64 +32,3 @@ GET {{host}}/posts/category/1/optimized HTTP/1.1
 # @name getTagPostsOptimized
 
 GET {{host}}/posts/tag/1/optimized HTTP/1.1
-
-
-### Get a single post by ID
-
-# @name getPost
-
-GET {{host}}/posts/{{postIdV2}} HTTP/1.1
-
-
-### Get a single post by slug
-
-# @name getPostBySlug
-
-GET {{host}}/posts/slug/{{postSlugV2}} HTTP/1.1
-
-
-### Update a post
-
-# @name updatePost
-
-PUT {{host}}/posts/{{postIdV2}} HTTP/1.1
-Content-Type: application/json
-Authorization: {{readerAuth}}
-
-{
-  "categoryId": 1,
-  "content": "Updated content for V2 post with even more performance details.",
-  "excerpt": "Updated excerpt",
-  "status": "published",
-  "title": "Optimized Post V2 - Updated"
-}
-
-
-### Publish a post
-
-# @name publishPost
-
-PUT {{host}}/posts/{{postIdV2}}/publish HTTP/1.1
-Authorization: {{readerAuth}}
-
-
-### Get posts by user
-
-# @name getUserPosts
-
-GET {{host}}/posts/user/1 HTTP/1.1
-
-
-### Get posts by category
-
-# @name getCategoryPosts
-
-GET {{host}}/posts/category/1 HTTP/1.1
-
-
-### Delete a post
-
-# @name deletePost
-
-DELETE {{host}}/posts/{{postIdV2}} HTTP/1.1
-Authorization: {{readerAuth}}

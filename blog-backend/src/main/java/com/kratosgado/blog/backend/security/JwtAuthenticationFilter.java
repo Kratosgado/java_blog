@@ -1,8 +1,8 @@
 package com.kratosgado.blog.backend.security;
 
-import com.kratosgado.blog.backend.repositories.jpa.UserRepository;
-import com.kratosgado.blog.backend.services.TokenBlacklistService;
 import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.backend.services.LoginAttemptService;
+import com.kratosgado.blog.backend.services.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,8 +38,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
-  private final UserRepository userRepository;
   private final TokenBlacklistService tokenBlacklistService;
+  private final LoginAttemptService loginAttemptService;
 
   @Override
   protected void doFilterInternal(
@@ -48,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     final String authHeader = request.getHeader("Authorization");
     final String jwt;
-    final String sub;
 
     // If no Authorization header or doesn't start with "Bearer ", skip this filter
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -77,43 +76,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       }
 
       // CHECK 2: Extract username from JWT
-      sub = jwtUtil.extractSub(jwt);
+      var payload = jwtUtil.extractPayload(jwt);
 
       // CHECK 3: Verify username exists and no authentication already set
-      if (sub != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        Optional<User> userOptional = userRepository.findById(Long.valueOf(sub));
+      if (payload != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        Optional<User> userOptional = loginAttemptService.getLoggedInUser(payload.email());
 
         if (userOptional.isPresent()) {
           User user = userOptional.get();
-          if (jwtUtil.validateToken(jwt, sub)) {
-            // Convert user role to Spring Security authority
-            var authority = new SimpleGrantedAuthority(user.getAuthority());
-            var authorities = java.util.List.of(authority);
+          var authority = new SimpleGrantedAuthority(user.getAuthority());
+          var authorities = java.util.List.of(authority);
 
-            UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, authorities);
+          UsernamePasswordAuthenticationToken authToken =
+              new UsernamePasswordAuthenticationToken(user, null, authorities);
 
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // Set authentication in security context
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+          authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          // Set authentication in security context
+          SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            log.debug(
-                "JWT authentication successful for user: {} with role: {}",
-                sub,
-                user.getRole().name());
-          } else {
-            // Token validation failed (signature mismatch or expired)
-            log.warn(
-                "JWT validation failed for user: {}. Token may be expired or tampered. "
-                    + "Token prefix: {}...",
-                sub,
-                jwt.substring(0, Math.min(20, jwt.length())));
-          }
+          log.debug(
+              "JWT authentication successful for user: {} with role: {}",
+              payload,
+              user.getRole().name());
+
         } else {
           // User not found in database
           log.warn(
               "User not found for JWT token: {}. Token prefix: {}...",
-              sub,
+              payload,
               jwt.substring(0, Math.min(20, jwt.length())));
         }
       }

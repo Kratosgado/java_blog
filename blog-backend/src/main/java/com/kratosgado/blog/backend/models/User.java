@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.kratosgado.blog.enums.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +41,7 @@ public class User {
   private String username;
 
   @Column(nullable = true) // Nullable for OAuth2 users
+  @JsonIgnore
   private String password;
 
   @Column(unique = true, nullable = false)

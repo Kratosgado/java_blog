@@ -1,8 +1,10 @@
-
 package com.kratosgado.blog.backend.utils;
 
 public class BlogConstants {
   public static class Miliseconds {
+    public static final long ONE_SECOND = 1000;
+    public static final long FIVE_SECONDS = 5 * ONE_SECOND;
+    public static final long TEN_SECONDS = 10 * ONE_SECOND;
     public static final long ONE_MINUTE = 60 * 1000;
     public static final long FIVE_MINUTES = 5 * ONE_MINUTE;
     public static final long FIFTEEN_MINUTES = 15 * ONE_MINUTE;
@@ -22,6 +24,11 @@ public class BlogConstants {
     public static final String REVIEWLIST = "reviewList";
     public static final String REVIEWS = "reviews";
     public static final String COMMENTLIST = "commentList";
+    public static final String DASHBOARDSTATS = "dashboardStats";
   }
 
+  public static class ExecutorNames {
+    public static final String taskExecutor = "taskExecutor";
+    public static final String notificationExecutor = "notificationExecutor";
+  }
 }

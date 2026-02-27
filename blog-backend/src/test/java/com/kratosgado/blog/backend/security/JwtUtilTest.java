@@ -1,11 +1,13 @@
 package com.kratosgado.blog.backend.security;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+import com.kratosgado.blog.backend.models.User;
+import com.kratosgado.blog.dtos.response.AuthResponse;
+import com.kratosgado.blog.enums.UserRole;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @DisplayName("JwtUtil Tests")
 class JwtUtilTest {
@@ -25,77 +26,71 @@ class JwtUtilTest {
 
   @BeforeEach
   void setUp() {
-    jwtUtil = new JwtUtil();
-    ReflectionTestUtils.setField(jwtUtil, "secret", testSecret);
-    ReflectionTestUtils.setField(jwtUtil, "expiration", testExpiration);
+    jwtUtil = new JwtUtil(testSecret, testExpiration);
   }
 
   @Test
-  @DisplayName("Should generate valid JWT token")
-  void generateToken_WithValidData_ShouldReturnToken() {
+  @DisplayName("Should throw exception for short secret key")
+  void constructor_WithShortSecret_ShouldThrowException() {
     // Arrange
-    String sub = "testuser";
-    Long userId = 1L;
+    String shortSecret = "short";
+
+    // Act & Assert
+    assertThrows(IllegalArgumentException.class, () -> new JwtUtil(shortSecret, testExpiration));
+  }
+
+  @Test
+  @DisplayName("Should generate valid JWT token for user")
+  void signToken_WithValidUser_ShouldReturnAuthResponse() {
+    // Arrange
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
 
     // Act
-    String token = jwtUtil.generateToken(sub, userId);
+    AuthResponse response = jwtUtil.signToken(user);
 
     // Assert
-    assertNotNull(token);
-    assertFalse(token.isEmpty());
-    assertTrue(token.split("\\.").length == 3);
+    assertNotNull(response);
+    assertNotNull(response.token());
+    assertFalse(response.token().isEmpty());
+    assertEquals(3, response.token().split("\\.").length);
+    assertEquals(1L, response.userId());
+    assertEquals("testuser", response.username());
+    assertEquals("test@example.com", response.email());
+    assertEquals("READER", response.role());
   }
 
   @Test
   @DisplayName("Should extract sub from token")
-  void extractSub_WithValidToken_ShouldReturnsub() {
+  void extractSub_WithValidToken_ShouldReturnSub() {
     // Arrange
-    String sub = "testuser";
-    Long userId = 1L;
-    String token = jwtUtil.generateToken(sub, userId);
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String token = jwtUtil.signToken(user).token();
 
     // Act
     String extractedSub = jwtUtil.extractSub(token);
 
     // Assert
-    assertEquals(sub, extractedSub);
-  }
-
-  @Test
-  @DisplayName("Should extract userId from token")
-  void extractUserId_WithValidToken_ShouldReturnUserId() {
-    // Arrange
-    String sub = "testuser";
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("userId", 123L);
-    String token = jwtUtil.generateToken(sub, claims);
-
-    // Act
-    Integer userIdAsInt =
-        jwtUtil.extractClaim(
-            token,
-            claimsObj -> {
-              Object userIdObj = claimsObj.get("userId");
-              if (userIdObj instanceof Double) {
-                return ((Double) userIdObj).intValue();
-              } else if (userIdObj instanceof Integer) {
-                return (Integer) userIdObj;
-              }
-              return null;
-            });
-
-    // Assert
-    assertNotNull(userIdAsInt);
-    assertEquals(123, userIdAsInt);
+    assertEquals("1", extractedSub);
   }
 
   @Test
   @DisplayName("Should extract expiration from token")
   void extractExpiration_WithValidToken_ShouldReturnExpiration() {
     // Arrange
-    String sub = "testuser";
-    Long userId = 1L;
-    String token = jwtUtil.generateToken(sub, userId);
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String token = jwtUtil.signToken(user).token();
 
     // Act
     var expiration = jwtUtil.extractExpiration(token);
@@ -108,61 +103,45 @@ class JwtUtilTest {
   @ParameterizedTest
   @MethodSource("validationTestCases")
   @DisplayName("Should validate token correctly")
-  void validateToken_ShouldReturnExpectedResult(
-      String tokenSub, String validateSub, boolean expected) {
+  void validateToken_ShouldReturnExpectedResult(Long userId, String validateSub, boolean expected) {
     // Arrange
-    Long userId = 1L;
-    String token = jwtUtil.generateToken(tokenSub, userId);
+    User user = new User();
+    user.setId(userId);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String token = jwtUtil.signToken(user).token();
 
     // Act
-    Boolean isValid = jwtUtil.validateToken(token, validateSub);
+    boolean isValid = jwtUtil.validateToken(token, validateSub);
 
     // Assert
     assertEquals(expected, isValid);
   }
 
   static Stream<Arguments> validationTestCases() {
-    return Stream.of(
-        Arguments.of("testuser", "testuser", true), Arguments.of("testuser", "wronguser", false));
+    return Stream.of(Arguments.of(1L, "1", true), Arguments.of(1L, "2", false));
   }
 
   @Test
-  @DisplayName("Should generate token with custom claims")
-  void generateToken_WithCustomClaims_ShouldIncludeClaims() {
+  @DisplayName("Should extract payload from token")
+  void extractPayload_WithValidToken_ShouldReturnPayload() {
     // Arrange
-    String sub = "testuser";
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("userId", 1L);
-    claims.put("role", "ADMIN");
-    claims.put("email", "test@example.com");
+    User user = new User();
+    user.setId(123L);
+    user.setUsername("testuser");
+    user.setEmail("user@example.com");
+    user.setRole(UserRole.ADMIN);
+    String token = jwtUtil.signToken(user).token();
 
     // Act
-    String token = jwtUtil.generateToken(sub, claims);
+    JwtUtil.JwtPayload payload = jwtUtil.extractPayload(token);
 
     // Assert
-    assertNotNull(token);
-    String extractedSub = jwtUtil.extractSub(token);
-    String role = jwtUtil.extractClaim(token, claimsObj -> claimsObj.get("role", String.class));
-
-    assertEquals(sub, extractedSub);
-    assertEquals("ADMIN", role);
-  }
-
-  @Test
-  @DisplayName("Should extract custom claim from token")
-  void extractClaim_WithCustomClaim_ShouldReturnClaimValue() {
-    // Arrange
-    String sub = "testuser";
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("userId", 1L);
-    claims.put("role", "ADMIN");
-    String token = jwtUtil.generateToken(sub, claims);
-
-    // Act
-    String role = jwtUtil.extractClaim(token, claimsObj -> claimsObj.get("role", String.class));
-
-    // Assert
-    assertEquals("ADMIN", role);
+    assertNotNull(payload);
+    assertEquals("user@example.com", payload.email());
+    assertEquals(123L, payload.userId());
+    assertEquals("ADMIN", payload.role());
   }
 
   @ParameterizedTest
@@ -170,8 +149,6 @@ class JwtUtilTest {
   @DisplayName("Should throw exception for invalid tokens")
   void invalidToken_ShouldThrowException(
       String testCase, String token, Class<? extends Exception> expectedException) {
-    // Arrange - token provided by test case
-
     // Act & Assert
     assertThrows(expectedException, () -> jwtUtil.extractSub(token));
   }
@@ -184,13 +161,13 @@ class JwtUtilTest {
   @DisplayName("Should throw exception for expired token")
   void validateToken_WithExpiredToken_ShouldThrowException() {
     // Arrange
-    JwtUtil shortExpirationJwtUtil = new JwtUtil();
-    ReflectionTestUtils.setField(shortExpirationJwtUtil, "secret", testSecret);
-    ReflectionTestUtils.setField(shortExpirationJwtUtil, "expiration", -1000L);
-
-    String sub = "testuser";
-    Long userId = 1L;
-    String expiredToken = shortExpirationJwtUtil.generateToken(sub, userId);
+    JwtUtil shortExpirationJwtUtil = new JwtUtil(testSecret, -1000L);
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String expiredToken = shortExpirationJwtUtil.signToken(user).token();
 
     // Act & Assert
     assertThrows(ExpiredJwtException.class, () -> jwtUtil.extractSub(expiredToken));
@@ -200,14 +177,15 @@ class JwtUtilTest {
   @DisplayName("Should reject token with incorrect signature")
   void validateToken_WithWrongSignature_ShouldThrowException() {
     // Arrange
-    String sub = "testuser";
-    Long userId = 1L;
-    String token = jwtUtil.generateToken(sub, userId);
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String token = jwtUtil.signToken(user).token();
 
-    JwtUtil differentSecretJwtUtil = new JwtUtil();
-    ReflectionTestUtils.setField(
-        differentSecretJwtUtil, "secret", "differentSecretKeyThatIsAlsoVeryLongForJwtGeneration");
-    ReflectionTestUtils.setField(differentSecretJwtUtil, "expiration", testExpiration);
+    JwtUtil differentSecretJwtUtil =
+        new JwtUtil("differentSecretKeyThatIsAlsoVeryLongForJwtGeneration", testExpiration);
 
     // Act & Assert
     assertThrows(Exception.class, () -> differentSecretJwtUtil.extractSub(token));
@@ -217,16 +195,59 @@ class JwtUtilTest {
   @DisplayName("Should generate different tokens for different users")
   void generateToken_ForDifferentUsers_ShouldReturnDifferentTokens() {
     // Arrange
-    String sub1 = "user1";
-    String sub2 = "user2";
-    Long userId1 = 1L;
-    Long userId2 = 2L;
+    User user1 = new User();
+    user1.setId(1L);
+    user1.setUsername("user1");
+    user1.setEmail("user1@example.com");
+    user1.setRole(UserRole.READER);
+
+    User user2 = new User();
+    user2.setId(2L);
+    user2.setUsername("user2");
+    user2.setEmail("user2@example.com");
+    user2.setRole(UserRole.READER);
 
     // Act
-    String token1 = jwtUtil.generateToken(sub1, userId1);
-    String token2 = jwtUtil.generateToken(sub2, userId2);
+    String token1 = jwtUtil.signToken(user1).token();
+    String token2 = jwtUtil.signToken(user2).token();
 
     // Assert
     assertNotEquals(token1, token2);
+  }
+
+  @Test
+  @DisplayName("Should validate token returns false for mismatched subject")
+  void validateToken_WithMismatchedSubject_ShouldReturnFalse() {
+    // Arrange
+    User user = new User();
+    user.setId(1L);
+    user.setUsername("testuser");
+    user.setEmail("test@example.com");
+    user.setRole(UserRole.READER);
+    String token = jwtUtil.signToken(user).token();
+
+    // Act
+    boolean isValid = jwtUtil.validateToken(token, "999");
+
+    // Assert
+    assertFalse(isValid);
+  }
+
+  @Test
+  @DisplayName("Should include role in token claims")
+  void signToken_ShouldIncludeRoleInClaims() {
+    // Arrange
+    User adminUser = new User();
+    adminUser.setId(1L);
+    adminUser.setUsername("admin");
+    adminUser.setEmail("admin@example.com");
+    adminUser.setRole(UserRole.ADMIN);
+
+    // Act
+    String token = jwtUtil.signToken(adminUser).token();
+    JwtUtil.JwtPayload payload = jwtUtil.extractPayload(token);
+
+    // Assert
+    assertEquals("ADMIN", payload.role());
   }
 }

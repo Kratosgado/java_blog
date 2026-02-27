@@ -11,6 +11,7 @@ A comprehensive multi-module blogging platform built with Java 21, Spring Boot 3
 - ✨ **[Features Guide](docs/FEATURES.md)** - Feature implementation details
 - 🤝 **[Contributing Guide](docs/CONTRIBUTING.md)** - How to contribute
 - 🎯 **[Performance Report](docs/PERFORMANCE_OPTIMIZATION_REPORT.md)** - Optimization metrics
+- 📊 **[Profiling Guide](docs/PROFILING.md)** - Monitoring and metrics
 - 🗄️ **[Database Design](docs/DATABASE_DESIGN.md)** - Schema and indexing strategy
 - 📋 **[Testing Guide](docs/TESTING_GUIDE.md)** - Testing procedures
 

@@ -1,5 +1,6 @@
 package com.kratosgado.blog.backend.config;
 
+import com.kratosgado.blog.backend.utils.OpenApiResponseWrapper;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -12,18 +13,22 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import java.util.List;
+import org.springdoc.core.customizers.OperationCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenAPIConfig {
+  private final OperationCustomizer openApiResponse = new OpenApiResponseWrapper();
+
   @Bean
   public GroupedOpenApi v1Api() {
     return GroupedOpenApi.builder()
         .group("v1")
         .pathsToExclude("/data/**")
         .pathsToMatch("/v1/**")
+        .addOperationCustomizer(openApiResponse)
         .build();
   }
 
@@ -32,7 +37,8 @@ public class OpenAPIConfig {
     return GroupedOpenApi.builder()
         .group("v2")
         .pathsToExclude("/data/**")
-        .pathsToMatch("/api/v2/**")
+        .pathsToMatch("/v2/**")
+        .addOperationCustomizer(openApiResponse)
         .build();
   }
 

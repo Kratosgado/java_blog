@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +20,8 @@ public class PerformanceMonitor {
   private static final Logger logger = LoggerFactory.getLogger(PerformanceMonitor.class);
   private static final PerformanceMonitor instance = new PerformanceMonitor();
   
-  private final Map<String, List<Long>> operationTimes = new ConcurrentHashMap<>();
+  // Use ConcurrentLinkedQueue for thread-safe non-blocking additions
+  private final Map<String, ConcurrentLinkedQueue<Long>> operationTimes = new ConcurrentHashMap<>();
   private final Map<String, Long> slowQueryThresholds = new ConcurrentHashMap<>();
   private boolean enabled = true;
   
@@ -73,7 +77,8 @@ public class PerformanceMonitor {
    * Record a performance metric.
    */
   private void recordMetric(String operation, long durationMs) {
-    operationTimes.computeIfAbsent(operation, k -> new ArrayList<>()).add(durationMs);
+    // Thread-safe addition to queue
+    operationTimes.computeIfAbsent(operation, k -> new ConcurrentLinkedQueue<>()).add(durationMs);
     
     // Check for slow queries
     long threshold = slowQueryThresholds.getOrDefault(operation, DEFAULT_SLOW_THRESHOLD_MS);
@@ -96,11 +101,18 @@ public class PerformanceMonitor {
    * Get statistics for a specific operation.
    */
   public OperationStats getStats(String operation) {
-    List<Long> times = operationTimes.get(operation);
-    if (times == null || times.isEmpty()) {
+    ConcurrentLinkedQueue<Long> timesQueue = operationTimes.get(operation);
+    if (timesQueue == null || timesQueue.isEmpty()) {
       return new OperationStats(operation, 0, 0, 0, 0, 0);
     }
     
+    // Snapshot current state for calculation
+    List<Long> times = new ArrayList<>(timesQueue);
+    
+    if (times.isEmpty()) {
+      return new OperationStats(operation, 0, 0, 0, 0, 0);
+    }
+
     long sum = 0;
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;

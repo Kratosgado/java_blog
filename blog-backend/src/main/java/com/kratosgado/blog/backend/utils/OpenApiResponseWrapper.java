@@ -1,9 +1,5 @@
 package com.kratosgado.blog.backend.utils;
 
-import org.springdoc.core.customizers.OperationCustomizer;
-import org.springframework.stereotype.Component;
-import org.springframework.web.method.HandlerMethod;
-
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -12,19 +8,25 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 
 @Component
 public class OpenApiResponseWrapper implements OperationCustomizer {
 
   @Override
   public Operation customize(Operation operation, HandlerMethod handlerMethod) {
-    operation.getResponses().forEach((code, response) -> {
-      if (isSuccessCode(code)) {
-        wrapSuccessResponse(response);
-      } else {
-        wrapErrorResponse(response);
-      }
-    });
+    operation
+        .getResponses()
+        .forEach(
+            (code, response) -> {
+              if (isSuccessCode(code)) {
+                wrapSuccessResponse(response, code);
+              } else {
+                wrapErrorResponse(response, code);
+              }
+            });
 
     return operation;
   }
@@ -33,22 +35,24 @@ public class OpenApiResponseWrapper implements OperationCustomizer {
     return code.startsWith("2");
   }
 
-  private void wrapSuccessResponse(ApiResponse response) {
+  private void wrapSuccessResponse(ApiResponse response, String code) {
     Schema<?> dataSchema = extractOriginalSchema(response);
 
-    Schema<?> wrapper = new ObjectSchema()
-        .addProperty("status", new IntegerSchema().example(200))
-        .addProperty("message", new StringSchema().example("Success"))
-        .addProperty("data", dataSchema);
+    Schema<?> wrapper =
+        new ObjectSchema()
+            .addProperty("status", new IntegerSchema().example(code))
+            .addProperty("message", new StringSchema().example("Success"))
+            .addProperty("data", dataSchema);
 
     setSchema(response, wrapper);
   }
 
-  private void wrapErrorResponse(ApiResponse response) {
-    Schema<?> wrapper = new ObjectSchema()
-        .addProperty("status", new IntegerSchema().example(400))
-        .addProperty("message", new StringSchema().example("Error message"))
-        .addProperty("data", new Schema<>().nullable(true).example(null));
+  private void wrapErrorResponse(ApiResponse response, String code) {
+    Schema<?> wrapper =
+        new ObjectSchema()
+            .addProperty("status", new IntegerSchema().example(code))
+            .addProperty("message", new StringSchema().example("Error message"))
+            .addProperty("errors", new Schema<>().nullable(true).example(null));
 
     setSchema(response, wrapper);
   }
@@ -66,9 +70,7 @@ public class OpenApiResponseWrapper implements OperationCustomizer {
 
   private void setSchema(ApiResponse response, Schema<?> schema) {
     Content content = new Content();
-    content.addMediaType(
-        "application/json",
-        new MediaType().schema(schema));
+    content.addMediaType("application/json", new MediaType().schema(schema));
     response.setContent(content);
   }
 }

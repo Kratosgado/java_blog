@@ -79,10 +79,17 @@ Content-Type: application/json
 ### Validate token
 
 GET {{host}}/auth/validate HTTP/1.1
-Authorization: {{readerAuth}}
+Authorization: {{adminAuth}}
 
 
 ### Logout
 
 POST {{host}}/auth/logout HTTP/1.1
 Authorization: {{readerAuth}}
+
+
+### Request Password Reset
+
+POST {{host}}/users/password-reset-request?email=kratosgado@gmail.com HTTP/1.1
+Content-Type: application/json
+
