@@ -22,9 +22,9 @@ public class OpenApiResponseWrapper implements OperationCustomizer {
         .forEach(
             (code, response) -> {
               if (isSuccessCode(code)) {
-                wrapSuccessResponse(response);
+                wrapSuccessResponse(response, code);
               } else {
-                wrapErrorResponse(response);
+                wrapErrorResponse(response, code);
               }
             });
 
@@ -35,22 +35,22 @@ public class OpenApiResponseWrapper implements OperationCustomizer {
     return code.startsWith("2");
   }
 
-  private void wrapSuccessResponse(ApiResponse response) {
+  private void wrapSuccessResponse(ApiResponse response, String code) {
     Schema<?> dataSchema = extractOriginalSchema(response);
 
     Schema<?> wrapper =
         new ObjectSchema()
-            .addProperty("status", new IntegerSchema().example(200))
+            .addProperty("status", new IntegerSchema().example(code))
             .addProperty("message", new StringSchema().example("Success"))
             .addProperty("data", dataSchema);
 
     setSchema(response, wrapper);
   }
 
-  private void wrapErrorResponse(ApiResponse response) {
+  private void wrapErrorResponse(ApiResponse response, String code) {
     Schema<?> wrapper =
         new ObjectSchema()
-            .addProperty("status", new IntegerSchema().example(400))
+            .addProperty("status", new IntegerSchema().example(code))
             .addProperty("message", new StringSchema().example("Error message"))
             .addProperty("errors", new Schema<>().nullable(true).example(null));
 

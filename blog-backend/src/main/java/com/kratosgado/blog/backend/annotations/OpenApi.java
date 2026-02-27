@@ -33,18 +33,13 @@ public class OpenApi {
     UserRole[] roles() default {UserRole.ADMIN};
   }
 
-  /** Base Success Response */
-  @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
-  @Retention(RetentionPolicy.RUNTIME)
-  @Operation
-  @ApiResponses({@ApiResponse(responseCode = "200", description = "Success")})
-  public @interface SuccessEndpoint {}
-
   /** Standard GET Response (Success + 404) */
   @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
   @Retention(RetentionPolicy.RUNTIME)
-  @SuccessEndpoint
-  @ApiResponses({@ApiResponse(responseCode = "404", description = "Resource not found")})
+  @ApiResponses({
+    @ApiResponse(responseCode = "404", description = "Resource not found"),
+    @ApiResponse(responseCode = "200", description = "Success")
+  })
   public @interface GetEndpoint {
     @AliasFor(annotation = Operation.class, attribute = "summary")
     String summary() default "Retrieve resource";
@@ -120,12 +115,10 @@ public class OpenApi {
     UserRole[] roles() default {UserRole.ADMIN};
   }
 
-  /** Secured Delete: Adds 204 No Content + Security */
   @Target(ElementType.METHOD)
   @Retention(RetentionPolicy.RUNTIME)
   @GetEndpoint
   @SecuredEndpoint
-  @ApiResponses({@ApiResponse(responseCode = "204", description = "Deleted successfully")})
   public @interface DeleteEndpoint {
     @AliasFor(annotation = Operation.class, attribute = "summary")
     String summary() default "Delete resource (Secured)";
