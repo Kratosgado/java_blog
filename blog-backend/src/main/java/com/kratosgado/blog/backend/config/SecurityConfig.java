@@ -55,7 +55,7 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/graphiql/**", "/graphql")
                     .permitAll()
-                    .requestMatchers("/metrics.html")
+                    .requestMatchers("/metrics.html", "/actuator/**")
                     .permitAll()
 
                     // Public read access to content

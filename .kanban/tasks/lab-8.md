@@ -1,7 +1,5 @@
 ---
-
 kanban-plugin: basic
-
 ---
 
 ## Backlog
@@ -14,19 +12,7 @@ kanban-plugin: basic
 
 ## Todo
 
-- [ ] Replace non-thread-safe collections with `ConcurrentHashMap`, `CopyOnWriteArrayList`, `ConcurrentLinkedQueue` etc. for shared resources (Epic 3 – US 3.1)
-
-- [ ] Verify thread safety via concurrent test scenarios (e.g. multi-threaded JUnit tests) – no race conditions or corruption (Epic 3 – US 3.1)
-
-- [ ] Test and tune thread pool configurations (vary core/max/queue size) under different loads (Epic 3 – US 3.2)
-
-- [ ] Track CPU and memory utilization during tuning and document optimal configuration with justification (Epic 3 – US 3.2)
-
-- [ ] Optimize data retrieval, sorting, searching, filtering with efficient DSA (Comparator, HashSet, parallel streams where appropriate) (Epic 4 – US 4.1)
-
 - [ ] Implement caching (`@Cacheable` with Caffeine/Redis) or in-memory indexing for feeds, trending posts, analytics (Epic 4 – US 4.1)
-
-- [ ] Optimize JPA/Hibernate queries (fetch joins, `@EntityGraph`, pagination, database indexing) (Epic 4 – US 4.1)
 
 - [ ] Demonstrate reduced query/execution latency through metrics (e.g. sorting 10k posts: 200ms → 90ms) (Epic 4 – US 4.1)
 
@@ -36,13 +22,9 @@ kanban-plugin: basic
 
 - [ ] Add custom Micrometer metrics (`@Timed`, `Counter`, `Gauge`, `@Observed`) for key endpoints/services (Epic 5 – US 5.1)
 
-- [ ] Integrate metrics visualization (Grafana, log exports, Actuator chart exports) (Epic 5 – US 5.1)
-
 - [ ] Add profiling workflow (tools/steps/commands) to development documentation (Epic 5 – US 5.1)
 
 - [ ] Run full before-and-after load tests to collect optimized metrics and validate improvements (Epic 5 – US 5.2)
-
-- [ ] Create final optimization report: screenshots, test results, metric comparisons (tables/charts), methodology, Postman/browser demos (Epic 5 – US 5.2)
 
 ## Work in progress
 
@@ -70,9 +52,14 @@ kanban-plugin: basic
 
 - [ ] Run concurrent API tests with Postman/JMeter → verify stability, no data loss/corruption, reduced avg response time vs baseline (Epic 2 – US 2.2)
 
+- [ ] Create final optimization report: screenshots, test results, metric comparisons (tables/charts), methodology, Postman/browser demos (Epic 5 – US 5.2)
+
+- [ ] Track CPU and memory utilization during tuning and document optimal configuration with justification (Epic 3 – US 3.2)
 
 %% kanban:settings
+
 ```
 {"kanban-plugin":"basic"}
 ```
+
 %%

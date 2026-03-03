@@ -77,7 +77,7 @@ Based on the data, the following areas require immediate optimization focus:
 
 ## 5. VisualVM Profiling Analysis
 
-![VisualVM Profiling](initial_bottleneck_graph.png)
+![VisualVM Profiling](./initial_graph.png)
 
 The VisualVM screenshot captured during the load test provides critical insights into the JVM's behavior:
 
