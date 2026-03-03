@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.PostServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -64,7 +65,7 @@ class PostServiceTest {
   private CategoryRepository categoryRepository;
 
   @InjectMocks
-  private PostService postService;
+  private PostServiceImpl postService;
 
   private Post testPost;
   private User testUser;

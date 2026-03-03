@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.AuthServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,7 +47,7 @@ class AuthServiceTest {
   private TokenBlacklistService tokenBlacklistService;
 
   @InjectMocks
-  private AuthService authService;
+  private AuthServiceImpl authService;
 
   private User testUser;
   private AuthResponse testAuthResponse;

@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.CategoryServiceImpl;
 
 import com.kratosgado.blog.backend.exceptions.BlogException;
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
@@ -37,7 +38,7 @@ class CategoryServiceTest {
   private CategoryRepository categoryRepository;
 
   @InjectMocks
-  private CategoryService categoryService;
+  private CategoryServiceImpl categoryService;
 
   private Category testCategory;
   private CreateCategoryRequest createRequest;

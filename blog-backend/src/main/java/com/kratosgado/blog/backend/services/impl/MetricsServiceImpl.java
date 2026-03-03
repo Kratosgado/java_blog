@@ -1,4 +1,7 @@
-package com.kratosgado.blog.backend.services;
+package com.kratosgado.blog.backend.services.impl;
+
+import com.kratosgado.blog.backend.services.*;
+
 
 import com.kratosgado.blog.backend.utils.BlogConstants.Miliseconds;
 import com.kratosgado.blog.dtos.response.MetricsResponse;

@@ -40,6 +40,7 @@ public class OpenApi {
     @ApiResponse(responseCode = "404", description = "Resource not found"),
     @ApiResponse(responseCode = "200", description = "Success")
   })
+  @Operation(summary = "Retrieve resource")
   public @interface GetEndpoint {
     @AliasFor(annotation = Operation.class, attribute = "summary")
     String summary() default "Retrieve resource";
