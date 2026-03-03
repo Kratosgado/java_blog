@@ -1,4 +1,7 @@
-package com.kratosgado.blog.backend.services;
+package com.kratosgado.blog.backend.services.impl;
+
+import com.kratosgado.blog.backend.services.*;
+
 
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
 import com.kratosgado.blog.backend.repositories.jpa.PostRepository;

@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.ReviewServiceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,7 +43,7 @@ class ReviewServiceTest {
   private PostRepository postRepository;
 
   @InjectMocks
-  private ReviewService reviewService;
+  private ReviewServiceImpl reviewService;
 
   @Test
   @DisplayName("createReview should create and persist review when post exists and none by user")

@@ -29,7 +29,6 @@ public class EmailNotificationService implements NotificationService {
       log.info("Password reset email sent successfully.");
     } catch (Exception e) {
       log.error("Failed to send password reset email", e);
-      // In a real application, we might want to throw a custom exception here
     }
   }
 }

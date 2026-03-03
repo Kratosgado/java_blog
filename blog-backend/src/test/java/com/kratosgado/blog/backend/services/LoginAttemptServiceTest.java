@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.LoginAttemptServiceImpl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class LoginAttemptServiceTest {
 
-  private LoginAttemptService service;
+  private LoginAttemptServiceImpl service;
 
   @BeforeEach
   void setUp() {

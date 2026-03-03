@@ -1,4 +1,7 @@
-package com.kratosgado.blog.backend.services;
+package com.kratosgado.blog.backend.services.impl;
+
+import com.kratosgado.blog.backend.services.*;
+
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

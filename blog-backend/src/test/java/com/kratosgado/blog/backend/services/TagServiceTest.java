@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.TagServiceImpl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,7 +41,7 @@ class TagServiceTest {
 
   @Mock private TagRepository tagRepository;
 
-  @InjectMocks private TagService tagService;
+  @InjectMocks private TagServiceImpl tagService;
 
   private Tag testTag;
 

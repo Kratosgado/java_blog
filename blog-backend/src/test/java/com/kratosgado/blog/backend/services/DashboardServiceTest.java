@@ -1,4 +1,5 @@
 package com.kratosgado.blog.backend.services;
+import com.kratosgado.blog.backend.services.impl.DashboardServiceImpl;
 
 
 import com.kratosgado.blog.backend.repositories.jpa.CategoryRepository;
